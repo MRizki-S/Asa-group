@@ -15,6 +15,12 @@ class KualifikasiBlok extends Model
         static::creating(function ($kualifikasi) {
             $kualifikasi->slug = Str::slug($kualifikasi->nama_kualifikasi_blok) . '-' . Str::random(5);
         });
+
+        static::updating(function ($kualifikasi) {
+            if ($kualifikasi->isDirty('nama_kualifikasi_blok')) {
+                $kualifikasi->slug = Str::slug($kualifikasi->nama_kualifikasi_blok) . '-' . Str::random(5);
+            }
+        });
     }
 
     public function tahapKualifikasi()

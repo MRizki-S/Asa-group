@@ -14,6 +14,12 @@ class Type extends Model
         static::creating(function ($type) {
             $type->slug = Str::slug($type->nama_type) . '-' . Str::random(5);
         });
+
+        static::updating(function ($type) {
+            if ($type->isDirty('nama_type')) {
+                $type->slug = Str::slug($type->nama_type) . '-' . Str::random(5);
+            }
+        });
     }
 
     public function tahaps()

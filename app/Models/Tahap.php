@@ -21,6 +21,12 @@ class Tahap extends Model
         static::creating(function ($tahap) {
             $tahap->slug = Str::slug($tahap->nama_tahap) . '-' . Str::random(5);
         });
+
+        static::updating(function ($tahap) {
+            if ($tahap->isDirty('nama_tahap')) {
+                $tahap->slug = Str::slug($tahap->nama_tahap) . '-' . Str::random(5);
+            }
+        });
     }
 
     // relasi many to many  ke type lewat pivot table tahap_type
@@ -35,10 +41,10 @@ class Tahap extends Model
     public function kualifikasiBlok()
     {
         return $this->belongsToMany(
-            KualifikasiBlok::class,           // model yang direlasikan
-            'tahap_kualifikasi',              // nama tabel pivot
-            'tahap_id',                       // foreign key di pivot untuk Tahap
-            'kualifikasi_blok_id'             // foreign key di pivot untuk KualifikasiBlok
+            KualifikasiBlok::class,                   // model yang direlasikan
+            'tahap_kualifikasi',                      // nama tabel pivot
+            'tahap_id',                               // foreign key di pivot untuk Tahap
+            'kualifikasi_blok_id'                     // foreign key di pivot untuk KualifikasiBlok
         )->withPivot(['id', 'nominal_tambahan']); // <-- kolom tambahan dari pivot
     }
 

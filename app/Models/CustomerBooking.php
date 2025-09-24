@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +26,18 @@ class CustomerBooking extends Model
             }
 
             $booking->slug = $slugBase . '-' . $booking->user_id . '-' . Str::random(5);
+        });
+
+        static::updating(function ($booking) {
+            if ($booking->isDirty('unit_id')) {
+                if ($booking->unit) {
+                    $slugBase = Str::slug($booking->unit->nama_unit);
+                } else {
+                    $slugBase = 'booking';
+                }
+
+                $booking->slug = $slugBase . '-' . $booking->user_id . '-' . Str::random(5);
+            }
         });
     }
 

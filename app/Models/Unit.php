@@ -1,14 +1,13 @@
 <?php
-
 namespace App\Models;
 
-use Illuminate\Support\Str;
 use App\Models\TahapKualifikasi;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Unit extends Model
 {
-    protected $table = "unit";
+    protected $table    = "unit";
     protected $fillable = [
         'perumahaan_id',
         'tahap_id',
@@ -29,6 +28,12 @@ class Unit extends Model
     {
         static::creating(function ($unit) {
             $unit->slug = Str::slug($unit->nama_unit) . '-' . Str::random(5);
+        });
+
+        static::updating(function ($unit) {
+            if ($unit->isDirty('nama_unit')) {
+                $unit->slug = Str::slug($unit->nama_unit) . '-' . Str::random(5);
+            }
         });
     }
 

@@ -296,10 +296,11 @@
                 <!-- Tombol Submit & Kembali -->
                 <div class="flex justify-end px-6 pb-6 gap-2">
                     <!-- Tombol Kembali -->
-                    <button type="button" onclick="history.back()"
+                    <a href="{{ route('unit.index', $perumahaan->slug) }}"
                         class="px-10 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-600">
                         Kembali
-                    </button>
+                    </a>
+
 
                     <!-- Tombol Simpan -->
                     <button type="submit"

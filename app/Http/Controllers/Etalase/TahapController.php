@@ -103,13 +103,13 @@ class TahapController extends Controller
         // dd(vars: $tahapKualifikasi);
 
         return view('etalase.tahap.edit', [
-            'perumahaan'       => $perumahaan,
-            'tahap'            => $tahap,
-            'tahapType'        => $tahapType,
-            'tahapKualifikasi' => $tahapKualifikasi,
-            'availableTypes'   => $availableTypes,
-            'availableKualifikasiBlok'=> $availableKualifikasiBlok,
-            'breadcrumbs'      => [
+            'perumahaan'               => $perumahaan,
+            'tahap'                    => $tahap,
+            'tahapType'                => $tahapType,
+            'tahapKualifikasi'         => $tahapKualifikasi,
+            'availableTypes'           => $availableTypes,
+            'availableKualifikasiBlok' => $availableKualifikasiBlok,
+            'breadcrumbs'              => [
                 ['label' => 'Perumahaan', 'url' => route('perumahaan.index')],
                 ['label' => $perumahaan->nama_perumahaan, 'url' => route('perumahaan.show', $perumahaan->slug)],
                 ['label' => 'Edit Tahap: ' . $tahap->nama_tahap, 'url' => ''],
@@ -146,8 +146,11 @@ class TahapController extends Controller
             'nama_tahap' => $validated['nama_tahap'],
         ]);
 
-        // Redirect kembali ke halaman sebelumnya
-        return redirect()->back()->with('success', 'Tahap berhasil diperbarui.');
+        // Redirect ke halaman edit dengan slug baru
+        return redirect()->route('tahap.edit', [
+            'perumahaan' => $perumahaan->slug,
+            'tahap'      => $tahap->slug,
+        ])->with('success', 'Tahap berhasil diperbarui.');
     }
 
     /**

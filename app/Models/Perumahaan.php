@@ -21,6 +21,12 @@ class Perumahaan extends Model
         static::creating(function ($perumahaan) {
             $perumahaan->slug = Str::slug($perumahaan->nama_perumahaan);
         });
+
+        static::updating(function ($perumahaan) {
+            if ($perumahaan->isDirty('nama_perumahaan')) {
+                $perumahaan->slug = Str::slug($perumahaan->nama_perumahaan);
+            }
+        });
     }
 
     public function types()

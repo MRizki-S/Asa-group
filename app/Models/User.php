@@ -1,12 +1,11 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;   // trait dari Spatie
-use Illuminate\Support\Str;
+use Illuminate\Support\Str; // trait dari Spatie
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
@@ -48,5 +47,12 @@ class User extends Authenticatable
                 $user->slug = Str::slug($user->username . '-' . Str::random(6));
             }
         });
+
+        static::updating(function ($user) {
+            if ($user->isDirty('username')) {
+                $user->slug = Str::slug($user->username . '-' . Str::random(6));
+            }
+        });
     }
+
 }
