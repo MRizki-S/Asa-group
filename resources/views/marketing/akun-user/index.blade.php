@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'KualifikasiBlok')
+@section('pageActive', 'akunUser')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'KualifikasiBlok' }">
+        <div x-data="{ pageName: 'akunUser' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -38,22 +38,34 @@
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Kualifikasi Blok <span class="text-red-500 text-sm">(Global Data*)</span>
+                        Akun User
                     </h3>
 
                     <a href="#" data-modal-target="modal-create" data-modal-toggle="modal-create"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Tahap
+                        + Tambah Akun User
                     </a>
                 </div>
 
 
 
-                <table id="table-kualifikasiBlok">
+                <table id="table-akunUser">
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Kualifikasi Blok
+                                Username
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                No Hp
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                Perumahaan
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
+                                Tahap
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
+                                Keep Unit
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
@@ -61,10 +73,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($kualifikasiBlok as $item)
+                        @foreach ($akunUser as $item)
                             <tr>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->nama_kualifikasi_blok }}</td>
+                                    {{ $item->username }}</td>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->no_hp }}</td>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                    {{ $item->type }}</td>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->type }}</td>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->type }}</td>
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                     <form action="{{ route('kualifikasi-blok.destroy', $item->id) }}" method="POST"
                                         class="delete-form">
@@ -90,7 +110,7 @@
 
 
     {{-- modal create kualifikasi-blok --}}
-    @include('Etalase.kualifikasi-blok.modal.modal-create-kualifikasiBlok')
+    {{-- @include('Etalase.kualifikasi-blok.modal.modal-create-akunUser') --}}
 
     {{-- sweatalert 2 for delete data --}}
     <script>
@@ -119,8 +139,8 @@
 
 
     <script>
-        if (document.getElementById("table-kualifikasiBlok") && typeof simpleDatatables.DataTable !== 'undefined') {
-            const dataTable = new simpleDatatables.DataTable("#table-kualifikasiBlok", {
+        if (document.getElementById("table-akunUser") && typeof simpleDatatables.DataTable !== 'undefined') {
+            const dataTable = new simpleDatatables.DataTable("#table-akunUser", {
                 searchable: true,
                 sortable: false
             });

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'Perumahaan') {{-- ⬅️ ini yang jadi value Alpine.js page --}}
+@section('pageActive', 'Perumahaan')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
@@ -21,7 +21,7 @@
                     {{ $item->slug === 'asa-dreamland' ? 'border-l-blue-500 dark:border-l-blue-700' : 'border-l-yellow-500 dark:border-l-yellow-700' }}
                   dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     <h2
-                        class="text-xl font-semibold mb-2 
+                        class="text-xl font-semibold mb-2
                         {{ $item->slug === 'asa-dreamland' ? 'text-blue-500 dark:text-blue-700' : 'text-yellow-500 dark:text-yellow-700' }}">
                         {{ $item->nama_perumahaan }}
                     </h2>

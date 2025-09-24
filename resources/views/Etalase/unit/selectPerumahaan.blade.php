@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'unitLayout') {{-- ⬅️ ini yang jadi value Alpine.js page --}}
+@section('pageActive', 'unitLayout') 
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
