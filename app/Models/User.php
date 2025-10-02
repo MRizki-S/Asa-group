@@ -20,6 +20,8 @@ class User extends Authenticatable
         'password',
         'slug',
         'type',
+        'perumahaan_id',
+        'is_global',
     ];
 
     /**
@@ -53,6 +55,16 @@ class User extends Authenticatable
                 $user->slug = Str::slug($user->username . '-' . Str::random(6));
             }
         });
+    }
+
+    public function perumahaan()
+    {
+        return $this->belongsTo(Perumahaan::class, 'perumahaan_id');
+    }
+
+    public function hasGlobalAccess()
+    {
+        return $this->is_global === 1;
     }
 
 }

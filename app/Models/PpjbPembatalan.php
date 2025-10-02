@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Models\User;
@@ -15,6 +14,7 @@ class PpjbPembatalan extends Model
         'status_pengajuan',
         'diajukan_oleh',
         'disetujui_oleh',
+        'perumahaan_id'
     ];
 
     public function pengaju()
@@ -26,5 +26,9 @@ class PpjbPembatalan extends Model
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
     }
-}
 
+    public function perumahaan()
+    {
+        return $this->belongsTo(Perumahaan::class, 'perumahaan_id');
+    }
+}

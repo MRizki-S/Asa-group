@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use App\Models\User;
@@ -10,6 +9,7 @@ class PpjbKeterlambatan extends Model
     protected $table = 'ppjb_keterlambatan';
 
     protected $fillable = [
+        'perumahaan_id',
         'persentase_denda',
         'status_aktif',
         'status_pengajuan',
@@ -25,5 +25,10 @@ class PpjbKeterlambatan extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
+    }
+
+    public function perumahaan()
+    {
+        return $this->belongsTo(Perumahaan::class, 'perumahaan_id');
     }
 }

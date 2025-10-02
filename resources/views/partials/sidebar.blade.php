@@ -279,8 +279,8 @@
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Item Akun User -->
                     <li>
-                        <a href="{{route('akun-user.index')}}" @click="selected = (selected === 'akunUser' ? '':'akunUser')"
-                            class="menu-item group"
+                        <a href="{{ route('akun-user.index') }}"
+                            @click="selected = (selected === 'akunUser' ? '':'akunUser')" class="menu-item group"
                             :class="(selected === 'akunUser') && (page === 'akunUser') ? 'menu-item-active' :
                             'menu-item-inactive'">
 
@@ -339,9 +339,9 @@
                             <svg :class="(selected === 'ManagePemesanan') && (page === 'ManagePemesanan') ?
                             'menu-item-icon-active' :
                             'menu-item-icon-inactive'"
-                                width="26" height="26" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff"
-                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
-                                class="lucide lucide-folder-kanban-icon lucide-folder-kanban">
+                                width="26" height="26" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-folder-kanban-icon lucide-folder-kanban">
                                 <path
                                     d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
                                 <path d="M8 10v4" />
@@ -354,7 +354,6 @@
                         </a>
                     </li>
                     <!-- Menu Item Manage Pemesanan -->
-
 
                     <!-- Menu Item Pengajuan -->
                     <li>
@@ -420,7 +419,8 @@
 
                     <!-- Menu Item Setting PPJB -->
                     <li>
-                        <a href="" @click="selected = (selected === 'SettingPPJB' ? '':'SettingPPJB')"
+                        <a href="/marketing/setting"
+                            @click="selected = (selected === 'SettingPPJB' ? 'SettingPPJB':'SettingPPJB')"
                             class="menu-item group"
                             :class="(selected === 'SettingPPJB') && (page === 'SettingPPJB') ? 'menu-item-active' :
                             'menu-item-inactive'">
@@ -589,6 +589,79 @@
                         <!-- Dropdown Menu End -->
                     </li>
                     <!-- Menu Item Authentication --> --}}
+                </ul>
+            </div>
+
+            <!-- Superadmin -  Group -->
+            <div>
+                <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
+                    <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
+                        Superadmin
+                    </span>
+
+                    <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
+                        class="mx-auto fill-current menu-group-icon" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
+                            fill="" />
+                    </svg>
+                </h3>
+
+                <ul class="flex flex-col gap-2 mb-6">
+                    <!-- Menu Item Akun Karyawan -->
+                    <li>
+                        <a href="{{ route('akun-user.index') }}"
+                            @click="selected = (selected === 'akunKaryawan' ? '':'akunKaryawan')"
+                            class="menu-item group"
+                            :class="(selected === 'akunKaryawan') && (page === 'akunKaryawan') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+
+                            <svg :class="(selected === 'akunKaryawan') && (page === 'akunKaryawan') ? 'menu-item-icon-active' :
+                            ''"
+                                width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                class="size-6">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                    d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
+                            </svg>
+
+
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Akun Karyawan
+                            </span>
+                        </a>
+                    </li>
+                    <!-- Menu Item Akun Karyawan -->
+
+                    <!-- Menu Item Pemesanan Unit -->
+                    {{-- <li>
+                        <a href="" @click="selected = (selected === 'PemesananUnit' ? '':'PemesananUnit')"
+                            class="menu-item group"
+                            :class="(selected === 'PemesananUnit') && (page === 'PemesananUnit') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg :class="(selected === 'PemesananUnit') && (page === 'PemesananUnit') ? 'menu-item-icon-active' :
+                            ''"
+                                width="24" height="24" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="lucide lucide-notebook-pen-icon lucide-notebook-pen">
+                                <path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" />
+                                <path d="M2 6h4" />
+                                <path d="M2 10h4" />
+                                <path d="M2 14h4" />
+                                <path d="M2 18h4" />
+                                <path
+                                    d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
+                            </svg>
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Pemesanan Unit
+                            </span>
+                        </a>
+                    </li> --}}
+                    <!-- Menu Item Pemesanan Unit -->
                 </ul>
             </div>
         </nav>
