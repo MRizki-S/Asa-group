@@ -142,27 +142,28 @@ class UnitController extends Controller
             'nama_unit'            => 'required|string|max:255|unique:unit,nama_unit',
             'kualifikasi_dasar'    => 'required|in:standar,kelebihan_tanah',
             'tahap_kualifikasi_id' => 'required|exists:tahap_kualifikasi,id',
-            // validasi conditional
             'luas_kelebihan'       => 'required_if:kualifikasi_dasar,kelebihan_tanah|string|max:255',
             'nominal_kelebihan'    => 'required_if:kualifikasi_dasar,kelebihan_tanah|numeric|min:0',
         ]);
 
-        // Ambil type untuk mendapatkan harga_type
+        // Ambil harga dasar dari type
         $type      = Type::findOrFail($request->type_id);
-        $hargaType = $type->harga_dasar; // pastikan column harga_dasar ada di table type
+        $hargaType = $type->harga_dasar;
 
-        // Ambil pivot tahap_kualifikasi untuk nominal tambahan blok
+        // Ambil nominal tambahan dari tahap_kualifikasi
         $tahapKualifikasi    = TahapKualifikasi::findOrFail($request->tahap_kualifikasi_id);
         $nominalTambahanBlok = $tahapKualifikasi->nominal_tambahan;
 
-        // Hitung harga_final
-        if ($request->kualifikasi_dasar === 'standar') {
-            $nominalKualifikasiDasar = 0;
-        } else { // kelebihan_tanah
-            $nominalKualifikasiDasar = $request->nominal_kelebihan;
-        }
+        // Ambil SBUM dari .env (default ke 4.000.000 kalau belum diatur)
+        $sbumPemerintah = (int) env('SBUM_PEMERINTAH', 4000000);
 
-        $hargaFinal = $hargaType + $nominalKualifikasiDasar + $nominalTambahanBlok;
+        // Hitung nominal dasar (kelebihan tanah kalau ada)
+        $nominalKualifikasiDasar = $request->kualifikasi_dasar === 'kelebihan_tanah'
+            ? $request->nominal_kelebihan
+            : 0;
+
+        // Hitung harga final
+        $hargaFinal = $hargaType + $nominalKualifikasiDasar + $nominalTambahanBlok + $sbumPemerintah;
 
         // Simpan unit
         $unit = Unit::create([
@@ -254,31 +255,34 @@ class UnitController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('unit', 'nama_unit')->ignore($unit->id), // agar bisa update sendiri
+                Rule::unique('unit', 'nama_unit')->ignore($unit->id),
             ],
             'kualifikasi_dasar'    => 'required|in:standar,kelebihan_tanah',
             'tahap_kualifikasi_id' => 'required|exists:tahap_kualifikasi,id',
-            // validasi conditional
             'luas_kelebihan'       => 'required_if:kualifikasi_dasar,kelebihan_tanah|string|max:255',
             'nominal_kelebihan'    => 'required_if:kualifikasi_dasar,kelebihan_tanah|numeric|min:0',
         ]);
 
-        // Ambil type untuk mendapatkan harga_type
+        // Ambil harga dasar dari type
         $type      = Type::findOrFail($request->type_id);
         $hargaType = $type->harga_dasar;
 
-        // Ambil pivot tahap_kualifikasi untuk nominal tambahan blok
+        // Ambil nominal tambahan dari tahap_kualifikasi
         $tahapKualifikasi    = TahapKualifikasi::findOrFail($request->tahap_kualifikasi_id);
         $nominalTambahanBlok = $tahapKualifikasi->nominal_tambahan;
 
-        // Hitung harga_final
-        $nominalKualifikasiDasar = $request->kualifikasi_dasar === 'standar'
-            ? 0
-            : $request->nominal_kelebihan;
-        // dd($request->all());
-        $hargaFinal = $hargaType + $nominalKualifikasiDasar + $nominalTambahanBlok;
-        // dd($hargaFinal);
-        // Update unit
+        // Ambil SBUM dari .env (default 4.000.000)
+        $sbumPemerintah = (int) env('SBUM_PEMERINTAH', 4000000);
+
+        // Hitung nominal kelebihan tanah (jika ada)
+        $nominalKualifikasiDasar = $request->kualifikasi_dasar === 'kelebihan_tanah'
+            ? $request->nominal_kelebihan
+            : 0;
+
+        // Hitung harga final
+        $hargaFinal = $hargaType + $nominalKualifikasiDasar + $nominalTambahanBlok + $sbumPemerintah;
+
+        // Update data unit
         $unit->update([
             'perumahaan_id'        => $request->perumahaan_id,
             'tahap_id'             => $request->tahap_id,

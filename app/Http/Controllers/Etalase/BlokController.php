@@ -69,15 +69,6 @@ class BlokController extends Controller
         ]);
     }
 
-    // endpoint untuk ambil tahap sesuai perumahaan
-    public function listByPerumahaan(Perumahaan $perumahaan)
-    {
-        // otomatis pakai slug karena getRouteKeyName di model Perumahaan
-        return response()->json(
-            $perumahaan->tahap()->select('id', 'nama_tahap', 'slug')->get()
-        );
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([

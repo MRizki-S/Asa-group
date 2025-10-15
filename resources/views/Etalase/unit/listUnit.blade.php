@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'unitLayout') 
+@section('pageActive', 'unitLayout')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
@@ -139,31 +139,61 @@
                     </a>
                 </form>
 
-
-
-
-
-
                 <table id="table-unit">
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Tahap
+                                <span class="flex items-center">
+                                    Tahap
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Blok
+                               <span class="flex items-center">
+                                    Blok
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
-                                Nama Unit
+                                <span class="flex items-center">
+                                    Nama Unit
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
-                                Type
+                                <span class="flex items-center">
+                                    Tipe Unit
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Status Unit
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Harga
+                                <span class="flex items-center">
+                                    Harga
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
@@ -201,7 +231,7 @@
                                     </span>
                                 </td>
 
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                     Rp {{ number_format($item->harga_final, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
@@ -261,14 +291,11 @@
                 });
             }
         });
-    </script>
 
-
-    <script>
         if (document.getElementById("table-unit") && typeof simpleDatatables.DataTable !== 'undefined') {
             const dataTable = new simpleDatatables.DataTable("#table-unit", {
                 searchable: true,
-                sortable: false
+                sortable: true
             });
         }
     </script>

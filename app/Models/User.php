@@ -1,11 +1,12 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\PemesananUnit;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str; // trait dari Spatie
-use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'type',
         'perumahaan_id',
         'is_global',
+        'tanggal_expired',
     ];
 
     /**
@@ -65,6 +67,22 @@ class User extends Authenticatable
     public function hasGlobalAccess()
     {
         return $this->is_global === 1;
+    }
+
+    // relasi ke cutomer_booking
+    public function booking()
+    {
+        return $this->hasOne(CustomerBooking::class, 'user_id');
+    }
+
+    public function pemesananSebagaiCustomer()
+    {
+        return $this->hasOne(PemesananUnit::class, 'customer_id');
+    }
+
+    public function pemesananSebagaiSales()
+    {
+        return $this->hasMany(PemesananUnit::class, 'sales_id');
     }
 
 }

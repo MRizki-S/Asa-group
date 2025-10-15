@@ -279,24 +279,24 @@
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Item Akun User -->
                     <li>
-                        <a href="{{ route('akun-user.index') }}"
-                            @click="selected = (selected === 'akunUser' ? '':'akunUser')" class="menu-item group"
-                            :class="(selected === 'akunUser') && (page === 'akunUser') ? 'menu-item-active' :
+                        <a href="{{ route('marketing.akunUser.index') }}"
+                            @click="selected = (selected === 'AkunUser' ? '':'AkunUser')" class="menu-item group"
+                            :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-active' :
                             'menu-item-inactive'">
 
-                            <svg :class="(selected === 'akunUser') && (page === 'akunUser') ? 'menu-item-icon-active' :
+                            <svg :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-icon-active' :
                             ''"
                                 width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                                 class="size-6">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M16 12h4m-2 2v-4M4 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                <path fill-rule="evenodd"
+                                    d="M7 2a2 2 0 0 0-2 2v1a1 1 0 0 0 0 2v1a1 1 0 0 0 0 2v1a1 1 0 1 0 0 2v1a1 1 0 1 0 0 2v1a1 1 0 1 0 0 2v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7Zm3 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm-1 7a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3 1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1Z"
+                                    clip-rule="evenodd" />
                             </svg>
 
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Akun User
+                                Akun User - Booking
                             </span>
                         </a>
                     </li>
@@ -304,7 +304,7 @@
 
                     <!-- Menu Item Pemesanan Unit -->
                     <li>
-                        <a href="" @click="selected = (selected === 'PemesananUnit' ? '':'PemesananUnit')"
+                        <a href="{{ route('marketing.pemesananUnit.index')}}" @click="selected = (selected === 'PemesananUnit' ? '':'PemesananUnit')"
                             class="menu-item group"
                             :class="(selected === 'PemesananUnit') && (page === 'PemesananUnit') ? 'menu-item-active' :
                             'menu-item-inactive'">
@@ -611,7 +611,7 @@
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Item Akun Karyawan -->
                     <li>
-                        <a href="{{ route('akun-user.index') }}"
+                        <a href="{{ route('marketing.akunUser.index') }}"
                             @click="selected = (selected === 'akunKaryawan' ? '':'akunKaryawan')"
                             class="menu-item group"
                             :class="(selected === 'akunKaryawan') && (page === 'akunKaryawan') ? 'menu-item-active' :

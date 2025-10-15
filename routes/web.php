@@ -1,23 +1,46 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Etalase\BlokController;
-use App\Http\Controllers\Etalase\KualifikasiBlokController;
-use App\Http\Controllers\Etalase\PerumahaanController;
-use App\Http\Controllers\Etalase\TahapController;
-use App\Http\Controllers\Etalase\TahapKualifikasiController;
-use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
-use App\Http\Controllers\Marketing\AkunUserController;
-use App\Http\Controllers\Marketing\SettingCaraBayarController;
-use App\Http\Controllers\Marketing\SettingKeterlambatanController;
-use App\Http\Controllers\marketing\SettingMutuPpjbController;
-use App\Http\Controllers\Marketing\SettingPembatalanController;
-use App\Http\Controllers\marketing\SettingPpjbController;
-use App\Http\Controllers\marketing\SettingPromoPpjbController;
+use App\Http\Controllers\Etalase\TahapController;
 use App\Http\Controllers\PerumahaanSelectController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Etalase\TahapTypeController;
+use App\Http\Controllers\Etalase\PerumahaanController;
+use App\Http\Controllers\Marketing\AkunUserController;
+use App\Http\Controllers\Etalase\EtalaseJsonController;
+use App\Http\Controllers\marketing\SettingPpjbController;
+use App\Http\Controllers\Etalase\KualifikasiBlokController;
+use App\Http\Controllers\Marketing\PemesananUnitController;
+use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\marketing\SettingMutuPpjbController;
+use App\Http\Controllers\Marketing\SettingPpjbJsonController;
+use App\Http\Controllers\Marketing\SettingCaraBayarController;
+use App\Http\Controllers\marketing\SettingPromoPpjbController;
+use App\Http\Controllers\Marketing\SettingPembatalanController;
+use App\Http\Controllers\Marketing\SettingKeterlambatanController;
+
+// API Wilayah Proxy
+Route::prefix('api/wilayah')->group(function () {
+    Route::get('/provinsi', function () {
+        return Http::get('https://wilayah.id/api/provinces.json')->json();
+    });
+
+    Route::get('/kota/{provinsiCode}', function ($provinsiCode) {
+        return Http::get("https://wilayah.id/api/regencies/{$provinsiCode}.json")->json();
+    });
+
+    Route::get('/kecamatan/{kotaCode}', function ($kotaCode) {
+        return Http::get("https://wilayah.id/api/districts/{$kotaCode}.json")->json();
+    });
+
+    Route::get('/desa/{kecamatanCode}', function ($kecamatanCode) {
+        return Http::get("https://wilayah.id/api/villages/{$kecamatanCode}.json")->json();
+    });
+});
 
 Route::get('/', function () {
     // dd(session()->all());
@@ -72,9 +95,6 @@ Route::middleware('auth')
     Route::resource('kualifikasi-blok', KualifikasiBlokController::class)->names('kualifikasi-blok');
 
     Route::resource('/blok', BlokController::class)->names('blok');
-    Route::get('/perumahaan/{perumahaan:slug}/tahap-json',
-        [BlokController::class, 'listByPerumahaan'])
-        ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
 
     Route::get('/unit', [UnitController::class, 'indexGlobal'])
         ->name('unit.indexGlobal');
@@ -83,51 +103,59 @@ Route::middleware('auth')
         Route::resource('unit', UnitController::class)
             ->names('unit'); // jangan pakai except('index')
     });
-    // Route::get('/etalase/perumahaan/{slug}/blok-json', [UnitController::class, 'getBlokJson']);
-    // Route::get('/etalase/perumahaan/{slug}/type-json', [UnitController::class, 'getTypeJson']);
+
+    Route::get('/perumahaan/{perumahaan:slug}/tahap-json',
+        [EtalaseJsonController::class, 'listByPerumahaan'])
+        ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
+                          // Ambil Unit berdasar  kan tahap
+    Route::get('/tahap/{tahapId}/unit-json', [EtalaseJsonController::class, 'getUnitsByTahap']);
+    Route::get('/etalase/unit/{id}/harga-json', [EtalaseJsonController::class, 'getUnitHarga']);
+
 });
 
 // Marketing Group
 Route::middleware('auth')->prefix('marketing')->group(function () {
-    Route::resource('/akun-user', AkunUserController::class);
+    Route::resource('/akun-user', AkunUserController::class)->names('marketing.akunUser');
+
+    Route::resource('/pemesanan-unit', PemesananUnitController::class)->names('marketing.pemesananUnit');
 
     Route::prefix('/setting')->group(function () {
         // halaman utama setting
         Route::get('/', [SettingPpjbController::class, 'listSettingPPJB'])
-            ->name('settingPPJB.index');
+        ->name('settingPPJB.index');
 
         // promo cash
         Route::get('/promo-cash/edit', [SettingPromoPpjbController::class, 'editCash'])
-            ->name('settingPPJB.promoCash.edit');
+        ->name('settingPPJB.promoCash.edit');
         Route::post('/promo-cash', [SettingPromoPpjbController::class, 'updateCash'])
-            ->name('settingPPJB.promoCash.pengajuanUpdate');
+        ->name('settingPPJB.promoCash.pengajuanUpdate');
 
         // promo kpr
         Route::get('/promo-kpr/edit', [SettingPromoPpjbController::class, 'editKpr'])
-            ->name('settingPPJB.promoKpr.edit');
+        ->name('settingPPJB.promoKpr.edit');
         Route::post('/promo-kpr', [SettingPromoPpjbController::class, 'updateKpr'])
-            ->name('settingPPJB.promoKpr.pengajuanUpdate');
+        ->name('settingPPJB.promoKpr.pengajuanUpdate');
 
         // ======== Riwayat promo ========
         Route::get('/promo/{type}/history', [SettingPromoPpjbController::class, 'history'])
-            ->whereIn('type', ['cash', 'kpr'])
-            ->name('settingPPJB.promo.history');
+        ->whereIn('type', ['cash', 'kpr'])
+        ->name('settingPPJB.promo.history');
 
         // batalkan pengajuan (pengajuan masih pending)
         Route::delete('/promo/{batch}', [SettingPromoPpjbController::class, 'cancelPengajuanPromo'])
-            ->name('settingPPJB.promo.pengajuanCancel');
+        ->name('settingPPJB.promo.pengajuanCancel');
         Route::patch('/promo/{batch}/nonAktif', [SettingPromoPpjbController::class, 'nonAktifPromo'])
-            ->name('settingPPJB.promo.nonAktif');
+        ->name('settingPPJB.promo.nonAktif');
 
         // Mutu PPJB
         Route::get('/mutu/edit', [SettingMutuPpjbController::class, 'edit'])->name('settingPPJB.mutu.edit');
         Route::post('/mutu/pengajuan-update', [SettingMutuPpjbController::class, 'pengajuanUpdate'])
-            ->name('settingPPJB.mutu.pengajuanUpdate');
+        ->name('settingPPJB.mutu.pengajuanUpdate');
         Route::patch('/mutu/{batch}/nonaktif', [SettingMutuPpjbController::class, 'nonAktifMutu'])->name('settingPPJB.mutu.nonAktif');
         Route::delete('/mutu/{batch}/cancel', [SettingMutuPpjbController::class, 'cancelPengajuanMutu'])->name('settingPPJB.mutu.cancel');
         // Mutu PPJB History
         Route::get('/mutu/history', [SettingMutuPpjbController::class, 'history'])
-            ->name('settingPPJB.mutu.history');
+        ->name('settingPPJB.mutu.history');
 
         // Kelola Cara Bayar
         Route::get('/cara-bayar/edit', [SettingCaraBayarController::class, 'editCaraBayar'])->name('settingPPJB.caraBayar.edit');
@@ -135,18 +163,21 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::Delete('/cara-bayar/{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])->name('settingPPJB.caraBayar.cancelPengajuanPromo');
         Route::patch('/cara-bayar/{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])->name('settingPPJB.caraBayar.nonAktif');
 
-
         // Kelola  Keterlambatan Pembayaran
         Route::get('/keterlambatan/edit', [SettingKeterlambatanController::class, 'editKeterlambatan'])->name('settingPPJB.keterlambatan.edit');
         Route::post('/keterlambatan', [SettingKeterlambatanController::class, 'updatePengajuan'])->name('settingPPJB.keterlambatan.updatePengajuan');
         Route::Delete('/keterlambatan/{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])->name('settingPPJB.keterlambatan.cancelPengajuanPromo');
         Route::patch('/keterlambatan/{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])->name('settingPPJB.keterlambatan.nonAktif');
 
-         // Kelola  Keterlambatan Pembayaran
+        // Kelola  Keterlambatan Pembayaran
         Route::get('/pembatalan/edit', action: [SettingPembatalanController::class, 'editPembatalan'])->name('settingPPJB.pembatalan.edit');
         Route::post('/pembatalan', [SettingPembatalanController::class, 'updatePengajuan'])->name('settingPPJB.pembatalan.updatePengajuan');
         Route::Delete('/pembatalan/{pembatalan}', [SettingPembatalanController::class, 'cancelPengajuanPembatalan'])->name('settingPPJB.pembatalan.cancelPengajuanPromo');
         Route::patch('/pembatalan/{pembatalan}/nonaktif', [SettingPembatalanController::class, 'nonAktifPembatalan'])->name('settingPPJB.pembatalan.nonAktif');
     });
 
+    Route::prefix('api')->group(function () {
+        Route::get('/setting-cara-bayar/{perumahaanId}', [SettingPpjbJsonController::class, 'showByPerumahaan'])
+            ->name('api.setting-caraBayar.show');
+    });
 });

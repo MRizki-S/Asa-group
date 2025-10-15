@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'akunUser')
+@section('pageActive', 'AkunUser')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'akunUser' }">
+        <div x-data="{ pageName: 'AkunUser' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -41,9 +41,9 @@
                         Akun User
                     </h3>
 
-                    <a href="#" data-modal-target="modal-create" data-modal-toggle="modal-create"
+                    <a href="{{ route('marketing.akunUser.create') }}"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Akun User
+                        + Tambah Akun User - Booking
                     </a>
                 </div>
 
@@ -53,19 +53,53 @@
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Username
+                                <span class="flex items-center">
+                                    Username
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                                 No Hp
                             </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                <span class="flex items-center">
+                                    Sales Terkait
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
+                            </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Perumahaan
+                                <span class="flex items-center">
+                                    Perumahaan
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
                                 Tahap
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
                                 Keep Unit
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
+                                <span class="flex items-center">
+                                    Tanggal Booking
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
@@ -76,17 +110,57 @@
                         @foreach ($akunUser as $item)
                             <tr>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->username }}</td>
+                                    {{ $item->username }}
+                                </td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->no_hp }}</td>
+                                    {{ $item->no_hp }}
+                                </td>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->booking?->sales?->username ?? '-' }}
+                                </td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->type }}</td>
+                                    @php
+                                        $perum = $item->booking?->unit?->perumahaan?->nama_perumahaan;
+                                        $badgeClass = 'bg-gray-400'; // default
+                                        if ($perum === 'Asa Dreamland') {
+                                            $badgeClass = 'bg-green-500';
+                                        } elseif ($perum === 'Lembah Hijau Residence') {
+                                            $badgeClass = 'bg-blue-500';
+                                        }
+                                    @endphp
+
+                                    @if ($perum)
+                                        <span
+                                            class="px-2 py-1 text-xs font-semibold text-white rounded {{ $badgeClass }}">
+                                            {{ $perum }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->type }}</td>
+                                    {{ $item->booking?->unit?->tahap?->nama_tahap ?? '-' }}
+                                </td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->type }}</td>
-                                <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                    <form action="{{ route('kualifikasi-blok.destroy', $item->id) }}" method="POST"
+                                    {{ $item->booking?->unit?->blok?->nama_blok ?? '' }}
+                                    ({{ $item->booking?->unit?->nama_unit ?? '-' }})
+                                </td>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->booking->tanggal_booking->format('d M Y') }}
+                                </td>
+
+                                <td class="px-6 py-4 flex flex-wrap gap-2 justfy-ceniter">
+                                    <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
+                                        class="btn-edit inline-flex items-center gap-1
+                                            text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
+                                            dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
+                                            px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                            focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
+                                            active:scale-95">
+                                        Edit
+                                    </a>
+                                    <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
                                         class="delete-form">
                                         @csrf
                                         @method('DELETE')
@@ -96,21 +170,16 @@
                                         </button>
                                     </form>
                                 </td>
-
                             </tr>
                         @endforeach
-
                     </tbody>
                 </table>
+
             </div>
         </div>
 
     </div>
     <!-- ===== Main Content End ===== -->
-
-
-    {{-- modal create kualifikasi-blok --}}
-    {{-- @include('Etalase.kualifikasi-blok.modal.modal-create-akunUser') --}}
 
     {{-- sweatalert 2 for delete data --}}
     <script>
@@ -121,7 +190,7 @@
 
                 Swal.fire({
                     title: 'Yakin hapus data ini?',
-                    text: "Apakah anda yakin menghapus kualifikasi blok ini? Semua data yang terkait dengan kualifikasi blok akan ikut terhapus.",
+                    text: "Apakah anda yakin menghapus Akun User & Booking Unit ini?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -135,14 +204,11 @@
                 });
             }
         });
-    </script>
 
-
-    <script>
         if (document.getElementById("table-akunUser") && typeof simpleDatatables.DataTable !== 'undefined') {
             const dataTable = new simpleDatatables.DataTable("#table-akunUser", {
                 searchable: true,
-                sortable: false
+                sortable: true,
             });
         }
     </script>

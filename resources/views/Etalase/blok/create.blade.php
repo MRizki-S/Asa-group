@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'blokLayout') 
+@section('pageActive', 'blokLayout')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
@@ -120,10 +120,6 @@
                             @enderror
                         </div>
                     </div>
-
-
-
-
                 </div>
 
                 <!-- Tombol Submit & Kembali -->

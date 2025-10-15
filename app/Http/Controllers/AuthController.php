@@ -40,7 +40,7 @@ class AuthController extends Controller
         ]);
         // dd($credentials);
 
-        if (Auth::attempt($credentials, true)) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
             $user = Auth::user();

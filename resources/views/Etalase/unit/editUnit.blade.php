@@ -261,7 +261,6 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Kualifikasi Posisi -->
-                            <!-- Kualifikasi Posisi -->
                             <div>
                                 <label
                                     class="flex items-center gap-1 text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
@@ -286,11 +285,58 @@
                                 @enderror
                             </div>
 
-
+                            <!-- Info Tambahan SBUM -->
+                            <div
+                                class="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-200 bg-blue-50
+                       dark:bg-blue-900/30 dark:border-blue-700 animate-fade-in">
+                                <div
+                                    class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white font-bold">
+                                    +
+                                </div>
+                                <div>
+                                    <p class="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                                        SBUM dari Pemerintah
+                                    </p>
+                                    <p class="text-xs text-blue-500 dark:text-blue-400">
+                                        Tambahan harga: Rp <span>4.000.000</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </fieldset>
 
 
+                </div>
+
+                <!-- Card Penjelasan Komponen Harga -->
+                <div class="px-6 pb-8 mt-6">
+                    <div
+                        class="rounded-2xl border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 shadow-sm p-6 space-y-4">
+
+                        <!-- Judul -->
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            Rincian Komponen Harga
+                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">(informasi tambahan)</span>
+                        </h3>
+
+                        <!-- Daftar Penjelasan -->
+                        <ul class="list-disc pl-5 text-sm text-gray-700 dark:text-gray-300 space-y-0 leading-relaxed">
+                            <li><span class="font-medium">Harga Type</span> — nilai dasar unit berdasarkan tipe rumah yang
+                                dipilih.</li>
+                            <li><span class="font-medium">Kualifikasi Dasar</span> — tambahan biaya bila terdapat
+                                <i>kelebihan tanah</i> dibandingkan ukuran standar.
+                            </li>
+                            <li><span class="font-medium">Kualifikasi Posisi</span> — tambahan harga sesuai posisi unit.
+                            </li>
+                            <li><span class="font-medium">SBUM Pemerintah</span> — penyesuaian biaya sesuai ketentuan
+                                pemerintah.</li>
+                        </ul>
+
+                        <!-- Catatan Akhir -->
+                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                            Total harga unit merupakan hasil penjumlahan otomatis dari seluruh komponen di atas.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Tombol Submit & Kembali -->
@@ -300,8 +346,6 @@
                         class="px-10 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-600">
                         Kembali
                     </a>
-
-
                     <!-- Tombol Simpan -->
                     <button type="submit"
                         class="px-10 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
@@ -312,7 +356,6 @@
             </div>
 
 
-            {{-- button submit --}}
         </form>
 
 

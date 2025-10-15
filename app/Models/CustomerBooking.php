@@ -6,14 +6,22 @@ use Illuminate\Support\Str;
 
 class CustomerBooking extends Model
 {
+    protected $table    = 'customer_booking';
     protected $fillable = [
         'user_id',
         'perumahaan_id',
+        'sales_id',
         'tahap_id',
         'unit_id',
         'slug',
         'tanggal_booking',
         'tanggal_expired',
+        'status',
+    ];
+
+    protected $casts = [
+        'tanggal_booking' => 'datetime',
+        'tanggal_expired'       => 'datetime',
     ];
 
     protected static function booted()
@@ -60,4 +68,10 @@ class CustomerBooking extends Model
     {
         return $this->belongsTo(Unit::class);
     }
+
+    public function sales()
+    {
+        return $this->belongsTo(User::class, 'sales_id');
+    }
+
 }
