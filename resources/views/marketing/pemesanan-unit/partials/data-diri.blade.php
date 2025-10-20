@@ -22,12 +22,12 @@
             <!-- Nomor HP -->
             <div>
                 <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Nomor HP (awalan 62) <span class="text-red-500">*</span>
+                    Nomor HP <span class="text-red-500">*</span>
                 </label>
                 <input type="number" id="no_hp" name="no_hp" required
                     class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
             dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                    placeholder="Contoh: 6281234567890">
+                    placeholder="Contoh: 081234567890">
             </div>
 
             <!-- Provinsi -->

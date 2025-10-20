@@ -67,10 +67,13 @@ class AkunUserController extends Controller
         $request->validate([
             'username'      => 'required|string|max:255|unique:users,username',
             'password'      => 'required|string|min:8   ',
-            'no_hp'         => 'required|string|max:20',
+            'no_hp'         => ['required', 'regex:/^62\d{9,13}$/'],
             'perumahaan_id' => 'required|exists:perumahaan,id',
             'tahap_id'      => 'required|exists:tahap,id',
             'unit_id'       => 'required|exists:unit,id',
+        ],[
+            // === Pesan custom ===
+            'no_hp.regex' => 'Nomor HP harus diawali dengan 62 dan berisi 9-13 digit setelahnya.',
         ]);
 
         DB::beginTransaction();

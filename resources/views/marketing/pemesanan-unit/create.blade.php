@@ -256,7 +256,7 @@
             @include('marketing.pemesanan-unit.partials.sistem-pembayaran')
 
             {{-- Cara Pembayaran --}}
-            @include('marketing.pemesanan-unit.partials.cara-pembayara')
+            @include('marketing.pemesanan-unit.partials.cara-pembayaraan')
 
             <!-- Pesan kosong sebelum memilih akun user - bookign maka cara bayar tidak akan tampil -->
             <div x-show="!hasSelected" x-transition.opacity
@@ -296,83 +296,6 @@
     {{-- js  --}}
     <script>
         document.addEventListener('alpine:init', () => {
-            // Alpine.data('bookingForm', () => ({
-            //     customers: @json($customersData),
-            //     selectedCustomerId: '',
-            //     selectedCustomer: null,
-            //     jumlahCicilan: '',
-            //     minimalDp: '',
-            //     angsuranList: [],
-
-            //     setCustomer(id) {
-            //         this.selectedCustomerId = id;
-            //         this.selectedCustomer = this.customers.find(c => c.id == id) || null;
-
-            //         if (this.selectedCustomer && this.selectedCustomer.booking.perumahaan_id) {
-            //             this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
-            //         } else {
-            //             this.jumlahCicilan = '';
-            //             this.minimalDp = '';
-            //             this.angsuranList = [];
-            //         }
-            //     },
-
-            //     async fetchSettingPpjb(perumahaanId) {
-            //         try {
-            //             const res = await fetch(`api/setting-cara-bayar/${perumahaanId}`);
-            //             const data = await res.json();
-
-            //             if (data) {
-            //                 const jumlah = parseInt(data.data.jumlah_cicilan) || 0;
-            //                 this.jumlahCicilan = jumlah + ' x';
-            //                 this.minimalDp = data.data.minimal_dp;
-
-            //                 // 🔹 Generate angsuran otomatis
-            //                 this.generateAngsuran(jumlah);
-            //             } else {
-            //                 this.jumlahCicilan = 'Tidak ada data';
-            //                 this.minimalDp = '';
-            //                 this.angsuranList = [];
-            //             }
-            //         } catch (error) {
-            //             console.error(error);
-            //             this.jumlahCicilan = 'Gagal memuat data';
-            //             this.angsuranList = [];
-            //         }
-            //     },
-
-            //     generateAngsuran(jumlah) {
-            //         const today = new Date();
-            //         this.angsuranList = [];
-
-            //         for (let i = 0; i < jumlah; i++) {
-            //             const tanggal = new Date(today);
-            //             tanggal.setMonth(today.getMonth() + i); // geser per bulan
-
-            //             const formatted = tanggal.toISOString().split('T')[0];
-            //             this.angsuranList.push({
-            //                 tanggal: formatted,
-            //                 nominal: '',
-            //             });
-            //         }
-            //     },
-
-            //     initSelect2() {
-            //         const self = this;
-            //         const select = $('#selectUser');
-
-            //         select.select2({
-            //             theme: 'bootstrap4',
-            //             width: '100%',
-            //             placeholder: "Cari dan pilih akun customer...",
-            //             allowClear: true
-            //         });
-
-            //         select.on('change', function() {
-            //             self.setCustomer(this.value);
-            //         });
-            //     }
-            // }));
 
             Alpine.data('bookingForm', () => ({
                 customers: @json($customersData),

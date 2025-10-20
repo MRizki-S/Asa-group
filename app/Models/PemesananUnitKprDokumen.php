@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use App\Models\MasterKprDokumen;
 use App\Models\PemesananUnitKpr;
 use Illuminate\Database\Eloquent\Model;
@@ -25,4 +26,9 @@ class PemesananUnitKprDokumen extends Model
     public function masterDokumen() {
         return $this->belongsTo(MasterKprDokumen::class, 'master_kpr_dokumen_id');
     }
+
+    public function updatedBy()
+{
+    return $this->belongsTo(User::class, 'updated_by');
+}
 }

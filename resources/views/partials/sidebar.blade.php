@@ -332,7 +332,7 @@
 
                     <!-- Menu Item Manage Pemesanan -->
                     <li>
-                        <a href="" @click="selected = (selected === 'ManagePemesanan' ? '':'ManagePemesanan')"
+                        <a href="/marketing/manage-pemesanan" @click="selected = (selected === 'ManagePemesanan' ? '':'ManagePemesanan')"
                             class="menu-item group"
                             :class="(selected === 'ManagePemesanan') && (page === 'ManagePemesanan') ? 'menu-item-active' :
                             'menu-item-inactive'">
@@ -396,7 +396,7 @@
 
                                 {{-- Pengajuan Pembatalan --}}
                                 <li>
-                                    <a href="" class="menu-dropdown-item group"
+                                    <a href="/marketing/pengajuan-pemesanan" class="menu-dropdown-item group"
                                         :class="page === 'PengajuanPemesanan' ? 'menu-dropdown-item-active' :
                                             'menu-dropdown-item-inactive'">
                                         Pengajuan Pemesanan

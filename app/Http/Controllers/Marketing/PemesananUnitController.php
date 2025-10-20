@@ -42,10 +42,18 @@ class PemesananUnitController extends Controller
             : $user->perumahaan_id;
 
         // Ambil booking yang masih aktif dan belum diforward ke pemesanan unit
-        $bookings = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
+        $query = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
             ->where('status', 'active')
-            ->whereDoesntHave('user.pemesananSebagaiCustomer') // belum punya pemesanan_unit
-            ->get();
+            ->whereDoesntHave('user.pemesananSebagaiCustomer'); // belum punya pemesanan_unit
+                                                            // ->get();
+
+        // 🧩 Jika yang login adalah sales → tampilkan hanya booking miliknya
+        if ($user->hasRole('Sales')) {
+            $query->where('sales_id', Auth::id());
+        }
+
+        // Eksekusi query
+        $bookings = $query->get();
 
         // Map data agar mudah dipakai di view
         $customersData = $bookings->map(function ($b) {
@@ -133,7 +141,7 @@ class PemesananUnitController extends Controller
             'tahap_id'                  => 'required|exists:tahap,id',
             'unit_id'                   => 'required|exists:unit,id',
             'nama_pribadi'              => 'required|string|max:255',
-            'no_hp'                     => ['required', 'regex:/^62\d{9,13}$/'], // harus awalan 62
+            'no_hp'                     => 'required',
             'provinsi_code'             => 'required|string',
             'provinsi_nama'             => 'required|string',
             'kota_code'                 => 'required|string',
@@ -149,7 +157,7 @@ class PemesananUnitController extends Controller
 
             // === FIELD CASH (wajib jika cara_bayar = cash) ===
             'cash_harga_rumah'          => 'required_if:cara_bayar,cash|min:0',
-            'cash_luas_kelebihan'      => 'required_if:cara_bayar,cash',
+            'cash_luas_kelebihan'       => 'required_if:cara_bayar,cash',
             'cash_nominal_kelebihan'    => 'required_if:cara_bayar,cash|numeric|min:0',
             'cash_harga_jadi'           => 'required_if:cara_bayar,cash|numeric|min:0',
 
@@ -170,8 +178,7 @@ class PemesananUnitController extends Controller
             'tanggal_angsuran.*'        => 'required|date',
             'nominal_angsuran.*'        => 'required|numeric|min:0',
         ], [
-            // === Pesan custom ===
-            'no_hp.regex' => 'Nomor HP harus diawali dengan 62 dan berisi 9-13 digit setelahnya.',
+
             'required_if' => 'Field :attribute wajib diisi jika cara bayar adalah :value.',
         ]);
 
@@ -254,7 +261,7 @@ class PemesananUnitController extends Controller
                 $cash = PemesananUnitCash::create([
                     'pemesanan_unit_id' => $pemesanan->id,
                     'harga_rumah'       => $request->cash_harga_rumah,
-                    'luas_kelebihan'   => $unit->luas_kelebihan ?? null,
+                    'luas_kelebihan'    => $unit->luas_kelebihan ?? null,
                     'nominal_kelebihan' => $unit->nominal_kelebihan ?? null,
                     'harga_jadi'        => $request->cash_harga_jadi,
                 ]);
@@ -296,11 +303,10 @@ class PemesananUnitController extends Controller
             // update status unit menjadi sold
             $unit->update(['status_unit' => 'sold']);
 
-
             // ✅ Commit transaksi
             DB::commit();
 
-             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');
+            return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');
         } catch (\Exception $e) {
             // ❌ Rollback jika gagal
             DB::rollBack();

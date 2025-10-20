@@ -16,9 +16,5 @@ class PemesananUnitCaraBayar extends Model
     public function pemesananUnit() {
         return $this->belongsTo(PemesananUnit::class);
     }
-
-    public function cicilan() {
-        return $this->hasMany(PemesananUnitCicilan::class);
-    }
 }
 

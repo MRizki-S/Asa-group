@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use App\Models\PemesananUnitCash;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,12 @@ class PemesananUnitCashDokumen extends Model
 
     public function cash() {
         return $this->belongsTo(PemesananUnitCash::class, 'pemesanan_unit_cash_id');
+    }
+
+      // 🔗 Relasi ke User (yang terakhir mengupdate)
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }
 
