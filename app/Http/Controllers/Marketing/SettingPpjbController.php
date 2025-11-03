@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\marketing;
+namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
 use App\Models\PpjbCaraBayar;
@@ -41,10 +41,17 @@ class SettingPpjbController extends Controller
             ->first();
 
         // Ambil Cara Bayar aktif
-        $caraBayar = PpjbCaraBayar::with(['pengaju', 'approver'])
+         $caraBayarKpr = PpjbCaraBayar::with(['pengaju', 'approver'])
             ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('jenis_pembayaran', 'KPR')
             ->where('status_aktif', 1)
             ->first();
+
+        $caraBayarCash = PpjbCaraBayar::with(['pengaju', 'approver'])
+            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('jenis_pembayaran', 'CASH')
+            ->where('status_aktif', 1)
+            ->get();
         // dd($caraBayar);
 
         $keterlambatanPPJB = PpjbKeterlambatan::with(['pengaju', 'approver'])
@@ -63,7 +70,8 @@ class SettingPpjbController extends Controller
             'promoCash'         => $promoCash,
             'promoKpr'          => $promoKpr,
             'mutu'              => $mutu,
-            'caraBayar'         => $caraBayar,
+            'caraBayarCash'         => $caraBayarCash,
+            'caraBayarKpr'       => $caraBayarKpr,
             'keterlambatanPPJB' => $keterlambatanPPJB,
             'pembatalanPPJB'=> $pembatalanPPJB,
             'breadcrumbs'       => [

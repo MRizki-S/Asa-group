@@ -22,12 +22,20 @@ use App\Models\PpjbPembatalan;
 use App\Models\PpjbPromoBatch;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PemesananUnitController extends Controller
 {
+
+    protected NotificationGroupService $notificationGroup;
+
+    public function __construct(NotificationGroupService $notificationGroup)
+    {
+        $this->notificationGroup = $notificationGroup;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -47,8 +55,8 @@ class PemesananUnitController extends Controller
             ->whereDoesntHave('user.pemesananSebagaiCustomer'); // belum punya pemesanan_unit
                                                             // ->get();
 
-        // 🧩 Jika yang login adalah sales → tampilkan hanya booking miliknya
-        if ($user->hasRole('Sales')) {
+        // 🧩 Jika yang login adalah selain Super Admin → tampilkan hanya booking miliknya
+        if (! $user->hasRole('Super Admin')) {
             $query->where('sales_id', Auth::id());
         }
 
@@ -142,6 +150,8 @@ class PemesananUnitController extends Controller
             'unit_id'                   => 'required|exists:unit,id',
             'nama_pribadi'              => 'required|string|max:255',
             'no_hp'                     => 'required',
+            'no_ktp'                    => 'required',
+            'pekerjaan'                 => 'required',
             'provinsi_code'             => 'required|string',
             'provinsi_nama'             => 'required|string',
             'kota_code'                 => 'required|string',
@@ -225,6 +235,8 @@ class PemesananUnitController extends Controller
                 'pemesanan_unit_id' => $pemesanan->id,
                 'nama_pribadi'      => $request->nama_pribadi,
                 'no_hp'             => $request->no_hp,
+                'no_ktp'            => $request->no_ktp,
+                'pekerjaan'         => $request->pekerjaan,
                 'provinsi_code'     => $request->provinsi_code,
                 'provinsi_nama'     => $request->provinsi_nama,
                 'kota_code'         => $request->kota_code,
@@ -301,10 +313,42 @@ class PemesananUnitController extends Controller
             }
 
             // update status unit menjadi sold
-            $unit->update(['status_unit' => 'sold']);
+            // $unit->update(['status_unit' => 'sold']);
 
             // ✅ Commit transaksi
             DB::commit();
+
+            // Kirim notifikasi ke grup WhatsApp Marketing ASA
+            // Ambil group ID dari .env
+            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ASA');
+            $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
+            $namaTahap     = $unit->tahap->nama_tahap ?? '-';
+            $namaUnit      = $unit->nama_unit ?? '-';
+
+            // Tentukan panjang maksimum label agar sejajar
+            $pad = 12;
+
+            $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
+            $namaTahap     = $unit->tahap->nama_tahap ?? '-';
+            $namaUnit      = $unit->nama_unit ?? '-';
+
+            $messageGroup =
+            "🛎️ *Pengajuan Pemesanan Unit Baru*\n\n" .
+            "```\n" .
+            "Sales       : {$sales->nama_lengkap}\n" .
+            "Customer    : {$request->nama_pribadi}\n" .
+            "Perumahan   : {$namaPerumahan}\n" .
+            "Tahap       : {$namaTahap}\n" .
+            "Unit        : {$namaUnit}\n" .
+            "Cara Bayar  : " . strtoupper($request->cara_bayar) . "\n" .
+                "Status      : Pending\n" .
+                "```\n\n" .
+                "Menunggu persetujuan admin KPR 🕓";
+
+            // Kirim ke group
+            // if ($groupId) {
+            //     $this->notificationGroup->send($groupId, $messageGroup);
+            // }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');
         } catch (\Exception $e) {

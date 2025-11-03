@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username');      // login pakai username
-            $table->string('no_hp')->unique();         // login pakai no_hp juga bisa
+             $table->string('nama_lengkap')->nullable();
+            $table->string('username')->unique();      // login pakai username
+            $table->string('no_hp');         // login pakai no_hp juga bisa
             $table->string('password');                // password hashed
             $table->string('slug')->unique();          // slug manual / auto dari model
             $table->enum('type', ['karyawan', 'customer']); // pembeda user

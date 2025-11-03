@@ -3,6 +3,10 @@
 @section('pageActive', 'AkunUser')
 
 @section('content')
+    {{-- select 2  --}}
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
+
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb -->
@@ -42,20 +46,86 @@
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <!-- Nama Lengkap -->
+                        <div>
+                            <label for="nama_lengkap" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Nama Lengkap <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="nama_lengkap" name="nama_lengkap" required
+                                value="{{ old('nama_lengkap') }}" placeholder="Input Nama Lengkap"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                               dark:bg-gray-700 dark:text-white
+                               @error('nama_lengkap') border-red-500 @else border-gray-300 @enderror">
+                            @error('nama_lengkap')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- No WhatsApp -->
+                        <div>
+                            <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                No WhatsApp <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="no_hp" name="no_hp" required value="{{ old('no_hp') }}"
+                                placeholder="Contoh: 628123456789"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                            dark:bg-gray-700 dark:text-white
+                            @error('no_hp') border-red-500 @else border-gray-300 @enderror">
+                            <p class="text-xs text-gray-500 mt-1">Gunakan awalan <span
+                                    class="font-medium text-blue-600">62</span> untuk mengganti angka 0</p>
+
+                            @error('no_hp')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+
                         <!-- Username -->
                         <div>
                             <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Username <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="username" name="username" required value="{{ old('username') }}"
-                                placeholder="Input username"
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                               dark:bg-gray-700 dark:text-white
-                               @error('username') border-red-500 @else border-gray-300 @enderror">
+
+                            <div class="relative">
+                                <input type="text" id="username" name="username" required value="{{ old('username') }}"
+                                    placeholder="Input username unik"
+                                    class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 pr-10
+                   focus:ring-blue-500 focus:border-blue-500
+                   dark:bg-gray-700 dark:text-white
+                   @error('username') border-red-500 @else border-gray-300 @enderror">
+
+                                <!-- Icon unik di kanan input -->
+                                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-300"
+                                    fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 4v1m0 14v1m8-8h1M4 12H3m15.364-6.364l.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707" />
+                                </svg>
+                            </div>
+
+                            <!-- Pesan kecil tentang keunikan -->
+                            <div
+                                class="mt-2 flex items-start gap-2 text-sm text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 flex-shrink-0"
+                                    fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-9 1V7h2v4H9zm0 2h2v2H9v-2z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <p>
+                                    Username harus <strong>unik</strong>.
+                                    Disarankan menambahkan angka atau huruf acak, misalnya dari
+                                    <strong>angka belakang nomor HP</strong> atau kombinasi kecil seperti
+                                    <code>-24x</code> agar tidak sama dengan pengguna lain.
+                                </p>
+                            </div>
+
                             @error('username')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
+
 
                         <!-- Password -->
                         <div>
@@ -89,25 +159,6 @@
 
                             <!-- Alert error kalau validasi gagal -->
                             @error('password')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-
-                        <!-- No WhatsApp -->
-                        <div>
-                            <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                No WhatsApp <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" id="no_hp" name="no_hp" required value="{{ old('no_hp') }}"
-                                placeholder="Contoh: 628123456789"
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                            dark:bg-gray-700 dark:text-white
-                            @error('no_hp') border-red-500 @else border-gray-300 @enderror">
-                            <p class="text-xs text-gray-500 mt-1">Gunakan awalan <span
-                                    class="font-medium text-blue-600">62</span> untuk mengganti angka 0</p>
-
-                            @error('no_hp')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -178,12 +229,22 @@
                         </div>
 
                         <!-- Select Unit -->
-                        <div>
+                        <div x-data x-init="$watch('unit', () => {
+                            // Re-initialize Select2 setelah unit di-update
+                            $nextTick(() => {
+                                const el = document.querySelector('#unitSelect');
+                                    if (el) {
+                                        $(el).select2({
+                                            theme: 'bootstrap4',
+                                            placeholder: 'Cari atau pilih unit',
+                                            width: '100%',
+                                        });
+                                    }
+                                });
+                            });">
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit</label>
-                            <select name="unit_id" required
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                                       dark:bg-gray-700 dark:text-white
-                                       @error('unit_id') border-red-500 @else border-gray-300 @enderror">
+                            <select id="unitSelect" name="unit_id" required
+                                class="select-unit  w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5">
                                 <option value="">Pilih Unit</option>
                                 <template x-for="u in unit" :key="u.id">
                                     <option :value="u.id" x-text="u.nama_unit"></option>
@@ -193,7 +254,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
                     </div>
                 </div>
             </div>

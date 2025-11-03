@@ -202,6 +202,24 @@
                                 class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600">
                         </div>
 
+                        <!-- Nomor KTP -->
+                        <div>
+                            <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                No KTP <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" readonly value="{{ $pengajuan->dataDiri->no_ktp ?? '-' }}"
+                                class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                        </div>
+
+                        <!-- Pekerjaan -->
+                        <div>
+                            <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Pekerjaan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" readonly value="{{ $pengajuan->dataDiri->pekerjaan ?? '-' }}"
+                                class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                        </div>
+
                         {{-- Provinsi --}}
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -563,31 +581,34 @@
             </div>
 
             {{-- button aksi tolak & approve --}}
-            <div class="flex justify-end gap-3">
-                <!-- Tombol Tolak -->
-                <form action="{{ route('marketing.pengajuanPemesanan.reject', $pengajuan->id) }}" method="POST"
-                    class="tolak-form">
-                    @csrf
-                    @method('PATCH')
-                    <button type="button"
-                        class="tolak-btn px-4 py-2 text-sm font-medium text-gray-800 bg-gray-300 rounded-lg shadow-md
-                   hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
-                        Tolak
-                    </button>
-                </form>
+            @unlessrole('Sales')
+                <div class="flex justify-end gap-3">
+                    <!-- Tombol Tolak -->
+                    <form action="{{ route('marketing.pengajuanPemesanan.reject', $pengajuan->id) }}" method="POST"
+                        class="tolak-form">
+                        @csrf
+                        @method('PATCH')
+                        <button type="button"
+                            class="tolak-btn px-4 py-2 text-sm font-medium text-gray-800 bg-gray-300 rounded-lg shadow-md
+                    hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
+                            Tolak
+                        </button>
+                    </form>
 
-                <!-- Tombol Approve -->
-                <form action="{{ route('marketing.pengajuanPemesanan.approve', $pengajuan->id) }}" method="POST"
-                    class="approve-form">
-                    @csrf
-                    @method('PATCH')
-                    <button type="button"
-                        class="approve-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md
-                   hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
-                        Acc / Approve
-                    </button>
-                </form>
-            </div>
+                    <!-- Tombol Approve -->
+                    <form action="{{ route('marketing.pengajuanPemesanan.approve', $pengajuan->id) }}" method="POST"
+                        class="approve-form">
+                        @csrf
+                        @method('PATCH')
+                        <button type="button"
+                            class="approve-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md
+                    hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
+                            Acc / Approve
+                        </button>
+                    </form>
+                </div>
+            @endunlessrole
+
 
 
         </div>

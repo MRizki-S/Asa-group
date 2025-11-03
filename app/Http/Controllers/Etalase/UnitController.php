@@ -188,9 +188,29 @@ class UnitController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($perumahaanSlug, $unitId)
     {
-        //
+        // Ambil perumahaan berdasarkan slug
+        $perumahaan = Perumahaan::where('slug', $perumahaanSlug)->firstOrFail();
+
+        // Ambil unit beserta relasi pentingnya
+        $unit = Unit::with([
+            'perumahaan',
+            'tahap.kualifikasiBlok',
+            'blok',
+            'type',
+            'tahapKualifikasi.kualifikasiBlok',
+        ])->findOrFail($unitId);
+// dd($unit);  
+        return view('Etalase.unit.showUnit', [
+            'perumahaan'  => $perumahaan,
+            'unit'        => $unit,
+            'breadcrumbs' => [
+                ['label' => $perumahaan->nama_perumahaan, 'url' => route('unit.indexGlobal')],
+                ['label' => 'List Unit', 'url' => route('unit.index', $perumahaan->slug)],
+                ['label' => 'Detail Unit', 'url' => '#'],
+            ],
+        ]);
     }
 
     /**

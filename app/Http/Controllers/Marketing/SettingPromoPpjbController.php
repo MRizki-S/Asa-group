@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\marketing;
+namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
 use App\Models\Perumahaan;

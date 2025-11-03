@@ -6,6 +6,7 @@
 
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
+
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb -->
@@ -145,112 +146,6 @@
 
             {{-- Data Diri Users --}}
             @include('marketing.pemesanan-unit.partials.data-diri')
-
-
-            {{-- Opsional -> Pindah Unit --}}
-            {{-- <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
-                <div class="px-5 py-4 sm:px-6 sm:py-5">
-                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
-                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                            Pindah Unit
-                        </h3>
-                        <div
-                            class="flex items-center gap-2 bg-yellow-50 text-yellow-800 text-sm px-3 py-1.5 rounded-md border border-yellow-300 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-600" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v2m0 4h.01m-.01-10a9 9 0 100 18 9 9 0 000-18z" />
-                            </svg>
-                            <span>Kosongkan pilihan di bawah ini jika unit tetap sama dengan booking unit</span>
-                        </div>
-                    </div>
-
-                    <div x-data="{
-                        tahap: [],
-                        unit: [],
-                        async fetchTahap(perumahaanSlug) {
-                            if (!perumahaanSlug) {
-                                this.tahap = [];
-                                this.unit = [];
-                                return
-                            }
-                            const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/tahap-json`);
-                            if (res.ok) this.tahap = await res.json();
-                        },
-                        async fetchUnit(tahapId) {
-                            if (!tahapId) { this.unit = []; return }
-                            const res = await fetch(`/etalase/tahap/${tahapId}/unit-json`);
-                            if (res.ok) this.unit = await res.json();
-                        }
-                    }" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                        <!-- Select Perumahaan -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Perumahaan (Tujuan)
-                            </label>
-                            <select name="perumahaan_id_pindah"
-                                @change="
-                        fetchTahap($event.target.options[$event.target.selectedIndex].getAttribute('data-slug'));
-                        unit = [];
-                    "
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                           dark:bg-gray-700 dark:text-white
-                           @error('perumahaan_id_pindah') border-red-500 @else border-gray-300 @enderror">
-                                <option value="">Pilih Perumahaan</option>
-                                @foreach ($allPerumahaan as $p)
-                                    <option value="{{ $p->id }}" data-slug="{{ $p->slug }}"
-                                        {{ old('perumahaan_id_pindah') == $p->id ? 'selected' : '' }}>
-                                        {{ $p->nama_perumahaan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('perumahaan_id_pindah')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Select Tahap -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Tahap (Tujuan)
-                            </label>
-                            <select name="tahap_id_pindah" @change="fetchUnit($event.target.value)"
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                           dark:bg-gray-700 dark:text-white
-                           @error('tahap_id_pindah') border-red-500 @else border-gray-300 @enderror">
-                                <option value="">Pilih Tahap</option>
-                                <template x-for="t in tahap" :key="t.id">
-                                    <option :value="t.id" x-text="t.nama_tahap"></option>
-                                </template>
-                            </select>
-                            @error('tahap_id_pindah')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Select Unit -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Unit (Tujuan)
-                            </label>
-                            <select name="unit_id_pindah"
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                           dark:bg-gray-700 dark:text-white
-                           @error('unit_id_pindah') border-red-500 @else border-gray-300 @enderror">
-                                <option value="">Pilih Unit</option>
-                                <template x-for="u in unit" :key="u.id">
-                                    <option :value="u.id" x-text="u.nama_unit"></option>
-                                </template>
-                            </select>
-                            @error('unit_id_pindah')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                    </div>
-                </div>
-            </div> --}}
 
             {{-- Sistem Pembayaran --}}
             @include('marketing.pemesanan-unit.partials.sistem-pembayaran')
@@ -392,10 +287,6 @@
                     });
                 }
             }));
-
-
-
-
 
             // wilayahForm.js (bisa inline di dalam <script> atau file terpisah)
             Alpine.data('wilayahForm', () => ({

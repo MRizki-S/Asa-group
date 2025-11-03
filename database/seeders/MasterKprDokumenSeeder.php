@@ -67,9 +67,10 @@ class MasterKprDokumenSeeder extends Seeder
             'SERTIF',
             'PBB',
             'PBG',
-            'AIR',
+            'UJI LAB AIR',
             'SITEPLAN',
             'BROSUR + PL',
+            'SPR',
         ];
 
         $banks = MasterBank::all();

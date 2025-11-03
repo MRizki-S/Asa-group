@@ -52,16 +52,22 @@
                                 <th class="px-4 py-3 w-[200px]">Nama User</th>
                                 <th class="px-4 py-3">Unit</th>
                                 <th class="px-4 py-3">Nama Sales</th>
-                                <th class="px-4 py-3 text-center">PPJB</th>
+                                @hasrole('Admin KPR')
+                                    <th class="px-4 py-3 text-center">PPJB</th>
+                                @endrole('Admin KPR')
                                 <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
                                 <th class="px-4 py-3">Bank</th>
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3 text-center">Status KPR</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
-                                <th class="px-4 py-3 text-center">Update Data KPR</th>
+                                @hasrole('Admin KPR')
+                                    <th class="px-4 py-3 text-center">Update Data KPR</th>
+                                @endrole
                                 <th class="px-4 py-3 text-center">Rincian Tagihan</th>
-                                <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                <th class="px-4 py-3 text-center">Pengajuan Pindah Blok</th>
+                                @hasrole('Sales')
+                                    <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
+                                    <th class="px-4 py-3 text-center">Pengajuan Pindah Unit</th>
+                                @endrole
                             </tr>
                         </thead>
 
@@ -71,14 +77,18 @@
                                     <td class="px-4 py-2 font-medium text-gray-800 dark:text-white truncate max-w-[200px]">
                                         {{ $item->customer->username ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-2">{{ $item->unit->nama_unit ?? '-' }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
-                                    <td class="px-4 py-2 text-center">
-                                        <a href="#"
-                                            class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
-                                            PDF
-                                        </a>
-                                    </td>
+                                    @hasrole('Admin KPR')
+
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('ppjbKPR.export.word', $item->id) }}"
+                                                class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
+                                                PPJB
+                                            </a>
+                                        </td>
+                                    @endrole
+
                                     <td class="px-4 py-2 text-center">
                                         <span class="text-gray-600">{{ $item->kelengkapan_berkas }}</span>
                                     </td>
@@ -108,17 +118,31 @@
                                             {{ ucfirst($item->kpr->status_kpr ?? '-') }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2">{{ ucfirst($item->status_pemesanan ?? '-') }}</td>
-
-                                    {{-- 🔵 Update Data KPR --}}
                                     <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.kelengkapanBerkasKpr.editKpr', $item->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition whitespace-nowrap">
-                                            <i class="ri-edit-line"></i>
-                                            <span>Update Data</span>
-                                        </a>
-
+                                        @php
+                                            $status = $item->status_pemesanan ?? '-';
+                                            $classes = match ($status) {
+                                                'proses' => 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded',
+                                                'LPA' => 'bg-blue-100 text-blue-800 px-2 py-1 rounded',
+                                                'serah_terima' => 'bg-green-100 text-green-800 px-2 py-1 rounded',
+                                                default => 'bg-gray-100 text-gray-600 px-2 py-1 rounded',
+                                            };
+                                        @endphp
+                                        <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
                                     </td>
+
+
+
+                                    @hasrole('Admin KPR')
+                                        {{-- 🔵 Update Data KPR --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.kelengkapanBerkasKpr.editKpr', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition whitespace-nowrap">
+                                                <i class="ri-edit-line"></i>
+                                                <span>Update Data</span>
+                                            </a>
+                                        </td>
+                                    @endrole
 
                                     {{-- 🟢 Rincian Tagihan --}}
                                     <td class="px-4 py-2 text-center">
@@ -129,21 +153,28 @@
                                     </td>
 
 
-                                    {{-- 🔴 Pengajuan Pembatalan --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <button
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
-                                            <i class="ri-close-circle-line"></i> Pembatalan
-                                        </button>
-                                    </td>
+                                    @hasrole('Sales')
+                                        {{-- 🔴 Pengajuan Pembatalan --}}
+                                         <td class="px-4 py-2 text-center">
+                                            <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
+                                                data-id="{{ $item->id }}"
+                                                data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
+                                                data-nama-user="{{ $item->customer->username ?? '-' }}"
+                                                data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
+                                                data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
+                                                <i class="ri-close-circle-line"></i> Pembatalan
+                                            </button>
+                                        </td>
 
-                                    {{-- 🟡 Pengajuan Pindah Blok --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <button
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
-                                            <i class="ri-repeat-line"></i> Pindah Blok
-                                        </button>
-                                    </td>
+                                        {{-- 🟡 Pengajuan Pindah Unit --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <button
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
+                                                <i class="ri-repeat-line"></i> Pindah Unit
+                                            </button>
+                                        </td>
+                                    @endrole
 
                                 </tr>
                             @endforeach
@@ -172,14 +203,20 @@
                                 <th class="px-4 py-3 w-[200px]">Nama User</th>
                                 <th class="px-4 py-3">Unit</th>
                                 <th class="px-4 py-3">Nama Sales</th>
-                                <th class="px-4 py-3 text-center">PPJB</th>
+                                @hasrole('Admin KPR')
+                                    <th class="px-4 py-3 text-center">PPJB</th>
+                                @endrole
                                 <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
-                                <th class="px-4 py-3 text-center">Update Data Cash</th>
+                                @hasrole('Admin KPR')
+                                    <th class="px-4 py-3 text-center">Update Data Cash</th>
+                                @endrole
                                 <th class="px-4 py-3 text-center">Rincian Tagihan</th>
-                                <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                <th class="px-4 py-3 text-center">Pengajuan Pindah Blok</th>
+                                @hasrole('Sales')
+                                    <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
+                                    <th class="px-4 py-3 text-center">Pengajuan Pindah Unit</th>
+                                @endrole
                             </tr>
                         </thead>
 
@@ -189,27 +226,42 @@
                                     <td class="px-4 py-2 font-medium text-gray-800 dark:text-white truncate max-w-[200px]">
                                         {{ $item->customer->username ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-2">{{ $item->unit->nama_unit ?? '-' }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
-                                    <td class="px-4 py-2 text-center">
-                                        <a href="#"
-                                            class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
-                                            PDF
-                                        </a>
-                                    </td>
+                                    @hasrole('Admin KPR')
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
+                                                class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
+                                                PDF
+                                            </a>
+                                        </td>
+                                    @endrole
                                     <td class="px-4 py-2 text-center">
                                         <span class=text-gray-600">{{ $item->kelengkapan_berkas ?? 0 }}</span>
                                     </td>
                                     <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? 0 }}%</td>
-                                    <td class="px-4 py-2">{{ ucfirst($item->status_pemesanan ?? '-') }}</td>
-
-                                    {{-- 🔵 Update Data Cash --}}
                                     <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
-                                            <i class="ri-edit-line"></i> Update Data
-                                        </a>
+                                        @php
+                                            $status = $item->status_pemesanan ?? '-';
+                                            $classes = match ($status) {
+                                                'proses' => 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded',
+                                                'LPA' => 'bg-blue-100 text-blue-800 px-2 py-1 rounded',
+                                                'serah_terima' => 'bg-green-100 text-green-800 px-2 py-1 rounded',
+                                                default => 'bg-gray-100 text-gray-600 px-2 py-1 rounded',
+                                            };
+                                        @endphp
+                                        <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
                                     </td>
+
+                                    @hasrole('Admin KPR')
+                                        {{-- 🔵 Update Data Cash --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
+                                                <i class="ri-edit-line"></i> Update Data
+                                            </a>
+                                        </td>
+                                    @endrole
 
 
                                     {{-- 🟢 Rincian Tagihan --}}
@@ -220,21 +272,29 @@
                                         </button>
                                     </td>
 
-                                    {{-- 🔴 Pengajuan Pembatalan --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <button
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
-                                            <i class="ri-close-circle-line"></i> Pembatalan
-                                        </button>
-                                    </td>
+                                    @hasrole('Sales')
+                                        {{-- 🔴 Pengajuan Pembatalan --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
+                                                data-id="{{ $item->id }}"
+                                                data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
+                                                data-nama-user="{{ $item->customer->username ?? '-' }}"
+                                                data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
+                                                data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
+                                                <i class="ri-close-circle-line"></i> Pembatalan
+                                            </button>
+                                        </td>
 
-                                    {{-- 🟡 Pengajuan Pindah Blok --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <button
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
-                                            <i class="ri-repeat-line"></i> Pindah Blok
-                                        </button>
-                                    </td>
+
+                                        {{-- 🟡 Pengajuan Pindah Unit --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
+                                                <i class="ri-repeat-line"></i> Pindah Unit
+                                            </a>
+                                        </td>
+                                    @endrole
 
                                 </tr>
                             @endforeach
@@ -247,6 +307,9 @@
 
     </div>
     <!-- ===== Main Content End ===== -->
+
+
+    @include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
 
     {{-- sweatalert 2 for delete data --}}
     <script>

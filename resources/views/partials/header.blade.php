@@ -1,5 +1,5 @@
 <header x-data="{ menuToggle: false }"
-    class="sticky top-0 z-99999 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
+    class="sticky top-0 z-99998 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
     <div class="flex grow flex-col items-center justify-between lg:flex-row lg:px-6">
         <div
             class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
@@ -219,14 +219,27 @@
                 <!-- Dropdown Start -->
                 <div x-show="dropdownOpen"
                     class="shadow-theme-lg dark:bg-gray-dark absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800">
-                    <div>
-                        <span class="text-theme-sm block font-medium text-gray-700 dark:text-gray-400">
-                            {{ Auth::user()->username }}
-                        </span>
-                        <span class="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
-                            {{ Auth::user()->no_hp }}
-                        </span>
-                    </div>
+                   <div class="p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+            {{ Auth::user()->username }}
+        </span>
+        <span class="text-[10px] text-gray-400 dark:text-gray-500">
+            {{ Auth::user()->type ?? 'User' }}
+        </span>
+    </div>
+
+    <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 leading-tight">
+        {{ Auth::user()->nama_lengkap }}
+    </h3>
+
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        {{ Auth::user()->no_hp }}
+    </p>
+
+    <div class="mt-3 border-t border-gray-100 dark:border-gray-700"></div>
+</div>
+
 
                     <ul class="flex flex-col gap-1 border-b border-gray-200 pt-4 pb-3 dark:border-gray-800">
                         <li>

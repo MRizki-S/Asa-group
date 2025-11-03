@@ -8,9 +8,18 @@ use App\Models\MasterKprDokumen;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\PemesananUnitKprDokumen;
+use App\Services\NotificationPribadiService;
 
 class KelengkapanBerkasKprController extends Controller
 {
+
+    protected NotificationPribadiService $notification;
+
+    public function __construct(NotificationPribadiService $notification)
+    {
+        $this->notification = $notification;
+    }
+
     /**
      * Tampilkan halaman checklist kelengkapan berkas KPR.
      */
@@ -98,6 +107,9 @@ class KelengkapanBerkasKprController extends Controller
                 throw new \Exception('Data KPR tidak ditemukan.');
             }
 
+            // Simpan status lama untuk deteksi perubahan
+            $oldStatus = $kpr->status_kpr;
+
             // 🧩 Cek apakah bank berubah
             $bankBerubah = $request->bank_id != $kpr->bank_id;
 
@@ -149,6 +161,26 @@ class KelengkapanBerkasKprController extends Controller
                             'tanggal_update' => now(),
                             'updated_by'     => auth()->id(),
                         ]);
+                    }
+                }
+
+                // 🔔 Jika status berubah dari bukan "acc" menjadi "acc", kirim pesan ke WA customer
+                if ($oldStatus !== 'acc' && $request->status_kpr === 'acc') {
+                    $customer = $pemesanan->customer;
+                    $bank     = $pemesanan->kpr->bank;
+
+                    if ($customer && $customer->no_hp) {
+                        $namaCustomer = $customer->nama_lengkap ?? 'Customer';
+                        $namaBank     = $bank->nama_bank ?? '-';
+                        $kodeBank     = $bank->kode_bank ?? '-';
+
+                        // Pesan WhatsApp
+                        $messageCustomer = "Bapak/Ibu {$namaCustomer},\n\n"
+                            . "Selamat! Pengajuan KPR Anda pada bank *{$namaBank}* ({$kodeBank}) telah *di-ACC*.\n"
+                            . "Terima kasih telah mempercayakan proses pembelian rumah Anda kepada kami. 😊";
+
+                        // Kirim pesan
+                        $this->notification->sendWhatsApp($customer->no_hp, $messageCustomer);
                     }
                 }
             }

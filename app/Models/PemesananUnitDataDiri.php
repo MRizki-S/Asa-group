@@ -11,7 +11,7 @@ class PemesananUnitDataDiri extends Model
     use HasFactory;
     protected $table = 'pemesanan_unit_data_diri';
     protected $fillable = [
-        'pemesanan_unit_id', 'nama_pribadi', 'no_hp',
+        'pemesanan_unit_id', 'nama_pribadi', 'no_hp', 'no_ktp', 'pekerjaan',
         'provinsi_code', 'provinsi_nama', 'kota_code', 'kota_nama',
         'kecamatan_code', 'kecamatan_nama', 'desa_code', 'desa_nama',
         'rt', 'rw', 'alamat_detail'

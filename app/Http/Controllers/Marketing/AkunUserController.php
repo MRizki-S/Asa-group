@@ -17,19 +17,32 @@ class AkunUserController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    protected function currentPerumahaanId()
+    {
+        $user = Auth::user();
+        return $user->is_global
+            ? session('current_perumahaan_id', null)
+            : $user->perumahaan_id;
+    }
+
     public function index()
     {
+        // 🔹 Ambil ID perumahaan aktif dari session / user
+        $currentPerumahaanId = $this->currentPerumahaanId();
+
         $query = User::where('type', 'customer')
+            ->where('perumahaan_id', $currentPerumahaanId)
             ->with([
                 'booking.unit.perumahaan',
                 'booking.unit.tahap',
                 'booking.unit.blok',
-                'booking.sales', // biar tau sales mana yang bikin
+                'booking.sales', // biar tau siapa sales-nya
             ])
             ->latest();
 
-        // Jika yang login adalah sales, filter data sesuai sales_id
-        if (Auth::user()->hasRole('Sales')) {
+        // 🔸 Filter tambahan jika login adalah Sales atau Manager Pemasaran
+        if (Auth::user()->hasAnyRole(['Sales', 'Manager Pemasaran'])) {
             $query->whereHas('booking', function ($q) {
                 $q->where('sales_id', Auth::id());
             });
@@ -37,10 +50,20 @@ class AkunUserController extends Controller
 
         $akunUser = $query->get();
 
+        // 🔹 Ambil nama perumahaan untuk ditampilkan di breadcrumb
+        $perumahaanName = null;
+        if ($currentPerumahaanId) {
+            $perumahaan     = Perumahaan::find($currentPerumahaanId);
+            $perumahaanName = $perumahaan?->nama_perumahaan;
+        }
+
         return view('marketing.akun-user.index', [
             'akunUser'    => $akunUser,
             'breadcrumbs' => [
-                ['label' => 'Akun User', 'url' => route('marketing.akunUser.index')],
+                [
+                    'label' => 'Akun User' . ($perumahaanName ? ' - ' . $perumahaanName : ''),
+                    'url'   => route('marketing.akunUser.index'),
+                ],
             ],
         ]);
     }
@@ -65,13 +88,14 @@ class AkunUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nama_lengkap' => 'required|string|max:255',
             'username'      => 'required|string|max:255|unique:users,username',
             'password'      => 'required|string|min:8   ',
             'no_hp'         => ['required', 'regex:/^62\d{9,13}$/'],
             'perumahaan_id' => 'required|exists:perumahaan,id',
             'tahap_id'      => 'required|exists:tahap,id',
             'unit_id'       => 'required|exists:unit,id',
-        ],[
+        ], [
             // === Pesan custom ===
             'no_hp.regex' => 'Nomor HP harus diawali dengan 62 dan berisi 9-13 digit setelahnya.',
         ]);
@@ -81,6 +105,7 @@ class AkunUserController extends Controller
         try {
             // 1. Buat akun user (customer)
             $user = User::create([
+                'nama_lengkap'    => $request->nama_lengkap,
                 'username'        => $request->username,
                 'password'        => Hash::make($request->password),
                 'no_hp'           => $request->no_hp,
@@ -181,10 +206,10 @@ class AkunUserController extends Controller
 
             // 3️⃣ Update data booking
             $booking->update([
-                'perumahaan_id'   => $request->perumahaan_id,
-                'sales_id'        => Auth::id(),
-                'tahap_id'        => $request->tahap_id,
-                'unit_id'         => $request->unit_id,
+                'perumahaan_id' => $request->perumahaan_id,
+                'sales_id'      => Auth::id(),
+                'tahap_id'      => $request->tahap_id,
+                'unit_id'       => $request->unit_id,
             ]);
 
             // 4️⃣ Jika unit berubah, ubah statusnya

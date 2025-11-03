@@ -6,6 +6,7 @@ use App\Models\Perumahaan;
 use App\Models\Type;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TypeController extends Controller
 {
@@ -18,22 +19,79 @@ class TypeController extends Controller
     //     $perumahaan = Perumahaan::all();
     //     return view("Etalase.tipe-unit.index", compact('tipeUnits', 'perumahaan'));
     // }
+    protected function currentPerumahaanId()
+    {
+        $user = Auth::user();
+        return $user->is_global
+            ? session('current_perumahaan_id', null)
+            : $user->perumahaan_id;
+    }
+
+    // public function index(Request $request)
+    // {
+    //     $query = Type::with('perumahaan');
+
+    //     if ($request->has('search') && $request->search != '') {
+    //         $query->where('nama_type', 'like', "%{$request->search}%")
+    //             ->orWhereHas('perumahaan', function ($q) use ($request) {
+    //                 $q->where('nama_perumahaan', 'like', "%{$request->search}%");
+    //             });
+    //     }
+
+    //     $tipeUnits  = $query->latest()->paginate(5)->withQueryString();
+    //     $perumahaan = Perumahaan::all();
+
+    //     // kalau request ajax, render partial table saja
+    //     if ($request->ajax()) {
+    //         return view('Etalase.tipe-unit.partials.table', [
+    //             'tipeUnits'   => $tipeUnits,
+    //             'breadcrumbs' => [
+    //                 ['label' => 'Tipe Unit', 'url' => route('tipe-unit.index')],
+    //             ],
+    //         ])->render();
+    //     }
+
+    //     return view("Etalase.tipe-unit.index",
+    //         [
+    //             'tipeUnits'   => $tipeUnits,
+    //             'perumahaan'  => $perumahaan,
+    //             'breadcrumbs' => [
+    //                 ['label' => 'Tipe Unit', 'url' => route('tipe-unit.index')],
+    //             ],
+    //         ]);
+    // }
+
+    /**
+     * Show the form for creating a new resource.
+     */
 
     public function index(Request $request)
     {
+        $perumahaanId = $this->currentPerumahaanId();
+
         $query = Type::with('perumahaan');
 
+        // 🔹 Filter berdasarkan perumahaan_id (kecuali global tanpa session)
+        if ($perumahaanId) {
+            $query->where('perumahaan_id', $perumahaanId);
+        }
+
+        // 🔹 Pencarian nama tipe atau nama perumahaan
         if ($request->has('search') && $request->search != '') {
-            $query->where('nama_type', 'like', "%{$request->search}%")
-                ->orWhereHas('perumahaan', function ($q) use ($request) {
-                    $q->where('nama_perumahaan', 'like', "%{$request->search}%");
-                });
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_type', 'like', "%{$search}%")
+                    ->orWhereHas('perumahaan', function ($p) use ($search) {
+                        $p->where('nama_perumahaan', 'like', "%{$search}%");
+                    });
+            });
         }
 
         $tipeUnits  = $query->latest()->paginate(5)->withQueryString();
         $perumahaan = Perumahaan::all();
 
-        // kalau request ajax, render partial table saja
+        // 🔹 Kalau request AJAX, kirim partial table aja
         if ($request->ajax()) {
             return view('Etalase.tipe-unit.partials.table', [
                 'tipeUnits'   => $tipeUnits,
@@ -43,19 +101,24 @@ class TypeController extends Controller
             ])->render();
         }
 
-        return view("Etalase.tipe-unit.index",
-            [
-                'tipeUnits'  => $tipeUnits,
-                'perumahaan'  => $perumahaan,
-                'breadcrumbs' => [
-                    ['label' => 'Tipe Unit', 'url' => route('tipe-unit.index')],
+        // 🔹 Ambil nama perumahaan untuk breadcrumb
+        $namaPerumahaan = null;
+        if ($perumahaanId) {
+            $namaPerumahaan = Perumahaan::where('id', $perumahaanId)->value('nama_perumahaan');
+        }
+
+        return view('Etalase.tipe-unit.index', [
+            'tipeUnits'   => $tipeUnits,
+            'perumahaan'  => $perumahaan,
+            'breadcrumbs' => [
+                [
+                    'label' => 'Tipe Unit - ' . ($namaPerumahaan ?? '-'),
+                    'url'   => route('tipe-unit.index'),
                 ],
-            ]);
+            ],
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //

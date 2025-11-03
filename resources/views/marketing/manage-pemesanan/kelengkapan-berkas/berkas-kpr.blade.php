@@ -88,7 +88,23 @@
                             </option>
                         @endforeach
                     </select>
+
+                    <!-- ℹ️ Info alert -->
+                    <div
+                        class="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2 text-sm text-blue-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
+                        </svg>
+                        <p>
+                            Jika <span class="font-semibold">status KPR</span> diubah menjadi
+                            <span class="font-semibold text-blue-600">"ACC"</span>, sistem akan
+                            <span class="font-semibold">mengirimkan notifikasi WhatsApp</span> secara otomatis ke customer.
+                        </p>
+                    </div>
                 </div>
+
             </div>
 
 

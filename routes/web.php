@@ -15,7 +15,9 @@ use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
 use App\Http\Controllers\Marketing\ManagePemesananController;
 use App\Http\Controllers\Marketing\PemesananUnitController;
+use App\Http\Controllers\Marketing\PengajuanPembatalanController;
 use App\Http\Controllers\Marketing\PengajuanPemesananController;
+use App\Http\Controllers\Marketing\PindahUnitController;
 use App\Http\Controllers\Marketing\SettingCaraBayarController;
 use App\Http\Controllers\Marketing\SettingKeterlambatanController;
 use App\Http\Controllers\marketing\SettingMutuPpjbController;
@@ -119,17 +121,24 @@ Route::middleware('auth')
 
 // Marketing Group
 Route::middleware('auth')->prefix('marketing')->group(function () {
+
     Route::resource('/akun-user', AkunUserController::class)->names('marketing.akunUser');
 
     Route::resource('/pemesanan-unit', PemesananUnitController::class)->names('marketing.pemesananUnit');
 
     // Route::resource('/manage-pemesanan', ManagePemesananController::class)->names('marketing.managePemesanan');
     Route::prefix('manage-pemesanan')->group(function () {
+        // export ppjb word
+        Route::get('/export/ppjbKPR/{id}', [ManagePemesananController::class, 'exportWordKPR'])
+            ->name('ppjbKPR.export.word');
+        Route::get('/export/ppjbCASH/{id}', [ManagePemesananController::class, 'exportWordCASH'])
+            ->name('ppjbCASH.export.word');
+
         Route::resource('/', ManagePemesananController::class)
             ->names('marketing.managePemesanan');
 
         // kpr pilih bank dulu jika belum ada
-        Route::post('/kelengkapan-berkas-kpr/set-bank/{id}',[KelengkapanBerkasKprController::class, 'setBank'])->name('marketing.managePemesanan.kelengkapanBerkasKpr.setBank');
+        Route::post('/kelengkapan-berkas-kpr/set-bank/{id}', [KelengkapanBerkasKprController::class, 'setBank'])->name('marketing.managePemesanan.kelengkapanBerkasKpr.setBank');
         Route::get('/kelengkapan-berkas-kpr/{id}', [KelengkapanBerkasKprController::class, 'editKpr'])
             ->name('marketing.kelengkapanBerkasKpr.editKpr');
         Route::put('/kelengkapan-berkas-kpr/{id}', [KelengkapanBerkasKprController::class, 'updateKpr'])
@@ -137,14 +146,31 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
 
         Route::get('/kelengkapan-berkas-cash/{id}', [KelengkapanBerkasCashController::class, 'editCash'])->name('marketing.kelengkapanBerkasCash.editCash');
         Route::put('/kelengkapan-berkas-cash/{id}', [KelengkapanBerkasCashController::class, 'updateCash'])->name('marketing.kelengkapanBerkasCash.updateCash');
+
+        // pengajuan pembatalan pemesanan unit
+        Route::post('/pengajuan-pembatalan/store', [PengajuanPembatalanController::class, 'store'])
+            ->name('marketing.pengajuanPembatalan.store');
+
+        // pindah unit route
+        Route::get('/pemesanan/pindah-unit/{id}p', [PindahUnitController::class, 'createPengajuan'])
+            ->name('marketing.pindahUnit.createPengajuan');
+
+        // Route::post('/pemesanan/pindah-unit', [PindahUnitController::class, 'store'])
+        //     ->name('marketing.pemesanan.pindahUnit.store');
     });
 
+    // pengajuan pemesanan unit
     Route::resource('/pengajuan-pemesanan', PengajuanPemesananController::class)->names('marketing.pengajuanPemesanan');
 
     // 🟡 Route tambahan untuk aksi tolak & approve
     Route::patch('/pengajuan-pemesanan/{id}/approve', [PengajuanPemesananController::class, 'approve'])->name('marketing.pengajuanPemesanan.approve');
     Route::patch('/pengajuan-pemesanan/{id}/reject', [PengajuanPemesananController::class, 'reject'])->name('marketing.pengajuanPemesanan.reject');
 
+    // routoe pengajuan pembatalan pemesanan unit
+    Route::get('/pengajuan-pembatalan', [PengajuanPembatalanController::class, 'ListPengajuan'])
+        ->name('marketing.pengajuan-pembatalan.listPengajuan');
+
+    // route setting ppjb
     Route::prefix('/setting')->group(function () {
         // halaman utama setting
         Route::get('/', [SettingPpjbController::class, 'listSettingPPJB'])
@@ -188,6 +214,10 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::post('/cara-bayar', [SettingCaraBayarController::class, 'updatePengajuan'])->name('settingPPJB.caraBayar.updatePengajuan');
         Route::Delete('/cara-bayar/{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])->name('settingPPJB.caraBayar.cancelPengajuanPromo');
         Route::patch('/cara-bayar/{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])->name('settingPPJB.caraBayar.nonAktif');
+        Route::patch('/cara-bayar/{caraBayar}/approve', [SettingCaraBayarController::class, 'approvePengajuanCaraBayar'])
+            ->name('settingPPJB.caraBayar.approve');
+        Route::delete('/cara-bayar/{caraBayar}/reject', [SettingCaraBayarController::class, 'rejectPengajuanCaraBayar'])
+            ->name('settingPPJB.caraBayar.reject');
 
         // Kelola  Keterlambatan Pembayaran
         Route::get('/keterlambatan/edit', [SettingKeterlambatanController::class, 'editKeterlambatan'])->name('settingPPJB.keterlambatan.edit');

@@ -12,7 +12,7 @@ class EtalaseMarketingSeeder extends Seeder
         // 1) Roles (idempotent)
         $roles = [
             'Super Admin',
-            'customer',
+            'customer', 
             'HRD',
             'Admin Umum',
             'Manager Keuangan',

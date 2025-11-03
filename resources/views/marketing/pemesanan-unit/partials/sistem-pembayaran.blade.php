@@ -134,50 +134,47 @@
 
 
         <div x-data="{
-        sbumPemerintah: 4000000,
-        dpRumahInduk: '',
-        nominalKelebihan: 0,
-        hargaTotal: 0,
+            sbumPemerintah: 4000000,
+            dpRumahInduk: '',
+            nominalKelebihan: 0,
+            hargaTotal: 0,
 
-        // Getter numeric
-        get dpRumahIndukNumber() {
-            return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
-        },
-        get totalDpNumber() {
-            return this.dpRumahIndukNumber + (this.nominalKelebihan || 0);
-        },
-        get dpPembeliNumber() {
-            const hasil = this.totalDpNumber - this.sbumPemerintah;
-            return hasil > 0 ? hasil : 0;
-        },
-        get hargaKprNumber() {
-            const total = this.hargaTotal - this.totalDpNumber;
-            return total > 0 ? total : 0;
-        },
+            // Getter numeric
+            get dpRumahIndukNumber() {
+                return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
+            },
+            get totalDpNumber() {
+                return this.dpRumahIndukNumber + (this.nominalKelebihan || 0);
+            },
+            get dpPembeliNumber() {
+                const hasil = this.totalDpNumber - this.sbumPemerintah;
+                return hasil > 0 ? hasil : 0;
+            },
+            get hargaKprNumber() {
+                const total = this.hargaTotal - this.totalDpNumber;
+                return total > 0 ? total : 0;
+            },
 
-        // Getter tampilan
-        get totalDp() {
-            return formatRupiah(this.totalDpNumber.toString());
-        },
-        get dpPembeli() {
-            return formatRupiah(this.dpPembeliNumber.toString());
-        },
-        get hargaKpr() {
-            return formatRupiah(this.hargaKprNumber.toString());
-        },
-        get hargaTotalFormatted() {
-            return formatRupiah(this.hargaTotal.toString());
-        },
+            // Getter tampilan
+            get totalDp() {
+                return formatRupiah(this.totalDpNumber.toString());
+            },
+            get dpPembeli() {
+                return formatRupiah(this.dpPembeliNumber.toString());
+            },
+            get hargaKpr() {
+                return formatRupiah(this.hargaKprNumber.toString());
+            },
+            get hargaTotalFormatted() {
+                return formatRupiah(this.hargaTotal.toString());
+            },
 
-        // Event
-        updateDpRumahInduk(e) {
-            let raw = e.target.value.replace(/\D/g, '');
-            this.dpRumahInduk = formatRupiah(raw);
-        },
-    }"
-
-    x-init="
-        $watch('selectedCustomer', value => {
+            // Event
+            updateDpRumahInduk(e) {
+                let raw = e.target.value.replace(/\D/g, '');
+                this.dpRumahInduk = formatRupiah(raw);
+            },
+        }" x-init="$watch('selectedCustomer', value => {
             if (value?.booking) {
                 hargaTotal = parseInt((value.booking.harga_final || 0).toString().split('.')[0]);
                 nominalKelebihan = parseInt((value.booking.nominal_kelebihan || 0).toString().split('.')[0]);
@@ -187,127 +184,125 @@
         if (selectedCustomer?.booking) {
             hargaTotal = parseInt((selectedCustomer.booking.harga_final || 0).toString().split('.')[0]);
             nominalKelebihan = parseInt((selectedCustomer.booking.nominal_kelebihan || 0).toString().split('.')[0]);
-        }
-    "
-    class="space-y-5">
+        }" class="space-y-5">
 
-    <!-- Info SBUM Pemerintah -->
-    <div
-        class="mt-3 flex items-center gap-3 px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50
+            <!-- Info SBUM Pemerintah -->
+            <div
+                class="mt-3 flex items-center gap-3 px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50
         dark:bg-yellow-900/30 dark:border-yellow-700 transition-all duration-300 hover:shadow-sm">
-        <div
-            class="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-500 text-white font-bold text-sm">
-            💡
-        </div>
-        <div>
-            <p class="text-sm text-yellow-800 dark:text-yellow-300 font-medium">SBUM dari Pemerintah</p>
-            <p class="text-xs text-yellow-600 dark:text-yellow-400">
-                Tambahan harga: Rp <span x-text="formatRupiah(sbumPemerintah.toString())"></span>
-            </p>
-        </div>
-    </div>
+                <div
+                    class="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-500 text-white font-bold text-sm">
+                    💡
+                </div>
+                <div>
+                    <p class="text-sm text-yellow-800 dark:text-yellow-300 font-medium">SBUM dari Pemerintah</p>
+                    <p class="text-xs text-yellow-600 dark:text-yellow-400">
+                        Tambahan harga: Rp <span x-text="formatRupiah(sbumPemerintah.toString())"></span>
+                    </p>
+                </div>
+            </div>
 
-    <!-- DP Rumah Induk -->
-    <div>
-        <label class="block mt-4 mb-1 text-sm font-medium text-gray-900 dark:text-white">
-            DP Rumah Induk <span class="text-red-500">*</span>
-        </label>
-        <input type="text" x-model="dpRumahInduk" @input="updateDpRumahInduk"
-            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+            <!-- DP Rumah Induk -->
+            <div>
+                <label class="block mt-4 mb-1 text-sm font-medium text-gray-900 dark:text-white">
+                    DP Rumah Induk <span class="text-red-500">*</span>
+                </label>
+                <input type="text" x-model="dpRumahInduk" @input="updateDpRumahInduk"
+                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
                 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-            placeholder="Masukkan DP Rumah Induk">
+                    placeholder="Masukkan DP Rumah Induk">
 
-        <!-- Hidden -->
-        <input type="hidden" name="kpr_dp_rumah_induk" :value="dpRumahIndukNumber">
+                <!-- Hidden -->
+                <input type="hidden" name="kpr_dp_rumah_induk" :value="dpRumahIndukNumber">
 
-        <p class="text-xs text-gray-500 mt-1">
-            Nominal termasuk <b>SBUM Pemerintah</b> akan dijumlah otomatis ke <b>Total DP</b>.
-        </p>
-    </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    Nominal termasuk <b>SBUM Pemerintah</b> akan dijumlah otomatis ke <b>Total DP</b>.
+                </p>
+            </div>
 
-    <!-- Kelebihan Tanah -->
-    <div class="grid grid-cols-2 gap-4 items-end mt-4">
-        <div>
-            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Luas Kelebihan Tanah (m²)
-            </label>
-            <input type="text" readonly name="kpr_luas_kelebihan"
-                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+            <!-- Kelebihan Tanah -->
+            <div class="grid grid-cols-2 gap-4 items-end mt-4">
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Luas Kelebihan Tanah (m²)
+                    </label>
+                    <input type="text" readonly name="kpr_luas_kelebihan"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
                     dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
-                :value="selectedCustomer?.booking?.luas_kelebihan ?? '-'">
-        </div>
-        <div>
-            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Nominal Kelebihan (Rp)
-            </label>
-            <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())"
-                class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                        :value="selectedCustomer?.booking?.luas_kelebihan ?? '-'">
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Nominal Kelebihan (Rp)
+                    </label>
+                    <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())"
+                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
                     dark:bg-gray-700 dark:text-white dark:border-gray-600">
 
-            <!-- Hidden -->
-            <input type="hidden" name="kpr_nominal_kelebihan" :value="nominalKelebihan">
-        </div>
-    </div>
+                    <!-- Hidden -->
+                    <input type="hidden" name="kpr_nominal_kelebihan" :value="nominalKelebihan">
+                </div>
+            </div>
 
-    <!-- Total DP -->
-    <div class="mt-4">
-        <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-            Total DP
-        </label>
-        <input type="text" readonly :value="totalDp"
-            class="w-full bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-lg p-2.5
+            <!-- Total DP -->
+            <div class="mt-4">
+                <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
+                    Total DP
+                </label>
+                <input type="text" readonly :value="totalDp"
+                    class="w-full bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-lg p-2.5
                 dark:bg-green-900/30 dark:border-green-700 cursor-not-allowed"
-            placeholder="Rp 0">
+                    placeholder="Rp 0">
 
-        <!-- Hidden -->
-        <input type="hidden" name="kpr_total_dp" :value="totalDpNumber">
-    </div>
+                <!-- Hidden -->
+                <input type="hidden" name="kpr_total_dp" :value="totalDpNumber">
+            </div>
 
-    <!-- DP Dibayarkan Pembeli -->
-    <div>
-        <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-            DP Dibayarkan Pembeli
-        </label>
-        <input type="text" readonly :value="dpPembeli"
-            class="w-full bg-gray-100 border border-gray-300 text-gray-600 text-sm rounded-lg p-2.5
+            <!-- DP Dibayarkan Pembeli -->
+            <div>
+                <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
+                    DP Dibayarkan Pembeli
+                </label>
+                <input type="text" readonly :value="dpPembeli"
+                    class="w-full bg-gray-100 border border-gray-300 text-gray-600 text-sm rounded-lg p-2.5
                 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 cursor-not-allowed"
-            placeholder="Rp 0">
+                    placeholder="Rp 0">
 
-        <!-- Hidden -->
-        <input type="hidden" name="kpr_dp_dibayarkan_pembeli" :value="dpPembeliNumber">
+                <!-- Hidden -->
+                <input type="hidden" name="kpr_dp_dibayarkan_pembeli" :value="dpPembeliNumber">
 
-        <p class="text-xs text-gray-500 mt-1">
-            Otomatis dihitung dari <b>Total DP - SBUM Pemerintah</b>.
-        </p>
-    </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    Otomatis dihitung dari <b>Total DP - SBUM Pemerintah</b>.
+                </p>
+            </div>
 
-    <!-- Harga Total Rumah & Nilai KPR -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div>
-            <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                Harga Total Rumah
-            </label>
-            <input type="text" readonly :value="hargaTotalFormatted"
-                class="w-full bg-indigo-50 border border-indigo-300 text-indigo-700 text-sm font-semibold rounded-lg p-2.5
+            <!-- Harga Total Rumah & Nilai KPR -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
+                        Harga Total Rumah
+                    </label>
+                    <input type="text" readonly :value="hargaTotalFormatted"
+                        class="w-full bg-indigo-50 border border-indigo-300 text-indigo-700 text-sm font-semibold rounded-lg p-2.5
                     dark:bg-indigo-900/30 dark:border-indigo-700 cursor-not-allowed"
-                placeholder="Rp 0">
+                        placeholder="Rp 0">
 
-            <input type="hidden" name="kpr_harga_total" :value="hargaTotal">
-        </div>
+                    <input type="hidden" name="kpr_harga_total" :value="hargaTotal">
+                </div>
 
-        <div>
-            <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                Nilai KPR
-            </label>
-            <input type="text" readonly :value="hargaKpr"
-                class="w-full bg-blue-50 border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg p-2.5
+                <div>
+                    <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
+                        Nilai KPR
+                    </label>
+                    <input type="text" readonly :value="hargaKpr"
+                        class="w-full bg-blue-50 border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg p-2.5
                     dark:bg-blue-900/30 dark:border-blue-700 cursor-not-allowed"
-                placeholder="Rp 0">
+                        placeholder="Rp 0">
 
-            <input type="hidden" name="kpr_harga_kpr" :value="hargaKprNumber">
+                    <input type="hidden" name="kpr_harga_kpr" :value="hargaKprNumber">
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
     </div>
 

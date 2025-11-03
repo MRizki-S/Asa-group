@@ -103,38 +103,47 @@ class PengajuanPemesananController extends Controller
         ]);
     }
 
-    // function untuk approve pengajuan pemesanan unit
-    // public function approve($id)
-    // {
-    //     // dd('masuk approve');
-    //     $pemesanan = PemesananUnit::findOrFail($id);
-
-    //     // Update status pengajuan jadi "acc"
-    //     $pemesanan->update([
-    //         'status_pengajuan' => 'acc',
-    //     ]);
-
-    //     return redirect()
-    //         ->route('marketing.pengajuanPemesanan.index')
-    //         ->with('success', 'Pengajuan berhasil disetujui (ACC).');
-    // }
-
     public function approve($id)
     {
         DB::transaction(function () use ($id) {
-            $pemesanan = PemesananUnit::with(['customer', 'sales', 'unit', 'cicilan', 'dataDiri'])->findOrFail($id);
+            $pemesanan = PemesananUnit::with(['customer', 'sales', 'unit', 'cicilan', 'dataDiri', 'perumahaan'])->findOrFail($id);
             // dd($pemesanan);
             // Update status pengajuan jadi "acc"
             $pemesanan->update([
                 'status_pengajuan' => 'acc',
             ]);
 
+            // 💡 Update harga_jual di tabel unit
+            $unit = $pemesanan->unit;
+
+            if ($pemesanan->cara_bayar === 'cash') {
+                $cash = $pemesanan->cash;
+                if ($cash) {
+                    $unit->update([
+                        'harga_jual'  => $cash->harga_jadi,
+                        'status_unit' => 'sold', // 🚀 Ubah status jadi sold
+                    ]);
+                }
+            } elseif ($pemesanan->cara_bayar === 'kpr') {
+                $kpr = $pemesanan->kpr;
+                if ($kpr) {
+                    $unit->update([
+                        'harga_jual'  => $kpr->harga_total,
+                        'status_unit' => 'sold', // 🚀 Ubah status jadi sold
+                    ]);
+                }
+            } else {
+                // Jika cara bayar tidak dikenali, tetap ubah jadi sold
+                $unit->update(['status_unit' => 'sold']);
+            }
+
             // Ambil data customer & sales
-            $customerName = $pemesanan->dataDiri->nama_pribadi ?? $pemesanan->customer->username ?? '-';
-            $salesName    = $pemesanan->sales->username ?? '-';
-            $unitName     = $pemesanan->unit->nama_unit ?? '-';
-            $totalTagihan = number_format($pemesanan->total_tagihan, 0, ',', '.');
-            $sisaTagihan  = number_format($pemesanan->sisa_tagihan, 0, ',', '.');
+            $customerName   = $pemesanan->dataDiri->nama_pribadi ?? $pemesanan->customer->username ?? '-';
+            $salesName      = $pemesanan->sales->username ?? '-';
+            $unitName       = $pemesanan->unit->nama_unit ?? '-';
+            $totalTagihan   = number_format($pemesanan->total_tagihan, 0, ',', '.');
+            $sisaTagihan    = number_format($pemesanan->sisa_tagihan, 0, ',', '.');
+            $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
 
             // Cicilan detail
             $cicilanText = '';
@@ -154,15 +163,14 @@ class PengajuanPemesananController extends Controller
                 "Total: Rp {$totalTagihan}\n" .
                 "Sisa: Rp {$sisaTagihan}\n" .
                 "Cicilan:\n{$cicilanText}\n" .
-                "Silakan cek sistem untuk detail lebih lanjut.";
+                "Silakan hubungi admin Kpr terkait jika ada pertanyaan.";
 
-            // Pesan untuk Customer
-            $messageCustomer = "Halo {$customerName},\n\n" .
-                "Info pemesanan unit '{$unitName}':\n" .
-                "Total tagihan: Rp {$totalTagihan}\n" .
-                "Sisa tagihan: Rp {$sisaTagihan}\n" .
-                "Cicilan:\n{$cicilanText}\n" .
-                "Silakan cek sistem untuk informasi lebih lengkap.";
+            // 🔹 Pesan untuk Customer (lebih hangat dan pendek)
+            $messageCustomer =
+                "🎉 Halo Bapak/Ibu {$customerName},\n\n" .
+                "Kabar baik! Pemesanan unit *{$unitName}* di *{$namaPerumahaan}* telah berhasil dikonfirmasi oleh tim kami 🏡✨\n" .
+                "Tim kami siap mendampingi Anda hingga proses *serah terima rumah* selesai dengan lancar😊.\n" .
+                "Terima kasih atas kepercayaannya 🙏. ";
 
             // Kirim WA
             if ($pemesanan->sales->no_hp) {
@@ -198,9 +206,9 @@ class PengajuanPemesananController extends Controller
 
         // 3️⃣ Buat pesan WA fleksibel
         $message = "Halo {$sales->username},\n\n" .
-            "Pemesanan unit '{$unitName}' oleh {$customerName} telah ditolak oleh admin KPR.\n" .
-            "Data pemesanan ini otomatis dihapus.\n\n" .
-            "Silakan cek sistem jika perlu konfirmasi lebih lanjut.";
+            "Pengajuan pemesanan unit *{$unitName}* atas nama *{$customerName}* telah ditolak oleh Admin KPR.\n" .
+            "Data pemesanan tersebut telah dihapus secara otomatis dari sistem.\n\n" .
+            "Silakan hubungi Admin terkait untuk mengetahui alasan penolakan.";
 
         // 4️⃣ Kirim WA ke sales
         if ($sales && $sales->no_hp) {

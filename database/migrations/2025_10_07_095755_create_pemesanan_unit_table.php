@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->date('tanggal_pemesanan');
             $table->enum('cara_bayar', ['cash', 'kpr']);
             $table->enum('status_pengajuan', ['pending', 'acc', 'tolak'])->default('pending');
-            $table->enum('status_pemesanan', ['proses', 'LPA', 'serah_terima'])->nullable();
+            $table->enum('status_pemesanan', ['proses', 'LPA', 'serah_terima', 'batal'])->nullable();
             $table->decimal('harga_normal', 15, 2)->default(0);
             $table->decimal('harga_cash', 15, 2)->nullable();
             $table->decimal('total_tagihan', 15, 2)->default(0);

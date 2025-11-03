@@ -11,6 +11,8 @@ class PpjbCaraBayar extends Model
         'perumahaan_id',
         'jumlah_cicilan',
         'minimal_dp',
+        'jenis_pembayaran',
+        'nama_cara_bayar',
         'status_aktif',
         'status_pengajuan',
         'diajukan_oleh',

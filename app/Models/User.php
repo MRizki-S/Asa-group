@@ -16,6 +16,7 @@ class User extends Authenticatable
      * Kolom yang bisa diisi mass assignment
      */
     protected $fillable = [
+        'nama_lengkap',
         'username',
         'no_hp',
         'password',

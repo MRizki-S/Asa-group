@@ -31,7 +31,7 @@
                     </ul>
                 </div>
             </div>
-        @endif
+        @endif`
 
         <div class="space-y-5 sm:space-y-6">
             <div
@@ -132,7 +132,7 @@
                     </button>
 
                     <!-- Tombol Reset -->
-                    <a href="{{ route('blok.index') }}"
+                    <a href="{{ route('unit.index', $perumahaan->slug) }}"
                         class="inline-block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
                          dark:bg-gray-500 dark:text-white dark:hover:bg-gray-600">
                         Reset
@@ -235,6 +235,15 @@
                                     Rp {{ number_format($item->harga_final, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                    <a href="{{ route('unit.show', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
+                                        class="btn-edit inline-flex items-center gap-1
+                                    text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
+                                    dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
+                                    px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                    focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
+                                    active:scale-95">
+                                        Lihat
+                                    </a>
                                     <a href="{{ route('unit.edit', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
                                         class="btn-edit inline-flex items-center gap-1
                                     text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
@@ -244,6 +253,7 @@
                                     active:scale-95">
                                         Edit
                                     </a>
+
 
                                     <form
                                         action="{{ route('unit.destroy', ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
@@ -295,7 +305,8 @@
         if (document.getElementById("table-unit") && typeof simpleDatatables.DataTable !== 'undefined') {
             const dataTable = new simpleDatatables.DataTable("#table-unit", {
                 searchable: true,
-                sortable: true
+                sortable: true,
+                perPageSelect: [5, 10, 20, 50],
             });
         }
     </script>

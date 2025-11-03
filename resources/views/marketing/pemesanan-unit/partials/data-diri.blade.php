@@ -30,6 +30,50 @@
                     placeholder="Contoh: 081234567890">
             </div>
 
+            <!-- Nomor KTP -->
+            <div>
+                <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    No KTP <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="no_ktp" name="no_ktp" required
+                    class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+            dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    placeholder="No KTP">
+            </div>
+
+            <!-- Pekerjaan -->
+            <div x-data="{
+                pekerjaan: '',
+                listPekerjaan: [
+                    'PNS / ASN',
+                    'Karyawan Swasta',
+                    'Wiraswasta',
+                    'Pengusaha',
+                    'Lainnya'
+                ]
+            }">
+                <label for="pekerjaan"
+                    class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <span
+                        class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-semibold">1</span>
+                    <div class="flex items-center gap-1">
+                        <span>Pekerjaan</span>
+                        <span class="text-red-500">*</span>
+                    </div>
+                </label>
+
+                <select id="pekerjaan" name="pekerjaan" required x-model="pekerjaan"
+                    class="select-blok w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+               dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400">
+                    <option value="">Pilih Pekerjaan</option>
+                    <template x-for="item in listPekerjaan" :key="item">
+                        <option :value="item" x-text="item"></option>
+                    </template>
+                </select>
+            </div>
+
+
+
             <!-- Provinsi -->
             <div>
                 <label for="provinsi_code"
@@ -44,7 +88,8 @@
                     </div>
                 </label>
 
-                <select id="provinsi_code" name="provinsi_code" required x-model="provinsi_code" :disabled="isLoadingProvinsi"
+                <select id="provinsi_code" name="provinsi_code" required x-model="provinsi_code"
+                    :disabled="isLoadingProvinsi"
                     class="select-blok w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
            dark:bg-gray-700 dark:text-white">
                     <template x-if="isLoadingProvinsi">
@@ -72,7 +117,8 @@
                         <span class="text-xs text-gray-500">(isi setelah provinsi)</span>
                     </div>
                 </label>
-                <select id="kota_code" name="kota_code" x-model="kota_code" :disabled="!provinsi_code || isLoadingKota" required
+                <select id="kota_code" name="kota_code" x-model="kota_code" :disabled="!provinsi_code || isLoadingKota"
+                    required
                     class="select-blok w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
            dark:bg-gray-700 dark:text-white">
                     <template x-if="isLoadingKota">
@@ -130,7 +176,8 @@
                     </div>
                 </label>
 
-                <select id="desa_code" name="desa_code" x-model="desa_code" :disabled="!kecamatan_code || isLoadingDesa" required
+                <select id="desa_code" name="desa_code" x-model="desa_code"
+                    :disabled="!kecamatan_code || isLoadingDesa" required
                     class="select-blok w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                                 dark:bg-gray-700 dark:text-white">
                     <template x-if="isLoadingDesa">
@@ -150,7 +197,7 @@
             <!-- RT -->
             <div>
                 <label for="rt" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                   RT <span class="text-red-500">*</span>
+                    RT <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="rt" name="rt" required placeholder="Contoh: 02"
                     class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
