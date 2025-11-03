@@ -28,12 +28,14 @@
 
 
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
-                        @if (!$keterlambatanPending)
-                            <button data-modal-target="modal-create" data-modal-toggle="modal-create"
-                                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                                Ajukan Keterlambatan Baru
-                            </button>
-                        @endif
+                        @hasrole(['Manager Pemasaran', 'Super Admin '])
+                            @if (!$keterlambatanPending)
+                                <button data-modal-target="modal-create" data-modal-toggle="modal-create"
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                                    Ajukan Keterlambatan Baru
+                                </button>
+                            @endif
+                        @endrole
                     </div>
                 </div>
 
@@ -256,8 +258,8 @@
 
                 <!-- Body (scrollable) -->
                 <div class="overflow-y-auto px-4 py-6 space-y-4 flex-1">
-                    <form id="mutuForm" action="{{ route('settingPPJB.keterlambatan.updatePengajuan') }}" method="POST"
-                        class="space-y-4">
+                    <form id="mutuForm" action="{{ route('settingPPJB.keterlambatan.updatePengajuan') }}"
+                        method="POST" class="space-y-4">
                         @csrf
 
                         {{-- Hidden Perumahaan --}}
@@ -275,7 +277,8 @@
                                 <label class="text-sm text-gray-700 dark:text-gray-300 mb-1" for="persentase_denda">
                                     Persentase Denda Keterlambatan (%)
                                 </label>
-                                <input type="number" name="persentase_denda" required placeholder="Masukan persentase denda keterlambatan"
+                                <input type="number" name="persentase_denda" required
+                                    placeholder="Masukan persentase denda keterlambatan"
                                     class="bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                                 dark:bg-gray-600 dark:text-white dark:placeholder-gray-400
                                 focus:ring-primary-600 focus:border-primary-600" />

@@ -10,11 +10,13 @@ class PpjbPembatalan extends Model
 
     protected $fillable = [
         'persentase_potongan',
+        'nominal_potongan_kpr',
+        'nominal_potongan_cash',
         'status_aktif',
         'status_pengajuan',
         'diajukan_oleh',
         'disetujui_oleh',
-        'perumahaan_id'
+        'perumahaan_id',
     ];
 
     public function pengaju()

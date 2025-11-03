@@ -161,41 +161,48 @@ class SettingCaraBayarController extends Controller
     // Manager Keuangan aksi untuk approven dan tolak pengajuan cara bayar baru
     public function approvePengajuanCaraBayar(PpjbCaraBayar $caraBayar)
     {
-        DB::transaction(function () use ($caraBayar) {
-            // dd($caraBayar);
-            // ✅ Hanya boleh ACC pengajuan yang statusnya pending
-            if ($caraBayar->status_pengajuan !== 'pending') {
-                throw new \Exception('Hanya pengajuan dengan status pending yang bisa di-ACC.');
-            }
+        try {
+            DB::transaction(function () use ($caraBayar) {
+                // ✅ Hanya boleh ACC pengajuan yang statusnya pending
+                if ($caraBayar->status_pengajuan !== 'pending') {
+                    throw new \Exception('Hanya pengajuan cara bayar dengan status pending yang bisa disetujui.');
+                }
 
-            // 🏦 Jika jenis pembayaran KPR
-            if ($caraBayar->jenis_pembayaran === 'KPR') {
-                // Nonaktifkan semua KPR aktif lain di perumahaan yang sama
-                PpjbCaraBayar::where('perumahaan_id', $caraBayar->perumahaan_id)
-                    ->where('jenis_pembayaran', 'KPR')
-                    ->where('status_aktif', 1)
-                    ->update(['status_aktif' => 0]);
+                // 🏦 Jika jenis pembayaran KPR
+                if ($caraBayar->jenis_pembayaran === 'KPR') {
+                    // Nonaktifkan semua KPR aktif lain di perumahaan yang sama
+                    PpjbCaraBayar::where('perumahaan_id', $caraBayar->perumahaan_id)
+                        ->where('jenis_pembayaran', 'KPR')
+                        ->where('status_aktif', 1)
+                        ->update(['status_aktif' => 0]);
 
-                // Set pengajuan ini jadi aktif & disetujui
-                $caraBayar->update(attributes: [
-                    'status_aktif'     => 1,
-                    'status_pengajuan' => 'acc',
-                    'disetujui_oleh'   => Auth::id(),
-                ]);
-            }
-            // 💰 Jika jenis pembayaran Cash (masih kosong)
-            else if ($caraBayar->jenis_pembayaran === 'CASH') {
-                $caraBayar->update([
-                    'status_aktif'     => 1,
-                    'status_pengajuan' => 'acc',
-                    'disetujui_oleh'   => Auth::id(),
-                ]);
-            }
-        });
+                    // Set pengajuan ini jadi aktif & disetujui
+                    $caraBayar->update([
+                        'status_aktif'     => 1,
+                        'status_pengajuan' => 'acc',
+                        'disetujui_oleh'   => Auth::id(),
+                    ]);
+                }
 
-        return redirect()->back()
-            ->with('success', 'Pengajuan cara bayar berhasil di-ACC dan diaktifkan.')
-            ->with('tab', $caraBayar->jenis_pembayaran);
+                // 💰 Jika jenis pembayaran Cash
+                else if ($caraBayar->jenis_pembayaran === 'CASH') {
+                    $caraBayar->update([
+                        'status_aktif'     => 1,
+                        'status_pengajuan' => 'acc',
+                        'disetujui_oleh'   => Auth::id(),
+                    ]);
+                }
+            });
+
+            return redirect()->back()
+                ->with('success', 'Pengajuan cara bayar berhasil disetujui dan diaktifkan.')
+                ->with('tab', $caraBayar->jenis_pembayaran);
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', $e->getMessage())
+                ->with('tab', $caraBayar->jenis_pembayaran);
+        }
     }
 
     public function rejectPengajuanCaraBayar(PpjbCaraBayar $caraBayar)
@@ -207,8 +214,9 @@ class SettingCaraBayarController extends Controller
 
         $jenisPembayaran = $caraBayar->jenis_pembayaran;
 
-        // Hapus data karena belum digunakan (sama seperti cancel)
-        $caraBayar->delete();
+        $caraBayar->update([
+            'status_pengajuan' => 'tolak',
+        ]);
 
         return redirect()->back()
             ->with('success', 'Pengajuan cara bayar berhasil ditolak dan dihapus.')

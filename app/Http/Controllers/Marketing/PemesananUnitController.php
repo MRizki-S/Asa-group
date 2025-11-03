@@ -434,8 +434,10 @@ class PemesananUnitController extends Controller
 
         if ($pembatalan) {
             PemesananUnitPembatalan::create([
-                'pemesanan_unit_id'   => $pemesananUnit->id,
-                'persentase_potongan' => $pembatalan->persentase_potongan,
+                'pemesanan_unit_id'     => $pemesananUnit->id,
+                'persentase_potongan'   => $pembatalan->persentase_potongan ?? null,
+                'nominal_potongan_kpr'  => $pembatalan->nominal_potongan_kpr ?? null,
+                'nominal_potongan_cash' => $pembatalan->nominal_potongan_cash ?? null,
             ]);
         }
 

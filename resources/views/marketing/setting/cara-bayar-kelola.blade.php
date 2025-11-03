@@ -40,14 +40,16 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Cara Bayar PPJB - KPR</h3>
 
-                    <div class="flex items-center gap-2">
-                        @if (!$caraBayarPendingKpr)
-                            <button @click="openModal = true"
-                                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                                Ajukan Cara Bayar Baru
-                            </button>
-                        @endif
-                    </div>
+                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                        <div class="flex items-center gap-2">
+                            @if (!$caraBayarPendingKpr)
+                                <button @click="openModal = true"
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                                    Ajukan Cara Bayar Baru
+                                </button>
+                            @endif
+                        </div>
+                    @endrole
                 </div>
 
                 {{-- Tidak ada data --}}
@@ -244,10 +246,12 @@
                 {{-- Header + Tombol Ajukan Baru --}}
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Cara Bayar PPJB - Cash</h3>
+                      @hasrole(['Manager Pemasaran', 'Super Admin '])
                     <button @click="openModal = true"
                         class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
                         Ajukan Cara Bayar Baru
                     </button>
+                    @endrole
                 </div>
 
                 {{-- Tidak ada data --}}

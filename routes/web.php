@@ -210,7 +210,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             ->name('settingPPJB.mutu.history');
 
         // Kelola Cara Bayar
-        Route::get('/cara-bayar/edit', [SettingCaraBayarController::class, 'editCaraBayar'])->name('settingPPJB.caraBayar.edit');
+        Route::get('/cara-bayar/edit', action: [SettingCaraBayarController::class, 'editCaraBayar'])->name('settingPPJB.caraBayar.edit');
         Route::post('/cara-bayar', [SettingCaraBayarController::class, 'updatePengajuan'])->name('settingPPJB.caraBayar.updatePengajuan');
         Route::Delete('/cara-bayar/{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])->name('settingPPJB.caraBayar.cancelPengajuanPromo');
         Route::patch('/cara-bayar/{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])->name('settingPPJB.caraBayar.nonAktif');
@@ -225,11 +225,16 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::Delete('/keterlambatan/{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])->name('settingPPJB.keterlambatan.cancelPengajuanPromo');
         Route::patch('/keterlambatan/{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])->name('settingPPJB.keterlambatan.nonAktif');
 
-        // Kelola  Keterlambatan Pembayaran
+        // Kelola  Pembatalan
         Route::get('/pembatalan/edit', action: [SettingPembatalanController::class, 'editPembatalan'])->name('settingPPJB.pembatalan.edit');
         Route::post('/pembatalan', [SettingPembatalanController::class, 'updatePengajuan'])->name('settingPPJB.pembatalan.updatePengajuan');
         Route::Delete('/pembatalan/{pembatalan}', [SettingPembatalanController::class, 'cancelPengajuanPembatalan'])->name('settingPPJB.pembatalan.cancelPengajuanPromo');
         Route::patch('/pembatalan/{pembatalan}/nonaktif', [SettingPembatalanController::class, 'nonAktifPembatalan'])->name('settingPPJB.pembatalan.nonAktif');
+        Route::patch('/pembatalan/{pembatalan}/approve', [SettingPembatalanController::class, 'approvePengajuanPembatalan'])
+            ->name('settingPPJB.pembatalan.approve');
+        Route::delete('/pembatalan/{pembatalan}/reject', [SettingPembatalanController::class, 'rejectPengajuanPembatalan'])
+            ->name('settingPPJB.pembatalan.reject');
+
     });
 
     Route::prefix('api')->group(function () {
