@@ -345,7 +345,7 @@ class PemesananUnitController extends Controller
                 "```\n\n" .
                 "Menunggu persetujuan admin KPR 🕓";
 
-            // Kirim ke group
+            // Kirim ke groupp
             // if ($groupId) {
             //     $this->notificationGroup->send($groupId, $messageGroup);
             // }

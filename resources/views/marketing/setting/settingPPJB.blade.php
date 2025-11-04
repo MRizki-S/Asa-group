@@ -487,81 +487,91 @@
                 </h3>
 
                 @if ($pembatalanPPJB)
-                    <!-- Grid 2 kolom -->
-                    <div class="flex flex-wrap gap-4 mb-4">
-                        <!-- Persentase Denda -->
-                        <div class="flex-1 min-w-[150px]">
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Persentase Pembatalan
-                            </label>
-                            <input type="text" readonly
-                                value="{{ rtrim(rtrim(number_format($pembatalanPPJB->persentase_potongan, 2, '.', ''), '0'), '.') }} %"
-                                class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
-                              focus:ring-blue-500 focus:border-blue-500
-                              dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                              dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <div class="mt-5 space-y-4">
+                        {{-- KPR Section --}}
+                        <div
+                            class="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 p-4 shadow-sm transition hover:shadow-md">
+                            <div class="flex items-center justify-between mb-2">
+                                <h5
+                                    class="text-blue-800 dark:text-blue-300 font-semibold text-base flex items-center gap-2">
+                                    Pembatalan KPR
+                                </h5>
+                                <span
+                                    class="text-sm bg-blue-100 text-blue-800 dark:bg-blue-800/40 dark:text-blue-200 px-2 py-0.5 rounded-md font-medium">
+                                    Dinamis
+                                </span>
+                            </div>
+
+                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                                PIHAK KEDUA dikenakan potongan sebesar
+                                <span
+                                    class="font-semibold text-blue-700 dark:text-blue-300 border-b-2 border-dashed border-blue-400 pb-0.5">
+                                    Rp{{ number_format($pembatalanPPJB->nominal_potongan_kpr ?? 0, 0, ',', '.') }},
+                                </span>
+                                dari Uang Muka atas objek dari perjanjian pemesanan ini apabila ditolak oleh Bank atau
+                                adanya
+                                wanprestasi dari PIHAK KEDUA.
+                            </p>
+
+                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed mt-2">
+                                PIHAK KEDUA juga dikenakan denda sebesar
+                                <span
+                                    class="font-semibold text-blue-700 dark:text-blue-300 border-b-2 border-dashed border-blue-400 pb-0.5">
+                                    {{ rtrim(rtrim(number_format($pembatalanPPJB->persentase_potongan ?? 0, 2, '.', ''), '0'), '.') }}%
+                                </span>
+                                dari Harga Jadi apabila adanya wanprestasi dari PIHAK KEDUA saat Surat Keputusan Bank (SP3)
+                                telah turun atau dalam proses pembangunan.
+                            </p>
                         </div>
 
-                        <!-- Status -->
-                        <div class="flex-1 min-w-[150px]">
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Status
-                            </label>
-                            <input type="text" readonly value="Aktif"
-                                class="bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-lg w-full p-2.5
-                           dark:bg-green-900 dark:border-green-700 dark:text-green-100">
-                        </div>
+                        {{-- Cash Section --}}
+                        <div
+                            class="rounded-xl border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20 p-4 shadow-sm transition hover:shadow-md">
+                            <div class="flex items-center justify-between mb-2">
+                                <h5
+                                    class="text-green-800 dark:text-green-300 font-semibold text-base flex items-center gap-2">
+                                    Pembatalan Cash
+                                </h5>
+                                <span
+                                    class="text-sm bg-green-100 text-green-800 dark:bg-green-800/40 dark:text-green-200 px-2 py-0.5 rounded-md font-medium">
+                                    Dinamis
+                                </span>
+                            </div>
 
-                        <!-- Diajukan Oleh -->
-                        <div class="flex-1 min-w-[150px]">
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Diajukan Oleh
-                            </label>
-                            <input type="text" readonly value="{{ $pembatalanPPJB->pengaju->username ?? '-' }}"
-                                class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
-                              focus:ring-blue-500 focus:border-blue-500
-                              dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                              dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        </div>
-
-                        <!-- Disetujui Oleh -->
-                        <div class="flex-1 min-w-[150px]">
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Disetujui Oleh
-                            </label>
-                            <input type="text" readonly value="{{ $pembatalanPPJB->approver->username ?? '-' }}"
-                                class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
-                              focus:ring-blue-500 focus:border-blue-500
-                              dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                              dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                                PIHAK KEDUA dikenakan potongan sebesar
+                                <span
+                                    class="font-semibold text-green-700 dark:text-green-300 border-b-2 border-dashed border-green-400 pb-0.5">
+                                    Rp{{ number_format($pembatalanPPJB->nominal_potongan_cash ?? 0, 0, ',', '.') }},
+                                </span>
+                                atas objek dari perjanjian pemesanan ini apabila adanya wanprestasi dari PIHAK KEDUA setelah
+                                penandatanganan PPJB atau sebelum dilakukan pembangunan.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Tombol Aksi -->
-                    <div class="flex justify-end">
+                    {{-- Tombol Kelola --}}
+                    <div class="flex justify-end mt-5">
                         <a href="{{ route('settingPPJB.pembatalan.edit') }}"
-                            class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
-                      hover:bg-blue-600 transition-colors">
+                            class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors">
                             Kelola Pembatalan
                         </a>
                     </div>
                 @else
-                    <!-- Kalau Tidak Ada Cara Bayar -->
+                    {{-- Jika belum ada pembatalan aktif --}}
                     <div
-                        class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700
-                bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
+                        class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
                         Belum ada Potongan Pembatalan aktif.
-                        {{-- Tombol Kelola Cara Bayar --}}
                         <a href="{{ route('settingPPJB.pembatalan.edit') }}"
                             class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
                             Kelola Pembatalan
                         </a>
-
                     </div>
                 @endif
             </div>
         </div>
         {{-- end Pembatalan PPJB --}}
+
 
 
 

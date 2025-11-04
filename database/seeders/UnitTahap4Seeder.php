@@ -17,7 +17,7 @@ class UnitTahap4Seeder extends Seeder
     {
         $start = Carbon::now();
 
-        for ($i = 2; $i <= 27; $i++) {
+        for ($i = 1; $i <= 27; $i++) {
             $time = $start->copy()->addSeconds($i * 3); // tiap unit beda 3 detik
             Unit::create([
                 'perumahaan_id' => 1,
