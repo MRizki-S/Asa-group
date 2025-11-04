@@ -88,12 +88,12 @@ class AkunKaryawanSeeder extends Seeder
 
         // #4 Manager Keuangan (ASA)
         $managerKeuangan = User::firstOrCreate(
-            ['username' => 'manager keuangan'],
+            ['username' => 'manager keuangan asa'],
             [
                 'nama_lengkap'  => 'HENI HANDAYANI',
                 'no_hp'         => '6285238617670',
                 'password'      => Hash::make('12345678'),
-                'slug'          => Str::slug('manager keuangan'),
+                'slug'          => Str::slug('manager keuangan asa'),
                 'type'          => 'karyawan',
                 'perumahaan_id' => 1,
                 'is_global'     => false,

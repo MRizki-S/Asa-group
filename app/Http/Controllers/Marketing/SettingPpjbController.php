@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers\Marketing;
 
-use App\Http\Controllers\Controller;
 use App\Models\PpjbCaraBayar;
-use App\Models\PpjbKeterlambatan;
 use App\Models\PpjbMutuBatch;
 use App\Models\PpjbPembatalan;
 use App\Models\PpjbPromoBatch;
+use App\Models\PpjbKeterlambatan;
+use App\Models\PpjbBonusCashBatch;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
 class SettingPpjbController extends Controller
@@ -40,8 +41,14 @@ class SettingPpjbController extends Controller
             ->where('status_aktif', 1)
             ->first();
 
+        // Ambil Bonus Cash aktif
+        $bonusCash = PpjbBonusCashBatch::with('items')
+            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('status_aktif', 1)
+            ->first();
+
         // Ambil Cara Bayar aktif
-         $caraBayarKpr = PpjbCaraBayar::with(['pengaju', 'approver'])
+        $caraBayarKpr = PpjbCaraBayar::with(['pengaju', 'approver'])
             ->where('perumahaan_id', $currentPerumahaanId)
             ->where('jenis_pembayaran', 'KPR')
             ->where('status_aktif', 1)
@@ -70,10 +77,11 @@ class SettingPpjbController extends Controller
             'promoCash'         => $promoCash,
             'promoKpr'          => $promoKpr,
             'mutu'              => $mutu,
-            'caraBayarCash'         => $caraBayarCash,
-            'caraBayarKpr'       => $caraBayarKpr,
+            'bonusCash'         => $bonusCash,
+            'caraBayarCash'     => $caraBayarCash,
+            'caraBayarKpr'      => $caraBayarKpr,
             'keterlambatanPPJB' => $keterlambatanPPJB,
-            'pembatalanPPJB'=> $pembatalanPPJB,
+            'pembatalanPPJB'    => $pembatalanPPJB,
             'breadcrumbs'       => [
                 ['label' => 'Setting PPJB', 'url' => route('settingPPJB.index')],
             ],

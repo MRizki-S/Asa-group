@@ -154,7 +154,7 @@
 
 
         {{-- Mutu --}}
-        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+        {{-- <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
             <div class="px-5 py-4 sm:px-6 sm:py-5">
                 <h3
                     class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 border-b-2 border-gray-100 dark:border-gray-800">
@@ -212,8 +212,66 @@
 
 
             </div>
-        </div>
+        </div> --}}
         {{-- end Mutu --}}
+
+        {{-- Bonus Cash --}}
+        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+            <div class="px-5 py-4 sm:px-6 sm:py-5">
+                <h3
+                    class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 border-b-2 border-gray-100 dark:border-gray-800">
+                    Bonus Cash PPJB
+                </h3>
+
+                <!-- Card Bonus Cash -->
+                <div
+                    class="flex flex-col relative rounded-xl border border-blue-200 dark:border-blue-700
+            bg-blue-50 dark:bg-blue-900/10 p-5 shadow-sm">
+
+                    <!-- Judul + Badge Aktif -->
+                    <div class="flex items-center justify-between mb-4 border-b border-blue-100 dark:border-blue-800 pb-2">
+                        <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                            Bonus Cash
+                        </h4>
+                        @if ($bonusCash && $bonusCash->status_aktif)
+                            <span
+                                class="px-2.5 py-0.5 text-xs font-semibold rounded-full
+                        bg-green-100 text-green-700 dark:bg-green-500 dark:text-white">
+                                Aktif
+                            </span>
+                        @else
+                            <span
+                                class="px-2.5 py-0.5 text-xs font-semibold rounded-full
+                        bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                Tidak ada Bonus Cash aktif
+                            </span>
+                        @endif
+                    </div>
+
+                    <!-- Detail item -->
+                    <ul class="space-y-3 mb-4">
+                        @if ($bonusCash && $bonusCash->items->count())
+                            @foreach ($bonusCash->items as $item)
+                                <li class="flex items-center">
+                                        <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
+                                        <div
+                                            class="flex-grow mx-2 border-b border-dashed border-gray-300 dark:border-gray-600">
+                                        </div>
+                                    </li>
+                            @endforeach
+                        @else
+                            <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus Cash aktif.</li>
+                        @endif
+                    </ul>
+
+                    <a href="{{ route('settingPPJB.bonusCash.edit') }}"
+                        class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                        Kelola Bonus Cash
+                    </a>
+                </div>
+            </div>
+        </div>
+        {{-- end Bonus Cash --}}
 
 
         {{-- Terkait Cara Bayar --}}

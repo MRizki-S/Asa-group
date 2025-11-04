@@ -13,11 +13,12 @@ class SettingMutuPpjbController extends Controller
     /**
      * Mendapatkan current perumahaan id
      */
-    private function currentPerumahaanId()
+    protected function currentPerumahaanId()
     {
-        return Auth::user()->hasGlobalAccess()
-            ? session('current_perumahaan_id')
-            : Auth::user()->perumahaan_id;
+        $user = Auth::user();
+        return $user->is_global
+            ? session('current_perumahaan_id', null)
+            : $user->perumahaan_id;
     }
 
     /**

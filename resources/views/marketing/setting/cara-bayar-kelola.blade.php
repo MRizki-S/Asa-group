@@ -423,7 +423,7 @@
                                                 Batalkan Pengajuan
                                             </button>
                                         </form>
-                                    @endhasrole
+                                    @endrole
                                 </div>
                             </div>
                         </div>

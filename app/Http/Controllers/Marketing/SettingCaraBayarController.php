@@ -158,7 +158,7 @@ class SettingCaraBayarController extends Controller
             ->with('tab', $jenisPembayaran);
     }
 
-    // Manager Keuangan aksi untuk approven dan tolak pengajuan cara bayar baru
+    // Manager Keuangan aksi untuk approve dan tolak pengajuan cara bayar baru
     public function approvePengajuanCaraBayar(PpjbCaraBayar $caraBayar)
     {
         try {
@@ -219,7 +219,7 @@ class SettingCaraBayarController extends Controller
         ]);
 
         return redirect()->back()
-            ->with('success', 'Pengajuan cara bayar berhasil ditolak dan dihapus.')
+            ->with('success', 'Pengajuan cara bayar berhasil ditolak.')
             ->with('tab', $jenisPembayaran);
     }
 }

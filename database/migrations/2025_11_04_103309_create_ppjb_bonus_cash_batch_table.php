@@ -8,13 +8,14 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */
+    */
     public function up(): void
     {
-        Schema::create('ppjb_mutu_batch', function (Blueprint $table) {
+        Schema::create('ppjb_bonus_cash_batch', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('perumahaan_id')->constrained('perumahaan')->onDelete('cascade');
             $table->boolean('status_aktif')->default(false);
-            $table->enum('status_pengajuan', allowed: ['pending', 'acc', 'tolak'])->default('pending');
+            $table->enum('status_pengajuan', ['pending', 'acc', 'tolak'])->default('pending');
             $table->foreignId('diajukan_oleh')->constrained('users');
             $table->foreignId('disetujui_oleh')->nullable()->constrained('users');
             $table->timestamp('tanggal_pengajuan')->useCurrent();
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ppjb_mutu_batch');
+        Schema::dropIfExists('ppjb_bonus_cash_batch');
     }
 };

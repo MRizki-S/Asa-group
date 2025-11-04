@@ -18,6 +18,7 @@ use App\Http\Controllers\Marketing\PemesananUnitController;
 use App\Http\Controllers\Marketing\PengajuanPembatalanController;
 use App\Http\Controllers\Marketing\PengajuanPemesananController;
 use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Marketing\SettingBonusCashController;
 use App\Http\Controllers\Marketing\SettingCaraBayarController;
 use App\Http\Controllers\Marketing\SettingKeterlambatanController;
 use App\Http\Controllers\marketing\SettingMutuPpjbController;
@@ -208,6 +209,21 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         // Mutu PPJB History
         Route::get('/mutu/history', [SettingMutuPpjbController::class, 'history'])
             ->name('settingPPJB.mutu.history');
+
+        // Bonus Cash PPJB
+        Route::get('/bonus-cash/edit', [SettingBonusCashController::class, 'edit'])->name('settingPPJB.bonusCash.edit');
+        Route::post('/bonus-cash/pengajuan-update', [SettingBonusCashController::class, 'pengajuanUpdate'])
+            ->name('settingPPJB.bonusCash.pengajuanUpdate');
+        Route::patch('/bonus-cash/{batch}/nonaktif', [SettingBonusCashController::class, 'nonAktif'])->name('settingPPJB.bonusCash.nonAktif');
+        Route::delete('/bonus-cash/{batch}/cancel', [SettingBonusCashController::class, 'cancelPengajuan'])->name('settingPPJB.bonusCash.cancel');
+        // Mutu PPJB History
+        Route::get('/bonus-cash/history', [SettingBonusCashController::class, 'history'])
+            ->name('settingPPJB.bonusCash.history');
+        // Manager keuangan approval dan tolak pengajuan
+        Route::patch('/bonus-cash/{bonusCash}/approve', [SettingBonusCashController::class, 'approvePengajuan'])
+            ->name('settingPPJB.bonusCash.approve');
+        Route::delete('/bonus-cash/{bonusCash}/reject', [SettingBonusCashController::class, 'rejectPengajuan'])
+            ->name('settingPPJB.bonusCash.reject');
 
         // Kelola Cara Bayar
         Route::get('/cara-bayar/edit', action: [SettingCaraBayarController::class, 'editCaraBayar'])->name('settingPPJB.caraBayar.edit');

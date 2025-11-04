@@ -128,8 +128,7 @@ class SettingPembatalanController extends Controller
                 $pembatalan->update([
                     'status_aktif'     => 1,
                     'status_pengajuan' => 'acc',
-                    'approved_by'      => Auth::id(),
-                    'approved_at'      => now(),
+                    'disetujui_oleh'      => Auth::id(),
                 ]);
             });
 
