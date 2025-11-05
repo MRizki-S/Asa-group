@@ -171,85 +171,147 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     Route::get('/pengajuan-pembatalan', [PengajuanPembatalanController::class, 'ListPengajuan'])
         ->name('marketing.pengajuan-pembatalan.listPengajuan');
 
-
-    // ⚙️ SETTING PPJB ROUTES
-    Route::prefix('setting')->name('settingPPJB.')->group(function () {
-        // 🏠 Halaman utama setting
+    // route setting ppjb
+    Route::prefix('/setting')->group(function () {
+        // halaman utama setting
         Route::get('/', [SettingPpjbController::class, 'listSettingPPJB'])
-            ->name('index');
+            ->name('settingPPJB.index');
 
-        // 💰 PROMO (Cash & KPR)
-        Route::prefix('promo')->name('promo.')->group(function () {
-            // Promo Cash
-            Route::get('cash/edit', [SettingPromoPpjbController::class, 'editCash'])->name('promoCash.edit');
-            Route::post('cash', [SettingPromoPpjbController::class, 'updateCash'])->name('promoCash.pengajuanUpdate');
+        /**
+         * =========================
+         * PROMO (Cash & KPR)
+         * =========================
+         */
+        Route::prefix('/promo')->group(function () {
+            // Cash
+            Route::get('/cash/edit', [SettingPromoPpjbController::class, 'editCash'])
+                ->name('settingPPJB.promoCash.edit');
+            Route::post('/cash', [SettingPromoPpjbController::class, 'updateCash'])
+                ->name('settingPPJB.promoCash.pengajuanUpdate');
 
-            // Promo KPR
-            Route::get('kpr/edit', [SettingPromoPpjbController::class, 'editKpr'])->name('promoKpr.edit');
-            Route::post('kpr', [SettingPromoPpjbController::class, 'updateKpr'])->name('promoKpr.pengajuanUpdate');
+            // KPR
+            Route::get('/kpr/edit', [SettingPromoPpjbController::class, 'editKpr'])
+                ->name('settingPPJB.promoKpr.edit');
+            Route::post('/kpr', [SettingPromoPpjbController::class, 'updateKpr'])
+                ->name('settingPPJB.promoKpr.pengajuanUpdate');
 
-            // Riwayat promo
-            Route::get('{type}/history', [SettingPromoPpjbController::class, 'history'])
+            // Riwayat Promo
+            Route::get('/{type}/history', [SettingPromoPpjbController::class, 'history'])
                 ->whereIn('type', ['cash', 'kpr'])
-                ->name('history');
+                ->name('settingPPJB.promo.history');
 
-            // Approval & Tolak promo
-            Route::patch('{promoBatch}/approve', [SettingPromoPpjbController::class, 'approvePengajuan'])->name('approve');
-            Route::delete('{promoBatch}/reject', [SettingPromoPpjbController::class, 'rejectPengajuan'])->name('reject');
+            // Approval & Penolakan
+            Route::patch('/{promoBatch}/approve', [SettingPromoPpjbController::class, 'approvePengajuan'])
+                ->name('settingPPJB.promo.approve');
+            Route::delete('/{promoBatch}/reject', [SettingPromoPpjbController::class, 'rejectPengajuan'])
+                ->name('settingPPJB.promo.reject');
 
-            // Batalkan & Nonaktifkan promo
-            Route::delete('{batch}', [SettingPromoPpjbController::class, 'cancelPengajuanPromo'])->name('pengajuanCancel');
-            Route::patch('{batch}/nonAktif', [SettingPromoPpjbController::class, 'nonAktifPromo'])->name('nonAktif');
+            // Pembatalan & Nonaktif
+            Route::delete('/{batch}', [SettingPromoPpjbController::class, 'cancelPengajuanPromo'])
+                ->name('settingPPJB.promo.pengajuanCancel');
+            Route::patch('/{batch}/nonAktif', [SettingPromoPpjbController::class, 'nonAktifPromo'])
+                ->name('settingPPJB.promo.nonAktif');
         });
 
-        // 🧱 MUTU PPJB
-        Route::prefix('mutu')->name('mutu.')->group(function () {
-            Route::get('edit', [SettingMutuPpjbController::class, 'edit'])->name('edit');
-            Route::post('pengajuan-update', [SettingMutuPpjbController::class, 'pengajuanUpdate'])->name('pengajuanUpdate');
-            Route::patch('{batch}/nonaktif', [SettingMutuPpjbController::class, 'nonAktifMutu'])->name('nonAktif');
-            Route::delete('{batch}/cancel', [SettingMutuPpjbController::class, 'cancelPengajuanMutu'])->name('cancel');
-            Route::get('history', [SettingMutuPpjbController::class, 'history'])->name('history');
+        /**
+         * =========================
+         * MUTU PPJB
+         * =========================
+         */
+        Route::prefix('/mutu')->group(function () {
+            Route::get('/edit', [SettingMutuPpjbController::class, 'edit'])->name('settingPPJB.mutu.edit');
+            Route::post('/pengajuan-update', [SettingMutuPpjbController::class, 'pengajuanUpdate'])
+                ->name('settingPPJB.mutu.pengajuanUpdate');
+            Route::patch('/{batch}/nonaktif', [SettingMutuPpjbController::class, 'nonAktifMutu'])
+                ->name('settingPPJB.mutu.nonAktif');
+            Route::delete('/{batch}/cancel', [SettingMutuPpjbController::class, 'cancelPengajuanMutu'])
+                ->name('settingPPJB.mutu.cancel');
+            Route::get('/history', [SettingMutuPpjbController::class, 'history'])
+                ->name('settingPPJB.mutu.history');
         });
 
-        // 💵 BONUS CASH
-        Route::prefix('bonus-cash')->name('bonusCash.')->group(function () {
-            Route::get('edit', [SettingBonusCashController::class, 'edit'])->name('edit');
-            Route::post('pengajuan-update', [SettingBonusCashController::class, 'pengajuanUpdate'])->name('pengajuanUpdate');
-            Route::patch('{batch}/nonaktif', [SettingBonusCashController::class, 'nonAktif'])->name('nonAktif');
-            Route::delete('{batch}/cancel', [SettingBonusCashController::class, 'cancelPengajuan'])->name('cancel');
-            Route::get('history', [SettingBonusCashController::class, 'history'])->name('history');
-            Route::patch('{bonusCash}/approve', [SettingBonusCashController::class, 'approvePengajuan'])->name('approve');
-            Route::delete('{bonusCash}/reject', [SettingBonusCashController::class, 'rejectPengajuan'])->name('reject');
+        /**
+         * =========================
+         * BONUS CASH
+         * =========================
+         */
+        Route::prefix('/bonus-cash')->group(function () {
+            Route::get('/edit', [SettingBonusCashController::class, 'edit'])
+                ->name('settingPPJB.bonusCash.edit');
+            Route::post('/pengajuan-update', [SettingBonusCashController::class, 'pengajuanUpdate'])
+                ->name('settingPPJB.bonusCash.pengajuanUpdate');
+            Route::patch('/{batch}/nonaktif', [SettingBonusCashController::class, 'nonAktif'])
+                ->name('settingPPJB.bonusCash.nonAktif');
+            Route::delete('/{batch}/cancel', [SettingBonusCashController::class, 'cancelPengajuan'])
+                ->name('settingPPJB.bonusCash.cancel');
+            Route::get('/history', [SettingBonusCashController::class, 'history'])
+                ->name('settingPPJB.bonusCash.history');
+
+            // Approval & Penolakan
+            Route::patch('/{bonusCash}/approve', [SettingBonusCashController::class, 'approvePengajuan'])
+                ->name('settingPPJB.bonusCash.approve');
+            Route::delete('/{bonusCash}/reject', [SettingBonusCashController::class, 'rejectPengajuan'])
+                ->name('settingPPJB.bonusCash.reject');
         });
 
-        // 💳 CARA BAYAR
-        Route::prefix('cara-bayar')->name('caraBayar.')->group(function () {
-            Route::get('edit', [SettingCaraBayarController::class, 'editCaraBayar'])->name('edit');
-            Route::post('/', [SettingCaraBayarController::class, 'updatePengajuan'])->name('updatePengajuan');
-            Route::delete('{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])->name('cancelPengajuanPromo');
-            Route::patch('{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])->name('nonAktif');
-            Route::patch('{caraBayar}/approve', [SettingCaraBayarController::class, 'approvePengajuanCaraBayar'])->name('approve');
-            Route::delete('{caraBayar}/reject', [SettingCaraBayarController::class, 'rejectPengajuanCaraBayar'])->name('reject');
+        /**
+         * =========================
+         * CARA BAYAR
+         * =========================
+         */
+        Route::prefix('/cara-bayar')->group(function () {
+            Route::get('/edit', [SettingCaraBayarController::class, 'editCaraBayar'])
+                ->name('settingPPJB.caraBayar.edit');
+            Route::post('/', [SettingCaraBayarController::class, 'updatePengajuan'])
+                ->name('settingPPJB.caraBayar.updatePengajuan');
+            Route::delete('/{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])
+                ->name('settingPPJB.caraBayar.cancelPengajuanPromo');
+            Route::patch('/{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])
+                ->name('settingPPJB.caraBayar.nonAktif');
+            Route::patch('/{caraBayar}/approve', [SettingCaraBayarController::class, 'approvePengajuanCaraBayar'])
+                ->name('settingPPJB.caraBayar.approve');
+            Route::delete('/{caraBayar}/reject', [SettingCaraBayarController::class, 'rejectPengajuanCaraBayar'])
+                ->name('settingPPJB.caraBayar.reject');
         });
 
-        // ⏰ KETERLAMBATAN PEMBAYARAN
-        Route::prefix('keterlambatan')->name('keterlambatan.')->group(function () {
-            Route::get('edit', [SettingKeterlambatanController::class, 'editKeterlambatan'])->name('edit');
-            Route::post('/', [SettingKeterlambatanController::class, 'updatePengajuan'])->name('updatePengajuan');
-            Route::delete('{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])->name('cancelPengajuanPromo');
-            Route::patch('{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])->name('nonAktif');
-            Route::patch('{keterlambatan}/approve', [SettingKeterlambatanController::class, 'approvePengajuan'])->name('approve');
-            Route::delete('{keterlambatan}/reject', [SettingKeterlambatanController::class, 'rejectPengajuan'])->name('reject');
+        /**
+         * =========================
+         * KETERLAMBATAN PEMBAYARAN
+         * =========================
+         */
+        Route::prefix('/keterlambatan')->group(function () {
+            Route::get('/edit', [SettingKeterlambatanController::class, 'editKeterlambatan'])
+                ->name('settingPPJB.keterlambatan.edit');
+            Route::post('/', [SettingKeterlambatanController::class, 'updatePengajuan'])
+                ->name('settingPPJB.keterlambatan.updatePengajuan');
+            Route::delete('/{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])
+                ->name('settingPPJB.keterlambatan.cancelPengajuanPromo');
+            Route::patch('/{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])
+                ->name('settingPPJB.keterlambatan.nonAktif');
+            Route::patch('/{keterlambatan}/approve', [SettingKeterlambatanController::class, 'approvePengajuan'])
+                ->name('settingPPJB.keterlambatan.approve');
+            Route::delete('/{keterlambatan}/reject', [SettingKeterlambatanController::class, 'rejectPengajuan'])
+                ->name('settingPPJB.keterlambatan.reject');
         });
 
-        // ❌ PEMBATALAN
-        Route::prefix('pembatalan')->name('pembatalan.')->group(function () {
-            Route::get('edit', [SettingPembatalanController::class, 'editPembatalan'])->name('edit');
-            Route::post('/', [SettingPembatalanController::class, 'updatePengajuan'])->name('updatePengajuan');
-            Route::delete('{pembatalan}', [SettingPembatalanController::class, 'cancelPengajuanPembatalan'])->name('cancelPengajuanPromo');
-            Route::patch('{pembatalan}/nonaktif', [SettingPembatalanController::class, 'nonAktifPembatalan'])->name('nonAktif');
-            Route::patch('{pembatalan}/approve', [SettingPembatalanController::class, 'approvePengajuanPembatalan'])->name('approve');
-            Route::delete('{pembatalan}/reject', [SettingPembatalanController::class, 'rejectPengajuanPembatalan'])->name('reject');
+        /**
+         * =========================
+         * PEMBATALAN
+         * =========================
+         */
+        Route::prefix('/pembatalan')->group(function () {
+            Route::get('/edit', [SettingPembatalanController::class, 'editPembatalan'])
+                ->name('settingPPJB.pembatalan.edit');
+            Route::post('/', [SettingPembatalanController::class, 'updatePengajuan'])
+                ->name('settingPPJB.pembatalan.updatePengajuan');
+            Route::delete('/{pembatalan}', [SettingPembatalanController::class, 'cancelPengajuanPembatalan'])
+                ->name('settingPPJB.pembatalan.cancelPengajuanPromo');
+            Route::patch('/{pembatalan}/nonaktif', [SettingPembatalanController::class, 'nonAktifPembatalan'])
+                ->name('settingPPJB.pembatalan.nonAktif');
+            Route::patch('/{pembatalan}/approve', [SettingPembatalanController::class, 'approvePengajuanPembatalan'])
+                ->name('settingPPJB.pembatalan.approve');
+            Route::delete('/{pembatalan}/reject', [SettingPembatalanController::class, 'rejectPengajuanPembatalan'])
+                ->name('settingPPJB.pembatalan.reject');
         });
     });
 
