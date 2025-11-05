@@ -53,12 +53,14 @@
 
 
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
-                        @if (!$promoKprPending)
-                            <button data-modal-target="modal-create" data-modal-toggle="modal-create"
-                                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                                Ajukan Promo Kpr Baru
-                            </button>
-                        @endif
+                        @hasrole(['Manager Pemasaran', 'Super Admin '])
+                            @if (!$promoKprPending)
+                                <button data-modal-target="modal-create" data-modal-toggle="modal-create"
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                                    Ajukan Promo Kpr Baru
+                                </button>
+                            @endif
+                        @endrole
                     </div>
                 </div>
 
@@ -142,16 +144,52 @@
                                     Diajukan oleh <strong>{{ $promoKprPending->pengaju->username ?? '-' }}</strong>
                                     pada {{ $promoKprPending->tanggal_pengajuan->format('d M Y') }}
                                 </p>
-                                <div class="mt-4 flex justify-end">
-                                    <form action="{{ route('settingPPJB.promo.pengajuanCancel', $promoKprPending) }}"
-                                        method="POST" class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="cancelPengajuan px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                            Batalkan Pengajuan
-                                        </button>
-                                    </form>
+                                <div class="flex gap-2 sm:justify-end justify-start">
+                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+                                        {{-- Tombol Tolak --}}
+                                        <form action="{{ route('settingPPJB.promo.reject', $promoKprPending) }}" method="POST"
+                                            class="delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                class="tolakPengajuan flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Tolak
+                                            </button>
+                                        </form>
+
+                                        {{-- Tombol ACC --}}
+                                        <form action="{{ route('settingPPJB.promo.approve', $promoKprPending) }}"method="POST"
+                                            class="approve-form">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="button"
+                                                class="accPengajuan flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                ACC
+                                            </button>
+                                        </form>
+                                    @endrole
+
+                                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                                        <form action="{{ route('settingPPJB.promo.pengajuanCancel', $promoKprPending) }}"
+                                            method="POST" class="delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                class="cancelPengajuan px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                                                Batalkan Pengajuan
+                                            </button>
+                                        </form>
+                                    @endrole
 
                                 </div>
                             </div>
@@ -279,11 +317,8 @@
                 }
             });
         });
-    </script>
 
-
-    {{-- sweatalert 2 for batalkan pengajuan promo data --}}
-    <script>
+        // {{-- sweatalert 2 for batalkan pengajuan promo data --}}
         document.addEventListener('click', function(e) {
             if (e.target.closest('.cancelPengajuan')) {
                 const btn = e.target.closest('.cancelPengajuan');
@@ -304,10 +339,8 @@
                 });
             }
         });
-    </script>
 
-    {{-- sweatalert 2 for nonaktifkan promo data --}}
-    <script>
+        // {{-- sweatalert 2 for nonaktifkan promo data --}}
         document.addEventListener('click', function(e) {
             if (e.target.closest('.nonAktifkanPromo')) {
                 const btn = e.target.closest('.nonAktifkanPromo');
@@ -322,6 +355,55 @@
                     cancelButtonColor: '#3085d6',
                     confirmButtonText: 'Ya, nonaktifkan!',
                     cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+
+        // 🛑 SweetAlert untuk Tolak Pengajuan (Promo ini)
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.tolakPengajuan')) {
+                const btn = e.target.closest('.tolakPengajuan');
+                const form = btn.closest('.delete-form');
+
+                Swal.fire({
+                    title: 'Tolak Pengajuan Promo ini?',
+                    text: 'Apakah Anda yakin ingin menolak pengajuan Promo ini ini? Tindakan ini tidak dapat dibatalkan.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonText: 'Batal',
+                    confirmButtonText: 'Ya, Tolak!',
+                    reverseButtons: true,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+        // ✅ SweetAlert untuk ACC Pengajuan Promo ini
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.accPengajuan')) {
+                const btn = e.target.closest('.accPengajuan');
+                const form = btn.closest('.approve-form');
+
+                Swal.fire({
+                    title: 'Setujui Pengajuan Promo ini ini?',
+                    text: 'Hanya satu pengajuan Promo ini yang bisa aktif. Jika disetujui, Promo ini aktif sebelumnya akan dinonaktifkan dan digantikan dengan pengajuan ini.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonColor: '#16a34a',
+                    cancelButtonText: 'Batal',
+                    confirmButtonText: 'Ya, Setujui!',
+                    reverseButtons: true,
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();

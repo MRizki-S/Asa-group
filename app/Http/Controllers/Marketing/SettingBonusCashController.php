@@ -107,7 +107,7 @@ class SettingBonusCashController extends Controller
          redirect()->back()->with('success', 'Cara bayar berhasil dinonaktifkan.');
     }
 
-
+    // cancel pengajuan bonus cash
     public function cancelPengajuan(PpjbBonusCashBatch $batch)
     {
         if ($batch->status_pengajuan !== 'pending') {
@@ -119,6 +119,42 @@ class SettingBonusCashController extends Controller
         return redirect()->back()->with('success', 'Pengajuan Bonus Cash berhasil dibatalkan.');
     }
 
+
+    // Bonus Cash history nonaktif dan tolak
+    public function history()
+    {
+        $perumahaanId = $this->currentPerumahaanId();
+
+        // 1. Batch ACC tapi nonaktif
+        $nonAktif = PpjbBonusCashBatch::where('status_pengajuan', 'acc')
+            ->where('status_aktif', false)
+            ->where('perumahaan_id', $perumahaanId)
+            ->with(['items', 'penyetuju', 'pengaju'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // 2. Batch yang ditolak
+        $ditolak = PpjbBonusCashBatch::where('status_pengajuan', 'tolak')
+            ->where('perumahaan_id', $perumahaanId)
+            ->with(['items', 'penyetuju', 'pengaju'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $editRoute = route('settingPPJB.bonusCash.edit');
+
+        return view('marketing.setting.bonus-cash-history', [
+            'nonAktif'    => $nonAktif,
+            'ditolak'     => $ditolak,
+            'editRoute'   => $editRoute,
+            'breadcrumbs' => [
+                ['label' => 'Setting PPJB', 'url' => route('settingPPJB.index')],
+                ['label' => 'Bonus Cash PPJB', 'url' => $editRoute],
+                ['label' => 'Riwayat Bonus Cash', 'url' => ''],
+            ],
+        ]);
+    }
 
     // Manager Keuangan aksi untuk approve dan tolak pengajuan Bonus Cash baru
     public function approvePengajuan(PpjbBonusCashBatch $bonusCash)

@@ -20,7 +20,7 @@
 
                     <div class="flex items-center gap-2">
                         {{-- Tombol Riwayat Bonus Cash --}}
-                        <a href="{{ route('settingPPJB.mutu.history') }}"
+                        <a href="{{ route('settingPPJB.bonusCash.history') }}"
                             class="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-md hover:bg-gray-300
                          dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
                             Riwayat Bonus Cash PPJB

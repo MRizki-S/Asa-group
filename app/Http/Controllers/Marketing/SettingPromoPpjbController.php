@@ -7,6 +7,7 @@ use App\Models\PpjbPromoBatch;
 use App\Models\PpjbPromoItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SettingPromoPpjbController extends Controller
 {
@@ -36,7 +37,6 @@ class SettingPromoPpjbController extends Controller
             ->where('status_pengajuan', 'pending')
             ->where('perumahaan_id', $perumahaanId)
             ->first();
-
 
         return view('marketing.setting.promo-cash-edit', [
             'promoCashActive'  => $promoCashActive,
@@ -104,7 +104,6 @@ class SettingPromoPpjbController extends Controller
             ->where('status_pengajuan', 'pending')
             ->where('perumahaan_id', $perumahaanId)
             ->first();
-
 
         return view('marketing.setting.promo-kpr-edit', [
             'promoKprActive'  => $promoKprActive,
@@ -218,4 +217,74 @@ class SettingPromoPpjbController extends Controller
             ],
         ]);
     }
+
+    // Manager Keuangan aksi untuk approve dan tolak pengajuan cara bayar baru
+    public function approvePengajuan(PpjbPromoBatch $promoBatch)
+    {
+        try {
+            DB::transaction(function () use ($promoBatch) {
+                // ✅ Hanya boleh ACC pengajuan yang statusnya pending
+                if ($promoBatch->status_pengajuan !== 'pending') {
+                    throw new \Exception('Hanya pengajuan cara bayar dengan status pending yang bisa disetujui.');
+                }
+
+                // ✅ Nonaktifkan semua KPR aktif lain di perumahaan yang sama
+                PpjbPromoBatch::where('perumahaan_id', $promoBatch->perumahaan_id)
+                    ->where('tipe', 'KPR')
+                    ->where('status_aktif', 1)
+                    ->update(['status_aktif' => 0]);
+
+                // ✅ Set pengajuan ini jadi aktif & disetujui
+                $promoBatch->update([
+                    'status_aktif'     => 1,
+                    'status_pengajuan' => 'acc',
+                    'disetujui_oleh'   => Auth::id(),
+                ]);
+            });
+
+            // ✅ Tentukan redirect berdasarkan tipe promo
+            $redirectRoute = match (strtolower($promoBatch->tipe)) {
+                'kpr'   => route('settingPPJB.promoKpr.edit'),
+                'cash'  => route('settingPPJB.promoCash.edit'),
+                default => route('settingPPJB.index'),
+            };
+
+            return redirect($redirectRoute)
+                ->with('success', 'Pengajuan cara bayar berhasil disetujui dan diaktifkan.');
+
+        } catch (\Exception $e) {
+            $redirectRoute = match (strtolower($promoBatch->tipe)) {
+                'kpr'   => route('settingPPJB.promoKpr.edit'),
+                'cash'  => route('settingPPJB.promoCash.edit'),
+                default => route('settingPPJB.index'),
+            };
+
+            return redirect($redirectRoute)
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    public function rejectPengajuan(PpjbPromoBatch $promoBatch)
+    {
+        // Pastikan hanya yang pending bisa ditolak
+        if ($promoBatch->status_pengajuan !== 'pending') {
+            return redirect()->back()->with('error', 'Hanya pengajuan promo dengan status pending yang bisa ditolak.');
+        }
+
+        // Update status
+        $promoBatch->update([
+            'status_pengajuan' => 'tolak',
+        ]);
+
+        // Tentukan redirect berdasarkan jenis_pembayaran
+        $redirectRoute = match ($promoBatch->tipe) {
+            'kpr'   => route('settingPPJB.promoKpr.edit'),
+            'cash'  => route('settingPPJB.promoCash.edit'),
+            default => route('settingPPJB.index'),
+        };
+
+        return redirect($redirectRoute)
+            ->with('success', 'Pengajuan promo berhasil ditolak.');
+    }
+
 }

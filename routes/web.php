@@ -193,6 +193,11 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::get('/promo/{type}/history', [SettingPromoPpjbController::class, 'history'])
             ->whereIn('type', ['cash', 'kpr'])
             ->name('settingPPJB.promo.history');
+        // approve dan tolak promo kpr dan cash
+        Route::patch('/promo/{promoBatch}/approve', [SettingPromoPpjbController::class, 'approvePengajuan'])
+            ->name('settingPPJB.promo.approve');
+        Route::delete('/promo/{promoBatch}/reject', [SettingPromoPpjbController::class, 'rejectPengajuan'])
+            ->name('settingPPJB.promo.reject');
 
         // batalkan pengajuan (pengajuan masih pending)
         Route::delete('/promo/{batch}', [SettingPromoPpjbController::class, 'cancelPengajuanPromo'])
@@ -240,6 +245,11 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::post('/keterlambatan', [SettingKeterlambatanController::class, 'updatePengajuan'])->name('settingPPJB.keterlambatan.updatePengajuan');
         Route::Delete('/keterlambatan/{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])->name('settingPPJB.keterlambatan.cancelPengajuanPromo');
         Route::patch('/keterlambatan/{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])->name('settingPPJB.keterlambatan.nonAktif');
+         // approve dan tolak promo kpr dan cash
+        Route::patch('/keterlambatan/{keterlambatan}/approve', [SettingKeterlambatanController::class, 'approvePengajuan'])
+            ->name('settingPPJB.keterlambatan.approve');
+        Route::delete('/keterlambatan/{keterlambatan}/reject', [SettingKeterlambatanController::class, 'rejectPengajuan'])
+            ->name('settingPPJB.keterlambatan.reject');
 
         // Kelola  Pembatalan
         Route::get('/pembatalan/edit', action: [SettingPembatalanController::class, 'editPembatalan'])->name('settingPPJB.pembatalan.edit');

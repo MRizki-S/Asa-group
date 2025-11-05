@@ -1,9 +1,10 @@
 <?php
 namespace App\Http\Controllers\Marketing;
 
-use App\Http\Controllers\Controller;
-use App\Models\PpjbKeterlambatan;
 use Illuminate\Http\Request;
+use App\Models\PpjbKeterlambatan;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
 class SettingKeterlambatanController extends Controller
@@ -102,5 +103,49 @@ class SettingKeterlambatanController extends Controller
         $keterlambatan->delete();
 
         return redirect()->back()->with('success', 'Pengajuan Keterlambatan berhasil dibatalkan.');
+    }
+
+    // Approve Pengajuan Pembatalan
+    public function approvePengajuan(PpjbKeterlambatan $keterlambatan)
+    {
+        try {
+            DB::transaction(function () use ($keterlambatan) {
+                // ✅ Validasi status
+                if ($keterlambatan->status_pengajuan !== 'pending') {
+                    throw new \Exception('Hanya pengajuan Keterlambatan dengan status pending yang bisa disetujui.');
+                }
+
+                // 🟡 Nonaktifkan semua Keterlambatan aktif sebelumnya
+                PpjbKeterlambatan::where('perumahaan_id', $keterlambatan->perumahaan_id)
+                    ->where('status_aktif', operator: 1)
+                    ->update(['status_aktif' => 0])
+;
+                // ✅ Set pengajuan ini menjadi aktif
+                $keterlambatan->update([
+                    'status_aktif'     => 1,
+                    'status_pengajuan' => 'acc',
+                    'disetujui_oleh'   => Auth::id(),
+                ]);
+            });
+
+            return redirect()->back()->with('success', 'Pengajuan Keterlambatan berhasil disetujui dan diaktifkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    // tolak pengajuan Keterlambatan
+    public function rejectPengajuan(PpjbKeterlambatan $keterlambatan)
+    {
+        // 🔹 Cek apakah statusnya masih pending
+        if ($keterlambatan->status_pengajuan !== 'pending') {
+            return redirect()->back()->with('error', 'Hanya pengajuan Keterlambatan dengan status pending yang bisa ditolak.');
+        }
+
+        $keterlambatan->update([
+            'status_pengajuan' => 'tolak',
+        ]);
+
+        return back()->with('success', 'Pengajuan Keterlambatan berhasil ditolak.');
     }
 }

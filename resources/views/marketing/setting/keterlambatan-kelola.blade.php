@@ -208,7 +208,42 @@
                                 <p class="text-sm text-gray-500 mt-2">
                                     Diajukan oleh <strong>{{ $keterlambatanPending->pengaju->username ?? '-' }}</strong>
                                 </p>
-                                <div class="mt-4 flex justify-end">
+                                <div class="flex gap-2 sm:justify-end justify-start">
+                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+                                        {{-- Tombol Tolak --}}
+                                        <form action="{{ route('settingPPJB.keterlambatan.reject', $keterlambatanPending) }}" method="POST"
+                                            class="delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                class="tolakPengajuan flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Tolak
+                                            </button>
+                                        </form>
+
+                                        {{-- Tombol ACC --}}
+                                        <form action="{{ route('settingPPJB.keterlambatan.approve', $keterlambatanPending) }}"method="POST"
+                                            class="approve-form">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="button"
+                                                class="accPengajuan flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-all">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                ACC
+                                            </button>
+                                        </form>
+                                    @endrole
+
+                                    @hasrole(['Manager Pemasaran', 'Super Admin '])
                                     <form
                                         action="{{ route('settingPPJB.keterlambatan.cancelPengajuanPromo', $keterlambatanPending) }}"
                                         method="POST" class="delete-form">
@@ -219,6 +254,7 @@
                                             Batalkan Pengajuan
                                         </button>
                                     </form>
+                                    @endrole
                                 </div>
                             </div>
                         </div>
@@ -305,8 +341,8 @@
 
 
 
-    {{-- sweatalert 2 for batalkan pengajuan Keterlambatan data --}}
     <script>
+        // {{-- sweatalert 2 for batalkan pengajuan Keterlambatan data --}}
         document.addEventListener('click', function(e) {
             if (e.target.closest('.cancelPengajuan')) {
                 const btn = e.target.closest('.cancelPengajuan');
@@ -343,6 +379,55 @@
                     cancelButtonColor: '#3085d6',
                     confirmButtonText: 'Ya, nonaktifkan!',
                     cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+
+        // 🛑 SweetAlert untuk Tolak Pengajuan (Keterlambatan ini)
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.tolakPengajuan')) {
+                const btn = e.target.closest('.tolakPengajuan');
+                const form = btn.closest('.delete-form');
+
+                Swal.fire({
+                    title: 'Tolak Pengajuan Keterlambatan ini?',
+                    text: 'Apakah Anda yakin ingin menolak pengajuan Keterlambatan ini ini? Tindakan ini tidak dapat dibatalkan.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonText: 'Batal',
+                    confirmButtonText: 'Ya, Tolak!',
+                    reverseButtons: true,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+        // ✅ SweetAlert untuk ACC Pengajuan Keterlambatan ini
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.accPengajuan')) {
+                const btn = e.target.closest('.accPengajuan');
+                const form = btn.closest('.approve-form');
+
+                Swal.fire({
+                    title: 'Setujui Pengajuan Keterlambatan ini ini?',
+                    text: 'Hanya satu pengajuan Keterlambatan ini yang bisa aktif. Jika disetujui, Keterlambatan ini aktif sebelumnya akan dinonaktifkan dan digantikan dengan pengajuan ini.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonColor: '#16a34a',
+                    cancelButtonText: 'Batal',
+                    confirmButtonText: 'Ya, Setujui!',
+                    reverseButtons: true,
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();
