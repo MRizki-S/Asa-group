@@ -151,6 +151,7 @@ class ManagePemesananController extends Controller
         $unit     = $pemesanan->unit;
         $type     = $unit?->type;
         $kpr      = $pemesanan->kpr;
+        $noPemesanan = $pemesanan->no_pemesanan;
 
         // =========================
         // 🔹 Format Dasar Data diri pembeli
@@ -292,6 +293,7 @@ class ManagePemesananController extends Controller
         // =========================
         // 🔹 Isi ke Template
         // =========================
+        $template->setValue('NO_PEMESANAN', $noPemesanan);
         $template->setValue('NAMA_SALES', $namaSales);
         $template->setValue('NAMA_PEMBELI', strtoupper($dataDiri->nama_pribadi ?? '-'));
         $template->setValue('NO_HP_PEMBELI', $noHpPembeli);
@@ -355,6 +357,7 @@ class ManagePemesananController extends Controller
         $unit     = $pemesanan->unit;
         $type     = $unit?->type;
         $cash     = $pemesanan->cash;
+        $noPemesanan = $pemesanan->no_pemesanan;
 
         // =========================
         // 🔹 Format Dasar Data diri pembeli
@@ -493,6 +496,7 @@ class ManagePemesananController extends Controller
         // =========================
         // 🔹 Isi ke Template
         // =========================
+        $template->setValue('NO_PEMESANAN', $noPemesanan);
         $template->setValue('NAMA_PEMBELI', strtoupper($dataDiri->nama_pribadi ?? '-'));
         $template->setValue('NO_HP_PEMBELI', $noHpPembeli);
         $template->setValue('ALAMAT_KTP', $alamatKtp);

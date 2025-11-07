@@ -147,39 +147,7 @@
             {{-- Data Diri Users --}}
             @include('marketing.pemesanan-unit.partials.data-diri')
 
-            <div x-data="() => ({
-                caraBayar: '',
-                bonusList: [{ nama_bonus: '' }],
-                bonusOptions: @js(
-    $bonusCash?->items->map(
-        fn($i) => [
-            'nama_bonus' => $i->nama_bonus,
-            'nominal' => $i->nominal_bonus,
-        ],
-    ) ?? [],
-),
-
-                getNominal(nama) {
-                    const item = this.bonusOptions.find(i => i.nama_bonus === nama);
-                    return item ? item.nominal : '';
-                },
-
-                availableOptions(index) {
-                    const selected = this.bonusList.map(b => b.nama_bonus).filter(Boolean);
-                    return this.bonusOptions.filter(opt =>
-                        !selected.includes(opt.nama_bonus) || opt.nama_bonus === this.bonusList[index].nama_bonus
-                    );
-                },
-
-                addBonus() {
-                    const remaining = this.bonusOptions.filter(opt =>
-                        !this.bonusList.some(b => b.nama_bonus === opt.nama_bonus)
-                    );
-                    if (remaining.length > 0) {
-                        this.bonusList.push({ nama_bonus: '' });
-                    }
-                }
-            })">
+            <div >
                 {{-- Sistem Pembayaran --}}
                 @include('marketing.pemesanan-unit.partials.sistem-pembayaran')
 
@@ -197,14 +165,6 @@
                 </svg>
                 <p>Silakan pilih akun customer terlebih dahulu untuk menampilkan cara pembayaran.</p>
             </div>
-
-
-
-
-
-
-
-
 
             <!-- Tombol Aksi -->
             <div class="flex justify-end gap-2">
@@ -226,111 +186,197 @@
     <script>
         document.addEventListener('alpine:init', () => {
 
-            Alpine.data('bookingForm', () => ({
-                customers: @json($customersData),
-                selectedCustomerId: '',
-                selectedCustomer: null,
-                jumlahCicilan: '',
-                minimalDp: '',
-                angsuranList: [],
-                isLoading: false,
-                hasSelected: false,
+    Alpine.data('bookingForm', () => ({
+        // === DATA ===
+        customers: @json($customersData),
+        selectedCustomerId: '',
+        selectedCustomer: null,
+        hasSelected: false,
 
-                // tambahan baru
-                caraBayarCash: [],
-                selectedCash: '',
+        // pembayaran / angsuran
+        caraBayar: '',
+        caraBayarCash: [],
+        caraBayarKpr: null,
+        selectedCash: '',
+        jumlahCicilan: '',
+        minimalDp: '',
+        angsuranList: [],
 
-                // dipanggil ketika customer dipilih
-                setCustomer(id) {
-                    this.selectedCustomerId = id;
-                    this.selectedCustomer = this.customers.find(c => c.id == id) || null;
-                    this.hasSelected = !!this.selectedCustomer;
+        // bonus
+        bonusList: [{ nama_bonus: '' }],
+        bonusOptions: @js(
+            $bonusCash?->items->map(
+                fn($i) => [
+                    'nama_bonus' => $i->nama_bonus,
+                    'nominal' => $i->nominal_bonus,
+                ],
+            ) ?? [],
+        ),
 
-                    if (this.selectedCustomer && this.selectedCustomer.booking.perumahaan_id) {
-                        this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
-                    } else {
-                        this.jumlahCicilan = '';
-                        this.minimalDp = '';
-                        this.angsuranList = [];
-                    }
-                },
+        isLoading: false,
 
-                async fetchSettingPpjb(perumahaanId) {
-                    this.isLoading = true;
-                    this.jumlahCicilan = '';
-                    this.minimalDp = '';
-                    this.angsuranList = [];
-                    this.selectedCash = '';
-                    this.caraBayarCash = [];
+        // === LIFECYCLE ===
+        init() {
+            this.initSelect2();
 
-                    try {
-                        const res = await fetch(`api/setting-cara-bayar/${perumahaanId}`);
-                        const data = await res.json();
+            // pantau perubahan cara bayar
+            this.$watch('caraBayar', (val) => this.onCaraBayarChange(val));
+        },
 
-                        if (data?.data?.cash?.length) {
-                            this.caraBayarCash = data.data.cash;
-                        }
+        // === METHODS ===
+        setCustomer(id) {
+            this.selectedCustomerId = id;
+            this.selectedCustomer = this.customers.find(c => c.id == id) || null;
+            this.hasSelected = !!this.selectedCustomer;
 
-                    } catch (error) {
-                        console.error(error);
-                    } finally {
-                        setTimeout(() => this.isLoading = false, 400);
-                    }
-                },
+            if (this.hasSelected && this.selectedCustomer.booking?.perumahaan_id) {
+                this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
+            } else {
+                this._resetAngsuranState();
+            }
+        },
 
-                // kalau klik salah satu tombol cash
-                pilihCash(cashItem) {
-                    this.selectedCash = cashItem.nama_cara_bayar;
-                    this.jumlahCicilan = cashItem.jumlah_cicilan + ' x';
-                    this.minimalDp = parseInt(cashItem.minimal_dp);
-                    this.generateAngsuran(cashItem.jumlah_cicilan);
-                },
+        async fetchSettingPpjb(perumahaanId) {
+            this.isLoading = true;
+            this._resetAngsuranState({ keepCaraBayar: true });
 
-                generateAngsuran(jumlah) {
-                    const today = new Date();
-                    this.angsuranList = [];
+            try {
+                const res = await fetch(`api/setting-cara-bayar/${perumahaanId}`);
+                const data = await res.json();
 
-                    for (let i = 0; i < jumlah; i++) {
-                        const tanggal = new Date(today);
-                        tanggal.setMonth(today.getMonth() + i);
-                        const formatted = tanggal.toISOString().split('T')[0];
+                this.caraBayarCash = Array.isArray(data?.data?.cash) ? data.data.cash : [];
+                this.caraBayarKpr = data?.data?.kpr ?? null;
 
-                        this.angsuranList.push({
-                            tanggal: formatted,
-                            nominal: i === 0 ? this.minimalDp : '',
-                            nominalFormatted: i === 0 ? this.formatNumber(this.minimalDp) : '',
-                        });
-                    }
-                },
-
-                formatNominal(index) {
-                    let value = this.angsuranList[index].nominalFormatted.replace(/\D/g, '');
-                    this.angsuranList[index].nominal = parseInt(value || 0);
-                    this.angsuranList[index].nominalFormatted = this.formatNumber(value);
-                },
-
-                formatNumber(value) {
-                    if (!value) return '';
-                    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                },
-
-                initSelect2() {
-                    const self = this;
-                    const select = $('#selectUser');
-
-                    select.select2({
-                        theme: 'bootstrap4',
-                        width: '100%',
-                        placeholder: "Cari dan pilih akun customer...",
-                        allowClear: true
-                    });
-
-                    select.on('change', function() {
-                        self.setCustomer(this.value);
-                    });
+                // auto isi jika sudah pilih sebelumnya
+                if (this.caraBayar === 'kpr' && this.caraBayarKpr) {
+                    const jumlah = parseInt(this.caraBayarKpr.jumlah_cicilan) || 0;
+                    this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
+                    this.minimalDp = parseInt(this.caraBayarKpr.minimal_dp) || '';
+                    if (jumlah > 0) this.generateAngsuran(jumlah);
                 }
-            }));
 
+                if (this.caraBayar === 'cash' && this.selectedCash) {
+                    const found = this.caraBayarCash.find(c => c.nama_cara_bayar === this.selectedCash);
+                    if (found) {
+                        this.jumlahCicilan = (parseInt(found.jumlah_cicilan) || 0) + ' x';
+                        this.minimalDp = parseInt(found.minimal_dp) || '';
+                        this.generateAngsuran(parseInt(found.jumlah_cicilan) || 0);
+                    }
+                }
+            } catch (e) {
+                console.error('fetchSettingPpjb error', e);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // === PEMILIHAN CARA BAYAR ===
+        pilihCash(cashItem) {
+            this.caraBayar = 'cash';
+            this.selectedCash = cashItem.nama_cara_bayar;
+
+            const jumlah = parseInt(cashItem.jumlah_cicilan) || 0;
+            this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
+            this.minimalDp = parseInt(cashItem.minimal_dp) || 0;
+            this.generateAngsuran(jumlah);
+        },
+
+        onCaraBayarChange(val) {
+            this._resetAngsuranState({ keepCaraBayar: true });
+
+            if (val === 'kpr') {
+                if (this.caraBayarKpr) {
+                    const jumlah = parseInt(this.caraBayarKpr.jumlah_cicilan) || 0;
+                    this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
+                    this.minimalDp = parseInt(this.caraBayarKpr.minimal_dp) || 0;
+                    if (jumlah > 0) this.generateAngsuran(jumlah);
+                } else if (this.selectedCustomer?.booking?.perumahaan_id) {
+                    this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
+                }
+            }
+        },
+
+        // === ANGSURAN ===
+        generateAngsuran(jumlah) {
+            const today = new Date();
+            this.angsuranList = [];
+
+            for (let i = 0; i < jumlah; i++) {
+                const tanggal = new Date(today);
+                tanggal.setMonth(today.getMonth() + i);
+                const formatted = tanggal.toISOString().split('T')[0];
+
+                this.angsuranList.push({
+                    tanggal: formatted,
+                    nominal: i === 0 ? (this.minimalDp || 0) : '',
+                    nominalFormatted: i === 0 ? this.formatNumber(this.minimalDp || 0) : '',
+                });
+            }
+        },
+
+        formatNominal(index) {
+            let v = (this.angsuranList[index]?.nominalFormatted || '').toString().replace(/\D/g, '');
+            this.angsuranList[index].nominal = parseInt(v || 0);
+            this.angsuranList[index].nominalFormatted = this.formatNumber(v);
+        },
+
+        formatNumber(value) {
+            if (value === null || value === undefined || value === '') return '';
+            value = String(value);
+            return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        },
+
+        _resetAngsuranState(opts = {}) {
+            this.angsuranList = [];
+            this.jumlahCicilan = '';
+            this.minimalDp = '';
+            this.selectedCash = '';
+            if (!opts.keepCaraBayar) this.caraBayar = '';
+        },
+
+        // === BONUS HANDLER ===
+        availableOptions(index) {
+            const selected = this.bonusList.map(b => b.nama_bonus).filter(Boolean);
+            return this.bonusOptions.filter(opt =>
+                !selected.includes(opt.nama_bonus) || opt.nama_bonus === this.bonusList[index].nama_bonus
+            );
+        },
+
+        getNominal(nama_bonus) {
+            const found = this.bonusOptions.find(o => o.nama_bonus === nama_bonus);
+            return found ? found.nominal : '';
+        },
+
+        addBonus() {
+            const remaining = this.bonusOptions.filter(opt =>
+                !this.bonusList.some(b => b.nama_bonus === opt.nama_bonus)
+            );
+            if (remaining.length > 0) {
+                this.bonusList.push({ nama_bonus: '' });
+            }
+        },
+
+        // === SELECT2 ===
+        initSelect2() {
+            const self = this;
+            const select = $('#selectUser');
+            if (!select.length) return;
+
+            select.select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                placeholder: "Cari dan pilih akun customer...",
+                allowClear: true
+            });
+
+            select.on('change', function() {
+                self.setCustomer(this.value);
+            });
+
+            const pre = select.val();
+            if (pre) this.setCustomer(pre);
+        },
+    }));
 
             // wilayahForm.js (bisa inline di dalam <script> atau file terpisah)
             Alpine.data('wilayahForm', () => ({
