@@ -1,22 +1,23 @@
 <?php
 namespace App\Models;
 
-use App\Models\PemesananUnitCaraBayar;
-use App\Models\PemesananUnitCash;
-use App\Models\PemesananUnitCicilan;
-use App\Models\PemesananUnitDataDiri;
-use App\Models\PemesananUnitKeterlambatan;
-use App\Models\PemesananUnitKpr;
-use App\Models\PemesananUnitMutu;
-use App\Models\PemesananUnitPembatalan;
-use App\Models\PemesananUnitPromo;
-use App\Models\PengajuanPembatalanPemesananUnit;
-use App\Models\Perumahaan;
-use App\Models\Tahap;
 use App\Models\Unit;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Tahap;
+use App\Models\Perumahaan;
+use App\Models\PemesananUnitKpr;
+use App\Models\PemesananUnitCash;
+use App\Models\PemesananUnitMutu;
+use App\Models\PemesananUnitPromo;
+use App\Models\PemesananUnitCicilan;
+use App\Models\PemesananUnitDataDiri;
+use App\Models\PemesananUnitBonusCash;
+use App\Models\PemesananUnitCaraBayar;
+use App\Models\PemesananUnitPembatalan;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\PemesananUnitKeterlambatan;
+use App\Models\PengajuanPembatalanPemesananUnit;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PemesananUnit extends Model
 {
@@ -95,6 +96,11 @@ class PemesananUnit extends Model
     public function pengajuanPembatalan()
     {
         return $this->hasOne(PengajuanPembatalanPemesananUnit::class);
+    }
+
+    public function bonusCash()
+    {
+        return $this->hasMany(PemesananUnitBonusCash::class);
     }
 
 }

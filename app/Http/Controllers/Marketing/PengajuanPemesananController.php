@@ -89,6 +89,7 @@ class PengajuanPemesananController extends Controller
             'promo',         // ambil semua promo
             'keterlambatan', // snapshot keterlambatan
             'pembatalan',    // snapshot pembatalan
+            'bonusCash',
         ])->findOrFail($id);
 
         return view('marketing.pengajuan-pemesanan.show', [
