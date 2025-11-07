@@ -147,11 +147,45 @@
             {{-- Data Diri Users --}}
             @include('marketing.pemesanan-unit.partials.data-diri')
 
-            {{-- Sistem Pembayaran --}}
-            @include('marketing.pemesanan-unit.partials.sistem-pembayaran')
+            <div x-data="() => ({
+                caraBayar: '',
+                bonusList: [{ nama_bonus: '' }],
+                bonusOptions: @js(
+    $bonusCash?->items->map(
+        fn($i) => [
+            'nama_bonus' => $i->nama_bonus,
+            'nominal' => $i->nominal_bonus,
+        ],
+    ) ?? [],
+),
 
-            {{-- Cara Pembayaran --}}
-            @include('marketing.pemesanan-unit.partials.cara-pembayaraan')
+                getNominal(nama) {
+                    const item = this.bonusOptions.find(i => i.nama_bonus === nama);
+                    return item ? item.nominal : '';
+                },
+
+                availableOptions(index) {
+                    const selected = this.bonusList.map(b => b.nama_bonus).filter(Boolean);
+                    return this.bonusOptions.filter(opt =>
+                        !selected.includes(opt.nama_bonus) || opt.nama_bonus === this.bonusList[index].nama_bonus
+                    );
+                },
+
+                addBonus() {
+                    const remaining = this.bonusOptions.filter(opt =>
+                        !this.bonusList.some(b => b.nama_bonus === opt.nama_bonus)
+                    );
+                    if (remaining.length > 0) {
+                        this.bonusList.push({ nama_bonus: '' });
+                    }
+                }
+            })">
+                {{-- Sistem Pembayaran --}}
+                @include('marketing.pemesanan-unit.partials.sistem-pembayaran')
+
+                {{-- Cara Pembayaran --}}
+                @include('marketing.pemesanan-unit.partials.cara-pembayaraan')
+            </div>
 
             <!-- Pesan kosong sebelum memilih akun user - bookign maka cara bayar tidak akan tampil -->
             <div x-show="!hasSelected" x-transition.opacity
@@ -202,6 +236,11 @@
                 isLoading: false,
                 hasSelected: false,
 
+                // tambahan baru
+                caraBayarCash: [],
+                selectedCash: '',
+
+                // dipanggil ketika customer dipilih
                 setCustomer(id) {
                     this.selectedCustomerId = id;
                     this.selectedCustomer = this.customers.find(c => c.id == id) || null;
@@ -221,26 +260,30 @@
                     this.jumlahCicilan = '';
                     this.minimalDp = '';
                     this.angsuranList = [];
+                    this.selectedCash = '';
+                    this.caraBayarCash = [];
 
                     try {
                         const res = await fetch(`api/setting-cara-bayar/${perumahaanId}`);
                         const data = await res.json();
 
-                        if (data) {
-                            const jumlah = parseInt(data.data.jumlah_cicilan) || 0;
-                            this.jumlahCicilan = jumlah + ' x';
-                            this.minimalDp = parseInt(data.data.minimal_dp) || 0;
-                            this.generateAngsuran(jumlah);
-                        } else {
-                            this.jumlahCicilan = 'Tidak ada data';
+                        if (data?.data?.cash?.length) {
+                            this.caraBayarCash = data.data.cash;
                         }
+
                     } catch (error) {
                         console.error(error);
-                        this.jumlahCicilan = 'Gagal memuat data';
                     } finally {
-                        // biar loadingnya keliatan sebentar
-                        setTimeout(() => this.isLoading = false, 500);
+                        setTimeout(() => this.isLoading = false, 400);
                     }
+                },
+
+                // kalau klik salah satu tombol cash
+                pilihCash(cashItem) {
+                    this.selectedCash = cashItem.nama_cara_bayar;
+                    this.jumlahCicilan = cashItem.jumlah_cicilan + ' x';
+                    this.minimalDp = parseInt(cashItem.minimal_dp);
+                    this.generateAngsuran(cashItem.jumlah_cicilan);
                 },
 
                 generateAngsuran(jumlah) {
@@ -287,6 +330,7 @@
                     });
                 }
             }));
+
 
             // wilayahForm.js (bisa inline di dalam <script> atau file terpisah)
             Alpine.data('wilayahForm', () => ({

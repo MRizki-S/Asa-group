@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
@@ -9,26 +8,46 @@ class SettingPpjbJsonController extends Controller
 {
     public function showByPerumahaan($perumahaanId)
     {
-        $setting = PpjbCaraBayar::where('perumahaan_id', $perumahaanId)
+        $settings = PpjbCaraBayar::where('perumahaan_id', $perumahaanId)
             ->where('status_aktif', true)
-            ->select('id', 'perumahaan_id', 'jumlah_cicilan', 'minimal_dp')
-            ->first();
+            ->select('id', 'perumahaan_id', 'jumlah_cicilan', 'minimal_dp', 'jenis_pembayaran', 'nama_cara_bayar')
+            ->get();
 
-        if (!$setting) {
+        if ($settings->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Belum ada cara bayar aktif untuk perumahaan ini.'
+                'message' => 'Belum ada cara bayar aktif untuk perumahaan ini.',
             ], 404);
         }
 
+        // pisahkan berdasarkan jenis pembayaran
+        $cash = $settings->where('jenis_pembayaran', 'CASH')->values();
+        $kpr  = $settings->firstWhere('jenis_pembayaran', 'KPR');
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'id'              => $setting->id,
-                'perumahaan_id'   => $setting->perumahaan_id,
-                'jumlah_cicilan'  => (int) $setting->jumlah_cicilan,
-                'minimal_dp'      => (float) $setting->minimal_dp,
+            'data'    => [
+                'cash' => $cash,
+                'kpr'  => $kpr,
             ],
         ]);
     }
+
+    // public function showByPerumahaan($perumahaanId)
+    // {
+    //
+
+    //     if ($caraBayarList->isEmpty()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Belum ada cara bayar aktif untuk perumahaan ini.',
+    //         ], 404);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data'    => $caraBayarList,
+    //     ]);
+    // }
+
 }

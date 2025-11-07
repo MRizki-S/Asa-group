@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Marketing;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerBooking;
 use App\Models\PemesananUnit;
+use App\Models\PemesananUnitBonusCash;
 use App\Models\PemesananUnitCaraBayar;
 use App\Models\PemesananUnitCash;
 use App\Models\PemesananUnitCashDokumen;
@@ -15,6 +16,7 @@ use App\Models\PemesananUnitMutu;
 use App\Models\PemesananUnitPembatalan;
 use App\Models\PemesananUnitPromo;
 use App\Models\Perumahaan;
+use App\Models\PpjbBonusCashBatch;
 use App\Models\PpjbCaraBayar;
 use App\Models\PpjbKeterlambatan;
 use App\Models\PpjbMutuBatch;
@@ -114,12 +116,20 @@ class PemesananUnitController extends Controller
             ->latest('id')
             ->first();
 
+        // ===== 4️⃣ Bonus Cash Batch Aktif =====
+        $bonusCash = PpjbBonusCashBatch::with(['items'])
+            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('status_aktif', 1)
+            ->latest('id')
+            ->first();
+        // dd($bonusCas h);
         return view('marketing.pemesanan-unit.create', [
             'customersData' => $customersData,
             'keterlambatan' => $keterlambatan,
             'pembatalan'    => $pembatalan,
             'promoCash'     => $promoCash,
             'promoKpr'      => $promoKpr,
+            'bonusCash'     => $bonusCash,
             'breadcrumbs'   => [
                 ['label' => 'Pemesanan Unit', 'url' => route('marketing.pemesananUnit.index')],
             ],
@@ -164,6 +174,12 @@ class PemesananUnitController extends Controller
             'rw'                        => 'required|string|max:5',
             'alamat_detail'             => 'required|string|max:255',
             'cara_bayar'                => 'required|in:cash,kpr',
+
+            // bonus cash (opsional)
+            'nama_bonus'                => 'nullable|array',
+            'nama_bonus.*'              => 'nullable|string|max:255',
+            'nominal_bonus'             => 'nullable|array',
+            'nominal_bonus.*'           => 'nullable|numeric|min:0',
 
             // === FIELD CASH (wajib jika cara_bayar = cash) ===
             'cash_harga_rumah'          => 'required_if:cara_bayar,cash|min:0',
@@ -295,6 +311,20 @@ class PemesananUnitController extends Controller
                         'updated_by'             => null,
                     ]);
                 }
+
+                // 🔹 Simpan bonus cash (jika ada)
+                if ($request->has('nama_bonus') && is_array($request->nama_bonus)) {
+                    foreach ($request->nama_bonus as $index => $namaBonus) {
+                        $nominalBonus = $request->nominal_bonus[$index] ?? 0;
+
+                        PemesananUnitBonusCash::create([
+                            'pemesanan_unit_id' => $pemesanan->id,
+                            'nama_bonus'        => $namaBonus,
+                            'nominal_bonus'     => $nominalBonus,
+                        ]);
+                    }
+                }
+
             } elseif ($request->cara_bayar === 'kpr') {
                 // 🔹 Simpan data ke tabel pemesanan_unit_kpr
                 PemesananUnitKpr::create([
@@ -346,9 +376,9 @@ class PemesananUnitController extends Controller
                 "Menunggu persetujuan admin KPR 🕓";
 
             // Kirim ke groupp
-            // if ($groupId) {
-            //     $this->notificationGroup->send($groupId, $messageGroup);
-            // }
+            if ($groupId) {
+                $this->notificationGroup->send($groupId, $messageGroup);
+            }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');
         } catch (\Exception $e) {
