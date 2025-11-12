@@ -21,15 +21,17 @@ class PengajuanPembatalanPemesananUnit extends Model
 
         // verifikasi berjenjang
         'status_mgr_pemasaran',
+        'catatan_mgr_pemasaran',
         'status_mgr_keuangan',
+        'catatan_mgr_keuangan',
 
         'diajukan_oleh',
         'disetujui_pemasaran_oleh',
         'disetujui_keuangan_oleh',
 
         'tanggal_pengajuan',
-        'tanggal_acc_pemasaran',
-        'tanggal_acc_keuangan',
+        'tanggal_respon_pemasaran',
+        'tanggal_respon_keuangan',
     ];
 
     // 🔹 Relasi ke tabel pemesanan unit

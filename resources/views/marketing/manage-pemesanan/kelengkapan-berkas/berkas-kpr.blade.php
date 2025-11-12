@@ -31,7 +31,13 @@
         <!-- 📦 Info Pemesanan -->
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-6">
             <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="ri-information-line text-xl"></i> Info Pemesanan
+                <!-- SVG icon "information" -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                Info Pemesanan
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2">
                 <p><span class="font-medium text-gray-700">Nama User :</span> {{ $pemesanan->customer->username ?? '-' }}
@@ -39,7 +45,7 @@
                 <p><span class="font-medium text-gray-700">Nama Sales :</span> {{ $pemesanan->sales->username ?? '-' }}</p>
                 <p><span class="font-medium text-gray-700">Unit :</span> {{ $pemesanan->unit->nama_unit ?? '-' }}
                     ({{ $pemesanan->perumahaan->nama_perumahaan ?? '-' }})</p>
-                <p><span class="font-medium text-gray-700">No HP :</span> {{ $pemesanan->dataDiri->no_hp ?? '-' }}</p>
+                <p><span class="font-medium text-gray-700">No HP User:</span> {{ $pemesanan->dataDiri->no_hp ?? '-' }}</p>
                 <p><span class="font-medium text-gray-700">Cara Bayar :</span> KPR</p>
                 <p><span class="font-medium text-gray-700">Bank :</span> {{ $pemesanan->kpr->bank->nama_bank ?? '-' }}
                     ({{ $pemesanan->kpr->bank->kode_bank ?? '-' }})</p>

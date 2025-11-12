@@ -170,6 +170,14 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     // routoe pengajuan pembatalan pemesanan unit
     Route::get('/pengajuan-pembatalan', [PengajuanPembatalanController::class, 'ListPengajuan'])
         ->name('marketing.pengajuan-pembatalan.listPengajuan');
+    Route::get('/pengajuan-pembatalan/{id}', [PengajuanPembatalanController::class, 'show'])
+        ->name('marketing.pengajuan-pembatalan.show');
+    // 🔹 Route Keputusan Manager Pemasaran
+    Route::patch('/pengajuan-pembatalan/{id}/keputusan-pemasaran', [PengajuanPembatalanController::class, 'keputusanPemasaran'])
+        ->name('marketing.pengajuan-pembatalan.keputusan-pemasaran');
+    // 🔹 Route Keputusan Manager Keuangan (nanti kita isi belakangan)
+    Route::patch('/pengajuan-pembatalan/{id}/keputusan-keuangan', [PengajuanPembatalanController::class, 'keputusanKeuangan'])
+        ->name('marketing.pengajuan-pembatalan.keputusan-keuangan');
 
     // route setting ppjb
     Route::prefix('/setting')->group(function () {

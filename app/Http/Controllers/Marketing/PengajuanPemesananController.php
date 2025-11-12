@@ -31,25 +31,26 @@ class PengajuanPemesananController extends Controller
         $perumahaanId = $this->currentPerumahaanId();
         $user         = Auth::user();
 
-        // Default nilai awal
         $namaPerumahaan     = 'Global';
         $pengajuanPemesanan = collect();
 
-        if ($user->is_global) {
-            // 🔹 Jika user global → ambil semua pending & group by perumahaan
-            $pengajuanPemesanan = PemesananUnit::with(['perumahaan', 'unit', 'customer', 'sales'])
-                ->where('status_pengajuan', 'pending')
-                ->orderByDesc('created_at')
-                ->get()
-                ->groupBy('perumahaan_id'); // kelompokkan per perumahaan
+        // 🔹 Query dasar
+        $query = PemesananUnit::with(['perumahaan', 'unit', 'customer', 'sales'])
+            ->where('status_pengajuan', 'pending')
+            ->orderByDesc('created_at');
 
+        // 🔸 Filter tambahan jika login adalah Sales atau Manager Pemasaran
+        // 🔸 Filter tambahan jika login adalah Sales atau Manager Pemasaran
+        if ($user->hasAnyRole(['Sales', 'Manager Pemasaran'])) {
+            $query->where('sales_id', $user->id);
+        }
+
+        if ($user->is_global) {
+            // 🌐 Jika user global → ambil semua & group by perumahaan
+            $pengajuanPemesanan = $query->get()->groupBy('perumahaan_id');
         } else {
-            // 🔹 Jika bukan global → ambil hanya perumahaan user
-            $pengajuanPemesanan = PemesananUnit::with(['perumahaan', 'unit', 'customer', 'sales'])
-                ->where('status_pengajuan', 'pending')
-                ->where('perumahaan_id', $perumahaanId)
-                ->orderByDesc('created_at')
-                ->get();
+            // 🏠 Jika bukan global → filter hanya perumahaan miliknya
+            $pengajuanPemesanan = $query->where('perumahaan_id', $perumahaanId)->get();
 
             // Ambil nama perumahaan
             $perumahaan = Perumahaan::find($perumahaanId);

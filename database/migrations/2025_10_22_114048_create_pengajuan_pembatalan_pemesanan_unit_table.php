@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('pengecualian_potongan')->default(false);
 
             // 🧭 Status utama dan per level approval
-            $table->enum('status_pengajuan', ['pending', 'selesai', 'ditolak'])->default('pending');
+            $table->enum('status_pengajuan', ['pending', 'acc', 'tolak'])->default('pending');
             $table->enum('status_mgr_pemasaran', ['pending', 'acc', 'tolak'])->default('pending');
             $table->enum('status_mgr_keuangan', ['pending', 'acc', 'tolak'])->default('pending');
 

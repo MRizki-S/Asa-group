@@ -46,12 +46,12 @@
 
         <!-- 📦 Info Pemesanan -->
         <div class="bg-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-5 mb-6">
-            <h2 class="text-base font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                    <path fill-rule="evenodd"
-                        d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm9.408-5.5a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2h-.01ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z"
-                        clip-rule="evenodd" />
+            <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <!-- SVG icon "information" -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
                 </svg>
                 Info Pemesanan
             </h2>
@@ -69,7 +69,7 @@
                         ({{ $pemesanan->perumahaan->nama_perumahaan ?? '-' }})
                     </span>
                 </p>
-                <p><span class="font-medium text-gray-700">No HP :</span>
+                <p><span class="font-medium text-gray-700">No HP User:</span>
                     <span class="text-gray-800">{{ $pemesanan->dataDiri->no_hp ?? '-' }}</span>
                 </p>
                 <p><span class="font-medium text-gray-700">Cara Bayar :</span>
