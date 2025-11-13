@@ -127,6 +127,44 @@ class ManagePemesananController extends Controller
         ]);
     }
 
+    public function rincianTagihan($id)
+    {
+        // 🔹 Ambil data pemesanan beserta relasi penting
+        $pemesanan = PemesananUnit::with([
+            'unit',
+            'unit.blok',
+            'perumahaan',
+            'cicilan',
+        ])->findOrFail($id);
+
+        // 🔹 Ambil data nama perumahaan dan nama unit
+        $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
+        $namaUnit  = $pemesanan->unit
+            ? ($pemesanan->unit->nama_unit ?? $pemesanan->unit->blok->nama_blok ?? '-')
+            : '-';
+
+        // 🔹 Ambil semua rincian cicilan (tagihan)
+        $rincianTagihan = $pemesanan->cicilan()
+            ->orderBy(column: 'pembayaran_ke')
+            ->get();
+        // dd($rincianTagihan);
+        // 🔹 Return ke view
+        return view('marketing.manage-pemesanan.rincian-tagihan.show-rincianTagihan', [
+            'pemesanan'      => $pemesanan,
+            'rincianTagihan' => $rincianTagihan,
+            'breadcrumbs'    => [
+                [
+                    'label' => 'Manage Pemesanan - ' . $namaPerumahaan,
+                    'url'   => route('marketing.managePemesanan.index'),
+                ],
+                [
+                    'label' => 'Rincian Tagihan - ' . $namaUnit,
+                    'url'   => '',
+                ],
+            ],
+        ]);
+    }
+
     // print ppjb KPR
     public function exportWordKPR($id)
     {
@@ -146,11 +184,11 @@ class ManagePemesananController extends Controller
         ])->findOrFail($id);
         // dd($pemesanan);
 
-        $namaSales = strtoupper($pemesanan->sales?->nama_lengkap) ?? '-';
-        $dataDiri = $pemesanan->dataDiri;
-        $unit     = $pemesanan->unit;
-        $type     = $unit?->type;
-        $kpr      = $pemesanan->kpr;
+        $namaSales   = strtoupper($pemesanan->sales?->nama_lengkap) ?? '-';
+        $dataDiri    = $pemesanan->dataDiri;
+        $unit        = $pemesanan->unit;
+        $type        = $unit?->type;
+        $kpr         = $pemesanan->kpr;
         $noPemesanan = $pemesanan->no_pemesanan;
 
         // =========================
@@ -353,10 +391,10 @@ class ManagePemesananController extends Controller
         ])->findOrFail($id);
         // dd($pemesanan);
 
-        $dataDiri = $pemesanan->dataDiri;
-        $unit     = $pemesanan->unit;
-        $type     = $unit?->type;
-        $cash     = $pemesanan->cash;
+        $dataDiri    = $pemesanan->dataDiri;
+        $unit        = $pemesanan->unit;
+        $type        = $unit?->type;
+        $cash        = $pemesanan->cash;
         $noPemesanan = $pemesanan->no_pemesanan;
 
         // =========================

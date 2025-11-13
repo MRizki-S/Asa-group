@@ -71,8 +71,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Etalase Group
-Route::middleware('auth')
-    ->prefix('etalase')->group(function () {
+Route::middleware('auth')->prefix('etalase')->group(function () {
 
     Route::resource('perumahaan', controller: PerumahaanController::class);
     // nested resource create, store, edit, update, destroy untuk Tahap
@@ -134,6 +133,10 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             ->name('ppjbKPR.export.word');
         Route::get('/export/ppjbCASH/{id}', [ManagePemesananController::class, 'exportWordCASH'])
             ->name('ppjbCASH.export.word');
+
+        // 🔹 Rincian Tagihan
+        Route::get('/rincian-tagihan/{id}', [ManagePemesananController::class, 'rincianTagihan'])
+            ->name('marketing.rincianTagihan');
 
         Route::resource('/', ManagePemesananController::class)
             ->names('marketing.managePemesanan');

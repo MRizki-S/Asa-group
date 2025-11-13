@@ -146,16 +146,17 @@
 
                                     {{-- 🟢 Rincian Tagihan --}}
                                     <td class="px-4 py-2 text-center">
-                                        <button
+                                        <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
                                             class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
                                             <i class="ri-file-list-3-line"></i> Lihat
-                                        </button>
+                                        </a>
                                     </td>
+
 
 
                                     @hasrole('Sales')
                                         {{-- 🔴 Pengajuan Pembatalan --}}
-                                         <td class="px-4 py-2 text-center">
+                                        <td class="px-4 py-2 text-center">
                                             <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
                                                 data-id="{{ $item->id }}"
                                                 data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
@@ -265,11 +266,11 @@
 
 
                                     {{-- 🟢 Rincian Tagihan --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <button
+                                     <td class="px-4 py-2 text-center">
+                                        <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
                                             class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
                                             <i class="ri-file-list-3-line"></i> Lihat
-                                        </button>
+                                        </a>
                                     </td>
 
                                     @hasrole('Sales')
