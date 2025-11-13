@@ -233,7 +233,7 @@
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
                                                 class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
-                                                PDF
+                                                PPJB
                                             </a>
                                         </td>
                                     @endrole
@@ -314,28 +314,6 @@
 
     {{-- sweatalert 2 for delete data --}}
     <script>
-        // document.addEventListener('click', function(e) {
-        //     if (e.target.closest('.delete-btn')) {
-        //         const btn = e.target.closest('.delete-btn');
-        //         const form = btn.closest('.delete-form');
-
-        //         Swal.fire({
-        //             title: 'Yakin hapus data ini?',
-        //             text: "Apakah anda yakin menghapus Akun User & Booking Unit ini?",
-        //             icon: 'warning',
-        //             showCancelButton: true,
-        //             confirmButtonColor: '#d33',
-        //             cancelButtonColor: '#3085d6',
-        //             confirmButtonText: 'Ya, hapus!',
-        //             cancelButtonText: 'Batal'
-        //         }).then((result) => {
-        //             if (result.isConfirmed) {
-        //                 form.submit();
-        //             }
-        //         });
-        //     }
-        // });
-
         if (document.getElementById("table-managePemesananKpr") && typeof simpleDatatables.DataTable !== 'undefined') {
             const dataTable = new simpleDatatables.DataTable("#table-managePemesananKpr", {
                 searchable: true,

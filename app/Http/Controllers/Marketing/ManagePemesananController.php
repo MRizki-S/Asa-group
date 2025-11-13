@@ -139,7 +139,7 @@ class ManagePemesananController extends Controller
 
         // 🔹 Ambil data nama perumahaan dan nama unit
         $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
-        $namaUnit  = $pemesanan->unit
+        $namaUnit       = $pemesanan->unit
             ? ($pemesanan->unit->nama_unit ?? $pemesanan->unit->blok->nama_blok ?? '-')
             : '-';
 
@@ -366,7 +366,7 @@ class ManagePemesananController extends Controller
         // =========================
         // 🔹 Simpan hasil dan download
         // =========================
-        $fileName = 'PPJB_KPR_' . $pemesanan->id . '.docx';
+        $fileName = 'PPJB_KPR_' . $pemesanan->no_pemesanan . '.docx';
         $tempFile = storage_path('app/public/' . $fileName);
         $template->saveAs($tempFile);
 
@@ -471,28 +471,33 @@ class ManagePemesananController extends Controller
         }
 
         // =========================
-        // 🔹 Ambil daftar promo dari snapshot
+        // 🔹 Ambil daftar promo dan bonus cash
         // =========================
         $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
+        $bonusList = $pemesanan->bonusCash()->pluck('nama_bonus')->toArray();
+        // dd($bonusList);
+        // Gabungkan keduanya
+        $combinedList = array_filter(array_merge($promoList, $bonusList));
 
         // =========================
-        // 🔹 Format daftar promo manual (lanjutan dari huruf g. → mulai h.)
+        // 🔹 Format daftar manual (lanjutan dari huruf g → mulai dari i.)
         // =========================
-        if (count($promoList)) {
+        if (count($combinedList)) {
             $hurufRange  = range('a', 'z');
-            $startLetter = 'i'; // huruf awal lanjutan dari list paten
+            $startLetter = 'i'; // huruf awal lanjutan
             $startIndex  = array_search($startLetter, $hurufRange);
 
             $daftarPromo = '';
             $indent      = str_repeat(' ', 4); // 4 spasi sebagai tab
 
-            foreach ($promoList as $i => $promo) {
+            foreach ($combinedList as $i => $item) {
                 $huruf = $hurufRange[$startIndex + $i] ?? '?';
-                $daftarPromo .= "{$huruf}.{$indent}{$promo}\r\n";
+                $daftarPromo .= "{$huruf}.{$indent}{$item}\r\n";
             }
         } else {
             $daftarPromo = '';
         }
+        // dd($daftarPromo);
 
         // =========================
         // 🔹 Data keterlambatan
@@ -566,7 +571,7 @@ class ManagePemesananController extends Controller
         // =========================
         // 🔹 Simpan hasil dan download
         // =========================
-        $fileName = 'PPJB_CASH_' . $pemesanan->id . '.docx';
+        $fileName = 'PPJB_CASH_' . $pemesanan->no_pemesanan . '.docx';
         $tempFile = storage_path('app/public/' . $fileName);
         $template->saveAs($tempFile);
 
