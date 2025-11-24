@@ -1,5 +1,4 @@
-<div
-    class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
 
     <!-- 🔘 Pilihan Cara Bayar -->
     <div class="px-5 py-4 sm:px-6 sm:py-5">
@@ -112,9 +111,6 @@
                     :value="(parseInt(hargaRumah.replace(/\D/g, '')) || 0) + nominalKelebihan">
             </div>
         </div>
-
-
-
     </div>
 
 
@@ -137,23 +133,29 @@
             nominalKelebihan: 0,
             hargaTotal: 0,
 
-            // Getter numeric
+            // Getter angka bersih
             get dpRumahIndukNumber() {
                 return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
             },
+
+            // total_dp = dp rumah induk + nominal kelebihan tanah
             get totalDpNumber() {
-                return this.dpRumahIndukNumber;
+                return this.dpRumahIndukNumber + this.nominalKelebihan;
             },
+
+            // dp_pembeli = total_dp - sbum (minimal 0)
             get dpPembeliNumber() {
                 const hasil = this.totalDpNumber - this.sbumPemerintah;
                 return hasil > 0 ? hasil : 0;
             },
+
+            // harga_kpr = harga_total - total_dp
             get hargaKprNumber() {
                 const total = this.hargaTotal - this.totalDpNumber;
                 return total > 0 ? total : 0;
             },
 
-            // Getter tampilan
+            // Format tampilan
             get totalDp() {
                 return formatRupiah(this.totalDpNumber.toString());
             },
@@ -167,7 +169,7 @@
                 return formatRupiah(this.hargaTotal.toString());
             },
 
-            // Event
+            // Event input
             updateDpRumahInduk(e) {
                 let raw = e.target.value.replace(/\D/g, '');
                 this.dpRumahInduk = formatRupiah(raw);
@@ -218,6 +220,30 @@
                 </p>
             </div>
 
+            <!-- Kelebihan Tanah -->
+            <div class="grid grid-cols-2 gap-4 items-end mt-4">
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Luas Kelebihan Tanah (m²)
+                    </label>
+                    <input type="text" readonly name="kpr_luas_kelebihan"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                    dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
+                        :value="selectedCustomer?.booking?.luas_kelebihan ?? '-'">
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Nominal Kelebihan (Rp)
+                    </label>
+                    <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())"
+                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                    dark:bg-gray-700 dark:text-white dark:border-gray-600">
+
+                    <!-- Hidden -->
+                    <input type="hidden" name="kpr_nominal_kelebihan" :value="nominalKelebihan">
+                </div>
+            </div>
+
             <!-- Total DP -->
             <div class="mt-4">
                 <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
@@ -248,30 +274,6 @@
                 <p class="text-xs text-gray-500 mt-1">
                     Otomatis dihitung dari <b>Total DP - SBUM Pemerintah</b>.
                 </p>
-            </div>
-
-            <!-- Kelebihan Tanah -->
-            <div class="grid grid-cols-2 gap-4 items-end mt-4">
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Luas Kelebihan Tanah (m²)
-                    </label>
-                    <input type="text" readonly name="kpr_luas_kelebihan"
-                        class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                    dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
-                        :value="selectedCustomer?.booking?.luas_kelebihan ?? '-'">
-                </div>
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Nominal Kelebihan (Rp)
-                    </label>
-                    <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())"
-                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                    dark:bg-gray-700 dark:text-white dark:border-gray-600">
-
-                    <!-- Hidden -->
-                    <input type="hidden" name="kpr_nominal_kelebihan" :value="nominalKelebihan">
-                </div>
             </div>
 
             <!-- Harga Total Rumah & Nilai KPR -->
