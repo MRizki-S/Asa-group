@@ -145,6 +145,7 @@ class ManagePemesananController extends Controller
 
         // 🔹 Ambil semua rincian cicilan (tagihan)
         $rincianTagihan = $pemesanan->cicilan()
+            ->where('is_active', 1)
             ->orderBy(column: 'pembayaran_ke')
             ->get();
         // dd($rincianTagihan);
@@ -244,6 +245,7 @@ class ManagePemesananController extends Controller
         // 🔹 Ambil daftar cicilan
         // =========================
         $cicilanList = $pemesanan->cicilan()
+            ->where('is_active', 1)
             ->orderBy('pembayaran_ke')
             ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal']);
 
