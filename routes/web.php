@@ -10,6 +10,7 @@ use App\Http\Controllers\Etalase\TahapKualifikasiController;
 use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
+use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
@@ -156,7 +157,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             ->name('marketing.pengajuanPembatalan.store');
 
         // pindah unit route
-        Route::get('/pemesanan/pindah-unit/{id}p', [PindahUnitController::class, 'createPengajuan'])
+        Route::get('/pemesanan/pindah-unit/{id}', [PindahUnitController::class, 'createPengajuan'])
             ->name('marketing.pindahUnit.createPengajuan');
 
         // Route::post('/pemesanan/pindah-unit', [PindahUnitController::class, 'store'])
@@ -181,6 +182,13 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     // 🔹 Route Keputusan Manager Keuangan (nanti kita isi belakangan)
     Route::patch('/pengajuan-pembatalan/{id}/keputusan-keuangan', [PengajuanPembatalanController::class, 'keputusanKeuangan'])
         ->name('marketing.pengajuan-pembatalan.keputusan-keuangan');
+
+    // Adendum
+    Route::get('/adendum', [AdendumController::class, 'index'])->name('marketing.adendum.index');
+    // Adendum Cara Bayar
+    // Adendum
+    Route::get('/adendum/cara-bayar', [AdendumController::class, 'caraBayar'])->name('marketing.adendum.caraBayar');
+    Route::post('/adendum/store', [AdendumController::class, 'store'])->name('marketing.adendum.store');
 
     // route setting ppjb
     Route::prefix('/setting')->group(function () {

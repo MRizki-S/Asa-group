@@ -62,11 +62,11 @@
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
                                 @hasrole('Admin KPR')
                                     <th class="px-4 py-3 text-center">Update Data KPR</th>
+                                    <th class="px-4 py-3 text-center">Adendum</th>
                                 @endrole
                                 <th class="px-4 py-3 text-center">Rincian Tagihan</th>
                                 @hasrole('Sales')
                                     <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                    <th class="px-4 py-3 text-center">Pengajuan Pindah Unit</th>
                                 @endrole
                             </tr>
                         </thead>
@@ -142,6 +142,15 @@
                                                 <span>Update Data</span>
                                             </a>
                                         </td>
+
+
+                                        {{-- 🟡 Pengajuan Adendum --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <button
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
+                                                <i class="ri-repeat-line"></i>Adendum
+                                            </button>
+                                        </td>
                                     @endrole
 
                                     {{-- 🟢 Rincian Tagihan --}}
@@ -165,14 +174,6 @@
                                                 data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
                                                 <i class="ri-close-circle-line"></i> Pembatalan
-                                            </button>
-                                        </td>
-
-                                        {{-- 🟡 Pengajuan Pindah Unit --}}
-                                        <td class="px-4 py-2 text-center">
-                                            <button
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
-                                                <i class="ri-repeat-line"></i> Pindah Unit
                                             </button>
                                         </td>
                                     @endrole
@@ -212,11 +213,11 @@
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
                                 @hasrole('Admin KPR')
                                     <th class="px-4 py-3 text-center">Update Data Cash</th>
+                                    <th class="px-4 py-3 text-center">Adendum</th>
                                 @endrole
                                 <th class="px-4 py-3 text-center">Rincian Tagihan</th>
                                 @hasrole('Sales')
                                     <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                    <th class="px-4 py-3 text-center">Pengajuan Pindah Unit</th>
                                 @endrole
                             </tr>
                         </thead>
@@ -262,11 +263,20 @@
                                                 <i class="ri-edit-line"></i> Update Data
                                             </a>
                                         </td>
+
+                                        {{-- 🟡 Adendum --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
+                                                <i class="ri-repeat-line"></i> Adendum
+                                            </a>
+                                        </td>
+
                                     @endrole
 
 
                                     {{-- 🟢 Rincian Tagihan --}}
-                                     <td class="px-4 py-2 text-center">
+                                    <td class="px-4 py-2 text-center">
                                         <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
                                             class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
                                             <i class="ri-file-list-3-line"></i> Lihat
@@ -285,15 +295,6 @@
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
                                                 <i class="ri-close-circle-line"></i> Pembatalan
                                             </button>
-                                        </td>
-
-
-                                        {{-- 🟡 Pengajuan Pindah Unit --}}
-                                        <td class="px-4 py-2 text-center">
-                                            <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
-                                                <i class="ri-repeat-line"></i> Pindah Unit
-                                            </a>
                                         </td>
                                     @endrole
 

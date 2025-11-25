@@ -149,7 +149,7 @@ class PemesananUnitController extends Controller
  */
     public function store(Request $request)
     {
-        // dd($request->all());
+        dd($request->all());
         // 🧩 VALIDASI SEBELUM TRANSAKSI
         $request->validate([
             // === FIELD UMUM ===

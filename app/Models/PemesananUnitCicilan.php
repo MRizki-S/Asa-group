@@ -13,7 +13,7 @@ class PemesananUnitCicilan extends Model
     protected $table = 'pemesanan_unit_cicilan';
     protected $fillable = [
         'pemesanan_unit_id', 'pembayaran_ke', 'tanggal_jatuh_tempo',
-        'nominal', 'status_bayar', 'tanggal_pembayaran'
+        'nominal', 'status_bayar', 'tanggal_pembayaran', 'is_active', 'adendum_id'
     ];
 
     protected $casts = [
