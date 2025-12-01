@@ -58,6 +58,6 @@ class Adendum extends Model
      */
     public function subCaraBayar()
     {
-        return $this->hasMany(SubAdendumCaraBayar::class, 'addendum_id');
+        return $this->hasOne(SubAdendumCaraBayar::class, 'adendum_id');
     }
 }

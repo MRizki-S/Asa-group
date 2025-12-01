@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'Adendum')
+@section('pageActive', 'BuatAdendum')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'Adendum' }">
+        <div x-data="{ pageName: 'BuatAdendum' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -84,11 +84,11 @@
 
 
                 <!-- 3. Adendum Perubahan Promo -->
-                <a href="/marketing/adendum/perubahan-promo"
+                <!-- <a href="/marketing/adendum/perubahan-promo"
                     class="group flex items-start gap-4 p-5 bg-white border rounded-xl shadow transition
            hover:bg-gray-50 hover:border-gray-300 hover:shadow-lg hover:scale-[1.02]">
 
-                    <!-- Icon -->
+                    
                     <svg class="w-10 h-10 text-gray-800 dark:text-white transition-transform group-hover:scale-110" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                         width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                         <path
@@ -102,7 +102,7 @@
                             Digunakan untuk mengubah promo, diskon, atau benefit yang sudah disepakati sebelumnya.
                         </p>
                     </div>
-                </a>
+                </a> -->
 
                 <!-- 4. Adendum Gabungan -->
                 <a href="/marketing/adendum/gabungan"

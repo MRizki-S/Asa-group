@@ -11,6 +11,7 @@ use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
 use App\Http\Controllers\Marketing\AdendumController;
+use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
@@ -80,12 +81,18 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
         ->name('tahap.create');
     Route::post('perumahaan/{perumahaan:slug}/tahap', [TahapController::class, 'store'])
         ->name('tahap.store');
-    Route::get('perumahaan/{perumahaan:slug}/tahap/{tahap:slug}/edit',
-        [TahapController::class, 'edit'])->withoutScopedBindings()->name('tahap.edit');
-    Route::put('perumahaan/{perumahaan:slug}/tahap/{tahap:slug}',
-        [TahapController::class, 'update'])->withoutScopedBindings()->name('tahap.update');
-    Route::delete('perumahaan/{perumahaan:slug}/tahap/{tahap:slug}',
-        [TahapController::class, 'destroy'])->withoutScopedBindings()->name('tahap.destroy');
+    Route::get(
+        'perumahaan/{perumahaan:slug}/tahap/{tahap:slug}/edit',
+        [TahapController::class, 'edit']
+    )->withoutScopedBindings()->name('tahap.edit');
+    Route::put(
+        'perumahaan/{perumahaan:slug}/tahap/{tahap:slug}',
+        [TahapController::class, 'update']
+    )->withoutScopedBindings()->name('tahap.update');
+    Route::delete(
+        'perumahaan/{perumahaan:slug}/tahap/{tahap:slug}',
+        [TahapController::class, 'destroy']
+    )->withoutScopedBindings()->name('tahap.destroy');
 
     // tahap type
     Route::post('tahapType/{tahap}', [TahapTypeController::class, 'store'])->name('tahapType.store');
@@ -111,10 +118,12 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
             ->names('unit'); // jangan pakai except('index')
     });
 
-    Route::get('/perumahaan/{perumahaan:slug}/tahap-json',
-        [EtalaseJsonController::class, 'listByPerumahaan'])
+    Route::get(
+        '/perumahaan/{perumahaan:slug}/tahap-json',
+        [EtalaseJsonController::class, 'listByPerumahaan']
+    )
         ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
-                          // Ambil Unit berdasar  kan tahap
+    // Ambil Unit berdasar  kan tahap
     Route::get('/tahap/{tahapId}/unit-json', [EtalaseJsonController::class, 'getUnitsByTahap']);
     Route::get('/etalase/unit/{id}/harga-json', [EtalaseJsonController::class, 'getUnitHarga']);
 
@@ -183,12 +192,28 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     Route::patch('/pengajuan-pembatalan/{id}/keputusan-keuangan', [PengajuanPembatalanController::class, 'keputusanKeuangan'])
         ->name('marketing.pengajuan-pembatalan.keputusan-keuangan');
 
-    // Adendum
-    Route::get('/adendum', [AdendumController::class, 'index'])->name('marketing.adendum.index');
-    // Adendum Cara Bayar
-    // Adendum
-    Route::get('/adendum/cara-bayar', [AdendumController::class, 'caraBayar'])->name('marketing.adendum.caraBayar');
-    Route::post('/adendum/store', [AdendumController::class, 'store'])->name('marketing.adendum.store');
+    Route::prefix('adendum')->group(function () {
+        // Buat Adendum
+        Route::get('/', [AdendumController::class, 'index'])
+            ->name('marketing.adendum.index');
+        // Adendum Cara Bayar
+        Route::get('/cara-bayar', [AdendumController::class, 'caraBayar'])
+            ->name('marketing.adendum.caraBayar');
+        // Store Adendum
+        Route::post('/store', [AdendumController::class, 'store'])
+            ->name('marketing.adendum.store');
+
+        // LIST Adendum
+        Route::get('/list', [AdendumListController::class, 'index'])
+            ->name('marketing.adendum.list');
+        Route::get('/list/{id}', [AdendumListController::class, 'show'])
+            ->name('marketing.adendum.detail');
+        Route::patch('/list/{id}/approve', [AdendumListController::class, 'approve'])
+            ->name(name: 'marketing.adendum.approve');
+        Route::patch('/list/{id}/reject', [AdendumListController::class, 'reject'])
+            ->name('marketing.adendum.reject');
+    });
+
 
     // route setting ppjb
     Route::prefix('/setting')->group(function () {

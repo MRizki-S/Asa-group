@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'Adendum')
+@section('pageActive', 'BuatAdendum')
 
 @section('content')
     <link rel="stylesheet"
@@ -10,7 +10,7 @@
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'Adendum' }">
+        <div x-data="{ pageName: 'BuatAdendum' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -566,7 +566,7 @@
                                 <input type="text" readonly name="cash_luas_kelebihan"
                                     class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
                        dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
-                                    :value="selectedCustomer?.default_data?.luas_kelebihan ?? '-'">
+                                    :value="selectedCustomer?.default_data?.luas_kelebihan ?? ''">
 
                                 <input type="text" readonly
                                     class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5

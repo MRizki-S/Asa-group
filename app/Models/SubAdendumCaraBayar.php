@@ -32,7 +32,7 @@ class SubAdendumCaraBayar extends Model
      */
     public function addendum()
     {
-        return $this->belongsTo(Adendum::class, 'addendum_id');
+        return $this->belongsTo(Adendum::class, 'adendum_id');
     }
 
     /**
