@@ -39,9 +39,8 @@ class PengajuanPemesananController extends Controller
             ->where('status_pengajuan', 'pending')
             ->orderByDesc('created_at');
 
-        // 🔸 Filter tambahan jika login adalah Sales atau Manager Pemasaran
-        // 🔸 Filter tambahan jika login adalah Sales atau Manager Pemasaran
-        if ($user->hasAnyRole(['Sales', 'Manager Pemasaran'])) {
+        // 🔸 Filter tambahan jika login adalah Sales
+        if ($user->hasAnyRole(['Sales'])) {
             $query->where('sales_id', $user->id);
         }
 

@@ -467,7 +467,7 @@
                     <!-- Menu Item Adendum -->
                     @endhasrole
 
-                    @hasrole(['Super Admin', 'Admin KPR', 'Manager Pemasaran', 'Project Manager'])
+                    @hasrole(['Super Admin', 'Admin KPR', 'Manager Keuangan', 'Project Manager'])
                     <!-- Menu Item Setting PPJB -->
                     <li>
                         <a href="/marketing/setting"

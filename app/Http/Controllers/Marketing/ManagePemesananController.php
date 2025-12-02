@@ -48,7 +48,7 @@ class ManagePemesananController extends Controller
                 $q->where('status_pengajuan', '!=', 'ditolak');
             });
 
-        if ($user->hasRole('Sales') || $user->hasRole('Manager Pemasaran')) {
+        if ($user->hasRole('Sales') || $user->hasRole('Project Manager')) {
             $pemesananKpr->where('sales_id', $user->id);
         }
 
@@ -71,7 +71,7 @@ class ManagePemesananController extends Controller
                 $q->where('status_pengajuan', '!=', 'ditolak');
             });
 
-        if ($user->hasRole('Sales')) {
+        if ($user->hasRole('Sales') || $user->hasRole('Project Manager')) {
             $pemesananCash->where('sales_id', $user->id);
         }
 

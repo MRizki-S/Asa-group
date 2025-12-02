@@ -68,7 +68,7 @@
                                     <th class="px-4 py-3">Unit Dipesan</th>
                                     <th class="px-4 py-3">Sales</th>
                                     <th class="px-4 py-3">Tanggal Pengajuan</th>
-                                    <th class="px-4 py-3 text-center">Status Manager Pemasaran</th>
+                                    <th class="px-4 py-3 text-center">Status Project Manager</th>
                                     <th class="px-4 py-3 text-center">Status Manager Keuangan</th>
                                     <th class="px-4 py-3 text-center">Status Pengajuan Akhir</th>
                                     <th class="px-4 py-3 text-center">Aksi</th>
@@ -192,7 +192,7 @@
                                 <th class="px-4 py-3">Unit Dipesan</th>
                                 <th class="px-4 py-3">Sales</th>
                                 <th class="px-4 py-3 text-center">Tanggal Pengajuan</th>
-                                <th class="px-4 py-3 text-center">Status Manager Pemasaran</th>
+                                <th class="px-4 py-3 text-center">Status Project Manager</th>
                                 <th class="px-4 py-3 text-center">Status Manager Keuangan</th>
                                 <th class="px-4 py-3 text-center">Status Pengajuan Akhir</th>
                                 <th class="px-4 py-3 text-center">Aksi</th>

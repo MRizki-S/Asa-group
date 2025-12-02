@@ -53,7 +53,7 @@
 
 
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
-                        @hasrole(['Manager Pemasaran', 'Super Admin '])
+                        @hasrole(['Project Manager', 'Super Admin '])
                             @if (!$promoKprPending)
                                 <button data-modal-target="modal-create" data-modal-toggle="modal-create"
                                     class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
@@ -179,7 +179,7 @@
                                         </form>
                                     @endrole
 
-                                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                                    @hasrole(['Project Manager', 'Super Admin '])
                                         <form action="{{ route('settingPPJB.promo.pengajuanCancel', $promoKprPending) }}"
                                             method="POST" class="delete-form">
                                             @csrf

@@ -40,7 +40,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Cara Bayar PPJB - KPR</h3>
 
-                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                    @hasrole(['Project Manager', 'Super Admin '])
                         <div class="flex items-center gap-2">
                             @if (!$caraBayarPendingKpr)
                                 <button @click="openModal = true"
@@ -219,7 +219,7 @@
                                         </form>
                                     @endrole
 
-                                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                                    @hasrole(['Project Manager', 'Super Admin '])
                                         {{-- Tombol untuk pengaju --}}
                                         <form
                                             action="{{ route('settingPPJB.caraBayar.cancelPengajuanPromo', $caraBayarPendingKpr) }}"
@@ -246,7 +246,7 @@
                 {{-- Header + Tombol Ajukan Baru --}}
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Cara Bayar PPJB - Cash</h3>
-                      @hasrole(['Manager Pemasaran', 'Super Admin '])
+                      @hasrole(['Project Manager', 'Super Admin '])
                     <button @click="openModal = true"
                         class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
                         Ajukan Cara Bayar Baru
@@ -412,7 +412,7 @@
                                         </form>
                                     @endrole
 
-                                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                                    @hasrole(['Project Manager', 'Super Admin '])
                                         {{-- Tombol untuk cancel pengajuan  --}}
                                         <form action="{{ route('settingPPJB.caraBayar.cancelPengajuanPromo', $item) }}"
                                             method="POST" class="delete-form">

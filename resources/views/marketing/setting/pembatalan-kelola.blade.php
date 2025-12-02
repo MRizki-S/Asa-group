@@ -30,7 +30,7 @@
                         </h3>
                     </div>
 
-                    @hasrole(['Manager Pemasaran', 'Super Admin '])
+                    @hasrole(['Project Manager', 'Super Admin '])
                         <div class="flex items-center gap-2">
                             {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
                             @if (!$pembatalanPending)
@@ -179,7 +179,7 @@
                                 </form>
                             @endhasrole
 
-                            @hasrole(['Manager Pemasaran', 'Super Admin'])
+                            @hasrole(['Project Manager', 'Super Admin'])
                                 {{-- Tombol Batalkan Pengajuan --}}
                                 <form action="{{ route('settingPPJB.pembatalan.cancelPengajuanPromo', $pembatalanPending) }}"
                                     method="POST" class="delete-form">

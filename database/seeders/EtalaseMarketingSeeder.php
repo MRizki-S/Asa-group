@@ -16,7 +16,7 @@ class EtalaseMarketingSeeder extends Seeder
             'HRD',
             'Admin Umum',
             'Manager Keuangan',
-            'Manager Pemasaran',
+            'Project Manager',
             'Staff Keuangan',
             'Admin KPR',
             'Sales',

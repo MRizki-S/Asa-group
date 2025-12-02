@@ -15,7 +15,7 @@ class RoleSeeder extends Seeder
             'HRD',
             'Admin Umum',
             'Manager Keuangan', // sudah ada akun seeder
-            'Manager Pemasaran', // sudah ada akun seeder
+            'Project Manager', // sudah ada akun seeder
             'Staff Keuangan',
             'Admin KPR', // sudah ada akun seeder
             'Sales',    // sudah ada akun seeder

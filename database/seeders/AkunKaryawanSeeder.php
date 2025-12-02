@@ -102,35 +102,35 @@ class AkunKaryawanSeeder extends Seeder
         $managerKeuangan->assignRole('Manager Keuangan');
 
 
-        // #5 Manager Pemasaran ASA
-        $managerPemasaranAsa = User::firstOrCreate(
-            ['username' => 'manager pemasaran asa'],
+        // #5 Project Manager ASA
+        $projectManagerAsa = User::firstOrCreate(
+            ['username' => 'project manager asa'],
             [
                 'nama_lengkap'  => 'NURBIYANTI',
                 'no_hp'         => '6285238617670',
                 'password'      => Hash::make('12345678'),
-                'slug'          => Str::slug('manager pemasaran asa'),
+                'slug'          => Str::slug('project manager asa'),
                 'type'          => 'karyawan',
                 'perumahaan_id' => 1,
                 'is_global'     => false,
             ]
         );
-        $managerPemasaranAsa->assignRole('Manager Pemasaran');
+        $projectManagerAsa->assignRole('Project Manager');
 
-        // Manager Pemasaran LHR
-        $managerPemasaranLhr = User::firstOrCreate(
-            ['username' => 'manager pemasaran lhr'],
+        // project manager LHR
+        $projectManagerLhr = User::firstOrCreate(
+            ['username' => 'project manager lhr'],
             [
-                'nama_lengkap'  => 'Manager Pemasaran LHR',
+                'nama_lengkap'  => 'project manager LHR',
                 'no_hp'         => '6285238617670',
                 'password'      => Hash::make('12345678'),
-                'slug'          => Str::slug('manager pemasaran lhr'),
+                'slug'          => Str::slug('project manager lhr'),
                 'type'          => 'karyawan',
                 'perumahaan_id' => 2,
                 'is_global'     => false,
             ]
         );
-        $managerPemasaranLhr->assignRole('Manager Pemasaran');
+        $projectManagerLhr->assignRole('project manager');
 
         $this->command->info('✅ UserSeeder selesai: akun karyawan berhasil dibuat dan role ditautkan.');
     }

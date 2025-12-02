@@ -19,7 +19,7 @@ class PpjbPromoBatch extends Model
     // ===== RELATIONS =====
 
     /**
-     * Batch ini diajukan oleh manager pemasaran
+     * Batch ini diajukan oleh Project Manager
      */
     public function pengaju()
     {
