@@ -58,7 +58,7 @@ class PemesananUnitController extends Controller
                                                             // ->get();
 
         // 🧩 Jika yang login adalah selain Super Admin → tampilkan hanya booking miliknya
-        if (! $user->hasRole('Super Admin')) {
+        if (! $user->hasRole(['Super Admin', 'Project Manager', 'Admin KPR'])) {
             $query->where('sales_id', Auth::id());
         }
 
