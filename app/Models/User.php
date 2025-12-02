@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Models\Company;
 use App\Models\PemesananUnit;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
@@ -86,4 +87,8 @@ class User extends Authenticatable
         return $this->hasMany(PemesananUnit::class, 'sales_id');
     }
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 }

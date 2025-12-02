@@ -5,6 +5,7 @@ use App\Models\Blok;
 use App\Models\Type;
 use App\Models\User;
 use App\Models\Tahap;
+use App\Models\Company;
 use Illuminate\Support\Str;
 use App\Models\PpjbCaraBayar;
 use App\Models\PpjbMutuBatch;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Perumahaan extends Model
 {
-    protected $table    = "perumahaan";
+    protected $table = "perumahaan";
     protected $fillable = ['nama_perumahaan', 'slug', 'alamat'];
 
     // route model binding pakai slug
@@ -85,4 +86,8 @@ class Perumahaan extends Model
         return $this->hasMany(PpjbMutuBatch::class, 'perumahaan_id');
     }
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 }
