@@ -10,6 +10,9 @@ use App\Http\Controllers\Etalase\TahapKualifikasiController;
 use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
+use App\Http\Controllers\Gudang\MasterBarangController;
+use App\Http\Controllers\Gudang\NotaBarangMasukController;
+use App\Http\Controllers\Gudang\StockBarangController;
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
@@ -123,7 +126,7 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
         [EtalaseJsonController::class, 'listByPerumahaan']
     )
         ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
-    // Ambil Unit berdasar  kan tahap
+                          // Ambil Unit berdasar  kan tahap
     Route::get('/tahap/{tahapId}/unit-json', [EtalaseJsonController::class, 'getUnitsByTahap']);
     Route::get('/etalase/unit/{id}/harga-json', [EtalaseJsonController::class, 'getUnitHarga']);
 
@@ -213,7 +216,6 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::patch('/list/{id}/reject', [AdendumListController::class, 'reject'])
             ->name('marketing.adendum.reject');
     });
-
 
     // route setting ppjb
     Route::prefix('/setting')->group(function () {
@@ -363,4 +365,23 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::get('/setting-cara-bayar/{perumahaanId}', [SettingPpjbJsonController::class, 'showByPerumahaan'])
             ->name('api.setting-caraBayar.show');
     });
+});
+
+// Gudang
+Route::middleware('auth')->prefix('gudang')->group(function () {
+
+    // Stock Barang
+    Route::get('/stock-barang', [StockBarangController::class, 'stockIndex'])
+        ->name('gudang.stockBarang.index');
+
+    // Master Barang
+    Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
+
+    // Daftar Nota Masuk
+    Route::get('/nota-masuk', [NotaBarangMasukController::class, 'index'])->name('gudang.notaBarangMasuk.index');
+    Route::get('gudang/nota-barang-masuk/{nomorNota}',[NotaBarangMasukController::class, 'show'])->name('gudang.notaBarangMasuk.show');
+    Route::delete('gudang/nota-barang-masuk/{nomorNota}',[NotaBarangMasukController::class, 'destroy'])->name('gudang.notaBarangMasuk.destroy');
+    // Tambah Nota Masuk
+    Route::get('/nota-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
+    Route::post('/nota-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
 });

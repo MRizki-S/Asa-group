@@ -557,7 +557,7 @@
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Item Stock Barang -->
                     <li>
-                        <a href="{{ route('marketing.akunUser.index') }}"
+                        <a href="{{ route('gudang.stockBarang.index') }}"
                             @click="selected = (selected === 'StockBarang' ? '' : 'StockBarang')"
                             class="menu-item group"
                             :class="(selected === 'StockBarang') && (page === 'StockBarang') ?
@@ -584,7 +584,7 @@
 
                     <!-- Menu Item Master Barang -->
                     <li>
-                        <a href="{{ route('marketing.akunUser.index') }}"
+                        <a href="{{ route('gudang.masterBarang.index') }}"
                             @click="selected = (selected === 'MasterBarang' ? '' : 'MasterBarang')"
                             class="menu-item group"
                             :class="(selected === 'MasterBarang') && (page === 'MasterBarang') ?
@@ -615,14 +615,14 @@
 
                     <!-- Menu Item Daftar Nota Masuk -->
                     <li>
-                        <a href="/marketing/manage-pemesanan"
-                            @click="selected = (selected === 'ManagePemesanan' ? '' : 'ManagePemesanan')"
+                        <a href="{{ route('gudang.notaBarangMasuk.index') }}"
+                            @click="selected = (selected === 'DaftarNotaMasuk' ? '' : 'DaftarNotaMasuk')"
                             class="menu-item group"
-                            :class="(selected === 'ManagePemesanan') && (page === 'ManagePemesanan') ?
+                            :class="(selected === 'DaftarNotaMasuk') && (page === 'DaftarNotaMasuk') ?
                             'menu-item-active' :
                             'menu-item-inactive'">
 
-                            <svg :class="(selected === 'ManagePemesanan') && (page === 'ManagePemesanan') ?
+                            <svg :class="(selected === 'DaftarNotaMasuk') && (page === 'DaftarNotaMasuk') ?
                             'menu-item-icon-active' : ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -645,14 +645,14 @@
 
                     <!-- Menu Item Tambah Nota Masuk -->
                     <li>
-                        <a href="/marketing/manage-pemesanan"
-                            @click="selected = (selected === 'ManagePemesanan' ? '' : 'ManagePemesanan')"
+                        <a href="{{ route('gudang.notaBarangMasuk.create') }}"
+                            @click="selected = (selected === 'TambahNotaMasuk' ? '' : 'TambahNotaMasuk')"
                             class="menu-item group"
-                            :class="(selected === 'ManagePemesanan') && (page === 'ManagePemesanan') ?
+                            :class="(selected === 'TambahNotaMasuk') && (page === 'TambahNotaMasuk') ?
                             'menu-item-active' :
                             'menu-item-inactive'">
 
-                            <svg :class="(selected === 'ManagePemesanan') && (page === 'ManagePemesanan') ?
+                            <svg :class="(selected === 'TambahNotaMasuk') && (page === 'TambahNotaMasuk') ?
                             'menu-item-icon-active' : ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
