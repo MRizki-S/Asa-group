@@ -538,6 +538,7 @@
                 </ul>
             </div>
 
+            @can('akses-gudang')
             <!-- Gudang -  Group -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
@@ -685,7 +686,9 @@
                 </ul>
             </div>
             <!-- Gudang -  Group -->
+            @endcan
 
+            @can('akses-produksi')
             <!-- Master Produksi RAP -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
@@ -857,6 +860,7 @@
                 </ul>
             </div>
             <!-- Produksi -  Group -->
+            @can('akses-produksi')
 
             @role('Super Admin')
                 <!-- Superadmin -  Group -->
