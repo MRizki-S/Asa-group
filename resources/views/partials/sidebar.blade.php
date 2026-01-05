@@ -373,6 +373,7 @@
                     </li>
                     <!-- Menu Item Manage Pemesanan -->
 
+                    {{-- project manager yang bisa lihat ini dan bisa kontrol ini --}}
                     <!-- Menu Item Pengajuan -->
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Pengajuan' ? '':'Pengajuan')"
