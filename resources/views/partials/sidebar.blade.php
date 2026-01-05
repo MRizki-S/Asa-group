@@ -860,7 +860,7 @@
                 </ul>
             </div>
             <!-- Produksi -  Group -->
-            @can('akses-produksi')
+            @endcan
 
             @role('Super Admin')
                 <!-- Superadmin -  Group -->
