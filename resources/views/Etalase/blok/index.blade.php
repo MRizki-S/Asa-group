@@ -39,7 +39,7 @@
                 {{-- tambah data --}}
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        List Blok
+                        List Blok {{ $perumahaanSlug ? " - " . ucwords(str_replace('-', ' ', $perumahaanSlug)) : '' }}
                     </h3>
 
 
@@ -49,72 +49,40 @@
                     </a>
                 </div>
 
-                {{-- filter --}}
                 <form method="GET" action="{{ route('blok.index') }}" class="mb-4 flex items-center gap-3"
                     x-data="{
                         tahap: [],
-                        async fetchTahap(perumahaanSlug, selectedTahap = null) {
-                            if (!perumahaanSlug) { this.tahap = []; return }
-                            const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/tahap-json`);
-                            if (!res.ok) { console.error('Gagal fetch tahap'); return }
+                        async fetchTahap() {
+                            const res = await fetch(`/etalase/perumahaan/{{ $perumahaanSlug }}/tahap-json`);
+                            if (!res.ok) return;
                             this.tahap = await res.json();
-                            if (selectedTahap) {
-                                this.$nextTick(() => { this.$refs.tahapSelect.value = selectedTahap })
-                            }
                         }
-                    }" x-init="@if($perumahaanSlug)
-                    fetchTahap('{{ $perumahaanSlug }}', '{{ $tahapSlug }}')
-                    @endif">
-                    <h3 class="text-sm text-gray-500 dark:text-white/90">Filter tag -</h3>
-
-                    <!-- Select Perumahaan -->
-                    <div>
-                        <select name="perumahaanFil" required
-                            @change="fetchTahap($event.target.options[$event.target.selectedIndex].getAttribute('data-slug'))"
-                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                   dark:bg-gray-600 dark:text-white
-                   @error('perumahaanFil') border-red-500 @else border-gray-300 @enderror">
-                            <option value="">Pilih Perumahaan</option>
-                            @foreach ($allPerumahaan as $p)
-                                <option value="{{ $p->slug }}" data-slug="{{ $p->slug }}"
-                                    {{ $perumahaanSlug === $p->slug ? 'selected' : '' }}>
-                                    {{ $p->nama_perumahaan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('perumahaanFil')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    }" x-init="fetchTahap()">
+                    <h3 class="text-sm text-gray-500 dark:text-white/90">Filter -</h3>
 
                     <!-- Select Tahap -->
                     <div>
-                        <select x-ref="tahapSelect" name="tahapFil"
+                        <select name="tahapFil"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                   dark:bg-gray-600 dark:text-white
-                   @error('tahapFil') border-red-500 @else border-gray-300 @enderror">
-                            <option value="">Pilih Tahap</option>
+                   dark:bg-gray-600 dark:text-white">
+                            <option value="">Semua Tahap</option>
                             <template x-for="t in tahap" :key="t.id">
-                                <option :value="t.slug" x-text="t.nama_tahap"></option>
+                                <option :value="t.slug" :selected="t.slug === '{{ $tahapSlug }}'"
+                                    x-text="t.nama_tahap">
+                                </option>
                             </template>
                         </select>
-                        @error('tahapFil')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
                     </div>
 
-                    <button type="submit"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                    <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         Terapkan
                     </button>
 
-                    <!-- Tombol Reset -->
-                    <a href="{{ route('blok.index') }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
-                         dark:bg-gray-500 dark:text-white dark:hover:bg-gray-600">
+                    <a href="{{ route('blok.index') }}" class="px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300">
                         Reset
                     </a>
                 </form>
+
 
 
 

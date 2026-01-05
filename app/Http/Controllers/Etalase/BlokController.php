@@ -4,29 +4,33 @@ namespace App\Http\Controllers\Etalase;
 use App\Http\Controllers\Controller;
 use App\Models\Blok;
 use App\Models\Perumahaan;
-use App\Models\Tahap;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class BlokController extends Controller
 {
 
+    protected function currentPerumahaanId()
+    {
+        $user = Auth::user();
+        return $user->is_global
+            ? session('current_perumahaan_id', null)
+            : $user->perumahaan_id;
+    }
+
     public function index(Request $request)
     {
+
+        $user         = Auth::user();
+        $perumahaanId = $this->currentPerumahaanId();
+
         // Mulai query dengan relasi perumahaan & tahap
         $query = Blok::with([
             'perumahaan:id,nama_perumahaan,slug',
             'tahap:id,perumahaan_id,nama_tahap,slug',
-             'unit:id,blok_id,nama_unit'
-        ])->latest('created_at');
-
-        // ===== Filter Perumahaan (slug) =====
-        if ($request->filled('perumahaanFil')) {
-            $slugPerum = $request->input('perumahaanFil');
-            $query->whereHas('perumahaan', function ($q) use ($slugPerum) {
-                $q->where('slug', $slugPerum);
-            });
-        }
+            'unit:id,blok_id,nama_unit',
+        ])->where('perumahaan_id', $perumahaanId)->latest('created_at');
 
         // ===== Filter Tahap (slug) =====
         if ($request->filled('tahapFil')) {
@@ -39,16 +43,14 @@ class BlokController extends Controller
         // Ambil data setelah filter (atau semua jika tanpa filter)
         $allBlok = $query->get();
 
-        // Perumahaan untuk pilihan filter
-        $allPerumahaan = Perumahaan::select('id', 'nama_perumahaan', 'slug')
-            ->latest()->get();
+        $perumahaan = Perumahaan::select('id', 'slug')
+            ->where('id', $perumahaanId)
+            ->first();
 
-        $perumahaanSlug = $request->query('perumahaanFil'); // nilai lama
-        $tahapSlug      = $request->query('tahapFil');
+        $tahapSlug = $request->query('tahapFil');
         return view('Etalase.blok.index', [
             'allBlok'        => $allBlok,
-            'allPerumahaan'  => $allPerumahaan,
-            'perumahaanSlug' => $perumahaanSlug, // kirim ke Blade
+            'perumahaanSlug' => $perumahaan->slug, // kirim ke Blade
             'tahapSlug'      => $tahapSlug,
             'breadcrumbs'    => [
                 ['label' => 'Blok', 'url' => route('blok.index')],
