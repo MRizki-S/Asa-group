@@ -27,40 +27,6 @@ class TypeController extends Controller
             : $user->perumahaan_id;
     }
 
-    // public function index(Request $request)
-    // {
-    //     $query = Type::with('perumahaan');
-
-    //     if ($request->has('search') && $request->search != '') {
-    //         $query->where('nama_type', 'like', "%{$request->search}%")
-    //             ->orWhereHas('perumahaan', function ($q) use ($request) {
-    //                 $q->where('nama_perumahaan', 'like', "%{$request->search}%");
-    //             });
-    //     }
-
-    //     $tipeUnits  = $query->latest()->paginate(5)->withQueryString();
-    //     $perumahaan = Perumahaan::all();
-
-    //     // kalau request ajax, render partial table saja
-    //     if ($request->ajax()) {
-    //         return view('Etalase.tipe-unit.partials.table', [
-    //             'tipeUnits'   => $tipeUnits,
-    //             'breadcrumbs' => [
-    //                 ['label' => 'Tipe Unit', 'url' => route('tipe-unit.index')],
-    //             ],
-    //         ])->render();
-    //     }
-
-    //     return view("Etalase.tipe-unit.index",
-    //         [
-    //             'tipeUnits'   => $tipeUnits,
-    //             'perumahaan'  => $perumahaan,
-    //             'breadcrumbs' => [
-    //                 ['label' => 'Tipe Unit', 'url' => route('tipe-unit.index')],
-    //             ],
-    //         ]);
-    // }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -220,5 +186,39 @@ class TypeController extends Controller
                 ->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
         }
 
+    }
+
+    // ajukan perubahaan harga tipe unit
+    public function ajukanPerubahanHarga(Request $request, $slug)
+    {
+        // 1. Validasi
+        $validated = $request->validate([
+            'harga_diajukan' => 'required|numeric|min:1',
+        ]);
+
+        // 2. Ambil data type
+        $type = Type::where('slug', $slug)->firstOrFail();
+
+        // 3. Cegah pengajuan ganda (opsional tapi disarankan)
+        if ($type->status_pengajuan === 'pending') {
+            return back()->withErrors([
+                'harga_diajukan' => 'Masih ada pengajuan harga yang menunggu persetujuan.',
+            ]);
+        }
+
+        // 4. Simpan sebagai pengajuan (BELUM mengubah harga_dasar)
+        $type->update([
+            'harga_diajukan'    => $validated['harga_diajukan'],
+            'status_pengajuan'  => 'pending',
+            'diajukan_oleh'     => Auth::id(), // Project Manager
+            'tanggal_pengajuan' => now(),
+            'disetujui_oleh'    => null,
+            'tanggal_acc'       => null,
+            'catatan_penolakan' => null,
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Pengajuan perubahan harga berhasil dikirim dan menunggu persetujuan.');
     }
 }

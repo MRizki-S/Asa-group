@@ -1,8 +1,9 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 class Type extends Model
 {
@@ -40,5 +41,16 @@ class Type extends Model
     public function unit()
     {
         return $this->hasMany(Unit::class);
+    }
+
+    public function diajukanOleh()
+    {
+        return $this->belongsTo(User::class, 'diajukan_oleh');
+    }
+
+
+    public function disetujuiOleh()
+    {
+        return $this->belongsTo(User::class, 'disetujui_oleh');
     }
 }

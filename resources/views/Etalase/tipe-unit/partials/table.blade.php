@@ -22,16 +22,51 @@
                 $statusColor = match ($item->status_pengajuan) {
                     'acc' => 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-200',
                     'tolak' => 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-200',
+                    'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-200',
                     default => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
                 };
+
+                $statusLabel = match ($item->status_pengajuan) {
+                    'acc' => 'acc',
+                    'tolak' => 'Ditolak',
+                    'pending' => 'Pending',
+                    default => 'Belum ada pengajuan',
+                };
             @endphp
+
             <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusColor }}">
-                {{ $item->status_pengajuan ?? 'Belum ada pengajuan' }}
+                {{ $statusLabel }}
             </span>
         </td>
+
+
+        <td class="px-6 py-4">
+            @php
+                $isPending = $item->status_pengajuan === 'pending';
+            @endphp
+
+            <a href="#"
+                class="inline-flex items-center gap-1 text-center
+               text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors duration-200
+               focus:outline-none focus:ring-2 focus:ring-offset-1
+               {{ $isPending
+                   ? 'cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                   : 'text-blue-700 bg-blue-100 hover:bg-blue-200
+                                                     dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
+                                                     focus:ring-blue-400 active:scale-95' }}"
+                {{ $isPending ? 'aria-disabled=true' : '' }}
+                @unless ($isPending)
+            data-modal-target="modal-pengajuanHarga-{{ $item->slug }}"
+            data-modal-toggle="modal-pengajuanHarga-{{ $item->slug }}"
+        @endunless>
+                Perubahan Harga
+            </a>
+        </td>
+
+
+
         {{-- Kolom Aksi --}}
         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-            <!-- Tombol Edit -->
             <!-- tombol Edit (dalam foreach baris tabel) -->
             <a href="#"
                 class="btn-edit inline-flex items-center gap-1
@@ -58,4 +93,3 @@
 
     </tr>
 @endforeach
-

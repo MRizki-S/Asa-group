@@ -571,7 +571,7 @@ class ManagePemesananController extends Controller
         $template->setValue('TERBILANG_PEMBATALAN_PERSEN', $terbilangPembatalanPersen);
 
         // =========================
-        // 🔹 Simpan hasil dan download
+        // 🔹 Simpan hasil dan return response()->download($pathToFile, $name, $headers);
         // =========================
         $fileName = 'PPJB_CASH_' . $pemesanan->no_pemesanan . '.docx';
         $tempFile = storage_path('app/public/' . $fileName);
