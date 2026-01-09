@@ -23,15 +23,13 @@ class ManagePemesananController extends Controller
         $user = Auth::user();
         $perumahaanId = $this->currentPerumahaanId();
 
-        // 🔹 Ambil nama perumahaan
+        // ambil nama perumahaan
         $namaPerumahaan = null;
         if ($perumahaanId) {
             $namaPerumahaan = Perumahaan::where('id', $perumahaanId)->value('nama_perumahaan');
         }
 
-        // ==============================
-        // 🔹 PEMESANAN UNIT KPR
-        // ==============================
+        // query pemesanan unit kpr
         $pemesananKpr = PemesananUnit::with([
             'customer',
             'sales',
@@ -54,9 +52,7 @@ class ManagePemesananController extends Controller
 
         $pemesananKpr = $pemesananKpr->get();
 
-        // ==============================
-        // 🔹 PEMESANAN UNIT CASH
-        // ==============================
+        // query pemesanan unit cash
         $pemesananCash = PemesananUnit::with([
             'customer',
             'sales',
@@ -77,9 +73,7 @@ class ManagePemesananController extends Controller
 
         $pemesananCash = $pemesananCash->get();
 
-        // ==============================
-        // 🔹 Hitung kelengkapan berkas
-        // ==============================
+        // hitung kelengkapan berkas dari pemesanan kpr dan cash
         foreach ($pemesananKpr as $item) {
             $item->kelengkapan_berkas = '-';
             $item->total_dokumen = 0;
@@ -111,10 +105,8 @@ class ManagePemesananController extends Controller
                 $item->kelengkapan_berkas = "{$lengkap} dari {$total}";
             }
         }
-        // dd($pemesananKpr);
-        // ==============================
-        // 🔹 Return ke View
-        // ==============================
+
+        // return view
         return view('marketing.manage-pemesanan.index', [
             'pemesananKpr' => $pemesananKpr,
             'pemesananCash' => $pemesananCash,
@@ -129,7 +121,7 @@ class ManagePemesananController extends Controller
 
     public function rincianTagihan($id)
     {
-        // 🔹 Ambil data pemesanan beserta relasi penting
+        // query pemesanan unit yang terkair dengan rincian tagihan
         $pemesanan = PemesananUnit::with([
             'unit',
             'unit.blok',
@@ -137,19 +129,19 @@ class ManagePemesananController extends Controller
             'cicilan',
         ])->findOrFail($id);
 
-        // 🔹 Ambil data nama perumahaan dan nama unit
+        // Ambil nama perumahaan dan nama unit
         $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
         $namaUnit = $pemesanan->unit
             ? ($pemesanan->unit->nama_unit ?? $pemesanan->unit->blok->nama_blok ?? '-')
             : '-';
 
-        // 🔹 Ambil semua rincian cicilan (tagihan)
+        // Ambil rincian tagihan
         $rincianTagihan = $pemesanan->cicilan()
             ->where('is_active', 1)
             ->orderBy(column: 'pembayaran_ke')
             ->get();
-        // dd($rincianTagihan);
-        // 🔹 Return ke view
+
+        // Return ke view
         return view('marketing.manage-pemesanan.rincian-tagihan.show-rincianTagihan', [
             'pemesanan' => $pemesanan,
             'rincianTagihan' => $rincianTagihan,
@@ -166,12 +158,10 @@ class ManagePemesananController extends Controller
         ]);
     }
 
-    // print ppjb KPR
+    // Print PPJB KPR
     public function exportWordKPR($id)
     {
-        // =========================
-        // 🔹 Ambil data lengkap dengan relasi
-        // =========================
+        // Query data pemesanan unit beserta relasi yang dibutuhkan
         $pemesanan = PemesananUnit::with([
             'dataDiri',
             'unit.type',
@@ -183,7 +173,6 @@ class ManagePemesananController extends Controller
             'pembatalan',
             'sales',
         ])->findOrFail($id);
-        // dd($pemesanan);
 
         $namaSales = strtoupper($pemesanan->sales?->nama_lengkap) ?? '-';
         $dataDiri = $pemesanan->dataDiri;
@@ -192,9 +181,7 @@ class ManagePemesananController extends Controller
         $kpr = $pemesanan->kpr;
         $noPemesanan = $pemesanan->no_pemesanan;
 
-        // =========================
-        // 🔹 Format Dasar Data diri pembeli
-        // =========================
+        // Format data diri pembeli sesuai PPJB
         $alamatKtp = $this->formatAlamat($dataDiri);
         $noHpPembeli = $this->formatNoHp($dataDiri->no_hp ?? '');
         $tanggalPemesanan = $pemesanan->tanggal_pemesanan
@@ -205,19 +192,15 @@ class ManagePemesananController extends Controller
             : '-';
         $bulanRomawi = $this->formatBulanRomawi($pemesanan->tanggal_pemesanan);
 
-        // =========================
-        // 🔹 Luas Bangunan & Tanah
-        // =========================
+        // Luas dan bangunan
         $luasBangunan = $type?->luas_bangunan ? rtrim(rtrim(number_format($type->luas_bangunan, 2, '.', ''), '0'), '.') : '-';
         $luasTanah = $type?->luas_tanah ? rtrim(rtrim(number_format($type->luas_tanah, 2, '.', ''), '0'), '.') : '-';
 
-        // 🔹 Terbilang luas
+        // Terbilang luas bangunan dan tanah
         $terbilangLuasBangunan = ucfirst($this->terbilang((int) $luasBangunan));
         $terbilangLuasTanah = ucfirst($this->terbilang((int) $luasTanah));
 
-        // =========================
-        // 🔹 Data tambahan KPR
-        // =========================
+        // Data Nominal KPR
         $hargaTotal = $kpr->harga_total ?? 0;
         $dpRumahInduk = $kpr->dp_rumah_induk ?? 0;
         $totalDp = $kpr->total_dp ?? 0;
@@ -225,33 +208,25 @@ class ManagePemesananController extends Controller
         $sbumPemerintah = $kpr->sbum_dari_pemerintah ?? 0;
         $hargaKpr = $kpr->harga_kpr ?? 0;
 
-        // 🔹 Terbilang harga total
+        // Terbilang harga Total
         $terbilangHargaTotal = ucfirst($this->terbilang($hargaTotal)) . ' rupiah';
 
-        // =========================
-        // 🔹 Luas & Nominal Kelebihan Tanah
-        // =========================
+        // Luas Kelebihan dan nominal kelebihan tanah
         $luasKelebihanTanah = $unit?->luas_kelebihan ?? null;
         $nominalKelebihanTanah = $unit?->nominal_kelebihan ?? null;
 
-        // =========================
-        // 🔹 Ambil nama-nama
-        // =========================
+        // Nama Perumahaan, unit, dan type
         $namaUnit = $unit->nama_unit ?? '-';
         $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
         $namaType = $type?->nama_type ?? '-';
 
-        // =========================
-        // 🔹 Ambil daftar cicilan
-        // =========================
+        // Ambil cicilan KPRnya
         $cicilanList = $pemesanan->cicilan()
             ->where('is_active', 1)
             ->orderBy('pembayaran_ke')
             ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal']);
 
-        // =========================
-        // 🔹 Siapkan data untuk cloneRow
-        // =========================
+        // Data clone row untuk cicilan
         $rows = [];
         foreach ($cicilanList as $i => $c) {
             // Jika ini baris terakhir
@@ -269,23 +244,19 @@ class ManagePemesananController extends Controller
             ];
         }
 
-        // =========================
-        // 🔹 Ambil daftar promo dari snapshot
-        // =========================
+        // Ambil data promo kpr dari snapshot
         $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
 
-        // =========================
-        // 🔹 Format daftar promo manual (lanjutan dari huruf g. → mulai h.)
-        // =========================
+        // Format urutan dari promo sesuai dengan Perumahaan
         if (count($promoList)) {
 
             $hurufRange = range('a', 'z');
 
-            // Tentukan huruf awal berdasarkan perumahaan
+            // Tentukan huruf awal berdasarkan perumahaan ADL dan LHR
             $startLetter = match ($namaPerumahaan) {
                 'Asa Dreamland' => 'h',
                 'Lembah Hijau Residence' => 'i',
-                default => 'h', // fallback aman
+                default => 'h', // Default ketika salah penamaan UBS
             };
 
             $startIndex = array_search($startLetter, $hurufRange);
@@ -301,9 +272,7 @@ class ManagePemesananController extends Controller
             $daftarPromo = '';
         }
 
-        // =========================
-        // 🔹 Data keterlambatan
-        // =========================
+        // Data Keterlambatan dan Persentase Denda
         $keterlambatan = $pemesanan->keterlambatan;
         $persentaseDenda = $keterlambatan?->persentase_denda ?? 0;
 
@@ -313,25 +282,21 @@ class ManagePemesananController extends Controller
         // Hitung versi per 6 hari (1/4 bulan)
         $persen6Hari = round($persenBulan / 4, 2);
 
-        // 🔹 Terbilang versi angka bulat (tanpa koma)
+        // Terbilang keterlambatan (tanpa koma)
         $terbilangKeterlambatanBulan = ucfirst($this->terbilang($persenBulan));
         $terbilangKeterlambatan6Hari = ucfirst($this->terbilang((int) round($persen6Hari)));
 
-        // =========================
-        // 🔹 Data pembatalan
-        // =========================
+        // Data Pembatalan
         $pembatalan = $pemesanan->pembatalan;
         $persentasePembatalan = $pembatalan?->persentase_potongan ?? 0;
 
         // Hapus ".00" dan ubah ke angka bulat
         $pembatalanPersen = (int) $persentasePembatalan;
 
-        // 🔹 Terbilang pembatalan persen
+        // Terbilang pembatalan persen
         $terbilangPembatalanPersen = ucfirst($this->terbilang($pembatalanPersen));
 
-        // =========================
-        // 🔹 Load Template Word
-        // =========================
+        // Load template word sesuai dengan perumahaan ADL / LHR
         $templatePath = match ($namaPerumahaan) {
             'Asa Dreamland' => public_path('templates/PPJB/PPJB (KPR) ADL.docx'),
             'Lembah Hijau Residence' => public_path('templates/PPJB/PPJB (KPR) LHR.docx'),
@@ -339,12 +304,10 @@ class ManagePemesananController extends Controller
         };
         $template = new TemplateProcessor($templatePath);
 
-        // 🔁 Isi tabel cicilan
+        // Isi table cicilan foreach clone row
         $template->cloneRowAndSetValues('NO_PEMBAYARAN', $rows);
 
-        // =========================
-        // 🔹 Isi ke Template
-        // =========================
+        // Data dikirim ke word template
         $template->setValue('NO_PEMESANAN', $noPemesanan);
         $template->setValue('NAMA_SALES', $namaSales);
         $template->setValue('NAMA_PEMBELI', strtoupper($dataDiri->nama_pribadi ?? '-'));
@@ -377,9 +340,8 @@ class ManagePemesananController extends Controller
         $template->setValue('PEMBATALAN_PERSEN', $pembatalanPersen);
         $template->setValue('TERBILANG_PEMBATALAN_PERSEN', $terbilangPembatalanPersen);
 
-        // =========================
-        // 🔹 Simpan hasil dan download
-        // =========================
+        // Simpan hasil dan download
+        // Pernamaaan File sesuai dengan perumahaan ADL / LHR
         $prefix = match ($namaPerumahaan) {
             'Asa Dreamland' => 'PPJB_KPR_ADL_',
             'Lembah Hijau Residence' => 'PPJB_KPR_LHR_',
@@ -394,12 +356,10 @@ class ManagePemesananController extends Controller
         return response()->download($tempFile)->deleteFileAfterSend(true);
     }
 
-    // print ppjb CASH
+    // Print PPJB CASH
     public function exportWordCASH($id)
     {
-        // =========================
-        // 🔹 Ambil data lengkap dengan relasi
-        // =========================
+        // Query data pemesanan unit beserta relasi yang dibutuhkan
         $pemesanan = PemesananUnit::with([
             'dataDiri',
             'unit.type',
@@ -411,7 +371,6 @@ class ManagePemesananController extends Controller
             'pembatalan',
             'sales'
         ])->findOrFail($id);
-        // dd($pemesanan);
 
         $namaSales = strtoupper($pemesanan->sales?->nama_lengkap) ?? '-';
         $dataDiri = $pemesanan->dataDiri;
@@ -420,9 +379,7 @@ class ManagePemesananController extends Controller
         $cash = $pemesanan->cash;
         $noPemesanan = $pemesanan->no_pemesanan;
 
-        // =========================
-        // 🔹 Format Dasar Data diri pembeli
-        // =========================
+        // Format data diri pembeli sesuai PPJB
         $alamatKtp = $this->formatAlamat($dataDiri);
         $noHpPembeli = $this->formatNoHp($dataDiri->no_hp ?? '');
         $tanggalPemesanan = $pemesanan->tanggal_pemesanan
@@ -433,49 +390,37 @@ class ManagePemesananController extends Controller
             : '-';
         $bulanRomawi = $this->formatBulanRomawi($pemesanan->tanggal_pemesanan);
 
-        // =========================
-        // 🔹 Luas Bangunan & Tanah
-        // =========================
+        // Luas dan bangunan
         $luasBangunan = $type?->luas_bangunan ? rtrim(rtrim(number_format($type->luas_bangunan, 2, '.', ''), '0'), '.') : '-';
         $luasTanah = $type?->luas_tanah ? rtrim(rtrim(number_format($type->luas_tanah, 2, '.', ''), '0'), '.') : '-';
 
-        // 🔹 Terbilang luas
+        // Terbilang Luas bangunan dan Tanah
         $terbilangLuasBangunan = ucfirst($this->terbilang((int) $luasBangunan));
         $terbilangLuasTanah = ucfirst($this->terbilang((int) $luasTanah));
 
-        // =========================
-        // 🔹 Data Nominal CASH
-        // =========================
+        // Data Nominal Tunai/CASH
         $hargaTotal = $cash->harga_jadi ?? 0;
         $hargaRumah = $cash->harga_rumah ?? 0;
         $hargaJadi = $cash->harga_jadi ?? 0;
 
-        // 🔹 Terbilang harga total
+        // Terbilang Harga Total
         $terbilangHargaTotal = ucfirst($this->terbilang($hargaTotal)) . ' rupiah';
 
-        // =========================
-        // 🔹 Luas & Nominal Kelebihan Tanah
-        // =========================
+        // Luas Kelebihan dan Nominal Kelebihan Tanah
         $luasKelebihanTanah = $unit?->luas_kelebihan ?? null;
         $nominalKelebihanTanah = $unit?->nominal_kelebihan ?? null;
 
-        // =========================
-        // 🔹 Ambil nama-nama
-        // =========================
+        // Nama Perumahan, Unit dan Type
         $namaUnit = $unit->nama_unit ?? '-';
         $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
         $namaType = $type?->nama_type ?? '-';
 
-        // =========================
-        // 🔹 Ambil daftar cicilan
-        // =========================
+        // Ambil Cicilan CASHN
         $cicilanList = $pemesanan->cicilan()
             ->orderBy('pembayaran_ke')
             ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal']);
 
-        // =========================
-        // 🔹 Siapkan data untuk cloneRow
-        // =========================
+        // Data Clone Row untuk cicilan
         $rows = [];
         foreach ($cicilanList as $i => $c) {
             // Jika ini baris terakhir
@@ -493,27 +438,23 @@ class ManagePemesananController extends Controller
             ];
         }
 
-        // =========================
-        // 🔹 Ambil daftar promo dan bonus cash
-        // =========================
+        // Ambil data promo kpr dan snapshot
         $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
         $bonusList = $pemesanan->bonusCash()->pluck('nama_bonus')->toArray();
-        // dd($bonusList);
-        // Gabungkan keduanya
+
+        // Penggabungan Promo dan Bonus untuk ditampilkan dilist ppjb
         $combinedList = array_filter(array_merge($promoList, $bonusList));
 
-        // =========================
-        // 🔹 Format daftar manual (lanjutan dari huruf g → mulai dari i.)
-        // =========================
+        // Format urutan dari promo/bonus list sesuai dengan perumahaan
         if (count($combinedList)) {
 
             $hurufRange = range('a', 'z');
 
-            // Tentukan huruf awal berdasarkan perumahaan (CASH)
+            // Tentukan huruf awal berdasarkan perumahaan (CASH) ADL / LHR
             $startLetter = match ($namaPerumahaan) {
                 'Asa Dreamland' => 'i',
                 'Lembah Hijau Residence' => 'h',
-                default => 'i', // fallback aman
+                default => 'i', // Default ketika salah penamaan UBS
             };
 
             $startIndex = array_search($startLetter, $hurufRange);
@@ -530,11 +471,7 @@ class ManagePemesananController extends Controller
             $daftarPromo = '';
         }
 
-        // dd($daftarPromo);
-
-        // =========================
-        // 🔹 Data keterlambatan
-        // =========================
+        // Data Keterlambatan dan Persentase Denda
         $keterlambatan = $pemesanan->keterlambatan;
         $persentaseDenda = $keterlambatan?->persentase_denda ?? 0;
 
@@ -544,25 +481,21 @@ class ManagePemesananController extends Controller
         // Hitung versi per 6 hari (1/4 bulan)
         $persen6Hari = round($persenBulan / 4, 2);
 
-        // 🔹 Terbilang versi angka bulat (tanpa koma)
+        // Terbilang keterlmabatan (tanpa koma)
         $terbilangKeterlambatanBulan = ucfirst($this->terbilang($persenBulan));
         $terbilangKeterlambatan6Hari = ucfirst($this->terbilang((int) round($persen6Hari)));
 
-        // =========================
-        // 🔹 Data pembatalan
-        // =========================
+        // Data Pembatalan
         $pembatalan = $pemesanan->pembatalan;
         $persentasePembatalan = $pembatalan?->persentase_potongan ?? 0;
 
         // Hapus ".00" dan ubah ke angka bulat
         $pembatalanPersen = (int) $persentasePembatalan;
 
-        // 🔹 Terbilang pembatalan persen
+        // Terbilang Pembatalan Persen
         $terbilangPembatalanPersen = ucfirst($this->terbilang($pembatalanPersen));
 
-        // =========================
-        // 🔹 Load Template Word
-        // =========================
+        // Load template word sesuai dengan perumahaan ADL / LHR
         $templatePath = match ($namaPerumahaan) {
             'Asa Dreamland' => public_path('templates/PPJB/PPJB (TUNAI) ADL.docx'),
             'Lembah Hijau Residence' => public_path('templates/PPJB/PPJB (TUNAI) LHR.docx'),
@@ -570,12 +503,10 @@ class ManagePemesananController extends Controller
         };
         $template = new TemplateProcessor($templatePath);
 
-        // 🔁 Isi tabel cicilan
+        // Isi table cicilan foreeach dari clone row
         $template->cloneRowAndSetValues('NO_PEMBAYARAN', $rows);
 
-        // =========================
-        // 🔹 Isi ke Template
-        // =========================
+        // Data dikirim ke word template
         $template->setValue('NO_PEMESANAN', $noPemesanan);
         $template->setValue('NAMA_PEMBELI', strtoupper($dataDiri->nama_pribadi ?? '-'));
         $template->setValue('NAMA_SALES', $namaSales);
@@ -606,9 +537,8 @@ class ManagePemesananController extends Controller
         $template->setValue('PEMBATALAN_PERSEN', $pembatalanPersen);
         $template->setValue('TERBILANG_PEMBATALAN_PERSEN', $terbilangPembatalanPersen);
 
-        // =========================
-        // 🔹 Simpan hasil dan return response()->download($pathToFile, $name, $headers);
-        // =========================
+        // Simpan Hasil dan Downloa
+        // Penamanaan file sesuai dengan perumahaan ADL / LHR
         $prefix = match ($namaPerumahaan) {
             'Asa Dreamland' => 'PPJB_TUNAI_ADL_',
             'Lembah Hijau Residence' => 'PPJB_TUNAI_LHR_',
@@ -622,6 +552,7 @@ class ManagePemesananController extends Controller
         return response()->download($tempFile)->deleteFileAfterSend(true);
     }
 
+    // Private function untuk format alamat sesuai dengan keperluan PPJB
     private function formatAlamat($dataDiri)
     {
         if (!$dataDiri) {
@@ -640,6 +571,7 @@ class ManagePemesananController extends Controller
         ));
     }
 
+    // Private function format No Hp sesuai dengan keperluan PPJB
     private function formatNoHp($noHp)
     {
         if (empty($noHp)) {
@@ -650,6 +582,7 @@ class ManagePemesananController extends Controller
         return trim(chunk_split($angkaBersih, 4, '-'), '-');
     }
 
+    // Private Function Bulan Romawi sesuai dengan keperluan PPJB
     private function formatBulanRomawi($tanggal)
     {
         if (!$tanggal) {
@@ -659,8 +592,8 @@ class ManagePemesananController extends Controller
         $romawi = [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'];
         return $romawi[(int) $tanggal->format('m')] ?? '-';
     }
-    // =========================
-    // 🔢 Konversi angka ke teks (Terbilang)
+
+    // Private Format angka terbilang sesuai dengan keperluan PPJB
     private function terbilang($angka)
     {
         $angka = (int) $angka;
