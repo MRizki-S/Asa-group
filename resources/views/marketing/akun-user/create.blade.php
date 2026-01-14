@@ -178,38 +178,60 @@
                     <div x-data="{
                         tahap: [],
                         unit: [],
-                        async fetchTahap(perumahaanSlug) {
-                            if (!perumahaanSlug) { this.tahap = []; return }
-                            const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/tahap-json`);
+                        selectedPerumahaan: '{{ $defaultPerumahaan }}',
+                        selectedSlug: '{{ $defaultSlug }}',
+
+                        async fetchTahap(slug) {
+                            if (!slug) { this.tahap = []; return }
+                            const res = await fetch(`/etalase/perumahaan/${slug}/tahap-json`);
                             if (res.ok) this.tahap = await res.json();
                         },
+
                         async fetchUnit(tahapId) {
                             if (!tahapId) { this.unit = []; return }
                             const res = await fetch(`/etalase/tahap/${tahapId}/unit-json`);
                             if (res.ok) this.unit = await res.json();
                         }
+                    }" x-init="if (selectedSlug) {
+                        fetchTahap(selectedSlug)
                     }" class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                        <!-- Select Perumahaan -->
+
                         <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perumahaan</label>
-                            <select name="perumahaan_id" required
-                                @change="fetchTahap($event.target.options[$event.target.selectedIndex].getAttribute('data-slug'))"
-                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                                       dark:bg-gray-700 dark:text-white
-                                       @error('perumahaan_id') border-red-500 @else border-gray-300 @enderror">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Perumahaan
+                            </label>
+
+                            <select name="perumahaan_id"
+                                @change="
+                            selectedPerumahaan = $event.target.value;
+                            selectedSlug = $event.target.options[$event.target.selectedIndex].dataset.slug;
+                            fetchTahap(selectedSlug);
+                        "
+                            {{ !$isGlobal ? 'disabled' : '' }}
+                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                            dark:bg-gray-700 dark:text-white">
+
                                 <option value="">Pilih Perumahaan</option>
+
                                 @foreach ($allPerumahaan as $p)
                                     <option value="{{ $p->id }}" data-slug="{{ $p->slug }}"
-                                        {{ old('perumahaan_id') == $p->id ? 'selected' : '' }}>
+                                        {{ $defaultPerumahaan == $p->id ? 'selected' : '' }}>
                                         {{ $p->nama_perumahaan }}
                                     </option>
                                 @endforeach
                             </select>
+
+                            {{-- hidden input supaya tetap terkirim --}}
+                            @if (!$isGlobal)
+                                <input type="hidden" name="perumahaan_id" value="{{ $defaultPerumahaan }}">
+                            @endif
+
                             @error('perumahaan_id')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
 
                         <!-- Select Tahap -->
                         <div>
@@ -233,15 +255,15 @@
                             // Re-initialize Select2 setelah unit di-update
                             $nextTick(() => {
                                 const el = document.querySelector('#unitSelect');
-                                    if (el) {
-                                        $(el).select2({
-                                            theme: 'bootstrap4',
-                                            placeholder: 'Cari atau pilih unit',
-                                            width: '100%',
-                                        });
-                                    }
-                                });
-                            });">
+                                if (el) {
+                                    $(el).select2({
+                                        theme: 'bootstrap4',
+                                        placeholder: 'Cari atau pilih unit',
+                                        width: '100%',
+                                    });
+                                }
+                            });
+                        });">
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit</label>
                             <select id="unitSelect" name="unit_id" required
                                 class="select-unit  w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5">
@@ -260,18 +282,18 @@
 
             <!-- Tombol Aksi -->
             @can('marketing.customer.create')
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="history.back()"
-                    class="px-8 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="history.back()"
+                        class="px-8 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
                        dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
-                    Kembali
-                </button>
-                <button type="submit"
-                    class="px-8 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700
+                        Kembali
+                    </button>
+                    <button type="submit"
+                        class="px-8 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700
                        focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
-                    Simpan
-                </button>
-            </div>
+                        Simpan
+                    </button>
+                </div>
             @endcan
         </form>
     </div>

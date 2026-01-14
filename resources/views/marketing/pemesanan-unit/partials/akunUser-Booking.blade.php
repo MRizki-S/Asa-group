@@ -40,18 +40,6 @@
                     </svg>
                 </div>
 
-                {{-- <!-- Input Date -->
-                <input type="date" name="tanggal_pemesanan" x-data="{ tanggal: '{{ now()->format('d-m-Y') }}' }" x-init="flatpickr($el, {
-                    dateFormat: 'd-m-Y',
-                    defaultDate: tanggal,
-                    onChange: (selectedDates, dateStr) => { tanggal = dateStr }
-                })"
-                    placeholder="Pilih tanggal"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500
-    focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600
-    dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500
-    dark:focus:border-blue-500"> --}}
-
                 <!-- Input tampilan -->
                 <input type="text" x-model="tampil" x-init="flatpickr($el, {
                     dateFormat: 'd-m-Y',
