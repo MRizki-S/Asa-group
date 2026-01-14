@@ -69,7 +69,7 @@
                                     {{-- Link menu Dashboard - Marketing --}}
                                     @can('dashboard.marketing.read')
                                         <li>
-                                            <a href="/dashboard-marketing" class="menu-dropdown-item group"
+                                            <a href="{{ route('under-development') }}" class="menu-dropdown-item group"
                                                 :class="page === 'Dashboard-Marketing' ? 'menu-dropdown-item-active' :
                                                     'menu-dropdown-item-inactive'">
                                                 Marketing
@@ -372,7 +372,7 @@
                                         <!-- Perubahaan Harga tipe - Kualifikasi -->
                                         @can('etalase.perubahaan-harga.tahap-kualifikasi.read')
                                             <li>
-                                                <a href="{{ route('unit.indexGlobal') }}" class="menu-dropdown-item group"
+                                                <a href="{{ route('under-development') }}" class="menu-dropdown-item group"
                                                     :class="page === 'PerubahaanHargaTahapKualifikasiBlok' ?
                                                         'menu-dropdown-item-active' :
                                                         'menu-dropdown-item-inactive'">
@@ -651,7 +651,8 @@
                                         {{-- List Adendum --}}
                                         @can('marketing.adendum.list-adendum.read')
                                             <li>
-                                                <a href="{{ route('marketing.adendum.list') }}"
+                                                <a href="{{ route('under-development') }}"
+                                                {{-- {{ route('marketing.adendum.list') }} --}}
                                                     class="menu-dropdown-item group"
                                                     :class="page === 'ListAdendum' ? 'menu-dropdown-item-active' :
                                                         'menu-dropdown-item-inactive'">

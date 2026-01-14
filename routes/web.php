@@ -59,6 +59,11 @@ Route::get('/', function () {
     return view('dashboard.Welcome');
 })->middleware('auth');
 
+// fitur dalam pengembangan
+Route::get('/under-development', function() {
+    return view('pages.under-development');
+})->name('under-development');
+
 // Auth
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
