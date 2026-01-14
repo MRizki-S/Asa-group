@@ -42,11 +42,12 @@
                         List Blok {{ $perumahaanSlug ? " - " . ucwords(str_replace('-', ' ', $perumahaanSlug)) : '' }}
                     </h3>
 
-
+                    @can('etalase.blok.create')
                     <a href="{{ route('blok.create') }}"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         + Tambah Blok
                     </a>
+                    @endcan
                 </div>
 
                 <form method="GET" action="{{ route('blok.index') }}" class="mb-4 flex items-center gap-3"
@@ -103,9 +104,11 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Total Unit
                             </th>
+                             @canany(['etalase.blok.update', ' etalase.blok.delete'])
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -131,7 +134,9 @@
                                         {{ $item->unit->count() }} Unit
                                     </a>
                                 </td>
+                                @canany(['etalase.blok.update', ' etalase.blok.delete'])
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                    @can('etalase.blok.update')
                                     <a href="{{ route('blok.edit', $item) }}"
                                         class="btn-edit inline-flex items-center gap-1
                                     text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
@@ -141,7 +146,9 @@
                                     active:scale-95">
                                         Edit
                                     </a>
+                                    @endcan
 
+                                    @can('etalase.blok.delete')
                                     <form action="{{ route('blok.destroy', $item) }}" method="POST" class="delete-form">
                                         @csrf
                                         @method('DELETE')
@@ -150,7 +157,9 @@
                                             Delete
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
+                                @endcanany
 
                             </tr>
                         @endforeach

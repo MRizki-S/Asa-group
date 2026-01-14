@@ -1,12 +1,16 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Master;
 
-use Illuminate\Database\Seeder;
 use App\Models\Perumahaan;
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PerumahaanSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $data = [

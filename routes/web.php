@@ -30,6 +30,8 @@ use App\Http\Controllers\marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\marketing\SettingPromoPpjbController;
 use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Superadmin\AkunKaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -54,7 +56,7 @@ Route::prefix('api/wilayah')->group(function () {
 
 Route::get('/', function () {
     // dd(session()->all());
-    return view('dashboard.dashboard');
+    return view('dashboard.Welcome');
 })->middleware('auth');
 
 // Auth
@@ -376,4 +378,14 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::get('/setting-cara-bayar/{perumahaanId}', [SettingPpjbJsonController::class, 'showByPerumahaan'])
             ->name('api.setting-caraBayar.show');
     });
+});
+
+
+// Superadmin Menu
+Route::middleware('auth')->prefix('superadmin')->group(function() {
+    // role dan hak akses
+      Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
+
+    // akun karyawan
+    Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
 });

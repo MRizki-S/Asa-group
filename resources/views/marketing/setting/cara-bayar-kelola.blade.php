@@ -40,7 +40,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Cara Bayar PPJB - KPR</h3>
 
-                    @hasrole(['Project Manager', 'Super Admin '])
+                    @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                         <div class="flex items-center gap-2">
                             @if (!$caraBayarPendingKpr)
                                 <button @click="openModal = true"
@@ -49,7 +49,7 @@
                                 </button>
                             @endif
                         </div>
-                    @endrole
+                    @endcan
                 </div>
 
                 {{-- Tidak ada data --}}
@@ -117,15 +117,17 @@
                                     pada {{ $caraBayarActiveKpr->updated_at?->translatedFormat('d M Y') ?? '-' }}
                                 </p>
                                 <div class="mt-4 flex justify-end">
-                                    <form action="{{ route('settingPPJB.caraBayar.nonAktif', $caraBayarActiveKpr) }}"
-                                        method="POST" class="delete-form">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="button"
-                                            class="nonAktifkanCaraBayar px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
-                                            Nonaktifkan
-                                        </button>
-                                    </form>
+                                    @can('marketing.setting-ppjb.kelola.nonaktif')
+                                        <form action="{{ route('settingPPJB.caraBayar.nonAktif', $caraBayarActiveKpr) }}"
+                                            method="POST" class="delete-form">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="button"
+                                                class="nonAktifkanCaraBayar px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
+                                                Nonaktifkan
+                                            </button>
+                                        </form>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -184,7 +186,8 @@
 
                                 {{-- Tombol Aksi --}}
                                 <div class="flex gap-2 sm:justify-end justify-start">
-                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+
+                                    @can('marketing.setting-ppjb.kelola.action')
                                         {{-- Tombol Tolak --}}
                                         <form action="{{ route('settingPPJB.caraBayar.reject', $caraBayarPendingKpr) }}"
                                             method="POST" class="delete-form">
@@ -217,9 +220,9 @@
                                                 ACC
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
 
-                                    @hasrole(['Project Manager', 'Super Admin '])
+                                    @can(' marketing.setting-ppjb.kelola.cancel')
                                         {{-- Tombol untuk pengaju --}}
                                         <form
                                             action="{{ route('settingPPJB.caraBayar.cancelPengajuanPromo', $caraBayarPendingKpr) }}"
@@ -231,7 +234,7 @@
                                                 Batalkan Pengajuan
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -246,12 +249,13 @@
                 {{-- Header + Tombol Ajukan Baru --}}
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Cara Bayar PPJB - Cash</h3>
-                      @hasrole(['Project Manager', 'Super Admin '])
-                    <button @click="openModal = true"
-                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                        Ajukan Cara Bayar Baru
-                    </button>
-                    @endrole
+
+                    @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
+                        <button @click="openModal = true"
+                            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                            Ajukan Cara Bayar Baru
+                        </button>
+                    @endcan
                 </div>
 
                 {{-- Tidak ada data --}}
@@ -313,6 +317,8 @@
                                     pada {{ $item->updated_at?->translatedFormat('d M Y') ?? '-' }}
                                 </p>
                                 <div class="mt-4 flex justify-end">
+
+                                    @can('marketing.setting-ppjb.kelola.nonaktif')
                                     <form action="{{ route('settingPPJB.caraBayar.nonAktif', $item) }}" method="POST"
                                         class="delete-form">
                                         @csrf
@@ -322,6 +328,8 @@
                                             Nonaktifkan
                                         </button>
                                     </form>
+                                    @endcan
+
                                 </div>
                             </div>
                         </div>
@@ -378,7 +386,8 @@
 
                                 {{-- Tombol Aksi --}}
                                 <div class="flex gap-2 sm:justify-end justify-start">
-                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+
+                                    @can('marketing.setting-ppjb.kelola.action')
                                         {{-- Tombol Tolak --}}
                                         <form action="{{ route('settingPPJB.caraBayar.reject', $item) }}" method="POST"
                                             class="delete-form">
@@ -410,9 +419,9 @@
                                                 ACC
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
 
-                                    @hasrole(['Project Manager', 'Super Admin '])
+                                    @can(' marketing.setting-ppjb.kelola.cancel')
                                         {{-- Tombol untuk cancel pengajuan  --}}
                                         <form action="{{ route('settingPPJB.caraBayar.cancelPengajuanPromo', $item) }}"
                                             method="POST" class="delete-form">
@@ -423,7 +432,7 @@
                                                 Batalkan Pengajuan
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -511,7 +520,6 @@
             </template>
 
         </div>
-
 
     </div>
 

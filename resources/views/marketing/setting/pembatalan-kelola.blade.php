@@ -30,7 +30,7 @@
                         </h3>
                     </div>
 
-                    @hasrole(['Project Manager', 'Super Admin '])
+                    @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                         <div class="flex items-center gap-2">
                             {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
                             @if (!$pembatalanPending)
@@ -40,7 +40,7 @@
                                 </button>
                             @endif
                         </div>
-                    @endrole
+                    @endcan
                 </div>
 
                 {{-- Jika tidak ada Pembatalan sama sekali --}}
@@ -57,7 +57,6 @@
                 {{-- Pembatalan Aktif --}}
                 @if ($pembatalanActive)
                     <div class="mt-5 space-y-4">
-
                         {{-- KPR Section --}}
                         <div
                             class="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 p-4 shadow-sm transition hover:shadow-md">
@@ -145,7 +144,8 @@
 
                         {{-- Kanan: Tombol Aksi --}}
                         <div class="flex items-center gap-2">
-                            @hasrole(['Manager Keuangan', 'Super Admin'])
+
+                            @can('marketing.setting-ppjb.kelola.action')
                                 {{-- Tombol Tolak Pembatalan --}}
                                 <form action="{{ route('settingPPJB.pembatalan.reject', $pembatalanPending) }}" method="POST"
                                     class="delete-form">
@@ -177,9 +177,9 @@
                                         ACC
                                     </button>
                                 </form>
-                            @endhasrole
+                            @endcan
 
-                            @hasrole(['Project Manager', 'Super Admin'])
+                            @can(' marketing.setting-ppjb.kelola.cancel')
                                 {{-- Tombol Batalkan Pengajuan --}}
                                 <form action="{{ route('settingPPJB.pembatalan.cancelPengajuanPromo', $pembatalanPending) }}"
                                     method="POST" class="delete-form">
@@ -194,7 +194,7 @@
                                         Batalkan Pengajuan
                                     </button>
                                 </form>
-                            @endhasrole
+                            @endcan
                         </div>
                     </div>
 

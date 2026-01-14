@@ -28,33 +28,6 @@ class UnitController extends Controller
         ]);
     }
 
-    // public function index($slug)
-    // {
-    //     // Ambil perumahaan (hanya untuk info nama, breadcrumb, dsb)
-    //     $perumahaan = Perumahaan::where('slug', $slug)->firstOrFail();
-
-    //     // Langsung ambil semua unit yang perumahaan_id-nya sesuai
-    //     $units = Unit::with([
-    //         'tahap:id,nama_tahap', // kalau mau tampilkan nama tahap
-    //         'blok:id,nama_blok',   // kalau mau tampilkan nama blok
-    //         'type:id,nama_type',   // kalau mau tampilkan tipe
-    //     ])
-    //         ->where('perumahaan_id', $perumahaan->id)
-    //         ->orderBy('created_at', 'desc')
-    //         ->get();
-
-    //     // dd($units);
-
-    //     return view('Etalase.unit.listUnit', [
-    //         'perumahaan'  => $perumahaan,
-    //         'units'       => $units,
-    //         'breadcrumbs' => [
-    //             ['label' => $perumahaan->nama_perumahaan, 'url' => route('unit.indexGlobal')],
-    //             ['label' => 'List Unit', 'url' => route('unit.index', $perumahaan->slug)],
-    //         ],
-    //     ]);
-    // }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -201,7 +174,7 @@ class UnitController extends Controller
             'type',
             'tahapKualifikasi.kualifikasiBlok',
         ])->findOrFail($unitId);
-// dd($unit);  
+// dd($unit);
         return view('Etalase.unit.showUnit', [
             'perumahaan'  => $perumahaan,
             'unit'        => $unit,

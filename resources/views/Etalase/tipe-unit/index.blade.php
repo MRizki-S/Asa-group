@@ -83,10 +83,12 @@
 
 
                 {{-- Button Tambah --}}
-                <button data-modal-target="modal-create" data-modal-toggle="modal-create"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0">
-                    + Tambah Type
-                </button>
+                @can('etalase.type-unit.create')
+                    <button data-modal-target="modal-create" data-modal-toggle="modal-create"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0">
+                        + Tambah Type
+                    </button>
+                @endcan
             </div>
 
 
@@ -103,8 +105,12 @@
                             <th scope="col" class="px-6 py-3">Harga - Saat ini (Rp)</th>
                             <th scope="col" class="px-6 py-3">Harga pengajuan - Perubahan (Rp)</th>
                             <th scope="col" class="px-6 py-3">Status Pengajuan</th>
-                             <th scope="col" class="px-6 py-3">Perubahaan Harga</th>
-                            <th scope="col" class="px-6 py-3 text-center w-56">Aksi</th>
+                            @can('etalase.type-unit.pengajuan-perubahaan-harga')
+                                <th scope="col" class="px-6 py-3">Perubahaan Harga</th>
+                            @endcan
+                            @canany(['etalase.type-unit.update', 'etalase.type-unit.delete'])
+                                <th scope="col" class="px-6 py-3 text-center w-56">Aksi</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody id="table-body" x-html="tableHtml">

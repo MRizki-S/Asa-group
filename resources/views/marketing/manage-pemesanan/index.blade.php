@@ -52,22 +52,30 @@
                                 <th class="px-4 py-3 w-[200px]">Nama User</th>
                                 <th class="px-4 py-3">Unit</th>
                                 <th class="px-4 py-3">Nama Sales</th>
-                                @hasrole('Admin KPR')
+                                @can('marketing.kelola-pemesanan.print-ppjb')
                                     <th class="px-4 py-3 text-center">PPJB</th>
-                                @endrole('Admin KPR')
+                                @endcan
+
                                 <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
                                 <th class="px-4 py-3">Bank</th>
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3 text-center">Status KPR</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
-                                @hasrole('Admin KPR')
+                                @can('marketing.kelola-pemesanan.lihat-berkas')
                                     <th class="px-4 py-3 text-center">Update Data KPR</th>
+                                @endcan
+
+                                @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                     <th class="px-4 py-3 text-center">Adendum</th>
-                                @endrole
-                                <th class="px-4 py-3 text-center">Rincian Tagihan</th>
-                                @hasrole('Sales')
+                                @endcan
+
+                                @can('marketing.kelola-pemesanan.tagihan.read')
+                                    <th class="px-4 py-3 text-center">Rincian Tagihan</th>
+                                @endcan
+
+                               @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
                                     <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                @endrole
+                                @endcan
                             </tr>
                         </thead>
 
@@ -79,15 +87,15 @@
                                     </td>
                                     <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
-                                    @hasrole('Admin KPR')
 
+                                    @can('marketing.kelola-pemesanan.print-ppjb')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('ppjbKPR.export.word', $item->id) }}"
                                                 class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
                                                 PPJB
                                             </a>
                                         </td>
-                                    @endrole
+                                    @endcan
 
                                     <td class="px-4 py-2 text-center">
                                         <span class="text-gray-600">{{ $item->kelengkapan_berkas }}</span>
@@ -106,15 +114,15 @@
                                         @endif
                                     </td>
 
-                                    <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? 0 }}%</td>
+                                    <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? '' }}</td>
                                     <td class="px-4 py-2 text-center">
                                         <span
                                             class="px-2 py-1 rounded font-medium
-                                {{ $item->kpr->status_kpr === 'acc'
-                                    ? 'bg-green-100 text-green-700'
-                                    : ($item->kpr->status_kpr === 'proses'
-                                        ? 'bg-yellow-100 text-yellow-700'
-                                        : 'bg-gray-100 text-gray-700') }}">
+                                        {{ $item->kpr->status_kpr === 'acc'
+                                            ? 'bg-green-100 text-green-700'
+                                            : ($item->kpr->status_kpr === 'proses'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-gray-100 text-gray-700') }}">
                                             {{ ucfirst($item->kpr->status_kpr ?? '-') }}
                                         </span>
                                     </td>
@@ -131,10 +139,8 @@
                                         <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
                                     </td>
 
-
-
-                                    @hasrole('Admin KPR')
-                                        {{-- 🔵 Update Data KPR --}}
+                                    {{-- lihat berkas kpr dan update (khusus staff kpr) --}}
+                                    @can('marketing.kelola-pemesanan.update-berkas')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.kelengkapanBerkasKpr.editKpr', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition whitespace-nowrap">
@@ -142,28 +148,33 @@
                                                 <span>Update Data</span>
                                             </a>
                                         </td>
+                                    @endcan
 
 
-                                        {{-- 🟡 Pengajuan Adendum --}}
+                                    {{-- 🟡 Pengajuan Adendum --}}
+                                    @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                         <td class="px-4 py-2 text-center">
                                             <button
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
                                                 <i class="ri-repeat-line"></i>Adendum
                                             </button>
                                         </td>
-                                    @endrole
+                                    @endcan
+
 
                                     {{-- 🟢 Rincian Tagihan --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
-                                            <i class="ri-file-list-3-line"></i> Lihat
-                                        </a>
-                                    </td>
+                                    @can('marketing.kelola-pemesanan.tagihan.read')
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
+                                                <i class="ri-file-list-3-line"></i> Lihat
+                                            </a>
+                                        </td>
+                                    @endcan
 
 
 
-                                    @hasrole('Sales')
+                                    @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
                                         {{-- 🔴 Pengajuan Pembatalan --}}
                                         <td class="px-4 py-2 text-center">
                                             <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
@@ -176,7 +187,7 @@
                                                 <i class="ri-close-circle-line"></i> Pembatalan
                                             </button>
                                         </td>
-                                    @endrole
+                                    @endcan
 
                                 </tr>
                             @endforeach
@@ -205,20 +216,30 @@
                                 <th class="px-4 py-3 w-[200px]">Nama User</th>
                                 <th class="px-4 py-3">Unit</th>
                                 <th class="px-4 py-3">Nama Sales</th>
-                                @hasrole('Admin KPR')
+
+                                @can('marketing.kelola-pemesanan.print-ppjb')
                                     <th class="px-4 py-3 text-center">PPJB</th>
-                                @endrole
+                                @endcan
+
                                 <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
-                                @hasrole('Admin KPR')
+
+                                @can('marketing.kelola-pemesanan.lihat-berkas')
                                     <th class="px-4 py-3 text-center">Update Data Cash</th>
+                                @endcan
+
+                                @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                     <th class="px-4 py-3 text-center">Adendum</th>
-                                @endrole
-                                <th class="px-4 py-3 text-center">Rincian Tagihan</th>
-                                @hasrole('Sales')
+                                @endcan
+
+                                @can('marketing.kelola-pemesanan.tagihan.read')
+                                    <th class="px-4 py-3 text-center">Rincian Tagihan</th>
+                                @endcan
+
+                               @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
                                     <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                @endrole
+                                @endcan
                             </tr>
                         </thead>
 
@@ -230,18 +251,20 @@
                                     </td>
                                     <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
-                                    @hasrole('Admin KPR')
+
+                                    @can('marketing.kelola-pemesanan.print-ppjb')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
                                                 class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
                                                 PPJB
                                             </a>
                                         </td>
-                                    @endrole
+                                    @endcan
+
                                     <td class="px-4 py-2 text-center">
                                         <span class=text-gray-600">{{ $item->kelengkapan_berkas ?? 0 }}</span>
                                     </td>
-                                    <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? 0 }}%</td>
+                                    <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? '-' }}</td>
                                     <td class="px-4 py-2 text-center">
                                         @php
                                             $status = $item->status_pemesanan ?? '-';
@@ -255,35 +278,41 @@
                                         <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
                                     </td>
 
-                                    @hasrole('Admin KPR')
-                                        {{-- 🔵 Update Data Cash --}}
+
+                                    {{-- 🔵 Update Data Cash --}}
+                                    @can('marketing.kelola-pemesanan.lihat-berkas')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
                                                 <i class="ri-edit-line"></i> Update Data
                                             </a>
                                         </td>
+                                    @endcan
 
-                                        {{-- 🟡 Adendum --}}
+                                    {{-- 🟡 Adendum --}}
+                                    @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
                                                 <i class="ri-repeat-line"></i> Adendum
                                             </a>
                                         </td>
+                                    @endcan
 
-                                    @endrole
+
 
 
                                     {{-- 🟢 Rincian Tagihan --}}
-                                    <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
-                                            <i class="ri-file-list-3-line"></i> Lihat
-                                        </a>
-                                    </td>
+                                    @can('marketing.kelola-pemesanan.tagihan.read')
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
+                                                <i class="ri-file-list-3-line"></i> Lihat
+                                            </a>
+                                        </td>
+                                    @endcan
 
-                                    @hasrole('Sales')
+                                    @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
                                         {{-- 🔴 Pengajuan Pembatalan --}}
                                         <td class="px-4 py-2 text-center">
                                             <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
@@ -296,7 +325,7 @@
                                                 <i class="ri-close-circle-line"></i> Pembatalan
                                             </button>
                                         </td>
-                                    @endrole
+                                    @endcan
 
                                 </tr>
                             @endforeach

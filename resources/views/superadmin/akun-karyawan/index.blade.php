@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'AkunUser')
+@section('pageActive', 'akunKaryawan')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'AkunUser' }">
+        <div x-data="{ pageName: 'akunKaryawan' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -38,22 +38,30 @@
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Akun User
+                        Akun Karyawan ABM GROUP
                     </h3>
 
-                    @can('marketing.customer.create')
-                        <a href="{{ route('marketing.akunUser.create') }}"
-                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            + Tambah Akun User - Booking
-                        </a>
-                    @endcan
+                    <a href=""
+                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        + Tambah Akun Karyawan
+                    </a>
                 </div>
 
 
 
-                <table id="table-akunUser">
+                <table id="table-akunKaryawan">
                     <thead>
                         <tr>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                <span class="flex items-center">
+                                    Nama Lengkap
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
+                            </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                                 <span class="flex items-center">
                                     Username
@@ -67,9 +75,19 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                                 No Hp
                             </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 <span class="flex items-center">
-                                    Sales Terkait
+                                    UBS
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
+                                <span class="flex items-center">
+                                    Role/Jabatan
                                     <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                         width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -78,112 +96,72 @@
                                 </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                <span class="flex items-center">
-                                    Perumahaan
-                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
-                                    </svg>
-                                </span>
+                                Aksi
                             </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
-                                Tahap
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
-                                Keep Unit
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 ">
-                                <span class="flex items-center">
-                                    Tanggal Booking
-                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
-                                    </svg>
-                                </span>
-                            </th>
-                            @canany(['marketing.customer.update', 'marketing.customer.delete'])
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Aksi
-                                </th>
-                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($akunUser as $item)
+                        @foreach ($akunKaryawan as $item)
                             <tr>
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->nama_lengkap }}
+                                </td>
+
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ $item->username }}
                                 </td>
+
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->no_hp }}
-                                </td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->booking?->sales?->username ?? '-' }}
+                                    {{ $item->no_hp ?? '-' }}
                                 </td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                     @php
-                                        $perum = $item->booking?->unit?->perumahaan?->nama_perumahaan;
-                                        $badgeClass = 'bg-gray-400'; // default
-                                        if ($perum === 'Asa Dreamland') {
-                                            $badgeClass = 'bg-green-500';
-                                        } elseif ($perum === 'Lembah Hijau Residence') {
-                                            $badgeClass = 'bg-blue-500';
-                                        }
+                                        $perum = $item->perumahaan?->nama_perumahaan;
+
+                                        $badgeClass = match ($perum) {
+                                            'Asa Dreamland' => 'bg-sky-400 text-white',
+                                            'Lembah Hijau Residence' => 'bg-green-500 text-white',
+                                            default => 'bg-gray-400 text-white',
+                                        };
                                     @endphp
 
-                                    @if ($perum)
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $badgeClass }}">
+                                        {{ $perum ?? 'UBS' }}
+                                    </span>
+                                </td>
+
+
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    @forelse ($item->roles as $role)
                                         <span
-                                            class="px-2 py-1 text-xs font-semibold text-white rounded {{ $badgeClass }}">
-                                            {{ $perum }}
+                                            class="inline-block px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700">
+                                            {{ $role->name }}
                                         </span>
-                                    @else
+                                    @empty
                                         -
-                                    @endif
+                                    @endforelse
                                 </td>
 
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->booking?->unit?->tahap?->nama_tahap ?? '-' }}
+                                <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                    <a href="{{ route('superadmin.akunKaryawan.edit', $item->id) }}"
+                                        class="btn-edit inline-flex items-center gap-1
+                text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
+                dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
+                px-2.5 py-1.5 rounded-md transition-colors duration-200">
+                                        Edit
+                                    </a>
+                                    <a href="{{ route('superadmin.akunKaryawan.edit', $item->id) }}"
+                                        class="btn-edit inline-flex items-center gap-1
+                text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200
+                dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700
+                px-2.5 py-1.5 rounded-md transition-colors duration-200">
+                                        Delete
+                                    </a>
                                 </td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->booking?->unit?->blok?->nama_blok ?? '' }}
-                                    ({{ $item->booking?->unit?->nama_unit ?? '-' }})
-                                </td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->booking->tanggal_booking->format('d M Y') }}
-                                </td>
-
-                                @canany(['marketing.customer.update', 'marketing.customer.delete'])
-                                    <td class="px-6 py-4 flex flex-wrap gap-2 justfy-ceniter">
-                                        @can('marketing.customer.update')
-                                            <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
-                                                class="btn-edit inline-flex items-center gap-1
-                                            text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
-                                            dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
-                                            px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                            focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
-                                            active:scale-95">
-                                                Edit
-                                            </a>
-                                        @endcan
-
-                                        @can('marketing.customer.delete')
-                                            <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
-                                                class="delete-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button"
-                                                    class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        @endcan
-                                    </td>
-                                @endcanany
                             </tr>
                         @endforeach
                     </tbody>
+
                 </table>
 
             </div>
@@ -216,8 +194,8 @@
             }
         });
 
-        if (document.getElementById("table-akunUser") && typeof simpleDatatables.DataTable !== 'undefined') {
-            const dataTable = new simpleDatatables.DataTable("#table-akunUser", {
+        if (document.getElementById("table-akunKaryawan") && typeof simpleDatatables.DataTable !== 'undefined') {
+            const dataTable = new simpleDatatables.DataTable("#table-akunKaryawan", {
                 searchable: true,
                 sortable: true,
             });

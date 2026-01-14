@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'Perumahaan') 
+@section('pageActive', 'Perumahaan')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
@@ -20,10 +20,12 @@
                         Daftar Tahap – {{ $perumahaan->nama_perumahaan }}
                     </h3>
 
-                    <a href="{{ route('tahap.create', $perumahaan->slug) }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Tahap
-                    </a>
+                    @can('etalase.tahap.create')
+                        <a href="{{ route('tahap.create', $perumahaan->slug) }}"
+                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            + Tambah Tahap
+                        </a>
+                    @endcan
 
                 </div>
 
@@ -92,14 +94,17 @@
                                         </a>
                                     </td>
                                     <td class="py-4 flex flex-wrap gap-2 justify-center items-center">
-                                        <a href="{{ route('tahap.edit', ['perumahaan' => $perumahaan->slug, 'tahap' => $tahap->slug]) }}"
-                                            class="btn-edit inline-flex items-center gap-1
-                                        text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
-                                        dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
-                                        px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                        focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
-                                        active:scale-95">Edit</a>
+                                        @can('etalase.tahap.update')
+                                            <a href="{{ route('tahap.edit', ['perumahaan' => $perumahaan->slug, 'tahap' => $tahap->slug]) }}"
+                                                class="btn-edit inline-flex items-center gap-1
+                                            text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
+                                            dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
+                                            px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                            focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
+                                            active:scale-95">Edit</a>
+                                        @endcan
 
+                                        @can('etalase.tahap.delete')
                                         <form
                                             action="{{ route('tahap.destroy', ['perumahaan' => $perumahaan->slug, 'tahap' => $tahap->slug]) }}"
                                             method="POST" class="delete-form">
@@ -110,6 +115,7 @@
                                                 Delete
                                             </button>
                                         </form>
+                                        @endcan
                                     </td>
                                 </tr>
                             @endforeach

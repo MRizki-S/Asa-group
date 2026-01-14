@@ -451,7 +451,7 @@
 
             {{-- 🔹 Tombol Aksi Manager Keuangan --}}
             <div x-data="{ openModal: false, actionType: '' }">
-                @role('Manager Keuangan')
+                @role('Manager Dukungan & Layanan')
                     @if ($pengajuanPembatalan->status_mgr_pemasaran !== 'pending' && $pengajuanPembatalan->status_mgr_keuangan === 'pending')
                         <div class="flex justify-end gap-3 mt-6">
                             <button @click="actionType = 'tolak'; openModal = true" type="button"

@@ -124,9 +124,11 @@
                                     </svg>
                                 </span>
                             </th>
+                            @can('etalase.perubahaan-harga.type-unit.action')
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -177,37 +179,39 @@
                                 </td>
 
                                 {{-- Aksi --}}
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex justify-center gap-2">
+                                @can('etalase.perubahaan-harga.type-unit.action')
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex justify-center gap-2">
 
-                                        {{-- ACC --}}
-                                        <form action="{{ route('perubahan-harga.tipe-unit.approvePengajuan', $item->id) }}"
-                                            method="POST" class="approve-form">
-                                            @csrf
+                                            {{-- ACC --}}
+                                            <form action="{{ route('perubahan-harga.tipe-unit.approvePengajuan', $item->id) }}"
+                                                method="POST" class="approve-form">
+                                                @csrf
 
-                                            <button type="button"
-                                                class="approve-btn px-3 py-1.5 text-xs font-medium rounded
+                                                <button type="button"
+                                                    class="approve-btn px-3 py-1.5 text-xs font-medium rounded
                                                 bg-green-600 text-white hover:bg-green-700
                                                 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                                {{ $item->status_pengajuan !== 'pending' ? 'disabled' : '' }}>
-                                                ACC
-                                            </button>
-                                        </form>
+                                                    {{ $item->status_pengajuan !== 'pending' ? 'disabled' : '' }}>
+                                                    ACC
+                                                </button>
+                                            </form>
 
 
-                                        {{-- tolak pengajuan --}}
-                                        <form action="{{ Route('perubahan-harga.tipe-unit.tolakPengajuan', $item->id) }}"
-                                            method="POST" class="tolak-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button"
-                                                class="tolak-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                                Tolak
-                                            </button>
-                                        </form>
+                                            {{-- tolak pengajuan --}}
+                                            <form action="{{ Route('perubahan-harga.tipe-unit.tolakPengajuan', $item->id) }}"
+                                                method="POST" class="tolak-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    class="tolak-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                                                    Tolak
+                                                </button>
+                                            </form>
 
-                                    </div>
-                                </td>
+                                        </div>
+                                    </td>
+                                @endcan
                             </tr>
                         @empty
                         @endforelse

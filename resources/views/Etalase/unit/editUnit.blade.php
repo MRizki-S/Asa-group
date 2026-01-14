@@ -340,6 +340,7 @@
                 </div>
 
                 <!-- Tombol Submit & Kembali -->
+                @can('etalase.unit.updat')
                 <div class="flex justify-end px-6 pb-6 gap-2">
                     <!-- Tombol Kembali -->
                     <a href="{{ route('unit.index', $perumahaan->slug) }}"
@@ -352,7 +353,7 @@
                         Simpan
                     </button>
                 </div>
-
+                @endcan
             </div>
 
 

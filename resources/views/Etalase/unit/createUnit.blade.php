@@ -130,7 +130,7 @@
 
                             <!-- Tipe Unit -->
                             <div>
-                                 <label
+                                <label
                                     class="flex items-center gap-1 text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
                                     Tipe Unit
                                     <span class="text-red-500">*</span></label>
@@ -330,19 +330,21 @@
                 </div>
 
                 <!-- Tombol Submit & Kembali -->
-                <div class="flex justify-end px-6 pb-6 gap-2">
-                    <!-- Tombol Kembali -->
-                    <button type="button" onclick="history.back()"
-                        class="px-10 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-600">
-                        Kembali
-                    </button>
+                @can('etalase.unit.create')
+                    <div class="flex justify-end px-6 pb-6 gap-2">
+                        <!-- Tombol Kembali -->
+                        <button type="button" onclick="history.back()"
+                            class="px-10 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-600">
+                            Kembali
+                        </button>
 
-                    <!-- Tombol Simpan -->
-                    <button type="submit"
-                        class="px-10 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
-                        Simpan
-                    </button>
-                </div>
+                        <!-- Tombol Simpan -->
+                        <button type="submit"
+                            class="px-10 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+                            Simpan
+                        </button>
+                    </div>
+                @endcan
 
             </div>
 

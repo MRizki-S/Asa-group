@@ -167,6 +167,7 @@
             </div>
 
             <!-- Tombol Aksi -->
+            @can('marketing.pemesanan-unit.create')
             <div class="flex justify-end gap-2">
                 {{-- <button type="button" onclick="history.back()"
                     class="px-8 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
@@ -179,6 +180,7 @@
                     Simpan
                 </button>
             </div>
+            @endcan
         </form>
     </div>
 

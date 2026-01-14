@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'Perumahaan') 
+@section('pageActive', 'Perumahaan')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
@@ -81,6 +81,7 @@
                 </div>
 
                 <!-- Tombol Submit & Kembali -->
+                @can('etalase.tahap.create')
                 <div class="flex justify-end px-6 pb-6 gap-2">
                     <!-- Tombol Kembali -->
                     <button type="button" onclick="history.back()"
@@ -94,6 +95,7 @@
                         Simpan
                     </button>
                 </div>
+                @endcan
             </div>
 
         </form>

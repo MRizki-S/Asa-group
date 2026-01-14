@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'KualifikasiBlok')
+@section('pageActive', 'RoleHakAkses')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'KualifikasiBlok' }">
+        <div x-data="{ pageName: 'AkunUser' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -38,41 +38,71 @@
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Kualifikasi Blok <span class="text-red-500 text-sm">(Global Data*)</span>
+                        Role & Hak Akses
                     </h3>
 
-                    @can('etalase.kualifikasi-blok.create')
-                    <a href="#" data-modal-target="modal-create" data-modal-toggle="modal-create"
+                    <a href="{{ route('superadmin.roleHakAkses.create') }}"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Tahap
+                        + Tambah Role
                     </a>
-                    @endcan
                 </div>
 
 
 
-                <table id="table-kualifikasiBlok">
+                <table id="table-roleHakAkses">
                     <thead>
-                        <tr class="text-center">
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Kualifikasi Blok
+                        <tr>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                <span class="flex items-center">
+                                    Nama Role
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
                             </th>
-                            @canany(['etalase.kualifikasi-blok.delete'])
+
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                <span class="flex items-center justify-center">
+                                    Total Hak Akses
+                                    <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
+                                    </svg>
+                                </span>
+                            </th>
+
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
-                            @endcanany
                         </tr>
                     </thead>
+
                     <tbody>
-                        @foreach ($kualifikasiBlok as $item)
-                            <tr class="text-center">
+                        @foreach ($roles as $item)
+                            <tr>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ $item->nama_kualifikasi_blok }}</td>
-                                @canany(['etalase.kualifikasi-blok.delete'])
-                                <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                    @can('etalase.kualifikasi-blok.delete')
-                                    <form action="{{ route('kualifikasi-blok.destroy', $item->id) }}" method="POST"
+                                    {{ $item->name }}
+                                </td>
+
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                    {{ $item->permissions_count }}
+                                </td>
+
+                                <td class="px-6 py-4 flex flex-wrap gap-2 justify-center items-center text-center">
+                                    <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
+                                        class="btn-edit inline-flex items-center gap-1
+                            text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
+                            dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
+                            px-2.5 py-1.5 rounded-md transition-colors duration-200
+                            focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
+                            active:scale-95">
+                                        Edit
+                                    </a>
+
+                                    <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
                                         class="delete-form">
                                         @csrf
                                         @method('DELETE')
@@ -81,23 +111,18 @@
                                             Delete
                                         </button>
                                     </form>
-                                    @endcan
                                 </td>
-                                @endcanany
                             </tr>
                         @endforeach
-
                     </tbody>
                 </table>
+
+
             </div>
         </div>
 
     </div>
     <!-- ===== Main Content End ===== -->
-
-
-    {{-- modal create kualifikasi-blok --}}
-    @include('Etalase.kualifikasi-blok.modal.modal-create-kualifikasiBlok')
 
     {{-- sweatalert 2 for delete data --}}
     <script>
@@ -108,7 +133,7 @@
 
                 Swal.fire({
                     title: 'Yakin hapus data ini?',
-                    text: "Apakah anda yakin menghapus kualifikasi blok ini? Semua data yang terkait dengan kualifikasi blok akan ikut terhapus.",
+                    text: "Apakah anda yakin menghapus Akun User & Booking Unit ini?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -122,14 +147,11 @@
                 });
             }
         });
-    </script>
 
-
-    <script>
-        if (document.getElementById("table-kualifikasiBlok") && typeof simpleDatatables.DataTable !== 'undefined') {
-            const dataTable = new simpleDatatables.DataTable("#table-kualifikasiBlok", {
+        if (document.getElementById("table-roleHakAkses") && typeof simpleDatatables.DataTable !== 'undefined') {
+            const dataTable = new simpleDatatables.DataTable("#table-roleHakAkses", {
                 searchable: true,
-                sortable: false
+                sortable: true,
             });
         }
     </script>
