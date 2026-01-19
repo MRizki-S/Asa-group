@@ -19,14 +19,6 @@
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Keterlambatan PPJB</h3>
 
                     <div class="flex items-center gap-2">
-                        {{-- Tombol Riwayat Keterlambatan --}}
-                        {{-- <a href="{{ route('settingPPJB.mutu.history') }}"
-                            class="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-md hover:bg-gray-300
-                         dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
-                            Riwayat Keterlambatan PPJB
-                        </a> --}}
-
-
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
                         @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                             @if (!$keterlambatanPending)
@@ -248,9 +240,9 @@
                                         </form>
                                     @endcan
 
-                                    @can(' marketing.setting-ppjb.kelola.cancel')
+                                    @can('marketing.setting-ppjb.kelola.cancel')
                                     <form
-                                        action="{{ route('settingPPJB.keterlambatan.cancelPengajuanPromo', $keterlambatanPending) }}"
+                                        action="{{ route('settingPPJB.keterlambatan.cancelPengajuan', $keterlambatanPending) }}"
                                         method="POST" class="delete-form">
                                         @csrf
                                         @method('DELETE')

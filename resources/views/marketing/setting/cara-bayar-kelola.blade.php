@@ -222,10 +222,10 @@
                                         </form>
                                     @endcan
 
-                                    @can(' marketing.setting-ppjb.kelola.cancel')
+                                    @can('marketing.setting-ppjb.kelola.cancel')
                                         {{-- Tombol untuk pengaju --}}
                                         <form
-                                            action="{{ route('settingPPJB.caraBayar.cancelPengajuanPromo', $caraBayarPendingKpr) }}"
+                                            action="{{ route('settingPPJB.caraBayar.cancelPengajuan', $caraBayarPendingKpr) }}"
                                             method="POST" class="delete-form">
                                             @csrf
                                             @method('DELETE')
@@ -421,9 +421,9 @@
                                         </form>
                                     @endcan
 
-                                    @can(' marketing.setting-ppjb.kelola.cancel')
+                                    @can('marketing.setting-ppjb.kelola.cancel')
                                         {{-- Tombol untuk cancel pengajuan  --}}
-                                        <form action="{{ route('settingPPJB.caraBayar.cancelPengajuanPromo', $item) }}"
+                                        <form action="{{ route('settingPPJB.caraBayar.cancelPengajuan', $item) }}"
                                             method="POST" class="delete-form">
                                             @csrf
                                             @method('DELETE')

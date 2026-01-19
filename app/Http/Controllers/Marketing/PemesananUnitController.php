@@ -160,7 +160,6 @@ class PemesananUnitController extends Controller
  */
     public function store(Request $request)
     {
-        dd($request->all());
         // 🧩 VALIDASI SEBELUM TRANSAKSI
         $request->validate([
             // === FIELD UMUM ===
@@ -361,7 +360,7 @@ class PemesananUnitController extends Controller
 
             // Kirim notifikasi ke grup WhatsApp Marketing ASA
             // Ambil group ID dari .env
-            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ASA');
+            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ADL');
             $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
             $namaTahap     = $unit->tahap->nama_tahap ?? '-';
             $namaUnit      = $unit->nama_unit ?? '-';

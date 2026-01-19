@@ -329,7 +329,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             Route::post('/', [SettingCaraBayarController::class, 'updatePengajuan'])
                 ->name('settingPPJB.caraBayar.updatePengajuan');
             Route::delete('/{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])
-                ->name('settingPPJB.caraBayar.cancelPengajuanPromo');
+                ->name('settingPPJB.caraBayar.cancelPengajuan');
             Route::patch('/{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])
                 ->name('settingPPJB.caraBayar.nonAktif');
             Route::patch('/{caraBayar}/approve', [SettingCaraBayarController::class, 'approvePengajuanCaraBayar'])
@@ -349,7 +349,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             Route::post('/', [SettingKeterlambatanController::class, 'updatePengajuan'])
                 ->name('settingPPJB.keterlambatan.updatePengajuan');
             Route::delete('/{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])
-                ->name('settingPPJB.keterlambatan.cancelPengajuanPromo');
+                ->name('settingPPJB.keterlambatan.cancelPengajuan');
             Route::patch('/{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])
                 ->name('settingPPJB.keterlambatan.nonAktif');
             Route::patch('/{keterlambatan}/approve', [SettingKeterlambatanController::class, 'approvePengajuan'])

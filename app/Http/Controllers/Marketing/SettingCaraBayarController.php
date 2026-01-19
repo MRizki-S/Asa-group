@@ -1,14 +1,24 @@
 <?php
 namespace App\Http\Controllers\Marketing;
 
-use App\Http\Controllers\Controller;
-use App\Models\PpjbCaraBayar;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PpjbCaraBayar;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Services\NotificationGroupService;
 
 class SettingCaraBayarController extends Controller
 {
+
+    protected NotificationGroupService $notificationGroup;
+
+    // Notifikasi Group
+    public function __construct(NotificationGroupService $notificationGroup)
+    {
+        $this->notificationGroup = $notificationGroup;
+    }
     public function editCaraBayar()
     {
         $user = Auth::user();
@@ -18,10 +28,7 @@ class SettingCaraBayarController extends Controller
             ? session('current_perumahaan_id', null)
             : $user->perumahaan_id;
 
-        // =========================
         // KPR
-        // =========================
-
         $caraBayarActiveKpr = PpjbCaraBayar::with(['pengaju', 'approver'])
             ->where('perumahaan_id', $currentPerumahaanId)
             ->where('jenis_pembayaran', 'KPR')
@@ -35,10 +42,7 @@ class SettingCaraBayarController extends Controller
             ->where('status_aktif', 0)
             ->first();
 
-        // =========================
         // CASH
-        // =========================
-
         $caraBayarActiveCash = PpjbCaraBayar::with(['pengaju', 'approver'])
             ->where('perumahaan_id', $currentPerumahaanId)
             ->where('jenis_pembayaran', 'CASH')
@@ -56,12 +60,12 @@ class SettingCaraBayarController extends Controller
 
         return view('marketing.setting.cara-bayar-kelola', [
             // KPR
-            'caraBayarActiveKpr'   => $caraBayarActiveKpr,
-            'caraBayarPendingKpr'  => $caraBayarPendingKpr,
+            'caraBayarActiveKpr' => $caraBayarActiveKpr,
+            'caraBayarPendingKpr' => $caraBayarPendingKpr,
             // CASH
-            'caraBayarActiveCash'  => $caraBayarActiveCash,
+            'caraBayarActiveCash' => $caraBayarActiveCash,
             'caraBayarPendingCash' => $caraBayarPendingCash,
-            'breadcrumbs'          => [
+            'breadcrumbs' => [
                 ['label' => 'Setting PPJB', 'url' => route('settingPPJB.index')],
                 ['label' => 'Kelola Cara Bayar', 'url' => route('settingPPJB.caraBayar.edit')],
             ],
@@ -71,14 +75,14 @@ class SettingCaraBayarController extends Controller
     public function updatePengajuan(Request $request)
     {
         $request->validate([
-            'perumahaan_id'    => 'required|integer',
+            'perumahaan_id' => 'required|integer',
             'jenis_pembayaran' => 'required|in:KPR,CASH',
-            'nama_cara_bayar'  => 'required|string|max:255',
-            'jumlah_cicilan'   => 'required|integer|min:1',
-            'minimal_dp'       => 'required|integer|min:0',
+            'nama_cara_bayar' => 'required|string|max:255',
+            'jumlah_cicilan' => 'required|integer|min:1',
+            'minimal_dp' => 'required|integer|min:0',
         ]);
-        // dd($request->all());
-        $perumahaanId    = $request->perumahaan_id;
+
+        $perumahaanId = $request->perumahaan_id;
         $jenisPembayaran = $request->jenis_pembayaran;
 
         if ($jenisPembayaran === 'KPR') {
@@ -110,17 +114,45 @@ class SettingCaraBayarController extends Controller
         }
 
         // Buat pengajuan baru
-        PpjbCaraBayar::create([
-            'perumahaan_id'    => $perumahaanId,
+        $caraBayar = PpjbCaraBayar::create([
+            'perumahaan_id' => $perumahaanId,
             'jenis_pembayaran' => $jenisPembayaran,
-            'nama_cara_bayar'  => $request->nama_cara_bayar,
-            'jumlah_cicilan'   => $request->jumlah_cicilan,
-            'minimal_dp'       => $request->minimal_dp,
-            'status_aktif'     => 0,
+            'nama_cara_bayar' => $request->nama_cara_bayar,
+            'jumlah_cicilan' => $request->jumlah_cicilan,
+            'minimal_dp' => $request->minimal_dp,
+            'status_aktif' => 0,
             'status_pengajuan' => 'pending',
-            'diajukan_oleh'    => Auth::id(),
-            'disetujui_oleh'   => null,
+            'diajukan_oleh' => Auth::id(),
+            'disetujui_oleh' => null,
         ]);
+
+        // NOTIFIKASI WA
+        try {
+            $caraBayar->load('perumahaan');
+
+            $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
+
+            $message =
+                "🔔 Pengajuan Cara Bayar {$jenisPembayaran}\n" .
+                "```\n" .
+                "Perumahaan   : {$caraBayar->perumahaan->nama_perumahaan}\n" .
+                "Jenis Bayar  : {$jenisPembayaran}\n" .
+                "Nama Skema   : {$caraBayar->nama_cara_bayar}\n" .
+                "Cicilan      : {$caraBayar->jumlah_cicilan}x\n" .
+                "Minimal DP   : Rp " . number_format($caraBayar->minimal_dp, 0, ',', '.') . "\n" .
+                "Diajukan oleh: " . Auth::user()->nama_lengkap . "\n" .
+                "Status       : Pending\n" .
+                "```\n" .
+                "⏳ Menunggu persetujuan";
+
+            $this->notificationGroup->send($groupId, $message);
+        } catch (\Throwable $e) {
+            Log::error('Gagal kirim notifikasi pengajuan cara bayar', [
+                'cara_bayar_id' => $caraBayar->id,
+                'jenis' => $jenisPembayaran,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()
             ->back()
@@ -132,19 +164,49 @@ class SettingCaraBayarController extends Controller
     // nonaktifkan cara bayar yang aktif
     public function nonAktifCaraBayar(PpjbCaraBayar $caraBayar)
     {
-        if (! $caraBayar->status_aktif) {
-            return redirect()->back()->with('error', 'Hanya cara bayar aktif yang bisa dinonaktifkan.');
+        if (!$caraBayar->status_aktif) {
+            return redirect()->back()
+                ->with('error', 'Hanya cara bayar aktif yang bisa dinonaktifkan.');
         }
 
         $caraBayar->update(['status_aktif' => false]);
-        $jenisPembayaran = $caraBayar->jenis_pembayaran;
-        return redirect()->back()->with('success', 'Cara bayar berhasil dinonaktifkan.')
-            ->with('tab', $jenisPembayaran);
+
+        // NOTIFIKASI WA (TAMBAHAN)
+        try {
+            $caraBayar->load('perumahaan');
+
+            $jenis = strtoupper($caraBayar->jenis_pembayaran);
+            $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
+
+            $message =
+                "⛔ Nonaktif Cara Bayar {$jenis}\n" .
+                "```\n" .
+                "Perumahaan   : {$caraBayar->perumahaan->nama_perumahaan}\n" .
+                "Jenis Bayar  : {$jenis}\n" .
+                "Nama Skema  : {$caraBayar->nama_cara_bayar}\n" .
+                "Cicilan     : {$caraBayar->jumlah_cicilan}x\n" .
+                "Minimal DP : Rp " . number_format($caraBayar->minimal_dp, 0, ',', '.') . "\n" .
+                "Dinonaktifkan oleh: " . Auth::user()->nama_lengkap . "\n" .
+                "Status      : Nonaktif\n" .
+                "```\n" .
+                "🔕 Cara bayar {$jenis} ini telah dinonaktifkan";
+
+            $this->notificationGroup->send($groupId, $message);
+
+        } catch (\Throwable $e) {
+            Log::error('Gagal kirim notifikasi nonaktif cara bayar', [
+                'cara_bayar_id' => $caraBayar->id,
+                'jenis' => $caraBayar->jenis_pembayaran,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Cara bayar berhasil dinonaktifkan.')
+            ->with('tab', $caraBayar->jenis_pembayaran);
     }
 
-    /**
-     * Batalkan Pengajuan Cara Bayar Pending
-     */
+    // cancel pengajuan cara bayar yang pending
     public function cancelPengajuanCaraBayar(PpjbCaraBayar $caraBayar)
     {
         if ($caraBayar->status_pengajuan !== 'pending') {
@@ -153,6 +215,36 @@ class SettingCaraBayarController extends Controller
         $jenisPembayaran = $caraBayar->jenis_pembayaran;
         // karena cara bayar pending belum dipakai, langsung hapus saja
         $caraBayar->delete();
+
+        // NOTIFIKASI WA
+        try {
+            $caraBayar->load('perumahaan');
+
+            $jenis = strtoupper($caraBayar->jenis_pembayaran);
+            $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
+
+            $message =
+                "🚫 Pembatalan Pengajuan Cara Bayar {$jenis}\n" .
+                "```\n" .
+                "Perumahaan     : {$caraBayar->perumahaan->nama_perumahaan}\n" .
+                "Jenis Bayar    : {$jenis}\n" .
+                "Nama Skema     : {$caraBayar->nama_cara_bayar}\n" .
+                "Cicilan        : {$caraBayar->jumlah_cicilan}x\n" .
+                "Minimal DP     : Rp " . number_format($caraBayar->minimal_dp, 0, ',', '.') . "\n" .
+                "Dibatalkan oleh: " . Auth::user()->nama_lengkap . "\n" .
+                "Status         : Dibatalkan\n" .
+                "```\n" .
+                "❌ Pengajuan cara bayar {$jenis} ini telah dibatalkan";
+
+            $this->notificationGroup->send($groupId, $message);
+
+        } catch (\Throwable $e) {
+            Log::error('Gagal kirim notifikasi pembatalan cara bayar', [
+                'cara_bayar_id' => $caraBayar->id,
+                'jenis' => $caraBayar->jenis_pembayaran,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Pengajuan cara bayar berhasil dibatalkan.')
             ->with('tab', $jenisPembayaran);
@@ -163,12 +255,12 @@ class SettingCaraBayarController extends Controller
     {
         try {
             DB::transaction(function () use ($caraBayar) {
-                // ✅ Hanya boleh ACC pengajuan yang statusnya pending
+                // Hanya boleh ACC pengajuan yang statusnya pending
                 if ($caraBayar->status_pengajuan !== 'pending') {
                     throw new \Exception('Hanya pengajuan cara bayar dengan status pending yang bisa disetujui.');
                 }
 
-                // 🏦 Jika jenis pembayaran KPR
+                // Jika jenis pembayaran KPR
                 if ($caraBayar->jenis_pembayaran === 'KPR') {
                     // Nonaktifkan semua KPR aktif lain di perumahaan yang sama
                     PpjbCaraBayar::where('perumahaan_id', $caraBayar->perumahaan_id)
@@ -178,21 +270,54 @@ class SettingCaraBayarController extends Controller
 
                     // Set pengajuan ini jadi aktif & disetujui
                     $caraBayar->update([
-                        'status_aktif'     => 1,
+                        'status_aktif' => 1,
                         'status_pengajuan' => 'acc',
-                        'disetujui_oleh'   => Auth::id(),
+                        'disetujui_oleh' => Auth::id(),
                     ]);
                 }
 
-                // 💰 Jika jenis pembayaran Cash
+                // Jika jenis pembayaran Cash
                 else if ($caraBayar->jenis_pembayaran === 'CASH') {
                     $caraBayar->update([
-                        'status_aktif'     => 1,
+                        'status_aktif' => 1,
                         'status_pengajuan' => 'acc',
-                        'disetujui_oleh'   => Auth::id(),
+                        'disetujui_oleh' => Auth::id(),
                     ]);
                 }
             });
+
+            // NOTIFIKASI WA (TAMBAHAN)
+            try {
+                $caraBayar->load('perumahaan');
+
+                $jenis = strtoupper($caraBayar->jenis_pembayaran);
+                $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
+
+                $message =
+                    "✅ Persetujuan Cara Bayar {$jenis}\n" .
+                    "```\n" .
+                    "Perumahaan   : {$caraBayar->perumahaan->nama_perumahaan}\n" .
+                    "Jenis Bayar  : {$jenis}\n" .
+                    "Nama Skema  : {$caraBayar->nama_cara_bayar}\n" .
+                    "Cicilan     : {$caraBayar->jumlah_cicilan}x\n" .
+                    "Minimal DP : Rp " . number_format($caraBayar->minimal_dp, 0, ',', '.') . "\n" .
+                    "Disetujui oleh: " . Auth::user()->nama_lengkap . "\n" .
+                    "Status      : Aktif\n" .
+                    "```\n" .
+                    ($jenis === 'KPR'
+                        ? "🔄 Cara bayar KPR sebelumnya dinonaktifkan\n"
+                        : "") .
+                    "🎉 Cara bayar {$jenis} ini resmi AKTIF";
+
+                $this->notificationGroup->send($groupId, $message);
+
+            } catch (\Throwable $e) {
+                Log::error('Gagal kirim notifikasi ACC cara bayar', [
+                    'cara_bayar_id' => $caraBayar->id,
+                    'jenis' => $caraBayar->jenis_pembayaran,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return redirect()->back()
                 ->with('success', 'Pengajuan cara bayar berhasil disetujui dan diaktifkan.')
@@ -217,6 +342,35 @@ class SettingCaraBayarController extends Controller
         $caraBayar->update([
             'status_pengajuan' => 'tolak',
         ]);
+
+        // NOTIFIKASI WA
+        try {
+            $caraBayar->load('perumahaan');
+
+            $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
+
+            $message =
+                "❌ Penolakan Cara Bayar {$jenisPembayaran}\n" .
+                "```\n" .
+                "Perumahaan   : {$caraBayar->perumahaan->nama_perumahaan}\n" .
+                "Jenis Bayar  : {$jenisPembayaran}\n" .
+                "Nama Skema  : {$caraBayar->nama_cara_bayar}\n" .
+                "Cicilan     : {$caraBayar->jumlah_cicilan}x\n" .
+                "Minimal DP : Rp " . number_format($caraBayar->minimal_dp, 0, ',', '.') . "\n" .
+                "Ditolak oleh: " . Auth::user()->nama_lengkap . "\n" .
+                "Status      : Ditolak\n" .
+                "```\n" .
+                "🚫 Pengajuan cara bayar {$jenisPembayaran} tidak disetujui";
+
+            $this->notificationGroup->send($groupId, $message);
+
+        } catch (\Throwable $e) {
+            Log::error('Gagal kirim notifikasi penolakan cara bayar', [
+                'cara_bayar_id' => $caraBayar->id,
+                'jenis' => $caraBayar->jenis_pembayaran,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->back()
             ->with('success', 'Pengajuan cara bayar berhasil ditolak.')

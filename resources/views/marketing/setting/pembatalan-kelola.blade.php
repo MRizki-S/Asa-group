@@ -179,7 +179,7 @@
                                 </form>
                             @endcan
 
-                            @can(' marketing.setting-ppjb.kelola.cancel')
+                            @can('marketing.setting-ppjb.kelola.cancel')
                                 {{-- Tombol Batalkan Pengajuan --}}
                                 <form action="{{ route('settingPPJB.pembatalan.cancelPengajuanPromo', $pembatalanPending) }}"
                                     method="POST" class="delete-form">
