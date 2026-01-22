@@ -50,16 +50,17 @@
                         </span>
                     </h3>
 
-
-                    <a href="{{ route('unit.create', $perumahaan->slug) }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Unit
-                    </a>
+                    @can('etalase.unit.create')
+                        <a href="{{ route('unit.create', $perumahaan->slug) }}"
+                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            + Tambah Unit
+                        </a>
+                    @endcan
                 </div>
 
                 {{-- Filter Unit --}}
                 <form method="GET" action="{{ route('unit.index', $perumahaan->slug) }}"
-                   class="mb-4 flex items-center gap-3" x-data="{
+                    class="mb-4 flex items-center gap-3" x-data="{
                         selectedTahap: '{{ request('tahapFil') ?? '' }}',
                         selectedBlok: '{{ request('blokFil') ?? '' }}',
                         selectedType: '{{ request('typeFil') ?? '' }}',
@@ -94,16 +95,16 @@
                     <h3 class="text-sm text-gray-500 dark:text-white/90">Filter tag -</h3>
 
                     <!-- Select Tahap -->
-                  <div>
-                      <select name="tahapFil" x-model="selectedTahap" @change="updateBlokType()"
-                        class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white border-gray-300">
-                        <option value="">Pilih Tahap</option>
-                        <template x-for="t in tahap" :key="t.id">
-                            <option :value="t.slug" x-text="t.nama_tahap" :selected="t.slug === selectedTahap">
-                            </option>
-                        </template>
-                    </select>
-                  </div>
+                    <div>
+                        <select name="tahapFil" x-model="selectedTahap" @change="updateBlokType()"
+                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white border-gray-300">
+                            <option value="">Pilih Tahap</option>
+                            <template x-for="t in tahap" :key="t.id">
+                                <option :value="t.slug" x-text="t.nama_tahap" :selected="t.slug === selectedTahap">
+                                </option>
+                            </template>
+                        </select>
+                    </div>
 
                     <!-- Select Blok -->
                     {{-- <select name="blokFil" x-model="selectedBlok"
@@ -126,7 +127,7 @@
                         </template>
                     </select> --}}
 
-                   <button type="submit"
+                    <button type="submit"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         Terapkan
                     </button>
@@ -153,7 +154,7 @@
                                 </span>
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                               <span class="flex items-center">
+                                <span class="flex items-center">
                                     Blok
                                     <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                         width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -235,36 +236,42 @@
                                     Rp {{ number_format($item->harga_final, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                    <a href="{{ route('unit.show', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
-                                        class="btn-edit inline-flex items-center gap-1
+                                    @can('etalase.unit.detail')
+                                        <a href="{{ route('unit.show', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
+                                            class="btn-edit inline-flex items-center gap-1
                                     text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
                                     dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
                                     px-2.5 py-1.5 rounded-md transition-colors duration-200
                                     focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
                                     active:scale-95">
-                                        Lihat
-                                    </a>
-                                    <a href="{{ route('unit.edit', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
-                                        class="btn-edit inline-flex items-center gap-1
+                                            Lihat
+                                        </a>
+                                    @endcan
+
+                                    @can('etalase.unit.update')
+                                        <a href="{{ route('unit.edit', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
+                                            class="btn-edit inline-flex items-center gap-1
                                     text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
                                     dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
                                     px-2.5 py-1.5 rounded-md transition-colors duration-200
                                     focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
                                     active:scale-95">
-                                        Edit
-                                    </a>
+                                            Edit
+                                        </a>
+                                    @endcan
 
-
-                                    <form
-                                        action="{{ route('unit.destroy', ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
-                                        method="POST" class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    @can('etalase.unit.delete')
+                                        <form
+                                            action="{{ route('unit.destroy', ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
+                                            method="POST" class="delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    @endcan
                                 </td>
 
                             </tr>

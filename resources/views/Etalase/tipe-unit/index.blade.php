@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'TipeUnit') 
+@section('pageActive', 'TipeUnit')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
@@ -36,6 +36,28 @@
             </div>
         @endif
 
+        <div
+            class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800
+            dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200">
+            <div class="flex gap-2">
+                <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+
+                <div class="space-y-1">
+                    <p class="font-semibold">Informasi Pengelolaan Tipe Unit</p>
+                    <ul class="list-disc ps-4">
+                        <li><b>Edit Data</b> hanya untuk perubahan data non-harga.</li>
+                        <li><b>Perubahan Harga</b> harus diajukan dan akan melalui approval Manager Dukungan & Layanan.</li>
+                        <li>Jika disetujui, harga akan otomatis diperbarui pada unit dengan status <b>Ready</b>.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
 
         <div class="rounded bg-white shadow-xl px-4 py-6 dark:bg-gray-800">
             <div class="flex flex-wrap gap-2 justify-between mb-4 items-center">
@@ -55,16 +77,18 @@
                        bg-gray-50 focus:ring-blue-500 focus:border-blue-500
                        dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
                        dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Search for users">
+                            placeholder="Search">
                     </div>
                 </div>
 
 
                 {{-- Button Tambah --}}
-                <button data-modal-target="modal-create" data-modal-toggle="modal-create"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0">
-                    + Tambah Type
-                </button>
+                @can('etalase.type-unit.create')
+                    <button data-modal-target="modal-create" data-modal-toggle="modal-create"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0">
+                        + Tambah Type
+                    </button>
+                @endcan
             </div>
 
 
@@ -81,7 +105,12 @@
                             <th scope="col" class="px-6 py-3">Harga - Saat ini (Rp)</th>
                             <th scope="col" class="px-6 py-3">Harga pengajuan - Perubahan (Rp)</th>
                             <th scope="col" class="px-6 py-3">Status Pengajuan</th>
-                            <th scope="col" class="px-6 py-3 text-center w-56">Aksi</th>
+                            @can('etalase.type-unit.pengajuan-perubahaan-harga')
+                                <th scope="col" class="px-6 py-3">Perubahaan Harga</th>
+                            @endcan
+                            @canany(['etalase.type-unit.update', 'etalase.type-unit.delete'])
+                                <th scope="col" class="px-6 py-3 text-center w-56">Aksi</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody id="table-body" x-html="tableHtml">
@@ -103,6 +132,7 @@
         {{-- include modal --}}
         @include('Etalase.tipe-unit.modal.modal-cretae-tipeUnit')
         @include('Etalase.tipe-unit.modal.modal-edit-tipeUnit')
+        @include('Etalase.tipe-unit.modal.modal-pengajuanHarga-tipeUnit')
 
     </div>
 

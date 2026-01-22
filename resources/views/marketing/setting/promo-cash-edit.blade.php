@@ -31,14 +31,14 @@
 
 
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
-                        @hasrole(['Project Manager', 'Super Admin '])
+                        @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                             @if (!$promoCashPending)
                                 <button data-modal-target="modal-create" data-modal-toggle="modal-create"
                                     class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
                                     Ajukan Promo Cash Baru
                                 </button>
                             @endif
-                        @endrole
+                        @endcan
                     </div>
                 </div>
 
@@ -81,15 +81,18 @@
 
                                 </p>
                                 <div class="mt-4 flex justify-end">
-                                    <form action="{{ route('settingPPJB.promo.nonAktif', $promoCashActive) }}"
-                                        method="POST" class="delete-form">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="button"
-                                            class="nonAktifkanPromo px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
-                                            Nonaktifkan
-                                        </button>
-                                    </form>
+
+                                    @can('marketing.setting-ppjb.kelola.nonaktif')
+                                        <form action="{{ route('settingPPJB.promo.nonAktif', $promoCashActive) }}"
+                                            method="POST" class="delete-form">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="button"
+                                                class="nonAktifkanPromo px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
+                                                Nonaktifkan
+                                            </button>
+                                        </form>
+                                    @endcan
 
                                 </div>
                             </div>
@@ -124,7 +127,7 @@
                                     pada {{ $promoCashPending->tanggal_pengajuan->format('d M Y') }}
                                 </p>
                                 <div class="flex gap-2 sm:justify-end justify-start">
-                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+                                    @can('marketing.setting-ppjb.kelola.action')
                                         {{-- Tombol Tolak --}}
                                         <form action="{{ route('settingPPJB.promo.reject', $promoCashPending) }}" method="POST"
                                             class="delete-form">
@@ -156,9 +159,10 @@
                                                 ACC
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
 
-                                    @hasrole(['Project Manager', 'Super Admin '])
+
+                                    @can('marketing.setting-ppjb.kelola.cancel')
                                         <form action="{{ route('settingPPJB.promo.pengajuanCancel', $promoCashPending) }}"
                                             method="POST" class="delete-form">
                                             @csrf
@@ -168,7 +172,7 @@
                                                 Batalkan Pengajuan
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
 
                                 </div>
                             </div>

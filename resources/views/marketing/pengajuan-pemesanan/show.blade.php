@@ -599,7 +599,7 @@
             </div>
 
             {{-- button aksi tolak & approve --}}
-            @unlessrole(['Sales', 'Project Manager'])
+            @can(' marketing.pengajuan-pemesanan.action')
                 <div class="flex justify-end gap-3">
                     <!-- Tombol Tolak -->
                     <form action="{{ route('marketing.pengajuanPemesanan.reject', $pengajuan->id) }}" method="POST"
@@ -625,9 +625,7 @@
                         </button>
                     </form>
                 </div>
-            @endunlessrole
-
-
+            @endcan
 
         </div>
     </div>

@@ -41,31 +41,37 @@
                         Kualifikasi Blok <span class="text-red-500 text-sm">(Global Data*)</span>
                     </h3>
 
+                    @can('etalase.kualifikasi-blok.create')
                     <a href="#" data-modal-target="modal-create" data-modal-toggle="modal-create"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         + Tambah Tahap
                     </a>
+                    @endcan
                 </div>
 
 
 
                 <table id="table-kualifikasiBlok">
                     <thead>
-                        <tr>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                        <tr class="text-center">
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Kualifikasi Blok
                             </th>
+                            @canany(['etalase.kualifikasi-blok.delete'])
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($kualifikasiBlok as $item)
-                            <tr>
+                            <tr class="text-center">
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ $item->nama_kualifikasi_blok }}</td>
+                                @canany(['etalase.kualifikasi-blok.delete'])
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                    @can('etalase.kualifikasi-blok.delete')
                                     <form action="{{ route('kualifikasi-blok.destroy', $item->id) }}" method="POST"
                                         class="delete-form">
                                         @csrf
@@ -75,8 +81,9 @@
                                             Delete
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
-
+                                @endcanany
                             </tr>
                         @endforeach
 

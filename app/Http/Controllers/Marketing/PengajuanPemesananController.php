@@ -178,9 +178,9 @@ class PengajuanPemesananController extends Controller
                 $this->notification->sendWhatsApp($pemesanan->sales->no_hp, $messageSales);
             }
 
-            if ($pemesanan->customer->no_hp) {
-                $this->notification->sendWhatsApp($pemesanan->customer->no_hp, $messageCustomer);
-            }
+            // if ($pemesanan->customer->no_hp) {
+            //     $this->notification->sendWhatsApp($pemesanan->customer->no_hp, $messageCustomer);
+            // }
         });
 
         return redirect()

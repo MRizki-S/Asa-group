@@ -41,10 +41,12 @@
                         Akun User
                     </h3>
 
-                    <a href="{{ route('marketing.akunUser.create') }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Akun User - Booking
-                    </a>
+                    @can('marketing.customer.create')
+                        <a href="{{ route('marketing.akunUser.create') }}"
+                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            + Tambah Akun User - Booking
+                        </a>
+                    @endcan
                 </div>
 
 
@@ -101,9 +103,11 @@
                                     </svg>
                                 </span>
                             </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Aksi
-                            </th>
+                            @canany(['marketing.customer.update', 'marketing.customer.delete'])
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    Aksi
+                                </th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -150,26 +154,33 @@
                                     {{ $item->booking->tanggal_booking->format('d M Y') }}
                                 </td>
 
-                                <td class="px-6 py-4 flex flex-wrap gap-2 justfy-ceniter">
-                                    <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
-                                        class="btn-edit inline-flex items-center gap-1
+                                @canany(['marketing.customer.update', 'marketing.customer.delete'])
+                                    <td class="px-6 py-4 flex flex-wrap gap-2 justfy-ceniter">
+                                        @can('marketing.customer.update')
+                                            <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
+                                                class="btn-edit inline-flex items-center gap-1
                                             text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
                                             dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
                                             px-2.5 py-1.5 rounded-md transition-colors duration-200
                                             focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
                                             active:scale-95">
-                                        Edit
-                                    </a>
-                                    <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
-                                        class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </td>
+                                                Edit
+                                            </a>
+                                        @endcan
+
+                                        @can('marketing.customer.delete')
+                                            <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
+                                                class="delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                    class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </td>
+                                @endcanany
                             </tr>
                         @endforeach
                     </tbody>

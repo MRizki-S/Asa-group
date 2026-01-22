@@ -102,11 +102,13 @@
                             class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 border-b-2 border-gray-100 dark:border-gray-800">
                             Tahap - Tipe Unit
                         </h3>
-                        <a href="#" data-modal-target="modal-create-tahapTypeUnit"
-                            data-modal-toggle="modal-create-tahapTypeUnit"
-                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            +
-                        </a>
+                        @can('etalase.tahap-type-unit.assign')
+                            <a href="#" data-modal-target="modal-create-tahapTypeUnit"
+                                data-modal-toggle="modal-create-tahapTypeUnit"
+                                class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                +
+                            </a>
+                        @endcan
                     </div>
 
                     <div class="w-full overflow-x-auto">
@@ -131,26 +133,26 @@
                                         </td>
                                         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
 
-                                            <form
-                                                action="
-                                                {{ route('tahapType.destroy', $type->pivot->id) }}
-                                                 "
-                                                method="POST" class="delete-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" data-type="Tipe Unit"
-                                                    class="delete-btn relative w-10 h-10  flex items-center justify-center rounded-full border border-red-500 bg-red-50 dark:bg-red-700 dark:border-red-600 hover:bg-red-500 hover:text-white transition-all duration-200 shadow-md">
+                                            @can('etalase.tahap-type-unit.unassign')
+                                                <form
+                                                    action="
+                                            {{ route('tahapType.destroy', $type->pivot->id) }}
+                                            "
+                                                    method="POST" class="delete-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" data-type="Tipe Unit"
+                                                        class="delete-btn relative w-10 h-10  flex items-center justify-center rounded-full border border-red-500 bg-red-50 dark:bg-red-700 dark:border-red-600 hover:bg-red-500 hover:text-white transition-all duration-200 shadow-md">
 
-                                                    <svg class="w-6 h-6 text-red-500 dark:text-red-100 hover:text-white transition-colors duration-200"
-                                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
-                                                    </svg>
-                                                </button>
-
-
-                                            </form>
+                                                        <svg class="w-6 h-6 text-red-500 dark:text-red-100 hover:text-white transition-colors duration-200"
+                                                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -171,11 +173,13 @@
                             class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 border-b-2 border-gray-100 dark:border-gray-800">
                             Tahap - Kualifikasi Posisi Blok
                         </h3>
-                        <a href="#" data-modal-target="modal-create-tahapKualifikasi"
-                            data-modal-toggle="modal-create-tahapKualifikasi"
-                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            +
-                        </a>
+                        @can('etalase.tahap-kualifikasi.assign')
+                            <a href="#" data-modal-target="modal-create-tahapKualifikasi"
+                                data-modal-toggle="modal-create-tahapKualifikasi"
+                                class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                +
+                            </a>
+                        @endcan
                     </div>
 
                     <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
@@ -201,8 +205,9 @@
                                         <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                             Rp {{ number_format($tk->pivot->nominal_tambahan, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center ">
-                                            <a href="#" data-modal-target="modal-edit-tahapKualifikasi-{{$tk->pivot->id}}"
-                                                data-modal-toggle="modal-edit-tahapKualifikasi-{{$tk->pivot->id}}"
+                                            <a href="#"
+                                                data-modal-target="modal-edit-tahapKualifikasi-{{ $tk->pivot->id }}"
+                                                data-modal-toggle="modal-edit-tahapKualifikasi-{{ $tk->pivot->id }}"
                                                 class="btn-edit inline-flex items-center gap-1
                                                 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
                                                 dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
@@ -210,18 +215,20 @@
                                                 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
                                                 active:scale-95">Edit</a>
                                             {{-- {{$tk}} --}}
-                                            <form
-                                                action="
-                                            {{ route('tahapKualifikasi.destroy', $tk->pivot->id) }}
-                                             "
-                                                method="POST" class="delete-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" data-type="Kualifikasi Posisi Blok"
-                                                    class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                                    Delete
-                                                </button>
-                                            </form>
+
+                                            @can('etalase.tahap-kualifikasi.unassign')
+                                                <form
+                                                    action="
+                                            {{ route('tahapKualifikasi.destroy', $tk->pivot->id) }}"
+                                                    method="POST" class="delete-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" data-type="Kualifikasi Posisi Blok"
+                                                        class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            @endcan
                                         </td>
 
                                     </tr>
@@ -247,7 +254,7 @@
 
     {{-- modal pop up edit tahap - Kualifikasi Posisi  --}}
     @foreach ($tahapKualifikasi as $data)
-        <div id="modal-edit-tahapKualifikasi-{{$data->pivot->id}}" tabindex="-1" aria-hidden="true"
+        <div id="modal-edit-tahapKualifikasi-{{ $data->pivot->id }}" tabindex="-1" aria-hidden="true"
             class="hidden fixed inset-0 z-50 flex items-center justify-center w-full h-full overflow-y-auto overflow-x-hidden">
 
             <div class="relative w-full max-w-md p-4">
@@ -260,7 +267,7 @@
                         </h3>
                         <button type="button"
                             class="text-gray-400 hover:text-gray-900 hover:bg-gray-200 rounded-lg w-8 h-8 flex items-center justify-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            data-modal-toggle="modal-edit-tahapKualifikasi-{{$data->pivot->id}}">
+                            data-modal-toggle="modal-edit-tahapKualifikasi-{{ $data->pivot->id }}">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                     stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
@@ -305,7 +312,7 @@
 
                         {{-- Tombol --}}
                         <div class="flex justify-end gap-3 mt-6">
-                            <button type="button" data-modal-toggle="modal-edit-tahapKualifikasi-{{$data->pivot->id}}"
+                            <button type="button" data-modal-toggle="modal-edit-tahapKualifikasi-{{ $data->pivot->id }}"
                                 class="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-100">
                                 Batal
                             </button>

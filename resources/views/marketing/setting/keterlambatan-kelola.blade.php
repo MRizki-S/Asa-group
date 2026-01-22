@@ -19,23 +19,15 @@
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Keterlambatan PPJB</h3>
 
                     <div class="flex items-center gap-2">
-                        {{-- Tombol Riwayat Keterlambatan --}}
-                        {{-- <a href="{{ route('settingPPJB.mutu.history') }}"
-                            class="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-md hover:bg-gray-300
-                         dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
-                            Riwayat Keterlambatan PPJB
-                        </a> --}}
-
-
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
-                        @hasrole(['Project Manager', 'Super Admin '])
+                        @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                             @if (!$keterlambatanPending)
                                 <button data-modal-target="modal-create" data-modal-toggle="modal-create"
                                     class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
                                     Ajukan Keterlambatan Baru
                                 </button>
                             @endif
-                        @endrole
+                        @endcan
                     </div>
                 </div>
 
@@ -95,7 +87,7 @@
                                         Diajukan Oleh
                                     </label>
                                     <input type="text" readonly
-                                        value="{{ $keterlambatanActive->pengaju->username ?? '-' }}"
+                                        value="{{ $keterlambatanActive->pengaju->nama_lengkap ?? '-' }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
                               focus:ring-blue-500 focus:border-blue-500
                               dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
@@ -108,7 +100,7 @@
                                         Disetujui Oleh
                                     </label>
                                     <input type="text" readonly
-                                        value="{{ $keterlambatanActive->approver->username ?? '-' }}"
+                                        value="{{ $keterlambatanActive->approver->nama_lengkap ?? '-' }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
                               focus:ring-blue-500 focus:border-blue-500
                               dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
@@ -119,10 +111,12 @@
                             {{-- Info + Tombol Nonaktifkan --}}
                             <div class="flex justify-between items-center mt-2">
                                 <p class="text-sm text-gray-500">
-                                    Disetujui oleh <strong>{{ $keterlambatanActive->approver->username ?? '-' }}</strong>
+                                    Disetujui oleh <strong>{{ $keterlambatanActive->approver->nama_lengkap ?? '-' }}</strong>
                                     pada {{ $keterlambatanActive->updated_at?->translatedFormat('d M Y') ?? '-' }}
                                 </p>
                                 <div class="mt-4 flex justify-end">
+
+                                    @can('marketing.setting-ppjb.kelola.nonaktif')
                                     <form action="{{ route('settingPPJB.keterlambatan.nonAktif', $keterlambatanActive) }}"
                                         method="POST" class="delete-form">
                                         @csrf
@@ -132,6 +126,8 @@
                                             Nonaktifkan
                                         </button>
                                     </form>
+                                    @endcan
+
                                 </div>
                             </div>
                         </div>
@@ -183,7 +179,7 @@
                                         Diajukan Oleh
                                     </label>
                                     <input type="text" readonly
-                                        value="{{ $keterlambatanPending->pengaju->username ?? '-' }}"
+                                        value="{{ $keterlambatanPending->pengaju->nama_lengkap ?? '-' }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
                               focus:ring-blue-500 focus:border-blue-500
                               dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
@@ -196,7 +192,7 @@
                                         Disetujui Oleh
                                     </label>
                                     <input type="text" readonly
-                                        value="{{ $keterlambatanPending->approver->username ?? '-' }}"
+                                        value="{{ $keterlambatanPending->approver->nama_lengkap ?? '-' }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5
                               focus:ring-blue-500 focus:border-blue-500
                               dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
@@ -206,10 +202,11 @@
                             {{-- Info + Tombol Batalkan --}}
                             <div class="flex justify-between items-center">
                                 <p class="text-sm text-gray-500 mt-2">
-                                    Diajukan oleh <strong>{{ $keterlambatanPending->pengaju->username ?? '-' }}</strong>
+                                    Diajukan oleh <strong>{{ $keterlambatanPending->pengaju->nama_lengkap ?? '-' }}</strong>
                                 </p>
                                 <div class="flex gap-2 sm:justify-end justify-start">
-                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+
+                                    @can('marketing.setting-ppjb.kelola.action')
                                         {{-- Tombol Tolak --}}
                                         <form action="{{ route('settingPPJB.keterlambatan.reject', $keterlambatanPending) }}" method="POST"
                                             class="delete-form">
@@ -241,11 +238,11 @@
                                                 ACC
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
 
-                                    @hasrole(['Project Manager', 'Super Admin '])
+                                    @can('marketing.setting-ppjb.kelola.cancel')
                                     <form
-                                        action="{{ route('settingPPJB.keterlambatan.cancelPengajuanPromo', $keterlambatanPending) }}"
+                                        action="{{ route('settingPPJB.keterlambatan.cancelPengajuan', $keterlambatanPending) }}"
                                         method="POST" class="delete-form">
                                         @csrf
                                         @method('DELETE')
@@ -254,7 +251,7 @@
                                             Batalkan Pengajuan
                                         </button>
                                     </form>
-                                    @endrole
+                                    @endcan
                                 </div>
                             </div>
                         </div>

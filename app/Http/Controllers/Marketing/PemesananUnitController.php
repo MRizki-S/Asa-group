@@ -38,31 +38,42 @@ class PemesananUnitController extends Controller
     {
         $this->notificationGroup = $notificationGroup;
     }
+
+    // default get perumahaan yang aktif
+    protected function perumahaanId()
+    {
+        $user = Auth::user();
+
+        return $user->is_global
+            ? session('current_perumahaan_id', null)
+            : $user->perumahaan_id;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
 
-        $user = Auth::user();
+        $user         = Auth::user();
+        $perumahaanId = $this->perumahaanId();
 
-        // Tentukan perumahaan aktif
-        $currentPerumahaanId = $user->is_global
-            ? session('current_perumahaan_id', null)
-            : $user->perumahaan_id;
-
-        // Ambil booking yang masih aktif dan belum diforward ke pemesanan unit
-        $query = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
-            ->where('status', 'active')
-            ->whereDoesntHave('user.pemesananSebagaiCustomer'); // belum punya pemesanan_unit
-                                                            // ->get();
-
-        // 🧩 Jika yang login adalah selain Super Admin → tampilkan hanya booking miliknya
-        if (! $user->hasRole(['Super Admin', 'Project Manager', 'Admin KPR'])) {
-            $query->where('sales_id', Auth::id());
+        // ⛔ Jika belum ada perumahaan aktif → stop
+        if (! $perumahaanId) {
+            abort(403, 'Perumahaan aktif belum dipilih');
         }
 
-        // Eksekusi query
+        // ===== Customer Booking (SUDAH DIFILTER PERUMAHAAAN) =====
+        $query = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
+            ->where('perumahaan_id', $perumahaanId) // 🔥 FILTER UTAMA
+            ->where('status', 'active')
+            ->whereDoesntHave('user.pemesananSebagaiCustomer');
+
+        // 🔐 Role restriction
+        if (! $user->hasRole(['Super Admin', 'Project Manager', 'Admin KPR'])) {
+            $query->where('sales_id', $user->id);
+        }
+
         $bookings = $query->get();
 
         // Map data agar mudah dipakai di view
@@ -90,27 +101,27 @@ class PemesananUnitController extends Controller
         // dd($customersData);
 
         // ====== 1️⃣ Keterlambatan Aktif ======
-        $keterlambatan = PpjbKeterlambatan::where('perumahaan_id', $currentPerumahaanId)
+        $keterlambatan = PpjbKeterlambatan::where('perumahaan_id', $perumahaanId)
             ->where('status_aktif', 1)
             ->latest('id')
             ->first();
 
         // ====== 2️⃣ Pembatalan Aktif ======
-        $pembatalan = PpjbPembatalan::where('perumahaan_id', $currentPerumahaanId)
+        $pembatalan = PpjbPembatalan::where('perumahaan_id', $perumahaanId)
             ->where('status_aktif', 1)
             ->latest('id')
             ->first();
 
         // ====== 3️⃣ Promo Batch Aktif (Cash & KPR) ======
         $promoCash = PpjbPromoBatch::with(['items'])
-            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('perumahaan_id', $perumahaanId)
             ->where('status_aktif', 1)
             ->where('tipe', 'cash')
             ->latest('id')
             ->first();
 
         $promoKpr = PpjbPromoBatch::with(['items'])
-            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('perumahaan_id', $perumahaanId)
             ->where('status_aktif', 1)
             ->where('tipe', 'kpr')
             ->latest('id')
@@ -118,7 +129,7 @@ class PemesananUnitController extends Controller
 
         // ===== 4️⃣ Bonus Cash Batch Aktif =====
         $bonusCash = PpjbBonusCashBatch::with(['items'])
-            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('perumahaan_id', $perumahaanId)
             ->where('status_aktif', 1)
             ->latest('id')
             ->first();
@@ -149,7 +160,6 @@ class PemesananUnitController extends Controller
  */
     public function store(Request $request)
     {
-        dd($request->all());
         // 🧩 VALIDASI SEBELUM TRANSAKSI
         $request->validate([
             // === FIELD UMUM ===
@@ -350,7 +360,7 @@ class PemesananUnitController extends Controller
 
             // Kirim notifikasi ke grup WhatsApp Marketing ASA
             // Ambil group ID dari .env
-            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ASA');
+            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ADL');
             $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
             $namaTahap     = $unit->tahap->nama_tahap ?? '-';
             $namaUnit      = $unit->nama_unit ?? '-';

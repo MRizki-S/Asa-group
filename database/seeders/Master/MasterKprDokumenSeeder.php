@@ -1,13 +1,18 @@
 <?php
-namespace Database\Seeders;
+
+namespace Database\Seeders\master;
 
 use App\Models\MasterBank;
-use App\Models\MasterKprDokumen;
 use Illuminate\Database\Seeder;
+use App\Models\MasterKprDokumen;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class MasterKprDokumenSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
 
@@ -139,5 +144,7 @@ class MasterKprDokumenSeeder extends Seeder
             'nama_dokumen' => 'SLF (BRI)',
             'wajib'        => true,
         ]);
+
+        $this->command->info('✅ MasterKprDokumenSeeder selesai: semua dokumen per bank berhasil dibuat.');
     }
 }

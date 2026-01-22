@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Etalase\BlokController;
 use App\Http\Controllers\Etalase\EtalaseJsonController;
 use App\Http\Controllers\Etalase\KualifikasiBlokController;
+use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
 use App\Http\Controllers\Etalase\PerumahaanController;
 use App\Http\Controllers\Etalase\TahapController;
 use App\Http\Controllers\Etalase\TahapKualifikasiController;
@@ -32,6 +33,8 @@ use App\Http\Controllers\marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\marketing\SettingPromoPpjbController;
 use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Superadmin\AkunKaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -56,8 +59,13 @@ Route::prefix('api/wilayah')->group(function () {
 
 Route::get('/', function () {
     // dd(session()->all());
-    return view('dashboard.dashboard');
+    return view('dashboard.Welcome');
 })->middleware('auth');
+
+// fitur dalam pengembangan
+Route::get('/under-development', function() {
+    return view('pages.under-development');
+})->name('under-development');
 
 // Auth
 Route::middleware('guest')->group(function () {
@@ -108,6 +116,8 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
 
     Route::resource('tipe-unit', TypeController::class)->names('tipe-unit');
     Route::get('/tipe-unit/search', [TypeController::class, 'search'])->name('tipe-unit.search');
+    // ajukan perubahaan harga tipe unit
+    Route::put('/tipe-unit/{slug}/ajukan-harga', [TypeController::class, 'ajukanPerubahanHarga'])->name('tipe-unit.ajukanHarga');
 
     Route::resource('kualifikasi-blok', KualifikasiBlokController::class)->names('kualifikasi-blok');
 
@@ -121,15 +131,25 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
             ->names('unit'); // jangan pakai except('index')
     });
 
-    Route::get(
-        '/perumahaan/{perumahaan:slug}/tahap-json',
-        [EtalaseJsonController::class, 'listByPerumahaan']
-    )
+    Route::get('/perumahaan/{perumahaan:slug}/tahap-json',
+        [EtalaseJsonController::class, 'listByPerumahaan'])
         ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
                           // Ambil Unit berdasar  kan tahap
     Route::get('/tahap/{tahapId}/unit-json', [EtalaseJsonController::class, 'getUnitsByTahap']);
     Route::get('/etalase/unit/{id}/harga-json', [EtalaseJsonController::class, 'getUnitHarga']);
 
+    // Perubahaan harga untuk manager dukungan dan layanan
+    Route::prefix('perubahan-harga')->group(function () {
+        Route::get('/tipe-unit', [PerubahaanHargaTypeUnitController::class, 'index'])
+            ->name('perubahan-harga.tipe-unit.index');
+        Route::delete('/tipe-unit/{id}/tolak', [PerubahaanHargaTypeUnitController::class, 'tolakPengajuan'])
+            ->name('perubahan-harga.tipe-unit.tolakPengajuan');
+        Route::post('/tipe-unit/{id}/approve', [PerubahaanHargaTypeUnitController::class, 'approvePengajuan'])
+            ->name('perubahan-harga.tipe-unit.approvePengajuan');
+
+        // Route::get('/tahap-kualifikasi-blok', [KualifikasiBlokController::class, 'perubahanHargaTahapKualifikasiBlok'])
+        //     ->name('harga-tahap-kualifikasi-blok.index');
+    });
 });
 
 // Marketing Group
@@ -311,7 +331,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             Route::post('/', [SettingCaraBayarController::class, 'updatePengajuan'])
                 ->name('settingPPJB.caraBayar.updatePengajuan');
             Route::delete('/{caraBayar}', [SettingCaraBayarController::class, 'cancelPengajuanCaraBayar'])
-                ->name('settingPPJB.caraBayar.cancelPengajuanPromo');
+                ->name('settingPPJB.caraBayar.cancelPengajuan');
             Route::patch('/{caraBayar}/nonaktif', [SettingCaraBayarController::class, 'nonAktifCaraBayar'])
                 ->name('settingPPJB.caraBayar.nonAktif');
             Route::patch('/{caraBayar}/approve', [SettingCaraBayarController::class, 'approvePengajuanCaraBayar'])
@@ -331,7 +351,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             Route::post('/', [SettingKeterlambatanController::class, 'updatePengajuan'])
                 ->name('settingPPJB.keterlambatan.updatePengajuan');
             Route::delete('/{keterlambatan}', [SettingKeterlambatanController::class, 'cancelPengajuanKeterlambatan'])
-                ->name('settingPPJB.keterlambatan.cancelPengajuanPromo');
+                ->name('settingPPJB.keterlambatan.cancelPengajuan');
             Route::patch('/{keterlambatan}/nonaktif', [SettingKeterlambatanController::class, 'nonAktifKeterlambatan'])
                 ->name('settingPPJB.keterlambatan.nonAktif');
             Route::patch('/{keterlambatan}/approve', [SettingKeterlambatanController::class, 'approvePengajuan'])
@@ -384,4 +404,13 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Tambah Nota Masuk
     Route::get('/nota-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
     Route::post('/nota-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+});
+
+// Superadmin Menu
+Route::middleware('auth')->prefix('superadmin')->group(function() {
+    // role dan hak akses
+      Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
+
+    // akun karyawan
+    Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
 });

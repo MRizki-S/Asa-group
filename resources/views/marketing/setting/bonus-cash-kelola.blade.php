@@ -28,14 +28,14 @@
 
 
                         {{-- Tombol Ajukan Baru (hanya jika tidak ada pending) --}}
-                        @hasrole(['Project Manager', 'Super Admin '])
+                        @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                             @if (!$bonusCashPending)
                                 <button data-modal-target="modal-create" data-modal-toggle="modal-create"
                                     class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
                                     Ajukan Bonus Cash PPJB Baru
                                 </button>
                             @endif
-                        @endrole
+                        @endcan
                     </div>
                 </div>
 
@@ -84,6 +84,8 @@
                                     {{ $bonusCashActive->tanggal_acc ? $bonusCashActive->tanggal_acc->translatedFormat('d M Y') : '-' }}
                                 </p>
                                 <div class="mt-4 flex justify-end">
+
+                                    @can('marketing.setting-ppjb.kelola.nonaktif')
                                     <form action="{{ route('settingPPJB.bonusCash.nonAktif', $bonusCashActive) }}"
                                         method="POST" class="delete-form">
                                         @csrf
@@ -93,6 +95,8 @@
                                             Nonaktifkan
                                         </button>
                                     </form>
+                                    @endcan
+
                                 </div>
                             </div>
                         </div>
@@ -128,7 +132,7 @@
                                     pada {{ $bonusCashPending->tanggal_pengajuan->format('d M Y') }}
                                 </p>
                                 <div class="flex gap-2 sm:justify-end justify-start">
-                                    @hasrole(['Manager Keuangan', 'Super Admin'])
+                                    @can('marketing.setting-ppjb.kelola.action')
                                         {{-- Tombol Tolak --}}
                                         <form action="{{ route('settingPPJB.bonusCash.reject', $bonusCashPending) }}"
                                             method="POST" class="delete-form">
@@ -161,9 +165,9 @@
                                                 ACC
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
 
-                                    @hasrole(['Project Manager', 'Super Admin '])
+                                    @can('marketing.setting-ppjb.kelola.cancel')
                                         <form action="{{ route('settingPPJB.bonusCash.cancel', $bonusCashPending) }}"
                                             method="POST" class="delete-form">
                                             @csrf
@@ -173,7 +177,7 @@
                                                 Batalkan Pengajuan
                                             </button>
                                         </form>
-                                    @endrole
+                                    @endcan
                                 </div>
                             </div>
                         </div>

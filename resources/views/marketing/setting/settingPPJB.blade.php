@@ -89,11 +89,13 @@
                         </ul>
 
                         <!-- Tombol -->
-                        <a href="{{ route('settingPPJB.promoCash.edit') }}"
-                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.promoCash.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
                           hover:bg-blue-600 transition-colors">
-                            Kelola Promo
-                        </a>
+                                Kelola Promo
+                            </a>
+                        @endcan
                     </div>
 
                     {{-- ================= Promo KPR ================= --}}
@@ -139,11 +141,13 @@
                         </ul>
 
                         <!-- Tombol -->
-                        <a href="{{ route('settingPPJB.promoKpr.edit') }}"
-                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.promoKpr.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
                           hover:bg-blue-600 transition-colors">
-                            Kelola Promo
-                        </a>
+                                Kelola Promo
+                            </a>
+                        @endcan
                     </div>
 
                 </div>
@@ -253,21 +257,22 @@
                         @if ($bonusCash && $bonusCash->items->count())
                             @foreach ($bonusCash->items as $item)
                                 <li class="flex items-center">
-                                        <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
-                                        <div
-                                            class="flex-grow mx-2 border-b border-dashed border-gray-300 dark:border-gray-600">
-                                        </div>
-                                    </li>
+                                    <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
+                                    <div class="flex-grow mx-2 border-b border-dashed border-gray-300 dark:border-gray-600">
+                                    </div>
+                                </li>
                             @endforeach
                         @else
                             <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus Cash aktif.</li>
                         @endif
                     </ul>
 
-                    <a href="{{ route('settingPPJB.bonusCash.edit') }}"
-                        class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                        Kelola Bonus Cash
-                    </a>
+                    @can('marketing.setting-ppjb.kelola')
+                        <a href="{{ route('settingPPJB.bonusCash.edit') }}"
+                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                            Kelola Bonus Cash
+                        </a>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -367,10 +372,13 @@
                         class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700
                 bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
                         Belum ada cara bayar KPR aktif.
-                        <a href="{{ route('settingPPJB.caraBayar.edit') }}"
-                            class="mt-3 inline-block px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Kelola Cara Bayar
-                        </a>
+
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.caraBayar.edit') }}"
+                                class="mt-3 inline-block px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Cara Bayar
+                            </a>
+                        @endcan
                     </div>
                 @endif
             </div>
@@ -441,10 +449,13 @@
                         class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700
                 bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
                         Belum ada cara bayar Cash aktif.
-                        <a href="{{ route('settingPPJB.caraBayar.edit') }}"
-                            class="mt-3 inline-block px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Kelola Cara Bayar
-                        </a>
+
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.caraBayar.edit') }}"
+                                class="mt-3 inline-block px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Cara Bayar
+                            </a>
+                        @endcan
                     </div>
                 @endif
             </div>
@@ -524,11 +535,14 @@
                         class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700
                 bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
                         Belum ada Keterlambatan aktif.
-                        {{-- Tombol Kelola Cara Bayar --}}
-                        <a href="{{ route('settingPPJB.keterlambatan.edit') }}"
-                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Kelola Keterlambatan
-                        </a>
+
+                        @can('marketing.setting-ppjb.kelola')
+                            {{-- Tombol Kelola Cara Bayar --}}
+                            <a href="{{ route('settingPPJB.keterlambatan.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Keterlambatan
+                            </a>
+                        @endcan
 
                     </div>
                 @endif
@@ -608,6 +622,7 @@
                         </div>
                     </div>
 
+                     @can('marketing.setting-ppjb.kelola')
                     {{-- Tombol Kelola --}}
                     <div class="flex justify-end mt-5">
                         <a href="{{ route('settingPPJB.pembatalan.edit') }}"
@@ -615,15 +630,18 @@
                             Kelola Pembatalan
                         </a>
                     </div>
+                    @endcan
                 @else
                     {{-- Jika belum ada pembatalan aktif --}}
                     <div
                         class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
                         Belum ada Potongan Pembatalan aktif.
+                         @can('marketing.setting-ppjb.kelola')
                         <a href="{{ route('settingPPJB.pembatalan.edit') }}"
                             class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
                             Kelola Pembatalan
                         </a>
+                        @endcan
                     </div>
                 @endif
             </div>
