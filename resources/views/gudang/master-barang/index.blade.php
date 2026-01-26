@@ -76,6 +76,12 @@
                                 Satuan
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                Minimal Stock HUB
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                Minimal Stock UBS
+                            </th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                                 Dibuat Oleh
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
@@ -101,6 +107,21 @@
                                     {{ ucfirst($item->satuan) }}
                                 </td>
 
+                                {{-- Minimal Stock HUB --}}
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ optional($item->stockHub)->minimal_stock !== null
+                                        ? rtrim(rtrim(number_format($item->stockHub->minimal_stock, 2, '.', ''), '0'), '.')
+                                        : '-' }}
+                                </td>
+
+                                {{-- Minimal Stock UBS --}}
+                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ optional($item->stockUbs->first())->minimal_stock !== null
+                                        ? rtrim(rtrim(number_format($item->stockUbs->first()->minimal_stock, 2, '.', ''), '0'), '.')
+                                        : '-' }}
+                                </td>
+
+
                                 {{-- Dibuat Oleh --}}
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ $item->creator->nama_lengkap ?? ($item->creator->username ?? '-') }}
@@ -118,8 +139,8 @@
                                         Edit
                                     </a>
 
-                                    <form action="{{ route('gudang.masterBarang.destroy', $item->kode_barang) }}" method="POST"
-                                        class="delete-form">
+                                    <form action="{{ route('gudang.masterBarang.destroy', $item->kode_barang) }}"
+                                        method="POST" class="delete-form">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button"
@@ -130,11 +151,6 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-gray-500">
-                                    Data master barang belum tersedia
-                                </td>
-                            </tr>
                         @endforelse
                     </tbody>
                 </table>

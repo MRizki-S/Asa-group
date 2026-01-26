@@ -53,8 +53,8 @@
                             <label for="kode_barang" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Kode Barang <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="kode_barang" name="kode_barang" readonly value="{{ $barangEdit->kode_barang }}"
-                                placeholder="BRG-XXXX"
+                            <input type="text" id="kode_barang" name="kode_barang" readonly
+                                value="{{ $barangEdit->kode_barang }}" placeholder="BRG-XXXX"
                                 class="w-full bg-gray-100 border text-gray-500 text-sm rounded-lg p-2.5
                                 dark:bg-gray-700 dark:text-gray-400 border-gray-300 cursor-not-allowed">
 
@@ -70,10 +70,14 @@
                                 Nama Barang <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="nama_barang" name="nama_barang" required
-                                  value="{{ old('nama_barang', $barangEdit->nama_barang) }}" placeholder="Contoh: Semen"
+                                value="{{ old('nama_barang', $barangEdit->nama_barang) }}" placeholder="Contoh: Semen"
                                 class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                             dark:bg-gray-700 dark:text-white >
-                            @error('nama_barang') border-red-500 @else border-gray-300 @enderror">
+                            @error('nama_barang')
+border-red-500
+@else
+border-gray-300
+@enderror">
                             @error('nama_barang')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
@@ -87,8 +91,8 @@
                             </label>
 
                             <div class="relative">
-                                <input type="text" id="satuan" name="satuan" required value="{{ old('satuan', $barangEdit->satuan) }}"
-                                    placeholder="Input satuan barang"
+                                <input type="text" id="satuan" name="satuan" required
+                                    value="{{ old('satuan', $barangEdit->satuan) }}" placeholder="Input satuan barang"
                                     class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 pr-10
                    focus:ring-blue-500 focus:border-blue-500
                    dark:bg-gray-700 dark:text-white
@@ -107,13 +111,53 @@
                             @enderror
                         </div>
 
+                        <br>
+
+                        <!-- Minimal Stock HUB -->
+                        <div>
+                            <label for="minimal_stock_hub"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Minimal Stock HUB <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" step="0.01" min="0" id="minimal_stock_hub" name="minimal_stock_hub" required
+                                value="{{ old('minimal_stock_hub', rtrim(rtrim($minimal_stock_hub, '0'), '.')) }}"
+                                placeholder="Contoh: 10 atau 1.5"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                            dark:bg-gray-700 dark:text-white
+                            @error('minimal_stock_hub') border-red-500 @else border-gray-300 @enderror">
+                            @error('minimal_stock_hub')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Minimal Stock UBS -->
+                        <div>
+                            <label for="minimal_stock_ubs"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Minimal Stock UBS <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" step="0.01" min="0" id="minimal_stock_ubs"
+                                name="minimal_stock_ubs" required
+                                value="{{ old('minimal_stock_ubs', rtrim(rtrim($minimal_stock_ubs, '0'), '.')) }}"
+                                placeholder="Contoh: 10 atau 1.5"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                            dark:bg-gray-700 dark:text-white
+                            @error('minimal_stock_ubs')
+                                    border-red-500
+                                    @else
+                                    border-gray-300
+                                    @enderror">
+                            @error('minimal_stock_ubs')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Tombol Aksi -->
             <div class="flex justify-end gap-2">
-                <button type="button" onclick="history.back()"
+                <button type="button"     onclick="window.location.replace('{{ route('gudang.masterBarang.index') }}')"
                     class="px-8 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
                        dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
                     Kembali

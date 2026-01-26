@@ -36,23 +36,36 @@
         <div class="space-y-5 sm:space-y-6">
             <div
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                <div class="mb-4 flex items-center justify-between">
+                <div class="mb-4 flex items-center justify-between gap-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
                         Stock Barang
                     </h3>
 
-                    {{-- <a href="{{ route('gudang.masterBarang.create') }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Master Barang
-                    </a> --}}
+                    <!-- Pilih Gudang -->
+                    <div class="w-56">
+                        <select
+                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800
+                   focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary
+                   dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            name="gudang">
+                            <option value="" disabled selected>
+                                Pilih Gudang
+                            </option>
+                            <option value="hub">HUB</option>
+                            <option value="ubs_adl">UBS - ADL</option>
+                            <option value="ubs_lhr">UBS - LHR</option>
+                            <option value="ubs_mangoon">UBS - MANGOON</option>
+                        </select>
+                    </div>
                 </div>
+
 
 
 
                 <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th class="border px-3 py-2 w-12">No.</th>
+                            <th class="border px-3 py-2 text-left">Kode Barang</th>
                             <th class="border px-3 py-2 text-left">Nama Barang</th>
                             <th class="border px-3 py-2">Total Stock</th>
                             <th class="border px-3 py-2">Harga Total Stock</th>
@@ -60,7 +73,7 @@
                     </thead>
                     <tbody>
                         <tr class="bg-blue-50 font-bold text-gray-900 border-t-2 border-blue-200">
-                            <td class="border px-3 py-2 text-center">1</td>
+                            <td class="border px-3 py-2 text-blue-800">B001</td>
                             <td class="border px-3 py-2 text-blue-800">Semen</td>
                             <td class="border px-3 py-2 text-center">50</td>
                             <td class="border px-3 py-2 text-right">2.100.000</td>
@@ -105,7 +118,7 @@
                         </tr>
 
                         <tr class="bg-blue-50 font-bold text-gray-900 border-t-2 border-blue-200">
-                            <td class="border px-3 py-2 text-center">2</td>
+                            <td class="border px-3 py-2 text-blue-800">B002</td>
                             <td class="border px-3 py-2 text-blue-800">Cat Interior</td>
                             <td class="border px-3 py-2 text-center">40</td>
                             <td class="border px-3 py-2 text-right">6.000.000</td>

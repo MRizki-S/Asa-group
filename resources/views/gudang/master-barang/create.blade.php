@@ -51,10 +51,10 @@
                             <label for="kode_barang" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Kode Barang <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="kode_barang" name="kode_barang" readonly value="{{ $newKodeBarang }}"
+                            <input type="text" id="kode_barang" name="kode_barang" value="{{ $newKodeBarang }}"
                                 placeholder="BRG-XXXX"
                                 class="w-full bg-gray-100 border text-gray-500 text-sm rounded-lg p-2.5
-               dark:bg-gray-700 dark:text-gray-400 border-gray-300 cursor-not-allowed">
+                 dark:bg-gray-700 dark:text-gray-400 border-gray-300">
 
                             @error('kode_barang')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -88,19 +88,56 @@
                                 <input type="text" id="satuan" name="satuan" required value="{{ old('satuan') }}"
                                     placeholder="Input satuan barang"
                                     class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 pr-10
-                   focus:ring-blue-500 focus:border-blue-500
-                   dark:bg-gray-700 dark:text-white
-                   @error('satuan') border-red-500 @else border-gray-300 @enderror">
+                                focus:ring-blue-500 focus:border-blue-500
+                                dark:bg-gray-700 dark:text-white
+                                @error('satuan') border-red-500 @else border-gray-300 @enderror">
 
                                 <!-- Icon unik di kanan input -->
-                                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-300"
-                                    fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 4v1m0 14v1m8-8h1M4 12H3m15.364-6.364l.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707" />
+                                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16">
+                                    <title xmlns="">goods-outline</title>
+                                    <path fill="none" stroke="currentColor"
+                                        d="M8 13.5H3a.5.5 0 0 1-.5-.5V8a.5.5 0 0 1 .5-.5h5m0 6v-6m0 6h5a.5.5 0 0 0 .5-.5V8a.5.5 0 0 0-.5-.5H8m2.5.5v2m-2-7v2m-3 3v2m-1-7v4.5h7V3a.5.5 0 0 0-.5-.5H5a.5.5 0 0 0-.5.5Z" />
                                 </svg>
                             </div>
 
+                            <!-- note kecil -->
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                contoh: pcs, sak, liter, meter, box
+                            </p>
+
                             @error('satuan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <br>
+
+                        <!-- Minimal Stock HUB -->
+                        <div>
+                            <label for="minimal_stock_hub" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Minimal Stock HUB <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="minimal_stock_hub" name="minimal_stock_hub" required  step="0.01" min="0"
+                                value="{{ old('minimal_stock_hub') }}" placeholder="Contoh: 10 atau 1.5"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                            dark:bg-gray-700 dark:text-white
+                            @error('minimal_stock_hub') border-red-500 @else border-gray-300 @enderror">
+                            @error('minimal_stock_hub')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Minimal Stock UBS -->
+                        <div>
+                            <label for="minimal_stock_ubs" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Minimal Stock UBS <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="minimal_stock_ubs" name="minimal_stock_ubs" required  step="0.01" min="0"
+                                value="{{ old('minimal_stock_ubs') }}" placeholder="Contoh: 10 atau 1.5"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                            dark:bg-gray-700 dark:text-white
+                            @error('minimal_stock_ubs') border-red-500 @else border-gray-300 @enderror">
+                            @error('minimal_stock_ubs')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -111,7 +148,7 @@
 
             <!-- Tombol Aksi -->
             <div class="flex justify-end gap-2">
-                <button type="button" onclick="history.back()"
+                <button type="button"     onclick="window.location.replace('{{ route('gudang.masterBarang.index') }}')"
                     class="px-8 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
                        dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
                     Kembali
