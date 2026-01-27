@@ -599,7 +599,7 @@
             </div>
 
             {{-- button aksi tolak & approve --}}
-            @can(' marketing.pengajuan-pemesanan.action')
+            @can('marketing.pengajuan-pemesanan.action')
                 <div class="flex justify-end gap-3">
                     <!-- Tombol Tolak -->
                     <form action="{{ route('marketing.pengajuanPemesanan.reject', $pengajuan->id) }}" method="POST"

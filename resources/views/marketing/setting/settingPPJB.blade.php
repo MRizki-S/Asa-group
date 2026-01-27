@@ -362,10 +362,12 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('settingPPJB.caraBayar.edit') }}"
-                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Kelola Cara Bayar
-                        </a>
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.caraBayar.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Cara Bayar
+                            </a>
+                        @endcan
                     </div>
                 @else
                     <div
@@ -521,14 +523,16 @@
                         </div>
                     </div>
 
-                    <!-- Tombol Aksi -->
-                    <div class="flex justify-end">
-                        <a href="{{ route('settingPPJB.keterlambatan.edit') }}"
-                            class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
+                    @can('marketing.setting-ppjb.kelola')
+                        <!-- Tombol Aksi -->
+                        <div class="flex justify-end">
+                            <a href="{{ route('settingPPJB.keterlambatan.edit') }}"
+                                class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white
                         hover:bg-blue-600 transition-colors">
-                            Kelola Keterlambatan
-                        </a>
-                    </div>
+                                Kelola Keterlambatan
+                            </a>
+                        </div>
+                    @endcan
                 @else
                     <!-- Kalau Tidak Ada Cara Bayar -->
                     <div
@@ -622,25 +626,25 @@
                         </div>
                     </div>
 
-                     @can('marketing.setting-ppjb.kelola')
-                    {{-- Tombol Kelola --}}
-                    <div class="flex justify-end mt-5">
-                        <a href="{{ route('settingPPJB.pembatalan.edit') }}"
-                            class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors">
-                            Kelola Pembatalan
-                        </a>
-                    </div>
+                    @can('marketing.setting-ppjb.kelola')
+                        {{-- Tombol Kelola --}}
+                        <div class="flex justify-end mt-5">
+                            <a href="{{ route('settingPPJB.pembatalan.edit') }}"
+                                class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                                Kelola Pembatalan
+                            </a>
+                        </div>
                     @endcan
                 @else
                     {{-- Jika belum ada pembatalan aktif --}}
                     <div
                         class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 p-5 shadow-sm text-center text-gray-500 dark:text-gray-400 italic">
                         Belum ada Potongan Pembatalan aktif.
-                         @can('marketing.setting-ppjb.kelola')
-                        <a href="{{ route('settingPPJB.pembatalan.edit') }}"
-                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Kelola Pembatalan
-                        </a>
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.pembatalan.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Pembatalan
+                            </a>
                         @endcan
                     </div>
                 @endif

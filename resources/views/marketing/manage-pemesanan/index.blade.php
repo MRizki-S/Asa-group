@@ -61,13 +61,13 @@
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3 text-center">Status KPR</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
-                                @can('marketing.kelola-pemesanan.lihat-berkas')
+                                @can('marketing.kelola-pemesanan.update-berkas')
                                     <th class="px-4 py-3 text-center">Update Data KPR</th>
                                 @endcan
 
-                                @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                                {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                     <th class="px-4 py-3 text-center">Adendum</th>
-                                @endcan
+                                @endcan --}}
 
                                 @can('marketing.kelola-pemesanan.tagihan.read')
                                     <th class="px-4 py-3 text-center">Rincian Tagihan</th>
@@ -152,14 +152,14 @@
 
 
                                     {{-- 🟡 Pengajuan Adendum --}}
-                                    @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                                    {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                         <td class="px-4 py-2 text-center">
                                             <button
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
                                                 <i class="ri-repeat-line"></i>Adendum
                                             </button>
                                         </td>
-                                    @endcan
+                                    @endcan --}}
 
 
                                     {{-- 🟢 Rincian Tagihan --}}
@@ -225,13 +225,13 @@
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
 
-                                @can('marketing.kelola-pemesanan.lihat-berkas')
+                                @can('marketing.kelola-pemesanan.update-berkas')
                                     <th class="px-4 py-3 text-center">Update Data Cash</th>
                                 @endcan
 
-                                @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                                {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                     <th class="px-4 py-3 text-center">Adendum</th>
-                                @endcan
+                                @endcan --}}
 
                                 @can('marketing.kelola-pemesanan.tagihan.read')
                                     <th class="px-4 py-3 text-center">Rincian Tagihan</th>
@@ -280,7 +280,7 @@
 
 
                                     {{-- 🔵 Update Data Cash --}}
-                                    @can('marketing.kelola-pemesanan.lihat-berkas')
+                                    @can('marketing.kelola-pemesanan.update-berkas')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
@@ -290,14 +290,14 @@
                                     @endcan
 
                                     {{-- 🟡 Adendum --}}
-                                    @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                                    {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
                                                 <i class="ri-repeat-line"></i> Adendum
                                             </a>
                                         </td>
-                                    @endcan
+                                    @endcan --}}
 
 
 

@@ -71,8 +71,8 @@
                                     <th class="px-4 py-3 text-center">Status Project Manager</th>
                                     <th class="px-4 py-3 text-center">Status Manager Keuangan</th>
                                     <th class="px-4 py-3 text-center">Status Pengajuan Akhir</th>
-                                    @can('marketing.pengajuan-pembatalan.action')
-                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                    @can('marketing.pengajuan-pembatalan.read')
+                                        <th class="px-4 py-3 text-center">Aksi</th>
                                     @endcan
                                 </tr>
                             </thead>
@@ -155,7 +155,7 @@
 
 
                                         {{-- Aksi --}}
-                                        @can('marketing.pengajuan-pembatalan.action')
+                                        @can('marketing.pengajuan-pembatalan.read')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.pengajuan-pembatalan.show', $item->id) }}"
                                                 class="inline-flex items-center gap-1
@@ -199,7 +199,7 @@
                                 <th class="px-4 py-3 text-center">Status Project Manager</th>
                                 <th class="px-4 py-3 text-center">Status Manager Keuangan</th>
                                 <th class="px-4 py-3 text-center">Status Pengajuan Akhir</th>
-                                @can('marketing.pengajuan-pembatalan.action')
+                                @can('marketing.pengajuan-pembatalan.read')
                                 <th class="px-4 py-3 text-center">Aksi</th>
                                 @endcan
                             </tr>
@@ -278,7 +278,7 @@
                                         </span>
                                     </td>
 
-                                    @can('marketing.pengajuan-pembatalan.action')
+                                    @can('marketing.pengajuan-pembatalan.read')
                                     <td class="px-4 py-2 text-center">
                                         <a href="{{ route('marketing.pengajuan-pembatalan.show', $item->id) }}"
                                             class="inline-flex items-center gap-1

@@ -386,7 +386,7 @@ class PemesananUnitController extends Controller
                 "Cara Bayar  : " . strtoupper($request->cara_bayar) . "\n" .
                 "Status      : Pending\n" .
                 "```\n\n" .
-                "Menunggu persetujuan admin KPR 🕓";
+                "Menunggu persetujuan Staff KPR 🕓";
 
             // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
