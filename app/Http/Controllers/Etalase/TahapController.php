@@ -27,7 +27,7 @@ class TahapController extends Controller
         // Ambil hanya id dan nama_type
         $types                  = Type::select('id', 'nama_type')->get();
         $kualifikasiPosisiBloks = KualifikasiBlok::select('id', 'nama_kualifikasi_blok')->get();
-        return view('etalase.tahap.create', [
+        return view('Etalase.tahap.create', [
             'perumahaan'             => $perumahaan,
             'types'                  => $types,
             'kualifikasiPosisiBloks' => $kualifikasiPosisiBloks,
@@ -102,7 +102,7 @@ class TahapController extends Controller
         $tahapKualifikasi = $tahap->kualifikasiBlok()->latest()->get();
         // dd(vars: $tahapKualifikasi);
 
-        return view('etalase.tahap.edit', [
+        return view('Etalase.tahap.edit', [
             'perumahaan'               => $perumahaan,
             'tahap'                    => $tahap,
             'tahapType'                => $tahapType,

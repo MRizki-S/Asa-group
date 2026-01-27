@@ -53,7 +53,7 @@ class PerumahaanController extends Controller
             ->latest()
             ->get();
         // dd(vars: $tahaps);
-        return view('etalase.perumahaan.show', [
+        return view('Etalase.perumahaan.show', [
             'perumahaan'  => $perumahaan,
             'tahaps'      => $tahaps,
             'breadcrumbs' => [

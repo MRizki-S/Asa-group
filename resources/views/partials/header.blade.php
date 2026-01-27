@@ -52,7 +52,7 @@
         </div>
 
         <div :class="menuToggle ? 'flex' : 'hidden'"
-            class="shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none">
+            class="shadow-theme-md w-full items-center gap-4 px-5 py-4 flex-wrap justify-center lg:flex lg:justify-end lg:px-0 lg:shadow-none">
             <div class="2xsm:gap-3 flex items-center gap-2">
                 <!-- Tempatkan di User Area, misal sebelum dropdown logout -->
                 @if (Auth::user()->is_global)
@@ -60,7 +60,7 @@
                         <form action="{{ route('perumahaanSession.store') }}" method="POST">
                             @csrf
                             <select name="perumahaan_id" onchange="this.form.submit()"
-                                class="rounded-xl border border-gray-300 text-gray-500 bg-white px-4 py-2 text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+                                class="rounded-xl border border-gray-300 text-gray-500 bg-white px-7 py-2 text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
                                 @foreach ($perumahaan as $p)
                                     <option value="{{ $p->id }}"
                                         {{ session('current_perumahaan_id', $userDefaultPerumahaan ?? null) == $p->id ? 'selected' : '' }}>

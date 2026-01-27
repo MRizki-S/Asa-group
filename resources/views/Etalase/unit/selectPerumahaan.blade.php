@@ -28,7 +28,7 @@
                 bg-white border-gray-200 hover:bg-gray-50 border-l-6
                 {{ $item->slug === 'asa-dreamland'
                     ? 'border-l-blue-500 dark:border-l-blue-700'
-                    : 'border-l-yellow-500 dark:border-l-yellow-700' }}
+                    : 'border-l-lime-500 dark:border-l-lime-700' }}
                 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     @else
                         {{-- DISABLED --}}
@@ -37,7 +37,7 @@
                 bg-gray-100 border-gray-300 border-l-6
                 {{ $item->slug === 'asa-dreamland'
                     ? 'border-l-blue-300 dark:border-l-blue-500'
-                    : 'border-l-yellow-300 dark:border-l-yellow-500' }}
+                    : 'border-l-lime-300 dark:border-l-lime-500' }}
                 dark:bg-gray-900 dark:border-gray-700">
                 @endif
 
@@ -45,7 +45,7 @@
                     class="text-xl font-semibold mb-2
                 {{ $item->slug === 'asa-dreamland'
                     ? 'text-blue-500 dark:text-blue-700'
-                    : 'text-yellow-500 dark:text-yellow-700' }}">
+                    : 'text-lime-500 dark:text-lime-700' }}">
                     {{ $item->nama_perumahaan }}
                 </h2>
 

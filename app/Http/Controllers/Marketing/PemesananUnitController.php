@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
@@ -147,17 +148,17 @@ class PemesananUnitController extends Controller
         ]);
     }
 
-/**
- * Show the form for creating a new resource.
- */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         //
     }
 
-/**
- * Store a newly created resource in storage.
- */
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         // 🧩 VALIDASI SEBELUM TRANSAKSI
@@ -334,7 +335,6 @@ class PemesananUnitController extends Controller
                         ]);
                     }
                 }
-
             } elseif ($request->cara_bayar === 'kpr') {
                 // 🔹 Simpan data ke tabel pemesanan_unit_kpr
                 PemesananUnitKpr::create([
@@ -358,34 +358,37 @@ class PemesananUnitController extends Controller
             // ✅ Commit transaksi
             DB::commit();
 
-            // Kirim notifikasi ke grup WhatsApp Marketing ASA
-            // Ambil group ID dari .env
-            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ADL');
+            // Ambil nama perumahan
             $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
-            $namaTahap     = $unit->tahap->nama_tahap ?? '-';
-            $namaUnit      = $unit->nama_unit ?? '-';
 
-            // Tentukan panjang maksimum label agar sejajar
-            $pad = 12;
+            // Mapping group berdasarkan perumahan
+            $groupMap = [
+                'Asa Dreamland'           => env('FONNTE_ID_GROUP_MARKETING_ADL'),
+                'Lembah Hijau Residence'  => env('FONNTE_ID_GROUP_MARKETING_LHR'),
+            ];
 
-            $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
-            $namaTahap     = $unit->tahap->nama_tahap ?? '-';
-            $namaUnit      = $unit->nama_unit ?? '-';
+            // Tentukan group ID
+            $groupId = $groupMap[$namaPerumahan] ?? null;
 
+            // Data lainnya
+            $namaTahap = $unit->tahap->nama_tahap ?? '-';
+            $namaUnit  = $unit->nama_unit ?? '-';
+
+            // Pesan
             $messageGroup =
-            "🛎️ *Pengajuan Pemesanan Unit Baru*\n\n" .
-            "```\n" .
-            "Sales       : {$sales->nama_lengkap}\n" .
-            "Customer    : {$request->nama_pribadi}\n" .
-            "Perumahan   : {$namaPerumahan}\n" .
-            "Tahap       : {$namaTahap}\n" .
-            "Unit        : {$namaUnit}\n" .
-            "Cara Bayar  : " . strtoupper($request->cara_bayar) . "\n" .
+                "🛎️ *Pengajuan Pemesanan Unit Baru*\n\n" .
+                "```\n" .
+                "Sales       : {$sales->nama_lengkap}\n" .
+                "Customer    : {$request->nama_pribadi}\n" .
+                "Perumahan   : {$namaPerumahan}\n" .
+                "Tahap       : {$namaTahap}\n" .
+                "Unit        : {$namaUnit}\n" .
+                "Cara Bayar  : " . strtoupper($request->cara_bayar) . "\n" .
                 "Status      : Pending\n" .
                 "```\n\n" .
                 "Menunggu persetujuan admin KPR 🕓";
 
-            // Kirim ke groupp
+            // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
                 $this->notificationGroup->send($groupId, $messageGroup);
             }
@@ -498,36 +501,35 @@ class PemesananUnitController extends Controller
                 'minimal_dp'        => $caraBayar->minimal_dp,
             ]);
         }
-
     }
 
-/**
- * Display the specified resource.
- */
+    /**
+     * Display the specified resource.
+     */
     public function show(string $id)
     {
         //
     }
 
-/**
- * Show the form for editing the specified resource.
- */
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(string $id)
     {
         //
     }
 
-/**
- * Update the specified resource in storage.
- */
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-/**
- * Remove the specified resource from storage.
- */
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(string $id)
     {
         //

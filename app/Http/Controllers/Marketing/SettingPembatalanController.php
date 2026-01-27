@@ -98,7 +98,7 @@ class SettingPembatalanController extends Controller
             $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
 
             $message =
-                "🔔 Pengajuan SETTING PEMBATALAN PEMESANAN\n" .
+                "🔔 Pengajuan Setting Pembatalan Pemesanan\n" .
                 "```\n" .
                 "Perumahaan   : {$pembatalan->perumahaan->nama_perumahaan}\n" .
                 "Potongan %   : {$persen} %\n" .

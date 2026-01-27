@@ -89,14 +89,14 @@ class SettingKeterlambatanController extends Controller
             $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
 
             $message =
-                "⏳ Pengajuan Keterlambatan\n" .
+                "🔔 Pengajuan Keterlambatan\n" .
                 "```\n" .
                 "Perumahaan    : {$keterlambatan->perumahaan->nama_perumahaan}\n" .
                 "Persentase    : {$keterlambatan->persentase_denda} %\n" .
                 "Diajukan oleh : " . Auth::user()->nama_lengkap . "\n" .
                 "Status        : Menunggu Persetujuan\n" .
                 "```\n" .
-                "📌 Pengajuan denda keterlambatan baru menunggu persetujuan";
+                "⏳ Pengajuan denda keterlambatan baru menunggu persetujuan";
 
             $this->notificationGroup->send($groupId, $message);
 
