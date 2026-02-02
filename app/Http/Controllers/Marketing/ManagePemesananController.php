@@ -255,7 +255,7 @@ class ManagePemesananController extends Controller
             // Tentukan huruf awal berdasarkan perumahaan ADL dan LHR
             $startLetter = match ($namaPerumahaan) {
                 'Asa Dreamland' => 'h',
-                'Lembah Hijau Residence' => 'i',
+                'Lembah Hijau Residence' => 'h',
                 default => 'h', // Default ketika salah penamaan UBS
             };
 

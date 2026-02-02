@@ -109,7 +109,7 @@ class SettingPembatalanController extends Controller
                 "```\n" .
                 "⏳ Menunggu persetujuan";
 
-            $this->notificationGroup->send($groupId, $message);
+            $this->notificationGroup->send(groupId: $groupId, $message);
 
         } catch (\Throwable $e) {
             Log::error('Gagal kirim notifikasi pengajuan pembatalan', [
