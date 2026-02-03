@@ -67,7 +67,7 @@ class PemesananUnitController extends Controller
         // ===== Customer Booking (SUDAH DIFILTER PERUMAHAAAN) =====
         $query = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
             ->where('perumahaan_id', $perumahaanId) // 🔥 FILTER UTAMA
-            ->where('status', 'active')
+            ->where('status', operator: 'active')
             ->whereDoesntHave('user.pemesananSebagaiCustomer');
 
         // 🔐 Role restriction
@@ -161,6 +161,7 @@ class PemesananUnitController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         // 🧩 VALIDASI SEBELUM TRANSAKSI
         $request->validate([
             // === FIELD UMUM ===
@@ -352,9 +353,6 @@ class PemesananUnitController extends Controller
                 ]);
             }
 
-            // update status unit menjadi sold
-            // $unit->update(['status_unit' => 'sold']);
-
             // ✅ Commit transaksi
             DB::commit();
 
@@ -390,7 +388,7 @@ class PemesananUnitController extends Controller
 
             // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
-                $this->notificationGroup->send($groupId, $messageGroup);
+                // $this->notificationGroup->send($groupId, $messageGroup);
             }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');
@@ -489,11 +487,12 @@ class PemesananUnitController extends Controller
          * 🔹 SNAPSHOT CARA BAYAR
          * ======================================
          */
-        $caraBayar = PpjbCaraBayar::where('perumahaan_id', $pemesananUnit->perumahaan_id)
-            ->where('status_aktif', true)
+        // dd($request->all());
+        $caraBayar = PpjbCaraBayar::where('id', $request->cara_bayar_id)
+            ->where('status_aktif', 1)
             ->where('status_pengajuan', 'acc')
             ->first();
-
+        // dd($caraBayar);
         if ($caraBayar) {
             PemesananUnitCaraBayar::create([
                 'pemesanan_unit_id' => $pemesananUnit->id,

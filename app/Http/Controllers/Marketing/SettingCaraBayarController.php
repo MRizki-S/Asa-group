@@ -33,14 +33,14 @@ class SettingCaraBayarController extends Controller
             ->where('perumahaan_id', $currentPerumahaanId)
             ->where('jenis_pembayaran', 'KPR')
             ->where('status_aktif', 1)
-            ->first();
+            ->get();
 
         $caraBayarPendingKpr = PpjbCaraBayar::with(['pengaju'])
             ->where('perumahaan_id', $currentPerumahaanId)
             ->where('jenis_pembayaran', 'KPR')
-            ->where('status_pengajuan', 1)
-            ->where('status_aktif', 0)
-            ->first();
+            ->where('status_pengajuan', 'pending')
+            ->where('status_aktif', operator: 0)
+            ->get();
 
         // CASH
         $caraBayarActiveCash = PpjbCaraBayar::with(['pengaju', 'approver'])
@@ -52,7 +52,7 @@ class SettingCaraBayarController extends Controller
         $caraBayarPendingCash = PpjbCaraBayar::with(['pengaju'])
             ->where('perumahaan_id', $currentPerumahaanId)
             ->where('jenis_pembayaran', 'CASH')
-            ->where('status_pengajuan', 1)
+            ->where('status_pengajuan', 'pending')
             ->where('status_aktif', 0)
             ->get();
 
@@ -91,12 +91,12 @@ class SettingCaraBayarController extends Controller
                 ->where('jenis_pembayaran', 'KPR')
                 ->where('status_pengajuan', 'pending')
                 ->where('status_aktif', 0)
-                ->first();
+                ->count();
 
-            if ($pending) {
+            if ($pending >= 5) {
                 return redirect()
                     ->back()
-                    ->with('error', 'Pengajuan cara bayar KPR gagal. Harap tunggu pengajuan pending sebelumnya disetujui atau ditolak.');
+                    ->with('error', 'Pengajuan cara bayar KPR gagal. Maksimal 5 pengajuan pending.');
             }
         } else {
             // CASH: batasi maksimal 5 pengajuan pending
@@ -262,12 +262,6 @@ class SettingCaraBayarController extends Controller
 
                 // Jika jenis pembayaran KPR
                 if ($caraBayar->jenis_pembayaran === 'KPR') {
-                    // Nonaktifkan semua KPR aktif lain di perumahaan yang sama
-                    PpjbCaraBayar::where('perumahaan_id', $caraBayar->perumahaan_id)
-                        ->where('jenis_pembayaran', 'KPR')
-                        ->where('status_aktif', 1)
-                        ->update(['status_aktif' => 0]);
-
                     // Set pengajuan ini jadi aktif & disetujui
                     $caraBayar->update([
                         'status_aktif' => 1,

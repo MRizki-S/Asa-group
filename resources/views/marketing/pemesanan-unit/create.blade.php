@@ -198,7 +198,9 @@
         // pembayaran / angsuran
         caraBayar: '',
         caraBayarCash: [],
-        caraBayarKpr: null,
+        caraBayarKpr: [],        // list skema KPR
+        selectedKpr: null,       // skema KPR terpilih
+
         selectedCash: '',
         jumlahCicilan: '',
         minimalDp: '',
@@ -247,15 +249,12 @@
                 const data = await res.json();
 
                 this.caraBayarCash = Array.isArray(data?.data?.cash) ? data.data.cash : [];
-                this.caraBayarKpr = data?.data?.kpr ?? null;
+                this.caraBayarKpr = Array.isArray(data?.data?.kpr) ? data.data.kpr : [];
+                this.selectedKpr = null;
+
 
                 // auto isi jika sudah pilih sebelumnya
-                if (this.caraBayar === 'kpr' && this.caraBayarKpr) {
-                    const jumlah = parseInt(this.caraBayarKpr.jumlah_cicilan) || 0;
-                    this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
-                    this.minimalDp = parseInt(this.caraBayarKpr.minimal_dp) || '';
-                    if (jumlah > 0) this.generateAngsuran(jumlah);
-                }
+
 
                 if (this.caraBayar === 'cash' && this.selectedCash) {
                     const found = this.caraBayarCash.find(c => c.nama_cara_bayar === this.selectedCash);
@@ -275,28 +274,38 @@
         // === PEMILIHAN CARA BAYAR ===
         pilihCash(cashItem) {
             this.caraBayar = 'cash';
-            this.selectedCash = cashItem.nama_cara_bayar;
+            this.selectedCash = cashItem
 
             const jumlah = parseInt(cashItem.jumlah_cicilan) || 0;
-            this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
+            this.jumlahCicilan = jumlah ? jumlah: '';
             this.minimalDp = parseInt(cashItem.minimal_dp) || 0;
             this.generateAngsuran(jumlah);
         },
+
+        pilihKpr(kprItem) {
+            this.caraBayar = 'kpr';
+            this.selectedKpr = kprItem;
+
+            const jumlah = parseInt(kprItem.jumlah_cicilan) || 0;
+            this.jumlahCicilan = jumlah ? jumlah : '';
+            this.minimalDp = parseInt(kprItem.minimal_dp) || 0;
+
+            this.generateAngsuran(jumlah);
+        },
+
 
         onCaraBayarChange(val) {
             this._resetAngsuranState({ keepCaraBayar: true });
 
             if (val === 'kpr') {
-                if (this.caraBayarKpr) {
-                    const jumlah = parseInt(this.caraBayarKpr.jumlah_cicilan) || 0;
-                    this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
-                    this.minimalDp = parseInt(this.caraBayarKpr.minimal_dp) || 0;
-                    if (jumlah > 0) this.generateAngsuran(jumlah);
-                } else if (this.selectedCustomer?.booking?.perumahaan_id) {
-                    this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
-                }
+                this.selectedKpr = null;
+            }
+
+            if (val === 'cash') {
+                this.selectedCash = '';
             }
         },
+
 
         // === ANGSURAN ===
         generateAngsuran(jumlah) {
