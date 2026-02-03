@@ -503,20 +503,19 @@
 
             <!-- 💸 Bonus Cash (muncul kalau cash dipilih) -->
             @if ($pengajuan->cara_bayar === 'cash' && $pengajuan->bonusCash->isNotEmpty())
-            <div
-    class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
-                <div class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
-                    <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus Cash</h3>
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+                    <div class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus Cash</h3>
 
-                    @foreach ($pengajuan->bonusCash as $bonus)
-                        <div class="flex gap-2 items-center">
-                            <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                        @foreach ($pengajuan->bonusCash as $bonus)
+                            <div class="flex gap-2 items-center">
+                                <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}"
+                                    class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
                     dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
-                        </div>
-                    @endforeach
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
             @endif
 
             {{-- pemesanan unit cicilan --}}
@@ -598,8 +597,22 @@
                 </div>
             </div>
 
-            {{-- button aksi tolak & approve --}}
-            @can('marketing.pengajuan-pemesanan.action')
+            @php
+                $user = auth()->user();
+                $namaPerumahaan = $pengajuan->perumahaan->nama_perumahaan;
+
+                $bolehAction = false;
+
+                if ($namaPerumahaan === 'Asa Dreamland') {
+                    // Khusus ADL → Project Manager saja
+                    $bolehAction = $user->hasRole(['Project Manager', 'Superadmin']);
+                } else {
+                    // Selain ADL → pakai permission (Staff KPR)
+                    $bolehAction = $user->can('marketing.pengajuan-pemesanan.action');
+                }
+            @endphp
+
+            @if ($bolehAction)
                 <div class="flex justify-end gap-3">
                     <!-- Tombol Tolak -->
                     <form action="{{ route('marketing.pengajuanPemesanan.reject', $pengajuan->id) }}" method="POST"
@@ -608,7 +621,7 @@
                         @method('PATCH')
                         <button type="button"
                             class="tolak-btn px-4 py-2 text-sm font-medium text-gray-800 bg-gray-300 rounded-lg shadow-md
-                    hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
+                hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
                             Tolak
                         </button>
                     </form>
@@ -620,12 +633,12 @@
                         @method('PATCH')
                         <button type="button"
                             class="approve-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md
-                    hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
+                hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
                             Acc / Approve
                         </button>
                     </form>
                 </div>
-            @endcan
+            @endif
 
         </div>
     </div>

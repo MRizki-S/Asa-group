@@ -110,6 +110,7 @@ class ManagePemesananController extends Controller
         return view('marketing.manage-pemesanan.index', [
             'pemesananKpr' => $pemesananKpr,
             'pemesananCash' => $pemesananCash,
+            'namaPerumahaanAktif' => $namaPerumahaan,
             'breadcrumbs' => [
                 [
                     'label' => 'Manage Pemesanan - ' . ($namaPerumahaan ?? '-'),

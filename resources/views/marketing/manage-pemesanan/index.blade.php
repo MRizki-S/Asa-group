@@ -33,6 +33,20 @@
             </div>
         @endif
 
+        {{-- hak akses berbeda untk print ppjb beradasarkan dari ubs mana --}}
+        @php
+            $user = auth()->user();
+            $bolehPrintPPJB = false;
+
+            if ($namaPerumahaanAktif === 'Asa Dreamland') {
+                // Khusus ADL → ROLE
+                $bolehPrintPPJB = $user->hasRole(['Project Manager', 'Marketing', 'Superadmin', 'Staff KPR']);
+            } else {
+                // Selain ADL → PERMISSION
+                $bolehPrintPPJB = $user->can('marketing.kelola-pemesanan.print-ppjb');
+            }
+        @endphp
+
         <div class="space-y-6">
             {{-- ==================== KPR SECTION ==================== --}}
             <div
@@ -44,7 +58,6 @@
                         </span>
                     </h3>
                 </div>
-
                 <div class="overflow-x-auto">
                     <table id="table-managePemesananKpr" class="w-full text-left border-collapse">
                         <thead>
@@ -52,17 +65,19 @@
                                 <th class="px-4 py-3 w-[200px]">Nama User</th>
                                 <th class="px-4 py-3">Unit</th>
                                 <th class="px-4 py-3">Nama Sales</th>
-                                @can('marketing.kelola-pemesanan.print-ppjb')
+
+                                @if ($bolehPrintPPJB)
                                     <th class="px-4 py-3 text-center">PPJB</th>
-                                @endcan
+                                @endif
 
                                 <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
                                 <th class="px-4 py-3">Bank</th>
                                 <th class="px-4 py-3 text-center">Progress Bangunan</th>
                                 <th class="px-4 py-3 text-center">Status KPR</th>
                                 <th class="px-4 py-3">Status Unit Pemesanan</th>
-                                @can('marketing.kelola-pemesanan.update-berkas')
-                                    <th class="px-4 py-3 text-center">Update Data KPR</th>
+
+                                @can('marketing.kelola-pemesanan.read-berkas')
+                                    <th class="px-4 py-3 text-center">Berkas KPR</th>
                                 @endcan
 
                                 {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
@@ -73,7 +88,7 @@
                                     <th class="px-4 py-3 text-center">Rincian Tagihan</th>
                                 @endcan
 
-                               @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
+                                @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
                                     <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
                                 @endcan
                             </tr>
@@ -88,14 +103,14 @@
                                     <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
                                     <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
 
-                                    @can('marketing.kelola-pemesanan.print-ppjb')
+                                    @if ($bolehPrintPPJB)
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('ppjbKPR.export.word', $item->id) }}"
                                                 class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
                                                 PPJB
                                             </a>
                                         </td>
-                                    @endcan
+                                    @endif
 
                                     <td class="px-4 py-2 text-center">
                                         <span class="text-gray-600">{{ $item->kelengkapan_berkas }}</span>
@@ -140,12 +155,12 @@
                                     </td>
 
                                     {{-- lihat berkas kpr dan update (khusus staff kpr) --}}
-                                    @can('marketing.kelola-pemesanan.update-berkas')
+                                    @can('marketing.kelola-pemesanan.read-berkas')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.kelengkapanBerkasKpr.editKpr', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition whitespace-nowrap">
                                                 <i class="ri-edit-line"></i>
-                                                <span>Update Data</span>
+                                                <span>Berkas KPR</span>
                                             </a>
                                         </td>
                                     @endcan
@@ -177,8 +192,8 @@
                                     @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
                                         {{-- 🔴 Pengajuan Pembatalan --}}
                                         <td class="px-4 py-2 text-center">
-                                            <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
-                                                data-id="{{ $item->id }}"
+                                            <button data-modal-target="modal-pembatalan"
+                                                data-modal-toggle="modal-pembatalan" data-id="{{ $item->id }}"
                                                 data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
                                                 data-nama-user="{{ $item->customer->username ?? '-' }}"
                                                 data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
@@ -189,108 +204,108 @@
                                         </td>
                                     @endcan
 
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+        {{-- ==================== CASH SECTION ==================== --}}
+        <div
+            class="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
+                    <span class="px-2.5 py-1 font-medium bg-emerald-100 text-emerald-700 rounded-full">
+                        Manage Pemesanan - Cash
+                    </span>
+                </h3>
             </div>
 
+            <div class="overflow-x-auto">
+                <table id="table-managePemesananCash" class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                            <th class="px-4 py-3 w-[200px]">Nama User</th>
+                            <th class="px-4 py-3">Unit</th>
+                            <th class="px-4 py-3">Nama Sales</th>
 
+                            @if ($bolehPrintPPJB)
+                                <th class="px-4 py-3 text-center">PPJB</th>
+                            @endif
 
-            {{-- ==================== CASH SECTION ==================== --}}
-            <div
-                class="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
-                        <span class="px-2.5 py-1 font-medium bg-emerald-100 text-emerald-700 rounded-full">
-                            Manage Pemesanan - Cash
-                        </span>
-                    </h3>
-                </div>
+                            <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
+                            <th class="px-4 py-3 text-center">Progress Bangunan</th>
+                            <th class="px-4 py-3">Status Unit Pemesanan</th>
 
-                <div class="overflow-x-auto">
-                    <table id="table-managePemesananCash" class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                                <th class="px-4 py-3 w-[200px]">Nama User</th>
-                                <th class="px-4 py-3">Unit</th>
-                                <th class="px-4 py-3">Nama Sales</th>
+                            @can('marketing.kelola-pemesanan.read-berkas')
+                                <th class="px-4 py-3 text-center">Berkas Cash</th>
+                            @endcan
 
-                                @can('marketing.kelola-pemesanan.print-ppjb')
-                                    <th class="px-4 py-3 text-center">PPJB</th>
-                                @endcan
-
-                                <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
-                                <th class="px-4 py-3 text-center">Progress Bangunan</th>
-                                <th class="px-4 py-3">Status Unit Pemesanan</th>
-
-                                @can('marketing.kelola-pemesanan.update-berkas')
-                                    <th class="px-4 py-3 text-center">Update Data Cash</th>
-                                @endcan
-
-                                {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                            {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                     <th class="px-4 py-3 text-center">Adendum</th>
                                 @endcan --}}
 
-                                @can('marketing.kelola-pemesanan.tagihan.read')
-                                    <th class="px-4 py-3 text-center">Rincian Tagihan</th>
+                            @can('marketing.kelola-pemesanan.tagihan.read')
+                                <th class="px-4 py-3 text-center">Rincian Tagihan</th>
+                            @endcan
+
+                            @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
+                                <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
+                            @endcan
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach ($pemesananCash as $item)
+                            <tr class="border-b hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                <td class="px-4 py-2 font-medium text-gray-800 dark:text-white truncate max-w-[200px]">
+                                    {{ $item->customer->username ?? '-' }}
+                                </td>
+                                <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
+                                <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
+
+                                @if ($bolehPrintPPJB)
+                                    <td class="px-4 py-2 text-center">
+                                        <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
+                                            class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
+                                            PPJB
+                                        </a>
+                                    </td>
+                                @endif
+
+                                <td class="px-4 py-2 text-center">
+                                    <span class=text-gray-600">{{ $item->kelengkapan_berkas ?? 0 }}</span>
+                                </td>
+                                <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? '-' }}</td>
+                                <td class="px-4 py-2 text-center">
+                                    @php
+                                        $status = $item->status_pemesanan ?? '-';
+                                        $classes = match ($status) {
+                                            'proses' => 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded',
+                                            'LPA' => 'bg-blue-100 text-blue-800 px-2 py-1 rounded',
+                                            'serah_terima' => 'bg-green-100 text-green-800 px-2 py-1 rounded',
+                                            default => 'bg-gray-100 text-gray-600 px-2 py-1 rounded',
+                                        };
+                                    @endphp
+                                    <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
+                                </td>
+
+
+                                {{-- 🔵 Update Data Cash --}}
+                                @can('marketing.kelola-pemesanan.read-berkas')
+                                    <td class="px-4 py-2 text-center">
+                                        <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
+                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
+                                            <i class="ri-edit-line"></i> Berkas Cash
+                                        </a>
+                                    </td>
                                 @endcan
 
-                               @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
-                                    <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                                @endcan
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @foreach ($pemesananCash as $item)
-                                <tr class="border-b hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                    <td class="px-4 py-2 font-medium text-gray-800 dark:text-white truncate max-w-[200px]">
-                                        {{ $item->customer->username ?? '-' }}
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
-                                    <td class="px-4 py-2">{{ $item->sales->username ?? '-' }}</td>
-
-                                    @can('marketing.kelola-pemesanan.print-ppjb')
-                                        <td class="px-4 py-2 text-center">
-                                            <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
-                                                class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
-                                                PPJB
-                                            </a>
-                                        </td>
-                                    @endcan
-
-                                    <td class="px-4 py-2 text-center">
-                                        <span class=text-gray-600">{{ $item->kelengkapan_berkas ?? 0 }}</span>
-                                    </td>
-                                    <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? '-' }}</td>
-                                    <td class="px-4 py-2 text-center">
-                                        @php
-                                            $status = $item->status_pemesanan ?? '-';
-                                            $classes = match ($status) {
-                                                'proses' => 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded',
-                                                'LPA' => 'bg-blue-100 text-blue-800 px-2 py-1 rounded',
-                                                'serah_terima' => 'bg-green-100 text-green-800 px-2 py-1 rounded',
-                                                default => 'bg-gray-100 text-gray-600 px-2 py-1 rounded',
-                                            };
-                                        @endphp
-                                        <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
-                                    </td>
-
-
-                                    {{-- 🔵 Update Data Cash --}}
-                                    @can('marketing.kelola-pemesanan.update-berkas')
-                                        <td class="px-4 py-2 text-center">
-                                            <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
-                                                <i class="ri-edit-line"></i> Update Data
-                                            </a>
-                                        </td>
-                                    @endcan
-
-                                    {{-- 🟡 Adendum --}}
-                                    {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                                {{-- 🟡 Adendum --}}
+                                {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
                                         <td class="px-4 py-2 text-center">
                                             <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
                                                 class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
@@ -302,61 +317,61 @@
 
 
 
-                                    {{-- 🟢 Rincian Tagihan --}}
-                                    @can('marketing.kelola-pemesanan.tagihan.read')
-                                        <td class="px-4 py-2 text-center">
-                                            <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
-                                                <i class="ri-file-list-3-line"></i> Lihat
-                                            </a>
-                                        </td>
-                                    @endcan
+                                {{-- 🟢 Rincian Tagihan --}}
+                                @can('marketing.kelola-pemesanan.tagihan.read')
+                                    <td class="px-4 py-2 text-center">
+                                        <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
+                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
+                                            <i class="ri-file-list-3-line"></i> Lihat
+                                        </a>
+                                    </td>
+                                @endcan
 
-                                    @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
-                                        {{-- 🔴 Pengajuan Pembatalan --}}
-                                        <td class="px-4 py-2 text-center">
-                                            <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
-                                                data-id="{{ $item->id }}"
-                                                data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
-                                                data-nama-user="{{ $item->customer->username ?? '-' }}"
-                                                data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
-                                                data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
-                                                <i class="ri-close-circle-line"></i> Pembatalan
-                                            </button>
-                                        </td>
-                                    @endcan
+                                @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
+                                    {{-- 🔴 Pengajuan Pembatalan --}}
+                                    <td class="px-4 py-2 text-center">
+                                        <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
+                                            data-id="{{ $item->id }}"
+                                            data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
+                                            data-nama-user="{{ $item->customer->username ?? '-' }}"
+                                            data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
+                                            data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
+                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
+                                            <i class="ri-close-circle-line"></i> Pembatalan
+                                        </button>
+                                    </td>
+                                @endcan
 
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-
         </div>
 
     </div>
-    <!-- ===== Main Content End ===== -->
+
+</div>
+<!-- ===== Main Content End ===== -->
 
 
-    @include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
+@include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
 
-    {{-- sweatalert 2 for delete data --}}
-    <script>
-        if (document.getElementById("table-managePemesananKpr") && typeof simpleDatatables.DataTable !== 'undefined') {
-            const dataTable = new simpleDatatables.DataTable("#table-managePemesananKpr", {
-                searchable: true,
-                sortable: true,
+{{-- sweatalert 2 for delete data --}}
+<script>
+    if (document.getElementById("table-managePemesananKpr") && typeof simpleDatatables.DataTable !== 'undefined') {
+        const dataTable = new simpleDatatables.DataTable("#table-managePemesananKpr", {
+            searchable: true,
+            sortable: true,
 
-            });
-        }
+        });
+    }
 
-        if (document.getElementById("table-managePemesananCash") && typeof simpleDatatables.DataTable !== 'undefined') {
-            const dataTable = new simpleDatatables.DataTable("#table-managePemesananCash", {
-                searchable: true,
-                sortable: true,
-            });
-        }
-    </script>
+    if (document.getElementById("table-managePemesananCash") && typeof simpleDatatables.DataTable !== 'undefined') {
+        const dataTable = new simpleDatatables.DataTable("#table-managePemesananCash", {
+            searchable: true,
+            sortable: true,
+        });
+    }
+</script>
 @endsection
