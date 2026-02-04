@@ -10,6 +10,7 @@ use App\Models\PemesananUnitCash;
 use App\Models\PemesananUnitMutu;
 use App\Models\PemesananUnitPromo;
 use App\Models\PemesananUnitCicilan;
+use App\Models\PemesananUnitBonusKpr;
 use App\Models\PemesananUnitDataDiri;
 use App\Models\PemesananUnitBonusCash;
 use App\Models\PemesananUnitCaraBayar;
@@ -103,4 +104,8 @@ class PemesananUnit extends Model
         return $this->hasMany(PemesananUnitBonusCash::class);
     }
 
+    public function bonusKpr()
+    {
+        return $this->hasMany(PemesananUnitBonusKpr::class);
+    }
 }

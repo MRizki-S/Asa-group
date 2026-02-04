@@ -1,18 +1,18 @@
 <?php
+
 namespace App\Http\Controllers\Marketing;
 
 use Illuminate\Http\Request;
-use App\Models\PpjbBonusCashItem;
-use App\Models\PpjbBonusCashBatch;
+use App\Models\PpjbBonusKprItem;
+use App\Models\PpjbBonusKprBatch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationGroupService;
 
-class SettingBonusCashController extends Controller
+class SettingBonusKprController extends Controller
 {
-
     // Service Notifikasi To Wa Group
     protected NotificationGroupService $notificationGroup;
 
@@ -33,39 +33,40 @@ class SettingBonusCashController extends Controller
             : $user->perumahaan_id;
     }
     /**
-     * Menampilkan halaman Bonus Cash PPJB
+     * Menampilkan halaman Bonus KPR PPJB
      */
     public function edit()
     {
         $perumahaanId = $this->currentPerumahaanId();
 
-        // Bonus Cash Aktif (ACC + Aktif)
-        $bonusCashActive = PpjbBonusCashBatch::with(['items', 'penyetuju'])
+        // Bonus KPR Aktif (ACC + Aktif)
+        $bonusKprActive = PpjbBonusKprBatch::with(['items', 'penyetuju'])
             ->where('status_aktif', true)
             ->where('status_pengajuan', 'acc')
             ->where('perumahaan_id', $perumahaanId)
             ->first();
 
-        // Bonus Cash Pending
-        $bonusCashPending = PpjbBonusCashBatch::with(['items', 'pengaju'])
+        // Bonus KPR Pending
+        $bonusKprPending = PpjbBonusKprBatch::with(['items', 'pengaju'])
             ->where('status_pengajuan', 'pending')
             ->where('perumahaan_id', $perumahaanId)
             ->first();
 
-        return view('marketing.setting.bonus-cash-kelola', [
-            'bonusCashActive' => $bonusCashActive,
-            'bonusCashPending' => $bonusCashPending,
+        // dd( $bonusKprActive,$bonusKprPending);
+        return view('marketing.setting.bonus-kpr-kelola', [
+            'bonusKprActive' => $bonusKprActive,
+            'bonusKprPending' => $bonusKprPending,
             'breadcrumbs' => [
                 ['label' => 'Setting PPJB', 'url' => route('settingPPJB.index')],
-                ['label' => 'Bonus Cash PPJB', 'url' => ''],
+                ['label' => 'Bonus KPR PPJB', 'url' => ''],
             ],
         ]);
     }
 
-    // pengajuan bonus cash baru
+    // pengajuan bonus KPR baru
     public function pengajuanUpdate(Request $request)
     {
-        // dd($request->    all());
+        // dd($request->all());
         $request->validate([
             'nama_bonus' => 'required|array|min:1',
             'nama_bonus.*' => 'required|string|max:255',
@@ -74,18 +75,18 @@ class SettingBonusCashController extends Controller
         $perumahaanId = $this->currentPerumahaanId();
 
         // cek jika ada batch pending sebelumnya
-        $pendingBatch = PpjbBonusCashBatch::where('status_pengajuan', 'pending')
+        $pendingBatch = PpjbBonusKPRBatch::where('status_pengajuan', 'pending')
             ->where('perumahaan_id', $perumahaanId)
             ->first();
 
         if ($pendingBatch) {
             return redirect()
                 ->back()
-                ->with('error', 'Pengajuan Bonus Cash gagal. Harap tunggu batch pending sebelumnya disetujui atau ditolak.');
+                ->with('error', 'Pengajuan Bonus KPR gagal. Harap tunggu batch pending sebelumnya disetujui atau ditolak.');
         }
 
         // buat batch baru
-        $batch = PpjbBonusCashBatch::create([
+        $batch = PpjbBonusKprBatch::create([
             'perumahaan_id' => $perumahaanId,
             'status_aktif' => false,
             'status_pengajuan' => 'pending',
@@ -95,7 +96,7 @@ class SettingBonusCashController extends Controller
 
         // buat items Bonus
         foreach ($request->nama_bonus as $index => $namaBonus) {
-            PpjbBonusCashItem::create([
+            PpjbBonusKprItem::create([
                 'batch_id' => $batch->id,
                 'nama_bonus' => $namaBonus,
             ]);
@@ -104,7 +105,7 @@ class SettingBonusCashController extends Controller
         // Load relasi yang dibutuhkan untuk notifikasi
         $batch->load(['items', 'perumahaan']);
 
-        // List Bonus Cash
+        // List Bonus KPR
         $listBonus = $batch->items
             ->pluck('nama_bonus')
             ->map(fn($bonus) => "• {$bonus}")
@@ -114,21 +115,21 @@ class SettingBonusCashController extends Controller
         $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
 
         $message =
-            "🔔 Pengajuan BONUS CASH\n" .
+            "🔔 Pengajuan BONUS KPR\n" .
             "```\n" .
             "Perumahaan   : {$batch->perumahaan->nama_perumahaan}\n" .
             "Diajukan oleh: " . Auth::user()->nama_lengkap . "\n" .
             "Status       : Pending\n" .
             "```\n" .
-            "📋 Daftar Bonus Cash:\n" .
+            "📋 Daftar Bonus KPR:\n" .
             "{$listBonus}\n\n" .
             "⏳ Menunggu persetujuan";
 
         // Kirim Notifikasi WA Group
         try {
-            $this->notificationGroup->send($groupId, $message);
+            // $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
-            Log::error('Gagal kirim notifikasi pengajuan bonus cash', [
+            Log::error('Gagal kirim notifikasi pengajuan bonus Kpr', [
                 'batch_id' => $batch->id,
                 'error' => $e->getMessage(),
             ]);
@@ -136,15 +137,15 @@ class SettingBonusCashController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'Pengajuan Bonus Cash PPJB baru berhasil diajukan dan menunggu persetujuan.');
+            ->with('success', 'Pengajuan Bonus KPR PPJB baru berhasil diajukan dan menunggu persetujuan.');
     }
 
-    // nonaktifkan Bonus Cash yang aktif
-    public function nonAktif(PpjbBonusCashBatch $batch)
+    // nonaktifkan Bonus KPR yang aktif
+    public function nonAktif(PpjbBonusKprBatch $batch)
     {
         if (!$batch->status_aktif) {
             return redirect()->back()
-                ->with('error', 'Hanya Bonus Cash aktif yang bisa dinonaktifkan.');
+                ->with('error', 'Hanya Bonus KPR aktif yang bisa dinonaktifkan.');
         }
 
         // SNAPSHOT DATA
@@ -162,35 +163,34 @@ class SettingBonusCashController extends Controller
         // NOTIFIKASI (TAMBAHAN)
         try {
             $message =
-                "🔕 Bonus CASH Telah Dinonaktifkan\n" .
+                "🔕 Bonus KPR Telah Dinonaktifkan\n" .
                 "```\n" .
                 "Perumahaan   : {$namaPerumahan}\n" .
                 "Dinonaktifkan oleh: " . Auth::user()->nama_lengkap . "\n" .
                 "Status       : Tidak Aktif\n" .
                 "```\n" .
-                "📋 Daftar Bonus CASH:\n" .
+                "📋 Daftar Bonus KPR:\n" .
                 "{$listBonus}\n\n" .
-                "⛔ Bonus CASH ini sudah tidak aktif dan tidak dapat digunakan";
+                "⛔ Bonus KPR ini sudah tidak aktif dan tidak dapat digunakan";
 
-            $this->notificationGroup->send($groupId, $message);
+            // $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
-            Log::error('Gagal kirim notifikasi nonaktif bonus cash', [
+            Log::error('Gagal kirim notifikasi nonaktif bonus kpr', [
                 'batch_id' => $batch->id,
                 'error' => $e->getMessage(),
             ]);
         }
 
         return redirect()->back()
-            ->with('success', 'Bonus Cash berhasil dinonaktifkan.');
+            ->with('success', 'Bonus KPR berhasil dinonaktifkan.');
     }
 
-
-    // cancel pengajuan bonus cash
-    public function cancelPengajuan(PpjbBonusCashBatch $batch)
+    // cancel pengajuan bonus KPR
+    public function cancelPengajuan(PpjbBonusKprBatch $batch)
     {
         if ($batch->status_pengajuan !== 'pending') {
             return redirect()->back()
-                ->with('error', 'Hanya pengajuan Bonus Cash dengan status pending yang bisa dibatalkan.');
+                ->with('error', 'Hanya pengajuan Bonus KPR dengan status pending yang bisa dibatalkan.');
         }
 
         // SNAPSHOT DATA
@@ -201,8 +201,8 @@ class SettingBonusCashController extends Controller
         $listBonus = $batch->items->isEmpty()
             ? '- (Tidak ada bonus)'
             : $batch->items
-                ->map(fn($item) => "• {$item->nama_bonus}")
-                ->implode("\n");
+            ->map(fn($item) => "• {$item->nama_bonus}")
+            ->implode("\n");
 
         // AKSI UTAMA (WAJIB JALAN)`
         $batch->delete();
@@ -212,37 +212,36 @@ class SettingBonusCashController extends Controller
             $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
 
             $message =
-                "🚫 Pembatalan Pengajuan Bonus CASH\n" .
+                "🚫 Pembatalan Pengajuan Bonus KPR\n" .
                 "```\n" .
                 "Perumahaan   : {$namaPerumahan}\n" .
                 "Dibatalkan oleh: " . Auth::user()->nama_lengkap . "\n" .
                 "Status       : Dibatalkan\n" .
                 "```\n" .
-                "📋 Daftar Bonus Cash:\n" .
+                "📋 Daftar Bonus KPR:\n" .
                 "{$listBonus}\n\n" .
-                "❌ Pengajuan Bonus Cash telah dibatalkan";
+                "❌ Pengajuan Bonus KPR telah dibatalkan";
 
-            $this->notificationGroup->send($groupId, $message);
+            // $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
-            Log::error('Gagal kirim notifikasi pembatalan bonus cash', [
+            Log::error('Gagal kirim notifikasi pembatalan bonus KPR', [
                 'batch_id' => $batch->id,
                 'error' => $e->getMessage(),
             ]);
         }
 
         return redirect()->back()
-            ->with('success', 'Pengajuan Bonus Cash berhasil dibatalkan.');
+            ->with('success', 'Pengajuan Bonus KPR berhasil dibatalkan.');
     }
 
 
-
-    // Bonus Cash history nonaktif dan tolak
+    // Bonus KPR history nonaktif dan tolak
     public function history()
     {
         $perumahaanId = $this->currentPerumahaanId();
 
         // 1. Batch ACC tapi nonaktif
-        $nonAktif = PpjbBonusCashBatch::where('status_pengajuan', 'acc')
+        $nonAktif = PpjbBonusKprBatch::where('status_pengajuan', 'acc')
             ->where('status_aktif', false)
             ->where('perumahaan_id', $perumahaanId)
             ->with(['items', 'penyetuju', 'pengaju'])
@@ -251,55 +250,54 @@ class SettingBonusCashController extends Controller
             ->get();
 
         // 2. Batch yang ditolak
-        $ditolak = PpjbBonusCashBatch::where('status_pengajuan', 'tolak')
+        $ditolak = PpjbBonusKprBatch::where('status_pengajuan', 'tolak')
             ->where('perumahaan_id', $perumahaanId)
             ->with(['items', 'penyetuju', 'pengaju'])
             ->latest()
             ->take(10)
             ->get();
 
-        $editRoute = route('settingPPJB.bonusCash.edit');
+        $editRoute = route('settingPPJB.bonusKpr.edit');
 
-        return view('marketing.setting.bonus-cash-history', [
+        return view('marketing.setting.bonus-kpr-history', [
             'nonAktif' => $nonAktif,
             'ditolak' => $ditolak,
             'editRoute' => $editRoute,
             'breadcrumbs' => [
                 ['label' => 'Setting PPJB', 'url' => route('settingPPJB.index')],
-                ['label' => 'Bonus Cash PPJB', 'url' => $editRoute],
-                ['label' => 'Riwayat Bonus Cash', 'url' => ''],
+                ['label' => 'Bonus KPR PPJB', 'url' => $editRoute],
+                ['label' => 'Riwayat Bonus KPR', 'url' => ''],
             ],
         ]);
     }
 
-    // Manager Keuangan aksi untuk approve dan tolak pengajuan Bonus Cash baru
-    public function approvePengajuan(PpjbBonusCashBatch $bonusCash)
+    // Manager Keuangan aksi untuk approve dan tolak pengajuan Bonus KPR baru
+    public function approvePengajuan(PpjbBonusKprBatch $bonusKpr)
     {
         try {
             // TRANSAKSI INTI
-            DB::transaction(function () use ($bonusCash) {
+            DB::transaction(function () use ($bonusKpr) {
 
                 // Validasi status
-                if ($bonusCash->status_pengajuan !== 'pending') {
+                if ($bonusKpr->status_pengajuan !== 'pending') {
                     throw new \Exception(
-                        'Hanya pengajuan Bonus Cash dengan status pending yang bisa disetujui.'
+                        'Hanya pengajuan Bonus KPR dengan status pending yang bisa disetujui.'
                     );
                 }
 
-                // Nonaktifkan Bonus Cash aktif sebelumnya
-                PpjbBonusCashBatch::where('perumahaan_id', $bonusCash->perumahaan_id)
+                // Nonaktifkan Bonus Kpr aktif sebelumnya
+                PpjbBonusKprBatch::where('perumahaan_id', $bonusKpr->perumahaan_id)
                     ->where('status_aktif', true)
                     ->update(['status_aktif' => false]);
 
-                // Aktifkan Bonus Cash ini
-                $bonusCash->update([
+                // Aktifkan Bonus Kpr ini
+                $bonusKpr->update([
                     'status_aktif' => true,
                     'status_pengajuan' => 'acc',
                     'disetujui_oleh' => Auth::id(),
                     'tanggal_acc' => now(),
                 ]);
             });
-
         } catch (\Throwable $e) {
             // GAGAL LOGIC / DB
             return redirect()->back()
@@ -308,63 +306,62 @@ class SettingBonusCashController extends Controller
 
         // NOTIFIKASI
         try {
-            $bonusCash->load(['items', 'perumahaan']);
+            $bonusKpr->load(['items', 'perumahaan']);
 
-            $listBonus = $bonusCash->items->isEmpty()
+            $listBonus = $bonusKpr->items->isEmpty()
                 ? '- (Tidak ada bonus)'
-                : $bonusCash->items
-                    ->pluck('nama_bonus')
-                    ->map(fn($bonus) => "• {$bonus}")
-                    ->implode("\n");
+                : $bonusKpr->items
+                ->pluck('nama_bonus')
+                ->map(fn($bonus) => "• {$bonus}")
+                ->implode("\n");
 
             $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
 
             $message =
-                "✅ Persetujuan BONUS CASH\n" .
+                "✅ Persetujuan BONUS KPR\n" .
                 "```\n" .
-                "Perumahaan   : {$bonusCash->perumahaan->nama_perumahaan}\n" .
+                "Perumahaan   : {$bonusKpr->perumahaan->nama_perumahaan}\n" .
                 "Disetujui oleh: " . Auth::user()->nama_lengkap . "\n" .
                 "Status       : Aktif\n" .
                 "```\n" .
-                "📋 Daftar Bonus Cash:\n" .
+                "📋 Daftar Bonus KPR:\n" .
                 "{$listBonus}\n\n" .
-                "🔄 Bonus Cash sebelumnya dinonaktifkan & Bonus Cash ini resmi AKTIF";
+                "🔄 Bonus Kpr sebelumnya dinonaktifkan & Bonus Kpr ini resmi AKTIF";
 
-            $this->notificationGroup->send($groupId, $message);
+            // $this->notificationGroup->send($groupId, $message);
 
         } catch (\Throwable $e) {
-            Log::error('Gagal kirim notifikasi ACC Bonus Cash', [
-                'batch_id' => $bonusCash->id,
+            Log::error('Gagal kirim notifikasi ACC Bonus KPR', [
+                'batch_id' => $bonusKpr->id,
                 'error' => $e->getMessage(),
             ]);
         }
 
         return redirect()->back()
-            ->with('success', 'Pengajuan Bonus Cash berhasil disetujui dan diaktifkan.');
+            ->with('success', 'Pengajuan Bonus KPR berhasil disetujui dan diaktifkan.');
     }
 
-    // Manager Keuangan aksi untuk tolak pengajuan Bonus Cash baru
-    public function rejectPengajuan(PpjbBonusCashBatch $bonusCash)
+    // Manager Keuangan aksi untuk tolak pengajuan Bonus Kpr baru
+    public function rejectPengajuan(PpjbBonusKprBatch $bonusKpr)
     {
         try {
             // TRANSAKSI INTI
-            DB::transaction(function () use ($bonusCash) {
+            DB::transaction(function () use ($bonusKpr) {
 
                 // Validasi status
-                if ($bonusCash->status_pengajuan !== 'pending') {
+                if ($bonusKpr->status_pengajuan !== 'pending') {
                     throw new \Exception(
-                        'Hanya pengajuan Bonus Cash dengan status pending yang bisa ditolak.'
+                        'Hanya pengajuan Bonus KPR dengan status pending yang bisa ditolak.'
                     );
                 }
 
                 // Update status menjadi ditolak
-                $bonusCash->update([
+                $bonusKpr->update([
                     'status_pengajuan' => 'tolak',
                     'ditolak_oleh' => Auth::id(),
                     'tanggal_tolak' => now(),
                 ]);
             });
-
         } catch (\Throwable $e) {
             return redirect()->back()
                 ->with('error', $e->getMessage());
@@ -372,39 +369,37 @@ class SettingBonusCashController extends Controller
 
         // NOTIFIKASI
         try {
-            $bonusCash->load(['items', 'perumahaan']);
+            $bonusKpr->load(['items', 'perumahaan']);
 
-            $listBonus = $bonusCash->items->isEmpty()
+            $listBonus = $bonusKpr->items->isEmpty()
                 ? '- (Tidak ada bonus)'
-                : $bonusCash->items
-                    ->pluck('nama_bonus')
-                    ->map(fn($bonus) => "• {$bonus}")
-                    ->implode("\n");
+                : $bonusKpr->items
+                ->pluck('nama_bonus')
+                ->map(fn($bonus) => "• {$bonus}")
+                ->implode("\n");
 
             $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
 
             $message =
-                "❌ Penolakan BONUS CASH\n" .
+                "❌ Penolakan BONUS KPR\n" .
                 "```\n" .
-                "Perumahaan   : {$bonusCash->perumahaan->nama_perumahaan}\n" .
+                "Perumahaan   : {$bonusKpr->perumahaan->nama_perumahaan}\n" .
                 "Ditolak oleh : " . Auth::user()->nama_lengkap . "\n" .
                 "Status       : Ditolak\n" .
                 "```\n" .
-                "📋 Daftar Bonus Cash:\n" .
+                "📋 Daftar Bonus KPR:\n" .
                 "{$listBonus}\n\n" .
-                "🚫 Pengajuan Bonus Cash tidak disetujui";
+                "🚫 Pengajuan Bonus KPR tidak disetujui";
 
-            $this->notificationGroup->send($groupId, $message);
-
+            // $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
-            Log::error('Gagal kirim notifikasi penolakan Bonus Cash', [
-                'batch_id' => $bonusCash->id,
+            Log::error('Gagal kirim notifikasi penolakan Bonus KPR', [
+                'batch_id' => $bonusKpr->id,
                 'error' => $e->getMessage(),
             ]);
         }
 
         return redirect()->back()
-            ->with('success', 'Pengajuan Bonus Cash berhasil ditolak.');
+            ->with('success', 'Pengajuan Bonus KPR berhasil ditolak.');
     }
-
 }

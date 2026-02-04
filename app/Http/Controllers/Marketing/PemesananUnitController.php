@@ -388,7 +388,7 @@ class PemesananUnitController extends Controller
 
             // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
-                // $this->notificationGroup->send($groupId, $messageGroup);
+                $this->notificationGroup->send($groupId, $messageGroup);
             }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');

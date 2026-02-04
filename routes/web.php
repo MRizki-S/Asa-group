@@ -1,39 +1,40 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Etalase\BlokController;
-use App\Http\Controllers\Etalase\EtalaseJsonController;
-use App\Http\Controllers\Etalase\KualifikasiBlokController;
-use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
-use App\Http\Controllers\Etalase\PerumahaanController;
-use App\Http\Controllers\Etalase\TahapController;
-use App\Http\Controllers\Etalase\TahapKualifikasiController;
-use App\Http\Controllers\Etalase\TahapTypeController;
-use App\Http\Controllers\Etalase\TypeController;
-use App\Http\Controllers\Etalase\UnitController;
-use App\Http\Controllers\Marketing\AdendumController;
-use App\Http\Controllers\Marketing\AdendumListController;
-use App\Http\Controllers\Marketing\AkunUserController;
-use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
-use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
-use App\Http\Controllers\Marketing\ManagePemesananController;
-use App\Http\Controllers\Marketing\PemesananUnitController;
-use App\Http\Controllers\Marketing\PengajuanPembatalanController;
-use App\Http\Controllers\Marketing\PengajuanPemesananController;
-use App\Http\Controllers\Marketing\PindahUnitController;
-use App\Http\Controllers\Marketing\SettingBonusCashController;
-use App\Http\Controllers\Marketing\SettingCaraBayarController;
-use App\Http\Controllers\Marketing\SettingKeterlambatanController;
-use App\Http\Controllers\Marketing\SettingMutuPpjbController;
-use App\Http\Controllers\Marketing\SettingPembatalanController;
-use App\Http\Controllers\Marketing\SettingPpjbController;
-use App\Http\Controllers\Marketing\SettingPpjbJsonController;
-use App\Http\Controllers\Marketing\SettingPromoPpjbController;
-use App\Http\Controllers\PerumahaanSelectController;
-use App\Http\Controllers\Superadmin\AkunKaryawanController;
-use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Etalase\BlokController;
+use App\Http\Controllers\Etalase\TypeController;
+use App\Http\Controllers\Etalase\UnitController;
+use App\Http\Controllers\Etalase\TahapController;
+use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Etalase\TahapTypeController;
+use App\Http\Controllers\Marketing\AdendumController;
+use App\Http\Controllers\Etalase\PerumahaanController;
+use App\Http\Controllers\Marketing\AkunUserController;
+use App\Http\Controllers\Etalase\EtalaseJsonController;
+use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Marketing\AdendumListController;
+use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Etalase\KualifikasiBlokController;
+use App\Http\Controllers\Marketing\PemesananUnitController;
+use App\Http\Controllers\Superadmin\AkunKaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
+use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Marketing\ManagePemesananController;
+use App\Http\Controllers\Marketing\SettingBonusKprController;
+use App\Http\Controllers\Marketing\SettingMutuPpjbController;
+use App\Http\Controllers\Marketing\SettingPpjbJsonController;
+use App\Http\Controllers\Marketing\SettingBonusCashController;
+use App\Http\Controllers\Marketing\SettingCaraBayarController;
+use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+use App\Http\Controllers\Marketing\SettingPembatalanController;
+use App\Http\Controllers\Marketing\PengajuanPemesananController;
+use App\Http\Controllers\Marketing\PengajuanPembatalanController;
+use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
+use App\Http\Controllers\Marketing\SettingKeterlambatanController;
+use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
+use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -316,6 +317,31 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
                 ->name('settingPPJB.bonusCash.approve');
             Route::delete('/{bonusCash}/reject', [SettingBonusCashController::class, 'rejectPengajuan'])
                 ->name('settingPPJB.bonusCash.reject');
+        });
+
+
+         /**
+         * =========================
+         * BONUS CASH
+         * =========================
+         */
+        Route::prefix('/bonus-kpr')->group(function () {
+            Route::get('/edit', [SettingBonusKprController::class, 'edit'])
+                ->name('settingPPJB.bonusKpr.edit');
+            Route::post('/pengajuan-update', [SettingBonusKprController::class, 'pengajuanUpdate'])
+                ->name('settingPPJB.bonusKpr.pengajuanUpdate');
+            Route::patch('/{batch}/nonaktif', [SettingBonusKprController::class, 'nonAktif'])
+                ->name('settingPPJB.bonusKpr.nonAktif');
+            Route::delete('/{batch}/cancel', [SettingBonusKprController::class, 'cancelPengajuan'])
+                ->name('settingPPJB.bonusKpr.cancel');
+            Route::get('/history', [SettingBonusKprController::class, 'history'])
+                ->name('settingPPJB.bonusKpr.history');
+
+            // // Approval & Penolakan
+            Route::patch('/{bonusKpr}/approve', [SettingBonusKprController::class, 'approvePengajuan'])
+                ->name('settingPPJB.bonusKpr.approve');
+            Route::delete('/{bonusKpr}/reject', [SettingBonusKprController::class, 'rejectPengajuan'])
+                ->name('settingPPJB.bonusKpr.reject');
         });
 
         /**

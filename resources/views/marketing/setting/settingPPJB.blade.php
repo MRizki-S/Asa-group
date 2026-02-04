@@ -219,7 +219,7 @@
         </div> --}}
         {{-- end Mutu --}}
 
-        {{-- Bonus Cash --}}
+        {{-- Bonus --}}
         <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
             <div class="px-5 py-4 sm:px-6 sm:py-5">
                 <h3
@@ -227,56 +227,113 @@
                     Bonus Cash PPJB
                 </h3>
 
-                <!-- Card Bonus Cash -->
-                <div
-                    class="flex flex-col relative rounded-xl border border-blue-200 dark:border-blue-700
-            bg-blue-50 dark:bg-blue-900/10 p-5 shadow-sm">
+                <!-- Dua Card Bonus Cash & KPR -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Card Bonus Cash -->
+                    <div
+                        class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700
+                           bg-gray-50 dark:bg-white/5 p-4">
 
-                    <!-- Judul + Badge Aktif -->
-                    <div class="flex items-center justify-between mb-4 border-b border-blue-100 dark:border-blue-800 pb-2">
-                        <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200">
-                            Bonus Cash
-                        </h4>
-                        @if ($bonusCash && $bonusCash->status_aktif)
-                            <span
-                                class="px-2.5 py-0.5 text-xs font-semibold rounded-full
-                        bg-green-100 text-green-700 dark:bg-green-500 dark:text-white">
-                                Aktif
-                            </span>
-                        @else
-                            <span
-                                class="px-2.5 py-0.5 text-xs font-semibold rounded-full
-                        bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                Tidak ada Bonus Cash aktif
-                            </span>
-                        @endif
+                        <!-- Judul + Badge Aktif -->
+                        <div
+                            class="flex items-center justify-between mb-4 border-b border-blue-100 dark:border-blue-800 pb-2">
+                            <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                                Bonus Cash
+                            </h4>
+                            @if ($bonusCash && $bonusCash->status_aktif)
+                                <span
+                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full
+                            bg-green-100 text-green-700 dark:bg-green-500 dark:text-white">
+                                    Aktif
+                                </span>
+                            @else
+                                <span
+                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full
+                            bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                    Tidak ada Bonus Cash aktif
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Detail item -->
+                        <ul class="space-y-3 mb-4">
+                            @if ($bonusCash && $bonusCash->items->count())
+                                @foreach ($bonusCash->items as $item)
+                                    <li class="flex items-center">
+                                        <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
+                                        <div
+                                            class="flex-grow mx-2 border-b border-dashed border-gray-300 dark:border-gray-600">
+                                        </div>
+                                    </li>
+                                @endforeach
+                            @else
+                                <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus Cash aktif.</li>
+                            @endif
+                        </ul>
+
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.bonusCash.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Bonus Cash
+                            </a>
+                        @endcan
                     </div>
 
-                    <!-- Detail item -->
-                    <ul class="space-y-3 mb-4">
-                        @if ($bonusCash && $bonusCash->items->count())
-                            @foreach ($bonusCash->items as $item)
-                                <li class="flex items-center">
-                                    <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
-                                    <div class="flex-grow mx-2 border-b border-dashed border-gray-300 dark:border-gray-600">
-                                    </div>
-                                </li>
-                            @endforeach
-                        @else
-                            <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus Cash aktif.</li>
-                        @endif
-                    </ul>
+                    <!-- Card Bonus KPR -->
+                    <div
+                        class="flex flex-col relative rounded-xl border border-gray-200 dark:border-gray-700
+                           bg-gray-50 dark:bg-white/5 p-4">
 
-                    @can('marketing.setting-ppjb.kelola')
-                        <a href="{{ route('settingPPJB.bonusCash.edit') }}"
-                            class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                            Kelola Bonus Cash
-                        </a>
-                    @endcan
+                        <!-- Judul + Badge Aktif -->
+                        <div
+                            class="flex items-center justify-between mb-4 border-b border-blue-100 dark:border-blue-800 pb-2">
+                            <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                                Bonus KPR
+                            </h4>
+                            @if ($bonusCash && $bonusCash->status_aktif)
+                                <span
+                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full
+                            bg-green-100 text-green-700 dark:bg-green-500 dark:text-white">
+                                    Aktif
+                                </span>
+                            @else
+                                <span
+                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full
+                            bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                    Tidak ada Bonus Cash aktif
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Detail item -->
+                        <ul class="space-y-3 mb-4">
+                            @if ($bonusCash && $bonusCash->items->count())
+                                @foreach ($bonusCash->items as $item)
+                                    <li class="flex items-center">
+                                        <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
+                                        <div
+                                            class="flex-grow mx-2 border-b border-dashed border-gray-300 dark:border-gray-600">
+                                        </div>
+                                    </li>
+                                @endforeach
+                            @else
+                                <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus Cash aktif.</li>
+                            @endif
+                        </ul>
+
+                        @can('marketing.setting-ppjb.kelola')
+                            <a href="{{ route('settingPPJB.bonusKpr.edit') }}"
+                                class="mt-auto self-end px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                Kelola Bonus Kpr
+                            </a>
+                        @endcan
+                    </div>
+
                 </div>
+
             </div>
         </div>
-        {{-- end Bonus Cash --}}
+        {{-- end Bonus --}}
 
 
         {{-- Terkait Cara Bayar --}}
