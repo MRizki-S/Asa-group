@@ -14,6 +14,7 @@ use App\Http\Controllers\Etalase\PerumahaanController;
 use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Etalase\EtalaseJsonController;
 use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\SettingPpjbController;
 use App\Http\Controllers\Etalase\KualifikasiBlokController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\Marketing\SettingCaraBayarController;
 use App\Http\Controllers\Marketing\SettingPromoPpjbController;
 use App\Http\Controllers\Marketing\SettingPembatalanController;
 use App\Http\Controllers\Marketing\PengajuanPemesananController;
+use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
 use App\Http\Controllers\Marketing\PengajuanPembatalanController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
 use App\Http\Controllers\Marketing\SettingKeterlambatanController;
@@ -409,6 +411,20 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::get('/setting-cara-bayar/{perumahaanId}', [SettingPpjbJsonController::class, 'showByPerumahaan'])
             ->name('api.setting-caraBayar.show');
     });
+});
+
+
+// keuangan Group
+Route::middleware('auth')->prefix('keuangan')->group(function() {
+    Route::get('/', function() {
+        return view('superadmin.dashboard.index');
+    })->name('superadmin.dashboard.index');
+
+    // Kategori Akun
+    Route::get('/kategori-akun', [KategoriAkunKeuanganController::class, 'index'])->name('keuangan.kategoriAkun.index');
+
+    // Akun Keuangan
+    Route::resource('/akun-keuangan', controller: AkunKeuanganController::class)->names('keuangan.akunKeuangan');
 });
 
 

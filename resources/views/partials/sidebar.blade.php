@@ -731,7 +731,7 @@
                     <!-- Menu Item Kategori Akun -->
                     {{-- @can('etalase.tahap.read') --}}
                     <li>
-                        <a href="" @click="selected = (selected === 'KategoriAkun' ? '':'KategoriAkun')"
+                        <a href="{{ route('keuangan.kategoriAkun.index') }}" @click="selected = (selected === 'KategoriAkun' ? '':'KategoriAkun')"
                             class="menu-item group"
                             :class="(selected === 'KategoriAkun') && (page === 'KategoriAkun') ? 'menu-item-active' :
                             'menu-item-inactive'">
@@ -746,9 +746,6 @@
                                     stroke-linejoin="round" stroke-width="2"
                                     d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 3a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
                             </svg>
-
-
-
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                 Kategori Akun
                             </span>
@@ -760,12 +757,12 @@
                     <!-- Menu Item Akun Akutansi -->
                     {{-- @can('etalase.type-unit.read') --}}
                     <li>
-                        <a href="" @click="selected = (selected === 'AkunAkutansi' ? '':'AkunAkutansi')"
+                        <a href="{{ route('keuangan.akunKeuangan.index') }}" @click="selected = (selected === 'AkunKeuangan' ? '':'AkunKeuangan')"
                             class="menu-item group"
-                            :class="(selected === 'AkunAkutansi') && (page === 'AkunAkutansi') ? 'menu-item-active' :
+                            :class="(selected === 'AkunKeuangan') && (page === 'AkunKeuangan') ? 'menu-item-active' :
                             'menu-item-inactive'">
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                :class="(selected === 'AkunAkutansi') && (page === 'AkunAkutansi') ?
+                                :class="(selected === 'AkunKeuangan') && (page === 'AkunKeuangan') ?
                                 'menu-item-icon-active' :
                                 'menu-item-icon-inactive'"
                                 width="24" height="24" viewBox="0 0 24 24">
