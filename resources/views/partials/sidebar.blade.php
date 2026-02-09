@@ -123,6 +123,7 @@
             @endcanany
             <!-- Menu Group - Dashboard -->
 
+            {{-- Menu Etalase --}}
             @php
                 $etlalaseMenu = [
                     'etalase.tahap.read',
@@ -399,7 +400,7 @@
                 <!-- Menu Group - Etalase -->
             @endif
 
-
+            {{-- Menu Marketing --}}
             @php
                 $marketingMenu = [
                     'Customer' => 'marketing.customer.read',
@@ -651,8 +652,7 @@
                                         {{-- List Adendum --}}
                                         @can('marketing.adendum.list-adendum.read')
                                             <li>
-                                                <a href="{{ route('under-development') }}"
-                                                {{-- {{ route('marketing.adendum.list') }} --}}
+                                                <a href="{{ route('under-development') }}" {{-- {{ route('marketing.adendum.list') }} --}}
                                                     class="menu-dropdown-item group"
                                                     :class="page === 'ListAdendum' ? 'menu-dropdown-item-active' :
                                                         'menu-dropdown-item-inactive'">
@@ -697,6 +697,227 @@
                     </ul>
                 </div>
             @endif
+
+            {{-- Menu Keuangan Akutansi --}}
+            {{-- @php
+                $etlalaseMenu = [
+                    'etalase.tahap.read',
+                    'etalase.type-unit.read',
+                    'etalase.kualifikasi-blok.read',
+                    'etalase.blok.read',
+                    'etalase.unit.read',
+                    'etalase.perubahaan-harga.type-unit.read',
+                    'etalase.perubahaan-harga.tahap-kualifikasi.read',
+                ];
+            @endphp
+            @if (auth()->user()->canAny($etlalaseMenu)) --}}
+            <!-- Menu Group - Etalase -->
+            <div>
+                <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
+                    <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
+                        Keuangan
+                    </span>
+
+                    <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
+                        class="mx-auto fill-current menu-group-icon" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
+                            fill="" />
+                    </svg>
+                </h3>
+
+                <ul class="flex flex-col gap-2 mb-6">
+                    <!-- Menu Item Kategori Akun -->
+                    {{-- @can('etalase.tahap.read') --}}
+                    <li>
+                        <a href="" @click="selected = (selected === 'KategoriAkun' ? '':'KategoriAkun')"
+                            class="menu-item group"
+                            :class="(selected === 'KategoriAkun') && (page === 'KategoriAkun') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'KategoriAkun') && (page === 'KategoriAkun') ?
+                                'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                width="24" height="24" viewBox="0 0 24 24">
+                                <title>category</title>
+                                <path fill="none" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 3a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
+                            </svg>
+
+
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Kategori Akun
+                            </span>
+                        </a>
+                    </li>
+                    {{-- @endcan --}}
+                    <!-- Menu Item Kategori Akun -->
+
+                    <!-- Menu Item Akun Akutansi -->
+                    {{-- @can('etalase.type-unit.read') --}}
+                    <li>
+                        <a href="" @click="selected = (selected === 'AkunAkutansi' ? '':'AkunAkutansi')"
+                            class="menu-item group"
+                            :class="(selected === 'AkunAkutansi') && (page === 'AkunAkutansi') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'AkunAkutansi') && (page === 'AkunAkutansi') ?
+                                'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                width="24" height="24" viewBox="0 0 24 24">
+                                <title>outline-account-tree</title>
+                                <path fill="currentColor"
+                                    d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3zM7 9H4V5h3zm10 6h3v4h-3zm0-10h3v4h-3z" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Akun
+                            </span>
+                        </a>
+                    </li>
+                    {{-- @endcan --}}
+                    <!-- Menu Item Akun Akutansi -->
+
+                    <!-- Menu Item Jurnal -->
+                    {{-- @can('etalase.kualifikasi-blok.read') --}}
+                    <li>
+                        <a href="" @click="selected = (selected === 'Jurnal' ? '':'Jurnal')"
+                            class="menu-item group"
+                            :class="(selected === 'Jurnal') && (page === 'Jurnal') ?
+                            'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'Jurnal') && (page === 'Jurnal') ?
+                                'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                width="24" height="24" viewBox="0 0 24 24">
+                                <title>table</title>
+                                <g fill="none" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-width="1.5">
+                                    <rect width="18.5" height="16.5" x="2.75" y="3.75" rx="3" />
+                                    <path d="M2.75 7.75h18.5M2.75 14h18.5M8.92 7.75v12.5m6.17-12.5v12.5" />
+                                </g>
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Jurnal
+                            </span>
+                        </a>
+                    </li>
+                    {{-- @endcan --}}
+                    <!-- Menu Item Jurnal -->
+
+                    <!-- Menu Group Item DaftarLaporan  -->
+                    {{-- @canany(['etalase.blok.read', 'etalase.unit.read']) --}}
+                    <li>
+                        <a href="#"
+                            @click.prevent="selected = (selected === 'DaftarLaporan' ? '':'DaftarLaporan')"
+                            class="menu-item group"
+                            :class="(selected === 'DaftarLaporan') || (page === 'LapoaranJurnal' || page === 'BukuBesar' ||
+                                page === 'NeracaSaldo' || page === 'proFormLayout') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'DaftarLaporan') ||
+                                (page === 'LapoaranJurnal' ||
+                                    page === 'BukuBesar' ||
+                                    page === 'NeracaSaldo' ||
+                                    page === 'proFormLayout') ?
+                                'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                width="24" height="24" viewBox="0 0 16 16">
+                                <title>report-outline</title>
+                                <path fill="none" stroke="currentColor" stroke-linejoin="round"
+                                    d="M7.563 1.545H2.5v10.91h9V5.364M7.563 1.545L11.5 5.364M7.563 1.545v3.819H11.5m-7 9.136h9v-7M4 7.5h6M4 5h2m-2 5h6" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Daftar Laporan
+                            </span>
+
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'DaftarLaporan') ? 'menu-item-arrow-active' :
+                                    'menu-item-arrow-inactive',
+                                    sidebarToggle ? 'lg:hidden' : ''
+                                ]"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+
+                        <!-- Dropdown Menu Start -->
+                        <div class="overflow-hidden transform translate"
+                            :class="(selected === 'DaftarLaporan') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                class="flex flex-col mt-2 menu-dropdown pl-9">
+                                <!-- Lapoaran Jurnal -->
+                                {{-- @can('etalase.blok.read') --}}
+                                <li>
+                                    <a href="{{ route('blok.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'LapoaranJurnal' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24">
+                                            <title>file-table</title>
+                                            <path fill="currentColor"
+                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-4 17H7v-2h3zm0-3H7v-2h3zm0-3H7v-2h3zm4 6h-3v-2h3zm0-3h-3v-2h3zm0-3h-3v-2h3zm-1-4V3.5L18.5 9z" />
+                                        </svg>
+                                        Laporan Jurnal
+                                    </a>
+                                </li>
+                                {{-- @endcan --}}
+
+                                {{-- @can('etalase.unit.read') --}}
+                                <!-- Buku Besar -->
+                                <li>
+                                    <a href="{{ route('unit.indexGlobal') }}" class="menu-dropdown-item group"
+                                        :class="page === 'BukuBesar' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-5" width="22"
+                                            height="24" viewBox="0 0 1696 1536">
+                                            <title>book</title>
+                                            <path fill="currentColor"
+                                                d="M1671 350q40 57 18 129l-275 906q-19 64-76.5 107.5T1215 1536H292q-77 0-148.5-53.5T44 1351q-24-67-2-127q0-4 3-27t4-37q1-8-3-21.5t-3-19.5q2-11 8-21t16.5-23.5T84 1051q23-38 45-91.5t30-91.5q3-10 .5-30t-.5-28q3-11 17-28t17-23q21-36 42-92t25-90q1-9-2.5-32t.5-28q4-13 22-30.5t22-22.5q19-26 42.5-84.5T372 283q1-8-3-25.5t-2-26.5q2-8 9-18t18-23t17-21q8-12 16.5-30.5t15-35t16-36t19.5-32T504.5 12t36-11.5T588 6l-1 3q38-9 51-9h761q74 0 114 56t18 130l-274 906q-36 119-71.5 153.5T1057 1280H188q-27 0-38 15q-11 16-1 43q24 70 144 70h923q29 0 56-15.5t35-41.5l300-987q7-22 5-57q38 15 59 43m-1064 2q-4 13 2 22.5t20 9.5h608q13 0 25.5-9.5T1279 352l21-64q4-13-2-22.5t-20-9.5H670q-13 0-25.5 9.5T628 288zm-83 256q-4 13 2 22.5t20 9.5h608q13 0 25.5-9.5T1196 608l21-64q4-13-2-22.5t-20-9.5H587q-13 0-25.5 9.5T545 544z" />
+                                        </svg>
+                                        Buku Besar
+                                    </a>
+                                </li>
+                                {{-- @endcan --}}
+
+                                {{-- @can('etalase.unit.read') --}}
+                                <!-- Neraca Saldo -->
+                                <li>
+                                    <a href="{{ route('unit.indexGlobal') }}" class="menu-dropdown-item group"
+                                        :class="page === 'NeracaSaldo' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24">
+                                            <title>file-table</title>
+                                            <path fill="currentColor"
+                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-4 17H7v-2h3zm0-3H7v-2h3zm0-3H7v-2h3zm4 6h-3v-2h3zm0-3h-3v-2h3zm0-3h-3v-2h3zm-1-4V3.5L18.5 9z" />
+                                        </svg>
+                                        Neraca Saldo
+                                    </a>
+                                </li>
+                                {{-- @endcan --}}
+                            </ul>
+                        </div>
+                        <!-- Dropdown Menu End -->
+                    </li>
+                    {{-- @endcanany --}}
+                    <!-- Menu Item DaftarLaporan -->
+
+                </ul>
+            </div>
+            <!-- Menu Group - Etalase -->
+            {{-- @endif --}}
 
             @can('akses-gudang')
                 <!-- Gudang -  Group -->
@@ -821,19 +1042,20 @@
                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                     <title>package-receive</title>
                                     <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
-                                        <path stroke-linejoin="round" d="M12 22c-.818 0-1.6-.325-3.163-.974C4.946 19.41 3 18.602 3 17.243V7.745
-                                                                                       M12 22c.818 0 1.6-.325 3.163-.974C19.054 19.41 21 18.602 21 17.243V7.745
-                                                                                       M12 22v-9.831
-                                                                                       M3 7.745c0 .603.802.985 2.405 1.747l2.92 1.39
-                                                                                       C10.13 11.74 11.03 12.17 12 12.17
-                                                                                       M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
-                                                                                       M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39
-                                                                                       C13.87 11.74 12.97 12.17 12 12.17
-                                                                                       m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
-                                                                                       M6 13.152l2 .983" />
+                                        <path stroke-linejoin="round"
+                                            d="M12 22c-.818 0-1.6-.325-3.163-.974C4.946 19.41 3 18.602 3 17.243V7.745
+                                                                                                               M12 22c.818 0 1.6-.325 3.163-.974C19.054 19.41 21 18.602 21 17.243V7.745
+                                                                                                               M12 22v-9.831
+                                                                                                               M3 7.745c0 .603.802.985 2.405 1.747l2.92 1.39
+                                                                                                               C10.13 11.74 11.03 12.17 12 12.17
+                                                                                                               M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
+                                                                                                               M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39
+                                                                                                               C13.87 11.74 12.97 12.17 12 12.17
+                                                                                                               m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
+                                                                                                               M6 13.152l2 .983" />
                                         <path
                                             d="M12.004 2v7m0 0c.263.004.522-.18.714-.405L14 7.062
-                                                                                       M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
+                                                                                                               M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
                                     </g>
                                 </svg>
 
