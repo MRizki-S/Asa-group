@@ -311,21 +311,21 @@
         class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
         <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus Cash</h3>
 
-        <template x-for="(bonus, index) in bonusList" :key="index">
+        <template x-for="(bonus, index) in bonusCashList" :key="index">
             <div class="flex gap-2 items-center">
-                <select x-model="bonus.nama_bonus" name="nama_bonus[]"
+                <select x-model="bonus.nama_bonus" name="nama_bonus_cash[]"
                     class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                            dark:bg-gray-700 dark:text-white border-gray-300 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- Pilih Bonus --</option>
-                    <template x-for="item in availableOptions(index)" :key="item.nama_bonus">
+                    <template x-for="item in availableBonusCash(index)" :key="item.nama_bonus">
                         <option :value="item.nama_bonus" x-text="item.nama_bonus"></option>
                     </template>
                 </select>
 
                 <!-- Tombol Hapus -->
-                <button type="button" @click="bonusList.splice(index, 1)"
+                <button type="button" @click="bonusCashList.splice(index, 1)"
                     class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-all duration-200"
-                    x-show="bonusList.length > 1 && index > 0">
+                    x-show="bonusCashList.length > 1 && index > 0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -333,13 +333,57 @@
                     </svg>
                 </button>
 
-                <input type="hidden" :value="getNominal(bonus.nama_bonus)" name="nominal_bonus[]">
+                <input type="hidden" :value="getNominalCash(bonus.nama_bonus)" name="nominal_bonus_cash[]">
             </div>
         </template>
 
         <!-- Tombol Tambah -->
         <div class="pt-2">
-            <button type="button" @click="addBonus()"
+            <button type="button" @click="addBonusCash()"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all duration-200 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Bonus
+            </button>
+        </div>
+    </div>
+
+     <!-- 💸 Bonus Kpr (muncul kalau KPR dipilih) -->
+    <div x-show="caraBayar === 'kpr'" x-transition
+        class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
+        <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus KPR</h3>
+
+        <template x-for="(bonus, index) in bonusKprList" :key="index">
+            <div class="flex gap-2 items-center">
+                <select x-model="bonus.nama_bonus" name="nama_bonus_kpr[]"
+                    class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                           dark:bg-gray-700 dark:text-white border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Pilih Bonus --</option>
+                    <template x-for="item in availableBonusKpr(index)" :key="item.nama_bonus">
+                        <option :value="item.nama_bonus" x-text="item.nama_bonus"></option>
+                    </template>
+                </select>
+
+                <!-- Tombol Hapus -->
+                <button type="button" @click="bonusKprList.splice(index, 1)"
+                    class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-all duration-200"
+                    x-show="bonusKprList.length > 1 && index > 0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <input type="hidden" :value="getNominalKpr(bonus.nama_bonus)" name="nominal_bonus_kpr[]">
+            </div>
+        </template>
+
+        <!-- Tombol Tambah -->
+        <div class="pt-2">
+            <button type="button" @click="addBonusKpr()"
                 class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all duration-200 text-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">

@@ -145,82 +145,82 @@
                             Pengajuan Pemesanan Unit - {{ $namaPerumahaan }}
                         </h3>
                     </div>
-
-                    <table id="table-pengajuanPemesanan"
-                        class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th class="px-4 py-3">Nama User</th>
-                                <th class="px-4 py-3">Unit Dipesan</th>
-                                <th class="px-4 py-3">Sales</th>
-                                <th class="px-4 py-3">Tanggal Pemesanan</th>
-                                <th class="px-4 py-3 text-center">Cara Bayar</th>
-                                <th class="px-4 py-3 text-center">Status</th>
-                                @can('marketing.pengajuan-pemesanan.detail')
-                                    <th class="px-4 py-3 text-center">Aksi</th>
-                                @endcan
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($pengajuanPemesanan as $item)
-                                <tr
-                                    class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                                    <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
-                                        {{ $item->customer->username ?? '-' }}
-                                    </td>
-                                    <td class="px-4 py-2">
-                                        {{ $item->unit->nama_unit ?? '-' }}
-                                    </td>
-                                    <td class="px-4 py-2">
-                                        {{ $item->sales->username ?? '-' }}
-                                    </td>
-                                    <td class="px-4 py-2">
-                                        {{ $item->tanggal_pemesanan->format('d M Y') }}
-                                    </td>
-                                    <td class="px-4 py-2 text-center">
-                                        @php
-                                            $caraBayar = strtolower($item->cara_bayar ?? '-');
-                                            [$warnaBg, $warnaBorder, $warnaText] = match ($caraBayar) {
-                                                'cash' => ['bg-green-100', 'border-green-500', 'text-green-700'],
-                                                'kpr' => ['bg-blue-100', 'border-blue-500', 'text-blue-700'],
-                                                default => ['bg-gray-100', 'border-gray-400', 'text-gray-700'],
-                                            };
-                                        @endphp
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border {{ $warnaBg }} {{ $warnaBorder }} {{ $warnaText }}">
-                                            {{ strtoupper($caraBayar) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-2 text-center">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border bg-yellow-100 border-yellow-500 text-yellow-700">
-                                            Pending
-                                        </span>
-                                    </td>
+                    <div class="overflow-x-auto">
+                        <table id="table-pengajuanPemesanan"
+                            class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th class="px-4 py-3">Nama User</th>
+                                    <th class="px-4 py-3">Unit Dipesan</th>
+                                    <th class="px-4 py-3">Sales</th>
+                                    <th class="px-4 py-3">Tanggal Pemesanan</th>
+                                    <th class="px-4 py-3 text-center">Cara Bayar</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
                                     @can('marketing.pengajuan-pemesanan.detail')
+                                        <th class="px-4 py-3 text-center">Aksi</th>
+                                    @endcan
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($pengajuanPemesanan as $item)
+                                    <tr
+                                        class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                                        <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
+                                            {{ $item->customer->username ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            {{ $item->unit->nama_unit ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            {{ $item->sales->username ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            {{ $item->tanggal_pemesanan->format('d M Y') }}
+                                        </td>
                                         <td class="px-4 py-2 text-center">
-                                            <a href="{{ route('marketing.pengajuanPemesanan.show', $item->id) }}"
-                                                class="inline-flex items-center gap-1
+                                            @php
+                                                $caraBayar = strtolower($item->cara_bayar ?? '-');
+                                                [$warnaBg, $warnaBorder, $warnaText] = match ($caraBayar) {
+                                                    'cash' => ['bg-green-100', 'border-green-500', 'text-green-700'],
+                                                    'kpr' => ['bg-blue-100', 'border-blue-500', 'text-blue-700'],
+                                                    default => ['bg-gray-100', 'border-gray-400', 'text-gray-700'],
+                                                };
+                                            @endphp
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border {{ $warnaBg }} {{ $warnaBorder }} {{ $warnaText }}">
+                                                {{ strtoupper($caraBayar) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full border bg-yellow-100 border-yellow-500 text-yellow-700">
+                                                Pending
+                                            </span>
+                                        </td>
+                                        @can('marketing.pengajuan-pemesanan.detail')
+                                            <td class="px-4 py-2 text-center">
+                                                <a href="{{ route('marketing.pengajuanPemesanan.show', $item->id) }}"
+                                                    class="inline-flex items-center gap-1
         text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
         dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
         px-2.5 py-1.5 rounded-md transition-colors duration-200
         focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
         active:scale-95">
-                                                Detail
-                                            </a>
+                                                    Detail
+                                                </a>
+                                            </td>
+                                        @endcan
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-4 py-3 text-center text-gray-500">
+                                            Tidak ada pengajuan pending
                                         </td>
-                                    @endcan
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-4 py-3 text-center text-gray-500">
-                                        Tidak ada pengajuan pending
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             @endif
         </div>

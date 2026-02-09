@@ -206,16 +206,24 @@
         minimalDp: '',
         angsuranList: [],
 
-        // bonus
-        bonusList: [{ nama_bonus: '' }],
-        bonusOptions: @js(
-            $bonusCash?->items->map(
-                fn($i) => [
-                    'nama_bonus' => $i->nama_bonus,
-                    'nominal' => $i->nominal_bonus,
-                ],
-            ) ?? [],
-        ),
+        // === BONUS CASH ===
+bonusCashList: [{ nama_bonus: '' }],
+bonusCashOptions: @js(
+    $bonusCash?->items->map(fn($i) => [
+        'nama_bonus' => $i->nama_bonus,
+        'nominal'    => $i->nominal_bonus,
+    ]) ?? []
+),
+
+// === BONUS KPR ===
+bonusKprList: [{ nama_bonus: '' }],
+bonusKprOptions: @js(
+    $bonusKpr?->items->map(fn($i) => [
+        'nama_bonus' => $i->nama_bonus,
+        'nominal'    => $i->nominal_bonus,
+    ]) ?? []
+),
+
 
         isLoading: false,
 
@@ -345,27 +353,46 @@
             if (!opts.keepCaraBayar) this.caraBayar = '';
         },
 
-        // === BONUS HANDLER ===
-        availableOptions(index) {
-            const selected = this.bonusList.map(b => b.nama_bonus).filter(Boolean);
-            return this.bonusOptions.filter(opt =>
-                !selected.includes(opt.nama_bonus) || opt.nama_bonus === this.bonusList[index].nama_bonus
-            );
-        },
+        availableBonusCash(index) {
+    const selected = this.bonusCashList.map(b => b.nama_bonus).filter(Boolean);
+    return this.bonusCashOptions.filter(opt =>
+        !selected.includes(opt.nama_bonus) ||
+        opt.nama_bonus === this.bonusCashList[index].nama_bonus
+    );
+},
 
-        getNominal(nama_bonus) {
-            const found = this.bonusOptions.find(o => o.nama_bonus === nama_bonus);
-            return found ? found.nominal : '';
-        },
+getNominalCash(nama) {
+    const found = this.bonusCashOptions.find(o => o.nama_bonus === nama);
+    return found ? found.nominal : '';
+},
 
-        addBonus() {
-            const remaining = this.bonusOptions.filter(opt =>
-                !this.bonusList.some(b => b.nama_bonus === opt.nama_bonus)
-            );
-            if (remaining.length > 0) {
-                this.bonusList.push({ nama_bonus: '' });
-            }
-        },
+addBonusCash() {
+    const remaining = this.bonusCashOptions.filter(opt =>
+        !this.bonusCashList.some(b => b.nama_bonus === opt.nama_bonus)
+    );
+    if (remaining.length) this.bonusCashList.push({ nama_bonus: '' });
+},
+
+availableBonusKpr(index) {
+    const selected = this.bonusKprList.map(b => b.nama_bonus).filter(Boolean);
+    return this.bonusKprOptions.filter(opt =>
+        !selected.includes(opt.nama_bonus) ||
+        opt.nama_bonus === this.bonusKprList[index].nama_bonus
+    );
+},
+
+getNominalKpr(nama) {
+    const found = this.bonusKprOptions.find(o => o.nama_bonus === nama);
+    return found ? found.nominal : '';
+},
+
+addBonusKpr() {
+    const remaining = this.bonusKprOptions.filter(opt =>
+        !this.bonusKprList.some(b => b.nama_bonus === opt.nama_bonus)
+    );
+    if (remaining.length) this.bonusKprList.push({ nama_bonus: '' });
+},
+
 
         // === SELECT2 ===
         initSelect2() {

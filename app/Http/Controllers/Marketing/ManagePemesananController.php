@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
@@ -245,30 +246,28 @@ class ManagePemesananController extends Controller
             ];
         }
 
-        // Ambil data promo kpr dari snapshot
+        // Ambil data promo & bonus KPR dari snapshot
         $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
+        $bonusList = $pemesanan->bonusKpr()->pluck('nama_bonus')->toArray();
 
-        // Format urutan dari promo sesuai dengan Perumahaan
-        if (count($promoList)) {
+        // Gabungkan promo + bonus
+        $combinedList = array_filter(array_merge($promoList, $bonusList));
+
+        // Format urutan promo/bonus untuk PPJB KPR
+        if (count($combinedList)) {
 
             $hurufRange = range('a', 'z');
 
-            // Tentukan huruf awal berdasarkan perumahaan ADL dan LHR
-            $startLetter = match ($namaPerumahaan) {
-                'Asa Dreamland' => 'h',
-                'Lembah Hijau Residence' => 'h',
-                default => 'h', // Default ketika salah penamaan UBS
-            };
-
-            $startIndex = array_search($startLetter, $hurufRange);
+            // KPR → selalu mulai dari huruf 'a'
+            $startIndex = 0;
 
             $daftarPromo = '';
+            $indent = str_repeat(' ', 4); // spasi indent
 
-            foreach ($promoList as $i => $promo) {
+            foreach ($combinedList as $i => $item) {
                 $huruf = $hurufRange[$startIndex + $i] ?? '?';
-                $daftarPromo .= "{$huruf}.    {$promo}\r\n";
+                $daftarPromo .= "{$huruf}.{$indent}{$item}\r\n";
             }
-
         } else {
             $daftarPromo = '';
         }
@@ -439,26 +438,20 @@ class ManagePemesananController extends Controller
             ];
         }
 
-        // Ambil data promo kpr dan snapshot
+        // Ambil data promo & bonus cash dari snapshot
         $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
-        $bonusList = $pemesanan->bonusCash()->pluck('nama_bonus')->toArray();
+        $bonusList = $pemesanan->bonusCash()->pluck(column: 'nama_bonus')->toArray();
 
-        // Penggabungan Promo dan Bonus untuk ditampilkan dilist ppjb
+        // Gabungkan promo + bonus
         $combinedList = array_filter(array_merge($promoList, $bonusList));
 
-        // Format urutan dari promo/bonus list sesuai dengan perumahaan
-        if (count($combinedList)) {
+        // Format urutan promo/bonus untuk PPJB CASH
+        if (count(value: $combinedList)) {
 
             $hurufRange = range('a', 'z');
 
-            // Tentukan huruf awal berdasarkan perumahaan (CASH) ADL / LHR
-            $startLetter = match ($namaPerumahaan) {
-                'Asa Dreamland' => 'i',
-                'Lembah Hijau Residence' => 'h',
-                default => 'i', // Default ketika salah penamaan UBS
-            };
-
-            $startIndex = array_search($startLetter, $hurufRange);
+            // CASH → selalu mulai dari huruf 'a'
+            $startIndex = 0;
 
             $daftarPromo = '';
             $indent = str_repeat(' ', 4); // 4 spasi sebagai tab
@@ -467,7 +460,6 @@ class ManagePemesananController extends Controller
                 $huruf = $hurufRange[$startIndex + $i] ?? '?';
                 $daftarPromo .= "{$huruf}.{$indent}{$item}\r\n";
             }
-
         } else {
             $daftarPromo = '';
         }

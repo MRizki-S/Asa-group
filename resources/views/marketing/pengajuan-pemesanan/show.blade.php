@@ -516,6 +516,20 @@
                         @endforeach
                     </div>
                 </div>
+            @elseif($pengajuan->cara_bayar === 'kpr' && $pengajuan->bonusKpr->isNotEmpty())
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+                    <div class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus Cash</h3>
+
+                        @foreach ($pengajuan->bonusKpr as $bonus)
+                            <div class="flex gap-2 items-center">
+                                <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}"
+                                    class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             @endif
 
             {{-- pemesanan unit cicilan --}}

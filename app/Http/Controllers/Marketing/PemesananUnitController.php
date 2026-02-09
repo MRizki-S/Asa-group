@@ -2,33 +2,35 @@
 
 namespace App\Http\Controllers\Marketing;
 
-use App\Http\Controllers\Controller;
-use App\Models\CustomerBooking;
-use App\Models\PemesananUnit;
-use App\Models\PemesananUnitBonusCash;
-use App\Models\PemesananUnitCaraBayar;
-use App\Models\PemesananUnitCash;
-use App\Models\PemesananUnitCashDokumen;
-use App\Models\PemesananUnitCicilan;
-use App\Models\PemesananUnitDataDiri;
-use App\Models\PemesananUnitKeterlambatan;
-use App\Models\PemesananUnitKpr;
-use App\Models\PemesananUnitMutu;
-use App\Models\PemesananUnitPembatalan;
-use App\Models\PemesananUnitPromo;
+use App\Models\Unit;
+use App\Models\User;
 use App\Models\Perumahaan;
-use App\Models\PpjbBonusCashBatch;
+use Illuminate\Http\Request;
+use App\Models\PemesananUnit;
 use App\Models\PpjbCaraBayar;
-use App\Models\PpjbKeterlambatan;
 use App\Models\PpjbMutuBatch;
 use App\Models\PpjbPembatalan;
 use App\Models\PpjbPromoBatch;
-use App\Models\Unit;
-use App\Models\User;
-use App\Services\NotificationGroupService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CustomerBooking;
+use App\Models\PemesananUnitKpr;
+use App\Models\PemesananUnitCash;
+use App\Models\PemesananUnitMutu;
+use App\Models\PpjbBonusKprBatch;
+use App\Models\PpjbKeterlambatan;
+use App\Models\PemesananUnitPromo;
+use App\Models\PpjbBonusCashBatch;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PemesananUnitCicilan;
+use Illuminate\Support\Facades\Auth;
+use App\Models\PemesananUnitBonusKpr;
+use App\Models\PemesananUnitDataDiri;
+use App\Models\PemesananUnitBonusCash;
+use App\Models\PemesananUnitCaraBayar;
+use App\Models\PemesananUnitPembatalan;
+use App\Models\PemesananUnitCashDokumen;
+use App\Models\PemesananUnitKeterlambatan;
+use App\Services\NotificationGroupService;
 
 class PemesananUnitController extends Controller
 {
@@ -134,7 +136,15 @@ class PemesananUnitController extends Controller
             ->where('status_aktif', 1)
             ->latest('id')
             ->first();
-        // dd($bonusCas h);
+
+        // ===== 4️⃣ Bonus KPR Batch Aktif =====
+        $bonusKpr = PpjbBonusKprBatch::with(['items'])
+            ->where('perumahaan_id', $perumahaanId)
+            ->where('status_aktif', 1)
+            ->latest('id')
+            ->first();
+
+        // dd($bonusKpr);
         return view('marketing.pemesanan-unit.create', [
             'customersData' => $customersData,
             'keterlambatan' => $keterlambatan,
@@ -142,6 +152,7 @@ class PemesananUnitController extends Controller
             'promoCash'     => $promoCash,
             'promoKpr'      => $promoKpr,
             'bonusCash'     => $bonusCash,
+            'bonusKpr'      => $bonusKpr,
             'breadcrumbs'   => [
                 ['label' => 'Pemesanan Unit', 'url' => route('marketing.pemesananUnit.index')],
             ],
@@ -188,10 +199,16 @@ class PemesananUnitController extends Controller
             'cara_bayar'                => 'required|in:cash,kpr',
 
             // bonus cash (opsional)
-            'nama_bonus'                => 'nullable|array',
-            'nama_bonus.*'              => 'nullable|string|max:255',
-            'nominal_bonus'             => 'nullable|array',
-            'nominal_bonus.*'           => 'nullable|numeric|min:0',
+            'nama_bonus_cash'                => 'nullable|array',
+            'nama_bonus_cash.*'              => 'nullable|string|max:255',
+            'nominal_bonus_cash'             => 'nullable|array',
+            'nominal_bonus_cash.*'           => 'nullable|numeric|min:0',
+
+            // bonus kpr (opsional)
+            'nama_bonus_kpr'                => 'nullable|array',
+            'nama_bonus_kpr.*'              => 'nullable|string|max:255',
+            'nominal_bonus_kpr'             => 'nullable|array',
+            'nominal_bonus_kpr.*'           => 'nullable|numeric|min:0',
 
             // === FIELD CASH (wajib jika cara_bayar = cash) ===
             'cash_harga_rumah'          => 'required_if:cara_bayar,cash|min:0',
@@ -325,9 +342,9 @@ class PemesananUnitController extends Controller
                 }
 
                 // 🔹 Simpan bonus cash (jika ada)
-                if ($request->has('nama_bonus') && is_array($request->nama_bonus)) {
-                    foreach ($request->nama_bonus as $index => $namaBonus) {
-                        $nominalBonus = $request->nominal_bonus[$index] ?? 0;
+                if ($request->has('nama_bonus_cash') && is_array($request->nama_bonus_cash)) {
+                    foreach ($request->nama_bonus_cash as $index => $namaBonus) {
+                        $nominalBonus = $request->nominal_bonus_cash[$index] ?? 0;
 
                         PemesananUnitBonusCash::create([
                             'pemesanan_unit_id' => $pemesanan->id,
@@ -351,6 +368,19 @@ class PemesananUnitController extends Controller
                     'harga_total'           => $request->kpr_harga_total,
                     'status_kpr'            => 'proses',
                 ]);
+
+                // 🔹 Simpan bonus kpr (jika ada)
+                if ($request->has('nama_bonus_kpr') && is_array($request->nama_bonus_kpr)) {
+                    foreach ($request->nama_bonus_kpr as $index => $namaBonus) {
+                        $nominalBonus = $request->nominal_bonus_kpr[$index] ?? 0;
+
+                        PemesananUnitBonusKpr::create([
+                            'pemesanan_unit_id' => $pemesanan->id,
+                            'nama_bonus'        => $namaBonus,
+                            'nominal_bonus'     => $nominalBonus,
+                        ]);
+                    }
+                }
             }
 
             // ✅ Commit transaksi
@@ -388,7 +418,7 @@ class PemesananUnitController extends Controller
 
             // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
-                $this->notificationGroup->send($groupId, $messageGroup);
+                // $this->notificationGroup->send($groupId, $messageGroup);
             }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');

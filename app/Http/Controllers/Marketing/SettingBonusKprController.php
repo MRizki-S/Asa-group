@@ -127,7 +127,7 @@ class SettingBonusKprController extends Controller
 
         // Kirim Notifikasi WA Group
         try {
-            // $this->notificationGroup->send($groupId, $message);
+            $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
             Log::error('Gagal kirim notifikasi pengajuan bonus Kpr', [
                 'batch_id' => $batch->id,
@@ -173,7 +173,7 @@ class SettingBonusKprController extends Controller
                 "{$listBonus}\n\n" .
                 "⛔ Bonus KPR ini sudah tidak aktif dan tidak dapat digunakan";
 
-            // $this->notificationGroup->send($groupId, $message);
+            $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
             Log::error('Gagal kirim notifikasi nonaktif bonus kpr', [
                 'batch_id' => $batch->id,
@@ -222,7 +222,7 @@ class SettingBonusKprController extends Controller
                 "{$listBonus}\n\n" .
                 "❌ Pengajuan Bonus KPR telah dibatalkan";
 
-            // $this->notificationGroup->send($groupId, $message);
+            $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
             Log::error('Gagal kirim notifikasi pembatalan bonus KPR', [
                 'batch_id' => $batch->id,
@@ -328,7 +328,7 @@ class SettingBonusKprController extends Controller
                 "{$listBonus}\n\n" .
                 "🔄 Bonus Kpr sebelumnya dinonaktifkan & Bonus Kpr ini resmi AKTIF";
 
-            // $this->notificationGroup->send($groupId, $message);
+            $this->notificationGroup->send($groupId, $message);
 
         } catch (\Throwable $e) {
             Log::error('Gagal kirim notifikasi ACC Bonus KPR', [
@@ -391,7 +391,7 @@ class SettingBonusKprController extends Controller
                 "{$listBonus}\n\n" .
                 "🚫 Pengajuan Bonus KPR tidak disetujui";
 
-            // $this->notificationGroup->send($groupId, $message);
+            $this->notificationGroup->send($groupId, $message);
         } catch (\Throwable $e) {
             Log::error('Gagal kirim notifikasi penolakan Bonus KPR', [
                 'batch_id' => $bonusKpr->id,

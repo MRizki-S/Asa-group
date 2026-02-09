@@ -90,8 +90,9 @@ class PengajuanPemesananController extends Controller
             'keterlambatan', // snapshot keterlambatan
             'pembatalan',    // snapshot pembatalan
             'bonusCash',
+            'bonusKpr',
         ])->findOrFail($id);
-
+        // dd($pengajuan);
         return view('marketing.pengajuan-pemesanan.show', [
             'pengajuan'     => $pengajuan,
             'breadcrumbs'   => [
