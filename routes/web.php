@@ -17,11 +17,14 @@ use App\Http\Controllers\Marketing\PindahUnitController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Etalase\KualifikasiBlokController;
 use App\Http\Controllers\Marketing\PemesananUnitController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
+use App\Http\Controllers\Keuangan\TransaksiJurnalController;
 use App\Http\Controllers\Marketing\ManagePemesananController;
 use App\Http\Controllers\Marketing\SettingBonusKprController;
 use App\Http\Controllers\Marketing\SettingMutuPpjbController;
@@ -63,7 +66,7 @@ Route::get('/', function () {
 })->middleware('auth');
 
 // fitur dalam pengembangan
-Route::get('/under-development', function() {
+Route::get('/under-development', function () {
     return view('pages.under-development');
 })->name('under-development');
 
@@ -131,8 +134,10 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
             ->names('unit'); // jangan pakai except('index')
     });
 
-    Route::get('/perumahaan/{perumahaan:slug}/tahap-json',
-        [EtalaseJsonController::class, 'listByPerumahaan'])
+    Route::get(
+        '/perumahaan/{perumahaan:slug}/tahap-json',
+        [EtalaseJsonController::class, 'listByPerumahaan']
+    )
         ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
     // Ambil Unit berdasar  kan tahap
     Route::get('/tahap/{tahapId}/unit-json', [EtalaseJsonController::class, 'getUnitsByTahap']);
@@ -322,7 +327,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         });
 
 
-         /**
+        /**
          * =========================
          * BONUS CASH
          * =========================
@@ -415,23 +420,36 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
 
 
 // keuangan Group
-Route::middleware('auth')->prefix('keuangan')->group(function() {
-    Route::get('/', function() {
+Route::middleware('auth')->prefix('keuangan')->group(function () {
+    Route::get('/', function () {
         return view('superadmin.dashboard.index');
     })->name('superadmin.dashboard.index');
+
+    // Periode Keuangan
+    Route::resource('periode-keuangan', PeriodeKeuanganController::class)->names('keuangan.periodeKeuangan');
 
     // Kategori Akun
     Route::get('/kategori-akun', [KategoriAkunKeuanganController::class, 'index'])->name('keuangan.kategoriAkun.index');
 
     // Akun Keuangan
     Route::resource('/akun-keuangan', controller: AkunKeuanganController::class)->names('keuangan.akunKeuangan');
+
+    // Transaksi jurnal
+    Route::get('/transaksi-jurnal', [TransaksiJurnalController::class, 'create'])->name('keuangan.transaksiJurnal.create');
+    Route::post('/transaksi-jurnal', [TransaksiJurnalController::class, 'store'])->name('keuangan.transaksiJurnal.store');
+
+    Route::prefix('/laporan')->group(function () {
+        Route::get('/jurmal-umum', [LaporanJurnalController::class, 'index'])->name('keuangan.laporanJurnal.index');
+        Route::get('/jurnal-umum/export-excel', [LaporanJurnalController::class, 'exportExcel'])->name('keuangan.laporanJurnal.exportExcel');
+        Route::get('/jurnal-umum/export-pdf',[LaporanJurnalController::class, 'exportPdf'])->name('keuangan.laporanJurnal.exportPdf');
+    });
 });
 
 
 // Superadmin Menu
-Route::middleware('auth')->prefix('superadmin')->group(function() {
+Route::middleware('auth')->prefix('superadmin')->group(function () {
     // role dan hak akses
-      Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
+    Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
 
     // akun karyawan
     Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');

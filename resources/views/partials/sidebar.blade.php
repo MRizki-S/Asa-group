@@ -728,10 +728,33 @@
                 </h3>
 
                 <ul class="flex flex-col gap-2 mb-6">
+                    <!-- Menu Item Periode Keuangan  -->
+                    {{-- @can('etalase.type-unit.read') --}}
+                    <li>
+                        <a href="{{ route('keuangan.periodeKeuangan.index') }}"
+                            @click="selected = (selected === 'PeriodeKeuangan' ? '':'PeriodeKeuangan')"
+                            class="menu-item group"
+                            :class="(selected === 'PeriodeKeuangan') && (page === 'PeriodeKeuangan') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" width="24" height="24"
+                                viewBox="0 0 2048 2048">
+                                <title>date-time</title>
+                                <path fill="currentColor"
+                                    d="M1792 993q60 41 107 93t81 114t50 131t18 141q0 119-45 224t-124 183t-183 123t-224 46q-91 0-176-27t-156-78t-126-122t-85-157H128V128h256V0h128v128h896V0h128v128h256zM256 256v256h1408V256h-128v128h-128V256H512v128H384V256zm643 1280q-3-31-3-64q0-86 24-167t73-153h-97v-128h128v86q41-51 91-90t108-67t121-42t128-15q100 0 192 33V640H256v896zm573 384q93 0 174-35t142-96t96-142t36-175q0-93-35-174t-96-142t-142-96t-175-36q-93 0-174 35t-142 96t-96 142t-36 175q0 93 35 174t96 142t142 96t175 36m64-512h192v128h-320v-384h128zM384 1024h128v128H384zm256 0h128v128H640zm0-256h128v128H640zm-256 512h128v128H384zm256 0h128v128H640zm384-384H896V768h128zm256 0h-128V768h128zm256 0h-128V768h128z" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Periode Keuangan
+                            </span>
+                        </a>
+                    </li>
+                    {{-- @endcan --}}
+                    <!-- Menu Item Periode Keuangan -->
+
                     <!-- Menu Item Kategori Akun -->
                     {{-- @can('etalase.tahap.read') --}}
                     <li>
-                        <a href="{{ route('keuangan.kategoriAkun.index') }}" @click="selected = (selected === 'KategoriAkun' ? '':'KategoriAkun')"
+                        <a href="{{ route('keuangan.kategoriAkun.index') }}"
+                            @click="selected = (selected === 'KategoriAkun' ? '':'KategoriAkun')"
                             class="menu-item group"
                             :class="(selected === 'KategoriAkun') && (page === 'KategoriAkun') ? 'menu-item-active' :
                             'menu-item-inactive'">
@@ -757,7 +780,8 @@
                     <!-- Menu Item Akun Akutansi -->
                     {{-- @can('etalase.type-unit.read') --}}
                     <li>
-                        <a href="{{ route('keuangan.akunKeuangan.index') }}" @click="selected = (selected === 'AkunKeuangan' ? '':'AkunKeuangan')"
+                        <a href="{{ route('keuangan.akunKeuangan.index') }}"
+                            @click="selected = (selected === 'AkunKeuangan' ? '':'AkunKeuangan')"
                             class="menu-item group"
                             :class="(selected === 'AkunKeuangan') && (page === 'AkunKeuangan') ? 'menu-item-active' :
                             'menu-item-inactive'">
@@ -782,8 +806,8 @@
                     <!-- Menu Item Jurnal -->
                     {{-- @can('etalase.kualifikasi-blok.read') --}}
                     <li>
-                        <a href="" @click="selected = (selected === 'Jurnal' ? '':'Jurnal')"
-                            class="menu-item group"
+                        <a href="{{ route('keuangan.transaksiJurnal.create') }}"
+                            @click="selected = (selected === 'Jurnal' ? '':'Jurnal')" class="menu-item group"
                             :class="(selected === 'Jurnal') && (page === 'Jurnal') ?
                             'menu-item-active' :
                             'menu-item-inactive'">
@@ -855,7 +879,7 @@
                                 <!-- Lapoaran Jurnal -->
                                 {{-- @can('etalase.blok.read') --}}
                                 <li>
-                                    <a href="{{ route('blok.index') }}" class="menu-dropdown-item group"
+                                    <a href="{{ route('keuangan.laporanJurnal.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'LapoaranJurnal' ? 'menu-dropdown-item-active' :
                                             'menu-dropdown-item-inactive'">
                                         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
@@ -1041,18 +1065,18 @@
                                     <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
                                         <path stroke-linejoin="round"
                                             d="M12 22c-.818 0-1.6-.325-3.163-.974C4.946 19.41 3 18.602 3 17.243V7.745
-                                                                                                               M12 22c.818 0 1.6-.325 3.163-.974C19.054 19.41 21 18.602 21 17.243V7.745
-                                                                                                               M12 22v-9.831
-                                                                                                               M3 7.745c0 .603.802.985 2.405 1.747l2.92 1.39
-                                                                                                               C10.13 11.74 11.03 12.17 12 12.17
-                                                                                                               M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
-                                                                                                               M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39
-                                                                                                               C13.87 11.74 12.97 12.17 12 12.17
-                                                                                                               m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
-                                                                                                               M6 13.152l2 .983" />
+                                                                                                                   M12 22c.818 0 1.6-.325 3.163-.974C19.054 19.41 21 18.602 21 17.243V7.745
+                                                                                                                   M12 22v-9.831
+                                                                                                                   M3 7.745c0 .603.802.985 2.405 1.747l2.92 1.39
+                                                                                                                   C10.13 11.74 11.03 12.17 12 12.17
+                                                                                                                   M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
+                                                                                                                   M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39
+                                                                                                                   C13.87 11.74 12.97 12.17 12 12.17
+                                                                                                                   m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
+                                                                                                                   M6 13.152l2 .983" />
                                         <path
                                             d="M12.004 2v7m0 0c.263.004.522-.18.714-.405L14 7.062
-                                                                                                               M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
+                                                                                                                   M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
                                     </g>
                                 </svg>
 
