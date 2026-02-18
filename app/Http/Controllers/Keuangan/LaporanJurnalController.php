@@ -29,7 +29,7 @@ class LaporanJurnalController extends Controller
             ->whereDate('tanggal_selesai', '>=', $today)
             ->first();
 
-        if (! $periodeAktif) {
+        if (!$periodeAktif) {
             return [collect(), 0, 0, null];
         }
 
@@ -39,10 +39,10 @@ class LaporanJurnalController extends Controller
             ->when($tanggalStart && $tanggalEnd, function ($q) use ($tanggalStart, $tanggalEnd) {
                 $q->whereBetween('tanggal', [$tanggalStart, $tanggalEnd]);
             })
-            ->when($tanggalStart && ! $tanggalEnd, function ($q) use ($tanggalStart) {
+            ->when($tanggalStart && !$tanggalEnd, function ($q) use ($tanggalStart) {
                 $q->whereDate('tanggal', '>=', $tanggalStart);
             })
-            ->when(! $tanggalStart && $tanggalEnd, function ($q) use ($tanggalEnd) {
+            ->when(!$tanggalStart && $tanggalEnd, function ($q) use ($tanggalEnd) {
                 $q->whereDate('tanggal', '<=', $tanggalEnd);
             })
             ->with([
@@ -62,13 +62,13 @@ class LaporanJurnalController extends Controller
         foreach ($jurnals as $jurnal) {
             foreach ($jurnal->details as $detail) {
                 $rows->push((object) [
-                    'jurnal_id'   => $jurnal->id, // tambahkan ini
-                    'tanggal'     => $jurnal->tanggal,
-                    'kode_akun'   => $detail->akun->kode_akun,
-                    'nama_akun'   => $detail->akun->nama_akun,
-                    'debit'       => $detail->debit,
-                    'kredit'      => $detail->kredit,
-                    'keterangan'  => $jurnal->keterangan,
+                    'jurnal_id' => $jurnal->id, // tambahkan ini
+                    'tanggal' => $jurnal->tanggal,
+                    'kode_akun' => $detail->akun->kode_akun,
+                    'nama_akun' => $detail->akun->nama_akun,
+                    'debit' => $detail->debit,
+                    'kredit' => $detail->kredit,
+                    'keterangan' => $jurnal->keterangan,
                 ]);
             }
         }
@@ -85,17 +85,48 @@ class LaporanJurnalController extends Controller
     {
         [$rows, $totalDebit, $totalKredit, $periodeAktif] = $this->getJurnalRows($request);
 
+        $tanggalStart = $request->filled('tanggalStart')
+            ? Carbon::parse($request->tanggalStart)
+            : null;
+
+        $tanggalEnd = $request->filled('tanggalEnd')
+            ? Carbon::parse($request->tanggalEnd)
+            : null;
+
+        $titlePeriode = null;
+
+        // ✅ Jika search aktif (pakai filter tanggal)
+        if ($tanggalStart || $tanggalEnd) {
+
+            if ($tanggalStart && $tanggalEnd) {
+                $titlePeriode = $tanggalStart->translatedFormat('d F Y')
+                    . ' - ' .
+                    $tanggalEnd->translatedFormat('d F Y');
+            } elseif ($tanggalStart) {
+                $titlePeriode = 'Dari ' . $tanggalStart->translatedFormat('d F Y');
+            } elseif ($tanggalEnd) {
+                $titlePeriode = 'Sampai ' . $tanggalEnd->translatedFormat('d F Y');
+            }
+
+        }
+        // ✅ Jika tidak ada search → pakai periode aktif
+        elseif ($periodeAktif) {
+            $titlePeriode = Carbon::parse($periodeAktif->tanggal_mulai)
+                ->translatedFormat('F Y');
+        }
         return view('keuangan.laporan-jurnal.index', [
             'breadcrumbs' => [
                 ['label' => 'Laporan Jurnal', 'url' => route('keuangan.laporanJurnal.index')],
             ],
             'periodeAktif' => $periodeAktif,
-            'rows'         => $rows,
-            'totalDebit'   => $totalDebit,
-            'totalKredit'  => $totalKredit,
-            'isBalanced'   => $totalDebit === $totalKredit,
+            'rows' => $rows,
+            'totalDebit' => $totalDebit,
+            'totalKredit' => $totalKredit,
+            'isBalanced' => $totalDebit === $totalKredit,
+            'titlePeriode' => $titlePeriode,
         ]);
     }
+
 
     // export excel
     public function exportExcel(Request $request)
@@ -131,12 +162,12 @@ class LaporanJurnalController extends Controller
         $filename .= '.pdf';
 
         $pdf = Pdf::loadView('keuangan.laporan-jurnal.export.pdf', [
-            'rows'         => $rows,
-            'totalDebit'   => $totalDebit,
-            'totalKredit'  => $totalKredit,
+            'rows' => $rows,
+            'totalDebit' => $totalDebit,
+            'totalKredit' => $totalKredit,
             'periodeAktif' => $periodeAktif,
             'tanggalStart' => $request->tanggalStart,
-            'tanggalEnd'   => $request->tanggalEnd,
+            'tanggalEnd' => $request->tanggalEnd,
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download($filename);

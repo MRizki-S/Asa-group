@@ -49,8 +49,15 @@
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
                         Laporan Jurnal
+                        @if($titlePeriode)
+                            <span class="font-semibold">
+                                {{ $titlePeriode }}
+                            </span>
+                        @endif
                     </h3>
                 </div>
+
+
 
                 {{-- filter and export to pdf-excel --}}
                 <form method="GET" action="{{ route('keuangan.laporanJurnal.index') }}"
@@ -134,8 +141,8 @@
                                         d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Export
-                                <svg class="w-4 h-4 ms-2 transition-transform" :class="open ? 'rotate-180' : ''"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 ms-2 transition-transform" :class="open ? 'rotate-180' : ''" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
@@ -148,8 +155,8 @@
                                 <div class="p-1">
                                     <a href="{{ route('keuangan.laporanJurnal.exportPdf', request()->all()) }}"
                                         class="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors group">
-                                        <svg class="w-5 h-5 me-3 text-gray-400 group-hover:text-red-500"
-                                            fill="currentColor" viewBox="0 0 20 20">
+                                        <svg class="w-5 h-5 me-3 text-gray-400 group-hover:text-red-500" fill="currentColor"
+                                            viewBox="0 0 20 20">
                                             <path
                                                 d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
                                             <path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
@@ -158,8 +165,8 @@
                                     </a>
                                     <a href="{{ route('keuangan.laporanJurnal.exportExcel', request()->all()) }}"
                                         class="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300
-                                    hover:bg-green-50 dark:hover:bg-green-900/20
-                                    hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors group">
+                                            hover:bg-green-50 dark:hover:bg-green-900/20
+                                            hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors group">
                                         <svg class="w-5 h-5 me-3 text-gray-400 group-hover:text-green-500"
                                             fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
@@ -178,16 +185,14 @@
 
 
                 <div class="relative overflow-auto border border-gray-200 dark:border-gray-700 rounded-xl
-                    bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
-                    style="max-height: 600px;">
+                            bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" style="max-height: 600px;">
 
                     <table class="w-full text-sm text-left border-collapse">
 
                         {{-- HEADER --}}
-                        <thead
-                            class="sticky top-0 z-10
-                   bg-gray-200 text-gray-700
-                   dark:bg-gray-800 dark:text-gray-300">
+                        <thead class="sticky top-0 z-10
+                           bg-gray-200 text-gray-700
+                           dark:bg-gray-800 dark:text-gray-300">
                             <tr>
                                 <th class="px-4 py-3">Tanggal</th>
                                 <th class="px-4 py-3">Kode Akun</th>
@@ -203,9 +208,8 @@
                             @php $lastJurnalId = null; @endphp
 
                             @foreach ($rows as $row)
-                                <tr
-                                    class="border-b border-gray-200 dark:border-gray-700
-                           hover:bg-gray-50 dark:hover:bg-white/5">
+                                <tr class="border-b border-gray-200 dark:border-gray-700
+                                           hover:bg-gray-50 dark:hover:bg-white/5">
 
                                     <td class="px-4 py-3">
                                         {{ $row->jurnal_id !== $lastJurnalId ? $row->tanggal->format('d-m-Y') : '' }}
@@ -219,17 +223,15 @@
                                         {{ $row->nama_akun }}
                                     </td>
 
-                                    <td
-                                        class="px-4 py-3 text-right
-                               border-r border-l
-                               border-gray-200 dark:border-gray-700">
+                                    <td class="px-4 py-3 text-right
+                                               border-r border-l
+                                               border-gray-200 dark:border-gray-700">
                                         {{ $row->debit > 0 ? 'Rp ' . number_format($row->debit, 0, ',', '.') : '-' }}
                                     </td>
 
-                                    <td
-                                        class="px-4 py-3 text-right
-                               border-r border-l
-                               border-gray-200 dark:border-gray-700">
+                                    <td class="px-4 py-3 text-right
+                                               border-r border-l
+                                               border-gray-200 dark:border-gray-700">
                                         {{ $row->kredit > 0 ? 'Rp ' . number_format($row->kredit, 0, ',', '.') : '-' }}
                                     </td>
 
@@ -251,20 +253,18 @@
                                     TOTAL
                                 </td>
 
-                                <td
-                                    class="px-4 py-3 text-right
-                           border-r border-l
-                           border-gray-300 dark:border-gray-600">
+                                <td class="px-4 py-3 text-right
+                                   border-r border-l
+                                   border-gray-300 dark:border-gray-600">
                                     <div class="flex justify-between items-center gap-2">
                                         <span>Rp</span>
                                         <span>{{ number_format($totalDebit, 0, ',', '.') }}</span>
                                     </div>
                                 </td>
 
-                                <td
-                                    class="px-4 py-3 text-right
-                           border-r border-l
-                           border-gray-300 dark:border-gray-600">
+                                <td class="px-4 py-3 text-right
+                                   border-r border-l
+                                   border-gray-300 dark:border-gray-600">
                                     <div class="flex justify-between items-center gap-2">
                                         <span>Rp</span>
                                         <span>{{ number_format($totalKredit, 0, ',', '.') }}</span>
@@ -298,7 +298,7 @@
 
     <script>
         // Datepicker Flatpickr tanggal jurnal
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             flatpickr("#tanggalStart", {
                 dateFormat: "d-m-Y",
                 defaultDate: "{{ old('tanggalStart', now()->format('d-m-Y')) }}",
