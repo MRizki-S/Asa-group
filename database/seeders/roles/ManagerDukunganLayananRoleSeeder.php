@@ -58,6 +58,24 @@ class ManagerDukunganLayananRoleSeeder extends Seeder
                 'marketing.setting-ppjb.kelola',
                 'marketing.setting-ppjb.kelola.action',
                 'marketing.setting-ppjb.kelola.nonaktif',
+
+                // ==============
+                // KEUANGAN
+                // ==============
+
+                // Periode
+                'keuangan.periode.read',
+
+                // Kategori Akun
+                'keuangan.kategori-akun.read',
+
+                // Akun Keuangan
+                'keuangan.akun-keuangan.read',
+
+                // Laporan
+                'keuangan.laporan-jurnal.read',
+                'keuangan.buku-besar.read',
+                'keuangan.neraca-saldo.read',
             ];
 
             // Ambil permission dari DB
