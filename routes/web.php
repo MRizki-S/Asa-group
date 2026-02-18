@@ -39,6 +39,8 @@ use App\Http\Controllers\Marketing\PengajuanPembatalanController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
 use App\Http\Controllers\Marketing\SettingKeterlambatanController;
 use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
+use App\Http\Controllers\Keuangan\BukuBesarController;
+use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 
 // API Wilayah Proxy
@@ -442,6 +444,14 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
         Route::get('/jurmal-umum', [LaporanJurnalController::class, 'index'])->name('keuangan.laporanJurnal.index');
         Route::get('/jurnal-umum/export-excel', [LaporanJurnalController::class, 'exportExcel'])->name('keuangan.laporanJurnal.exportExcel');
         Route::get('/jurnal-umum/export-pdf',[LaporanJurnalController::class, 'exportPdf'])->name('keuangan.laporanJurnal.exportPdf');
+
+        Route::get('/buku-besar', [BukuBesarController::class, 'index'])->name('keuangan.bukuBesar.index');
+        Route::get('/buku-besar/export-excel', [BukuBesarController::class, 'exportExcel'])->name('keuangan.bukuBesar.exportExcel');
+        Route::get('/buku-besar/export-pdf',[BukuBesarController::class, 'exportPdf'])->name('keuangan.bukuBesar.exportPdf');
+
+        Route::get('/neraca-saldo', [NeracaSaldoController::class, 'index'])->name('keuangan.neracaSaldo.index');
+        Route::get('/neraca-saldo/export-excel', [NeracaSaldoController::class, 'exportExcel'])->name('keuangan.neracaSaldo.exportExcel');
+        Route::get('/neraca-saldo/export-pdf',[NeracaSaldoController::class, 'exportPdf'])->name('keuangan.neracaSaldo.exportPdf');
     });
 });
 

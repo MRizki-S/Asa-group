@@ -81,7 +81,7 @@
                                             d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
                                     </svg>
                                 </div>
-                                <input type="text" id="tanggalStart" name="tanggalStart"
+                                <input type="text" id="tanggalStart" name="tanggalStart" autocomplete="off"
                                     value="{{ request('tanggalStart') }}" placeholder="Pilih tanggal"
                                     class="flatpickr bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block w-full ps-10 p-2.5 transition-all outline-none">
                             </div>
@@ -101,7 +101,7 @@
                                     </svg>
                                 </div>
                                 <input type="text" id="tanggalEnd" name="tanggalEnd" value="{{ request('tanggalEnd') }}"
-                                    placeholder="Pilih tanggal"
+                                    autocomplete="off" placeholder="Pilih tanggal"
                                     class="flatpickr bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block w-full ps-10 p-2.5 transition-all outline-none">
                             </div>
                         </div>
@@ -177,9 +177,9 @@
                 </form>
 
 
-                <div
-                    class="relative overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl
-           bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+                <div class="relative overflow-auto border border-gray-200 dark:border-gray-700 rounded-xl
+                    bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+                    style="max-height: 600px;">
 
                     <table class="w-full text-sm text-left border-collapse">
 
@@ -244,9 +244,7 @@
 
                         {{-- FOOTER TOTAL --}}
                         <tfoot
-                            class="sticky bottom-0 z-10
-                   bg-gray-100 dark:bg-gray-800
-                   border-t-2 border-gray-300 dark:border-gray-600">
+                            class="sticky bottom-0 z-10 bg-gray-100 dark:bg-gray-800 font-semibold border-t-2 dark:border-gray-600">
                             <tr class="font-semibold">
 
                                 <td colspan="3" class="px-4 py-3 text-right">

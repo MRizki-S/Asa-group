@@ -72,27 +72,27 @@ class TransaksiJurnalController extends Controller
     {
         $request->validate([
             // HEADER
-            'periode_id'    => 'required|exists:periode_keuangan,id',
+            'periode_id' => 'required|exists:periode_keuangan,id',
             'tanggal_jurnal' => 'required|date',
-            'nomor_jurnal'  => 'required|unique:jurnal,nomor_jurnal',
-            'keterangan'    => 'required|string|max:255',
-
+            'nomor_jurnal' => 'required|unique:jurnal,nomor_jurnal',
+            'keterangan' => 'required|string|max:255',
+            'jenis_jurnal' => 'required',
             // DETAIL
             'items' => 'required|array|min:2',
             'items.*.akun_id' => [
                 'required',
                 Rule::exists('akun_keuangan', 'id')->where('is_leaf', true),
             ],
-            'items.*.debit'  => 'nullable|numeric|min:0',
+            'items.*.debit' => 'nullable|numeric|min:0',
             'items.*.kredit' => 'nullable|numeric|min:0',
         ]);
         // dd($request->all());
 
-        $totalDebit  = 0;
+        $totalDebit = 0;
         $totalKredit = 0;
 
         foreach ($request->items as $item) {
-            $debit  = (float) ($item['debit'] ?? 0);
+            $debit = (float) ($item['debit'] ?? 0);
             $kredit = (float) ($item['kredit'] ?? 0);
 
             // ❌ dua-duanya diisi
@@ -102,7 +102,7 @@ class TransaksiJurnalController extends Controller
                 ])->withInput();
             }
 
-            $totalDebit  += $debit;
+            $totalDebit += $debit;
             $totalKredit += $kredit;
         }
 
@@ -116,23 +116,26 @@ class TransaksiJurnalController extends Controller
 
         try {
             //  JURNAL HEADER
+            $jenis = $request->jenis_jurnal;
+
             $jurnal = Jurnal::create([
                 'nomor_jurnal' => $request->nomor_jurnal,
-                'tanggal'      => $request->tanggal_jurnal,
-                'periode_id'   => $request->periode_id,
-                'jenis_jurnal' => 'umum', // DISABLE di UI → kunci di backend
-                'status'       => 'posted', // atau 'draft' kalau mau approval
-                'keterangan'   => $request->keterangan,
-                'created_by'   => auth()->id(),
+                'tanggal' => $request->tanggal_jurnal,
+                'periode_id' => $request->periode_id,
+                'jenis_jurnal' => $jenis,
+                'status' => 'posted',
+                'keterangan' => $request->keterangan,
+                'created_by' => auth()->id(),
             ]);
+
 
             // JURNAL DETAIL
             foreach ($request->items as $item) {
                 JurnalDetail::create([
                     'jurnal_id' => $jurnal->id,
-                    'akun_id'   => $item['akun_id'],
-                    'debit'     => $item['debit'] ?? 0,
-                    'kredit'    => $item['kredit'] ?? 0,
+                    'akun_id' => $item['akun_id'],
+                    'debit' => $item['debit'] ?? 0,
+                    'kredit' => $item['kredit'] ?? 0,
                 ]);
             }
 

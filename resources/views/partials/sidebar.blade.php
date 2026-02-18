@@ -897,7 +897,7 @@
                                 {{-- @can('etalase.unit.read') --}}
                                 <!-- Buku Besar -->
                                 <li>
-                                    <a href="{{ route('unit.indexGlobal') }}" class="menu-dropdown-item group"
+                                    <a href="{{ route('keuangan.bukuBesar.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'BukuBesar' ? 'menu-dropdown-item-active' :
                                             'menu-dropdown-item-inactive'">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-5" width="22"
@@ -914,7 +914,7 @@
                                 {{-- @can('etalase.unit.read') --}}
                                 <!-- Neraca Saldo -->
                                 <li>
-                                    <a href="{{ route('unit.indexGlobal') }}" class="menu-dropdown-item group"
+                                    <a href="{{ route('keuangan.neracaSaldo.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'NeracaSaldo' ? 'menu-dropdown-item-active' :
                                             'menu-dropdown-item-inactive'">
                                         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"

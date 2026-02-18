@@ -13,96 +13,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanJurnalController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $today = Carbon::today();
-
-    //     $tanggalStart = $request->filled('tanggalStart')
-    //         ? Carbon::parse($request->tanggalStart)->startOfDay()
-    //         : null;
-
-    //     $tanggalEnd = $request->filled('tanggalEnd')
-    //         ? Carbon::parse($request->tanggalEnd)->endOfDay()
-    //         : null;
-
-    //     $periodeAktif = PeriodeKeuangan::whereDate('tanggal_mulai', '<=', $today)
-    //         ->whereDate('tanggal_selesai', '>=', $today)
-    //         ->first();
-
-    //     if (! $periodeAktif) {
-    //         return view('keuangan.laporan-jurnal.index', [
-    //             'breadcrumbs' => [
-    //                 ['label' => 'Laporan Jurnal', 'url' => route('keuangan.laporanJurnal.index')],
-    //             ],
-    //             'periodeAktif' => null,
-    //             'rows' => collect(),
-    //             'totalDebit' => 0,
-    //             'totalKredit' => 0,
-    //         ]);
-    //     }
-
-
-    //     $jurnals = Jurnal::posted()
-    //         ->where('jenis_jurnal', 'umum')
-    //         ->where('periode_id', $periodeAktif->id)
-    //         ->when($tanggalStart && $tanggalEnd, function ($q) use ($tanggalStart, $tanggalEnd) {
-    //             $q->whereBetween('tanggal', [$tanggalStart, $tanggalEnd]);
-    //         })
-    //         ->when($tanggalStart && ! $tanggalEnd, function ($q) use ($tanggalStart) {
-    //             $q->whereDate('tanggal', '>=', $tanggalStart);
-    //         })
-    //         ->when(! $tanggalStart && $tanggalEnd, function ($q) use ($tanggalEnd) {
-    //             $q->whereDate('tanggal', '<=', $tanggalEnd);
-    //         })
-    //         ->with([
-    //             'details' => function ($q) {
-    //                 $q->where(function ($x) {
-    //                     $x->where('debit', '>', 0)
-    //                         ->orWhere('kredit', '>', 0);
-    //                 })->with([
-    //                     'akun:id,kode_akun,nama_akun'
-    //                 ]);
-    //             }
-    //         ])
-    //         ->orderBy('tanggal')
-    //         ->orderBy('id')
-    //         ->get();
-
-
-    //     $rows = collect();
-
-    //     foreach ($jurnals as $jurnal) {
-    //         foreach ($jurnal->details as $detail) {
-    //             $rows->push((object) [
-    //                 'jurnal_id'   => $jurnal->id,
-    //                 'tanggal'     => $jurnal->tanggal,
-    //                 'kode_akun'   => $detail->akun->kode_akun,
-    //                 'nama_akun'   => $detail->akun->nama_akun,
-    //                 'debit'       => $detail->debit,
-    //                 'kredit'      => $detail->kredit,
-    //                 'keterangan'  => $jurnal->keterangan,
-    //             ]);
-    //         }
-    //     }
-
-
-    //     $totalDebit  = $rows->sum('debit');
-    //     $totalKredit = $rows->sum('kredit');
-
-
-    //     return view('keuangan.laporan-jurnal.index', [
-    //         'breadcrumbs' => [
-    //             ['label' => 'Laporan Jurnal', 'url' => route('keuangan.laporanJurnal.index')],
-    //         ],
-    //         'periodeAktif' => $periodeAktif,
-    //         'rows'         => $rows,
-    //         'totalDebit'   => $totalDebit,
-    //         'totalKredit'  => $totalKredit,
-    //         'isBalanced'   => $totalDebit === $totalKredit,
-    //     ]);
-    // }
-
-
     private function getJurnalRows(Request $request)
     {
         $today = Carbon::today();
@@ -206,27 +116,6 @@ class LaporanJurnalController extends Controller
             $filename
         );
     }
-
-    // export pdf
-    // public function exportPdf(Request $request)
-    // {
-    //     [$rows, $totalDebit, $totalKredit, $periodeAktif]
-    //         = $this->getJurnalRows($request);
-
-    //     $pdf = Pdf::loadView(
-    //         'keuangan.laporan-jurnal.export.pdf',
-    //         [
-    //             'rows'        => $rows,
-    //             'totalDebit'  => $totalDebit,
-    //             'totalKredit' => $totalKredit,
-    //             'periodeAktif' => $periodeAktif,
-    //             'tanggalStart' => $request->tanggalStart,
-    //             'tanggalEnd'  => $request->tanggalEnd,
-    //         ]
-    //     )->setPaper('a4', 'portrait');
-
-    //     return $pdf->download('laporan-jurnal.pdf');
-    // }
 
     public function exportPdf(Request $request)
     {

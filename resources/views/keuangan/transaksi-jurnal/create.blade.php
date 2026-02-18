@@ -126,14 +126,14 @@
                             <label for="jenis_jurnal" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Jenis Jurnal
                             </label>
-                            <select name="jenis_jurnal" disabled
+                            <select name="jenis_jurnal"
                                 class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5
                                 cursor-not-allowed
                                 dark:bg-gray-800 dark:text-gray-400">
                                 <option value="umum" selected>Jurnal Umum</option>
                                 <option value="saldo_awal">Saldo Awal</option>
-                                <option value="penyesuaian">Jurnal Penyesuaian</option>
-                                <option value="penutup">Jurnal Penutup</option>
+                                <!-- <option value="penyesuaian">Jurnal Penyesuaian</option>
+                                <option value="penutup">Jurnal Penutup</option> -->
                             </select>
 
                             @error('jenis_jurnal')
