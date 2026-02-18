@@ -42,12 +42,12 @@
                         Akun Keuangan
                     </h3>
 
-                    {{-- @can('etalase.blok.create') --}}
-                    <a href="{{ route('keuangan.akunKeuangan.create') }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Akun Keuangan
-                    </a>
-                    {{-- @endcan --}}
+                    @can('keuangan.akun-keuangan.create')
+                        <a href="{{ route('keuangan.akunKeuangan.create') }}"
+                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            + Tambah Akun Keuangan
+                        </a>
+                    @endcan
                 </div>
 
                 <table id="table-Blok">
@@ -62,11 +62,11 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Kategori
                             </th>
-                            {{-- @canany(['etalase.blok.update', ' etalase.blok.delete']) --}}
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Aksi
-                            </th>
-                            {{-- @endcanany --}}
+                            @canany(['keuangan.akun-keuangan.update', 'keuangan.akun-keuangan.delete'])
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    Aksi
+                                </th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -117,7 +117,7 @@
                                 echo '</td>';
 
                                 // Kolom Aksi
-                                // if (auth()->user()->can('keuangan.akunKeuangan.edit') || auth()->user()->can('keuangan.akunKeuangan.delete')) {
+                                if (auth()->user()->can('keuangan.akun-keuangan.update') || auth()->user()->can('keuangan.akun-keuangan.delete')) {
                                     echo '<td class="px-4 py-3 flex gap-2 justify-center">';
 
                                     // Tombol Edit
@@ -138,7 +138,7 @@
                                     echo '</button>';
                                     echo '</form>';
                                     echo '</td>';
-                                // }
+                                }
                                 echo '</tr>';
 
                                 // Rekursif untuk anak

@@ -699,18 +699,18 @@
             @endif
 
             {{-- Menu Keuangan Akutansi --}}
-            {{-- @php
-                $etlalaseMenu = [
-                    'etalase.tahap.read',
-                    'etalase.type-unit.read',
-                    'etalase.kualifikasi-blok.read',
-                    'etalase.blok.read',
-                    'etalase.unit.read',
-                    'etalase.perubahaan-harga.type-unit.read',
-                    'etalase.perubahaan-harga.tahap-kualifikasi.read',
+             @php
+                $keuanganMenu = [
+                    'keuangan.periode.read',
+                    'keuangan.kategori-akun.read',
+                    'keuangan.akun-keuangan.read',
+                    'keuangan.transaksi-jurnal.create',
+                    'keuangan.laporan-jurnal.read',
+                    'keuangan.buku-besar.read',
+                    'keuangan.neraca-saldo.read',
                 ];
             @endphp
-            @if (auth()->user()->canAny($etlalaseMenu)) --}}
+            @if (auth()->user()->canAny($keuanganMenu))
             <!-- Menu Group - Etalase -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
@@ -729,7 +729,7 @@
 
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Item Periode Keuangan  -->
-                    {{-- @can('etalase.type-unit.read') --}}
+                    @can('keuangan.periode.read')
                     <li>
                         <a href="{{ route('keuangan.periodeKeuangan.index') }}"
                             @click="selected = (selected === 'PeriodeKeuangan' ? '':'PeriodeKeuangan')"
@@ -747,11 +747,11 @@
                             </span>
                         </a>
                     </li>
-                    {{-- @endcan --}}
+                    @endcan
                     <!-- Menu Item Periode Keuangan -->
 
                     <!-- Menu Item Kategori Akun -->
-                    {{-- @can('etalase.tahap.read') --}}
+                    @can('keuangan.kategori-akun.read')
                     <li>
                         <a href="{{ route('keuangan.kategoriAkun.index') }}"
                             @click="selected = (selected === 'KategoriAkun' ? '':'KategoriAkun')"
@@ -774,11 +774,11 @@
                             </span>
                         </a>
                     </li>
-                    {{-- @endcan --}}
+                    @endcan
                     <!-- Menu Item Kategori Akun -->
 
                     <!-- Menu Item Akun Akutansi -->
-                    {{-- @can('etalase.type-unit.read') --}}
+                     @can('keuangan.akun-keuangan.read')
                     <li>
                         <a href="{{ route('keuangan.akunKeuangan.index') }}"
                             @click="selected = (selected === 'AkunKeuangan' ? '':'AkunKeuangan')"
@@ -800,11 +800,11 @@
                             </span>
                         </a>
                     </li>
-                    {{-- @endcan --}}
+                    @endcan
                     <!-- Menu Item Akun Akutansi -->
 
                     <!-- Menu Item Jurnal -->
-                    {{-- @can('etalase.kualifikasi-blok.read') --}}
+                     @can('keuangan.transaksi-jurnal.create')
                     <li>
                         <a href="{{ route('keuangan.transaksiJurnal.create') }}"
                             @click="selected = (selected === 'Jurnal' ? '':'Jurnal')" class="menu-item group"
@@ -829,11 +829,11 @@
                             </span>
                         </a>
                     </li>
-                    {{-- @endcan --}}
+                    @endcan
                     <!-- Menu Item Jurnal -->
 
                     <!-- Menu Group Item DaftarLaporan  -->
-                    {{-- @canany(['etalase.blok.read', 'etalase.unit.read']) --}}
+                    @canany(['keuangan.laporan-jurnal.read', 'keuangan.buku-besar.read', 'keuangan.neraca-saldo.read'])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'DaftarLaporan' ? '':'DaftarLaporan')"
@@ -877,7 +877,7 @@
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
                                 <!-- Lapoaran Jurnal -->
-                                {{-- @can('etalase.blok.read') --}}
+                                @can('keuangan.laporan-jurnal.read')
                                 <li>
                                     <a href="{{ route('keuangan.laporanJurnal.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'LapoaranJurnal' ? 'menu-dropdown-item-active' :
@@ -892,9 +892,9 @@
                                         Laporan Jurnal
                                     </a>
                                 </li>
-                                {{-- @endcan --}}
+                                @endcan
 
-                                {{-- @can('etalase.unit.read') --}}
+                                @can('keuangan.buku-besar.read')
                                 <!-- Buku Besar -->
                                 <li>
                                     <a href="{{ route('keuangan.bukuBesar.index') }}" class="menu-dropdown-item group"
@@ -909,9 +909,9 @@
                                         Buku Besar
                                     </a>
                                 </li>
-                                {{-- @endcan --}}
+                                @endcan
 
-                                {{-- @can('etalase.unit.read') --}}
+                                @can('keuangan.neraca-saldo.read')
                                 <!-- Neraca Saldo -->
                                 <li>
                                     <a href="{{ route('keuangan.neracaSaldo.index') }}" class="menu-dropdown-item group"
@@ -927,18 +927,18 @@
                                         Neraca Saldo
                                     </a>
                                 </li>
-                                {{-- @endcan --}}
+                                @endcan
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
                     </li>
-                    {{-- @endcanany --}}
+                    @endcanany
                     <!-- Menu Item DaftarLaporan -->
 
                 </ul>
             </div>
-            <!-- Menu Group - Etalase -->
-            {{-- @endif --}}
+            <!-- Menu Group - Keuangan -->
+            @endif
 
             @can('akses-gudang')
                 <!-- Gudang -  Group -->

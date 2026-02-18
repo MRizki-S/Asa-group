@@ -41,7 +41,7 @@
                         Periode Keuangan
                     </h3>
 
-                    @can('etalase.kualifikasi-blok.create')
+                    @can('keuangan.periode.create')
                         <a href="#" data-modal-target="modal-create" data-modal-toggle="modal-create"
                             class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                             + Tambah Periode
@@ -63,11 +63,11 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Tanggal Selesai
                             </th>
-                            {{-- @canany(['etalase.kualifikasi-blok.delete']) --}}
+                            @canany(['keuangan.periode.delete'])
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
-                            {{-- @endcanany --}}
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -81,11 +81,11 @@
                                 <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ \Carbon\Carbon::parse($item->tanggal_selesai)->translatedFormat('d F Y') }}
                                 </td>
-                                {{-- @canany(['etalase.kualifikasi-blok.delete']) --}}
+                                @canany(['keuangan.periode.delete'])
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
 
 
-                                    {{-- @can('etalase.kualifikasi-blok.delete') --}}
+                                    @can('keuangan.periode.delete')
                                     <form action="{{ route('keuangan.periodeKeuangan.destroy', $item->id) }}" method="POST"
                                         class="delete-form">
                                         @csrf
@@ -95,9 +95,9 @@
                                             Delete
                                         </button>
                                     </form>
-                                    {{-- @endcan --}}
+                                    @endcan
                                 </td>
-                                {{-- @endcanany --}}
+                                @endcanany
                             </tr>
                         @endforeach
 
