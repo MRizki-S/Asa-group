@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Ubs;
 use App\Models\User;
 use App\Models\JurnalDetail;
 use App\Models\PeriodeKeuangan;
@@ -16,6 +17,7 @@ class Jurnal extends Model
 
     protected $fillable = [
         'nomor_jurnal',
+        'ubs_id',
         'tanggal',
         'periode_id',
         'jenis_jurnal',
@@ -29,6 +31,11 @@ class Jurnal extends Model
     ];
 
     // relasi
+    public function ubs()
+    {
+        return $this->belongsTo(Ubs::class);
+    }
+
     public function details()
     {
         return $this->hasMany(JurnalDetail::class, 'jurnal_id');
