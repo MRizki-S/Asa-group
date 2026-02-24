@@ -16,14 +16,17 @@ class UbsSeeder extends Seeder
         $data = [
             [
                 'nama_ubs' => 'Asa Dreamland',
+                'kode_ubs' => 'ADL',
                 'alamat' => 'Jl. Merpati, Perumnas, Patrang, Kec. Patrang, Kabupaten Jember, Jawa Timur'
             ],
             [
                 'nama_ubs' => 'Lembah Hijau Residence',
+                'kode_ubs' => 'LHR',
                 'alamat' => 'Jl. Rinjani, Tegal Bal, Karangrejo, Kec. Sumbersari, Kabupaten Jember, Jawa Timur'
             ],
             [
                 'nama_ubs' => 'Mangoon.id',
+                'kode_ubs' => 'MGN',
                 'alamat' => 'Jl. Merpati, Perumnas, Patrang, Kec. Patrang, Kabupaten Jember, Jawa Timur'
             ],
         ];

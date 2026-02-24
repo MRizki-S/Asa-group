@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Laporan Jurnal Umum</title>
@@ -10,14 +11,40 @@
             color: #333;
             line-height: 1.4;
         }
+
         /* Header Laporan / Kop Surat */
-        .header-container { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #444; padding-bottom: 10px; }
-        .company-name { font-size: 16pt; font-bold: true; text-transform: uppercase; margin: 0; }
-        .report-title { font-size: 13pt; margin: 5px 0; color: #666; }
-        .period-info { font-size: 9pt; color: #888; }
+        .header-container {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .company-name {
+            font-size: 16pt;
+            font-bold: true;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .report-title {
+            font-size: 13pt;
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .period-info {
+            font-size: 9pt;
+            color: #888;
+        }
 
         /* Tabel Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
         th {
             background-color: #4f81bd;
             color: white;
@@ -26,34 +53,76 @@
             padding: 10px 5px;
             border: 1px solid #3f6a9d;
         }
-        td { padding: 8px 5px; border-bottom: 1px solid #eee; vertical-align: top; }
+
+        td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
 
         /* Akuntansi Styles */
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-        .indent { padding-left: 25px; color: #555; } /* Indentasi untuk Kredit */
-        .currency-prefix { float: left; color: #999; font-size: 8pt; }
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .indent {
+            padding-left: 25px;
+            color: #555;
+        }
+
+        /* Indentasi untuk Kredit */
+        .currency-prefix {
+            float: left;
+            color: #999;
+            font-size: 8pt;
+        }
 
         /* Footer / Total */
-        .total-row { background-color: #f8f9fa; font-weight: bold; border-top: 2px solid #444; }
+        .total-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            border-top: 2px solid #444;
+        }
+
         .status-badge {
             font-size: 8pt;
             padding: 2px 5px;
             border-radius: 3px;
         }
-        .balanced { color: #28a745; }
-        .unbalanced { color: #dc3545; }
+
+        .balanced {
+            color: #28a745;
+        }
+
+        .unbalanced {
+            color: #dc3545;
+        }
 
         /* Footer Halaman */
-        .page-footer { position: fixed; bottom: -20px; left: 0; right: 0; font-size: 8pt; color: #aaa; text-align: right; }
+        .page-footer {
+            position: fixed;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            font-size: 8pt;
+            color: #aaa;
+            text-align: right;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="header-container">
-        <h1 class="company-name">PT ALVIN BHAKTI MANDIRI</h1>
-        <h2 class="report-title">LAPORAN JURNAL UMUM</h2>
+        <h2 class="report-title">LAPORAN JURNAL UMUM ({{ $ubsName }})</h2>
         <div class="period-info">
             @if($tanggalStart || $tanggalEnd)
                 Rentang Tanggal: {{ $tanggalStart ?? '...' }} s/d {{ $tanggalEnd ?? '...' }}
@@ -80,6 +149,12 @@
                     <td class="text-center">
                         @if($row->jurnal_id !== $lastJurnalId)
                             {{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}
+
+                            @if($ubs_id == 'all')
+                                <div style="font-size: 8pt; color: #555; margin-top: 2px;">
+                                    / {{ $row->ubs_abbr }}
+                                </div>
+                            @endif
                         @endif
                     </td>
                     <td class="text-center">{{ $row->kode_akun }}</td>
@@ -136,4 +211,5 @@
     </div>
 
 </body>
+
 </html>

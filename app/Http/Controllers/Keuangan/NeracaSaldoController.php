@@ -10,6 +10,7 @@ use App\Models\PeriodeKeuangan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\NeracaSaldoExport;
 use App\Http\Controllers\Controller;
+use App\Models\Ubs;
 use Maatwebsite\Excel\Facades\Excel;
 
 class NeracaSaldoController extends Controller
@@ -41,29 +42,52 @@ class NeracaSaldoController extends Controller
             return [collect(), null, null, null];
         }
 
-        // Ambil semua akun leaf
-        $akuns = AkunKeuangan::where('is_leaf', true)
+        // Ambil semua akun leaf dengan kategory untuk normal_balance
+        $akuns = AkunKeuangan::with('kategori')
+            ->where('is_leaf', true)
             ->orderBy('kode_akun')
             ->get();
 
         $data = collect();
+        $ubsId = $request->ubs_id;
 
         foreach ($akuns as $akun) {
 
             // saldo awal
             $saldoAwal = JurnalDetail::where('akun_id', $akun->id)
-                ->whereHas('jurnal', function ($q) use ($tanggalMulai) {
+                ->whereHas('jurnal', function ($q) use ($tanggalMulai, $ubsId) {
                     $q->where('status', 'posted')
                         ->whereDate('tanggal', '<', $tanggalMulai);
+                    if ($ubsId && $ubsId !== 'all') {
+                        $q->where('ubs_id', $ubsId);
+                    }
                 })
-                ->selectRaw('COALESCE(SUM(debit - kredit),0) as saldo')
-                ->value('saldo');
+                ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(kredit),0) as total_kredit')
+                ->first();
 
-            // total mutasi pe rakun
+            $saDebit = $saldoAwal->total_debit ?? 0;
+            $saKredit = $saldoAwal->total_kredit ?? 0;
+
+            $normalBalance = $akun->kategori->normal_balance ?? 'D';
+
+            if ($normalBalance === 'D') {
+                $saNet = $saDebit - $saKredit;
+                $saTampilDebit = $saNet > 0 ? $saNet : 0;
+                $saTampilKredit = $saNet < 0 ? abs($saNet) : 0;
+            } else { // K
+                $saNet = $saKredit - $saDebit;
+                $saTampilKredit = $saNet > 0 ? $saNet : 0;
+                $saTampilDebit = $saNet < 0 ? abs($saNet) : 0;
+            }
+
+            // total mutasi per akun
             $mutasi = JurnalDetail::where('akun_id', $akun->id)
-                ->whereHas('jurnal', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                ->whereHas('jurnal', function ($q) use ($tanggalMulai, $tanggalSelesai, $ubsId) {
                     $q->where('status', 'posted')
                         ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+                    if ($ubsId && $ubsId !== 'all') {
+                        $q->where('ubs_id', $ubsId);
+                    }
                 })
                 ->selectRaw('
                 COALESCE(SUM(debit),0) as total_debit,
@@ -71,20 +95,33 @@ class NeracaSaldoController extends Controller
             ')
                 ->first();
 
-            $totalDebit = $mutasi->total_debit ?? 0;
-            $totalKredit = $mutasi->total_kredit ?? 0;
+            $mutDebit = $mutasi->total_debit ?? 0;
+            $mutKredit = $mutasi->total_kredit ?? 0;
 
             // saldo akhir
-            $saldoAkhir = $saldoAwal + ($totalDebit - $totalKredit);
+            $sakDebitCalc = $saTampilDebit + $mutDebit;
+            $sakKreditCalc = $saTampilKredit + $mutKredit;
+
+            if ($normalBalance === 'D') {
+                $sakNet = $sakDebitCalc - $sakKreditCalc;
+                $sakTampilDebit = $sakNet > 0 ? $sakNet : 0;
+                $sakTampilKredit = $sakNet < 0 ? abs($sakNet) : 0;
+            } else {
+                $sakNet = $sakKreditCalc - $sakDebitCalc;
+                $sakTampilKredit = $sakNet > 0 ? $sakNet : 0;
+                $sakTampilDebit = $sakNet < 0 ? abs($sakNet) : 0;
+            }
 
             $data->push((object) [
                 'kode_akun' => $akun->kode_akun,
                 'nama_akun' => $akun->nama_akun,
 
-                'saldo_awal' => $saldoAwal,
-                'mutasi_debit' => $totalDebit,
-                'mutasi_kredit' => $totalKredit,
-                'saldo_akhir' => $saldoAkhir,
+                'sa_debit' => $saTampilDebit,
+                'sa_kredit' => $saTampilKredit,
+                'mutasi_debit' => $mutDebit,
+                'mutasi_kredit' => $mutKredit,
+                'sak_debit' => $sakTampilDebit,
+                'sak_kredit' => $sakTampilKredit,
             ]);
         }
 
@@ -99,6 +136,8 @@ class NeracaSaldoController extends Controller
 
         $periodes = PeriodeKeuangan::orderByDesc('tanggal_mulai')->get();
 
+        $ubsData = Ubs::all();
+
         // Ambil akun leaf lalu grouping berdasarkan parent
         $akunKeuangan = AkunKeuangan::with('parent')
             ->where('is_leaf', true)
@@ -110,6 +149,17 @@ class NeracaSaldoController extends Controller
                     : 'Lainnya';
             });
 
+
+        $ubsName = 'HUB (Pusat)';
+        $isHub = true;
+        if ($request->filled('ubs_id') && $request->ubs_id !== 'all') {
+            $selectedUbs = Ubs::find($request->ubs_id);
+            if ($selectedUbs) {
+                $ubsName = $selectedUbs->nama_ubs;
+                $isHub = false;
+            }
+        }
+
         return view('keuangan.neraca-saldo.index', [
             'breadcrumbs' => [
                 ['label' => 'Neraca Saldo', 'url' => route('keuangan.neracaSaldo.index')],
@@ -120,6 +170,9 @@ class NeracaSaldoController extends Controller
             'tanggalMulai' => $tanggalMulai,
             'tanggalSelesai' => $tanggalSelesai,
             'labelPeriode' => $labelPeriode,
+            'ubsData' => $ubsData,
+            'ubsName' => $ubsName,
+            'isHub' => $isHub,
         ]);
 
     }
@@ -129,12 +182,23 @@ class NeracaSaldoController extends Controller
     {
         [$rows, $tanggalMulai, $tanggalSelesai, $labelPeriode] = $this->getNeracaSaldoData($request);
 
+        $ubsName = 'HUB (Pusat)';
+        $ubsFileName = 'HUB';
+
+        if ($request->filled('ubs_id') && $request->ubs_id !== 'all') {
+            $selectedUbs = Ubs::find($request->ubs_id);
+            if ($selectedUbs) {
+                $ubsName = $selectedUbs->nama_ubs;
+                $ubsFileName = str_replace(' ', '_', $selectedUbs->kode_ubs);
+            }
+        }
+
         // Penamaan file lebih informatif
         $namaPeriode = $labelPeriode;
-        $filename = 'NeracaSaldo_' . str_replace(' ', '_', $namaPeriode) . '.xlsx';
+        $filename = 'NeracaSaldo_' . $ubsFileName . '_' . str_replace(' ', '_', subject: $namaPeriode) . '.xlsx';
 
         return Excel::download(
-            new NeracaSaldoExport($rows, $tanggalMulai, $tanggalSelesai, $labelPeriode),
+            new NeracaSaldoExport($rows, $tanggalMulai, $tanggalSelesai, $labelPeriode, $ubsName),
             $filename
         );
     }
@@ -144,15 +208,27 @@ class NeracaSaldoController extends Controller
     {
         [$rows, $tanggalMulai, $tanggalSelesai, $labelPeriode] = $this->getNeracaSaldoData($request);
 
+        $ubsName = 'HUB (Pusat)';
+        $ubsFileName = 'HUB';
+
+        if ($request->filled('ubs_id') && $request->ubs_id !== 'all') {
+            $selectedUbs = Ubs::find($request->ubs_id);
+            if ($selectedUbs) {
+                $ubsName = $selectedUbs->nama_ubs;
+                $ubsFileName = str_replace(' ', '_', $selectedUbs->kode_ubs);
+            }
+        }
+
         // Penamaan file lebih informatif
         $namaPeriode = $labelPeriode;
-        $filename = 'NeracaSaldo_' . str_replace(' ', '_', $namaPeriode) . '.pdf';
+        $filename = 'NeracaSaldo_' . $ubsFileName . '_' . str_replace(' ', '_', $namaPeriode) . '.pdf';
 
         $pdf = Pdf::loadView('keuangan.neraca-saldo.export.pdf', [
             'rows' => $rows,
             'tanggalMulai' => $tanggalMulai,
             'tanggalSelesai' => $tanggalSelesai,
             'labelPeriode' => $labelPeriode,
+            'ubsName' => $ubsName,
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download($filename);

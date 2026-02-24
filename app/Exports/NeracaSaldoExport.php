@@ -14,14 +14,15 @@ use PhpOffice\PhpSpreadsheet\Style\Color;
 
 class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCustomStartCell
 {
-    protected $rows, $tanggalMulai, $tanggalSelesai, $labelPeriode;
+    protected $rows, $tanggalMulai, $tanggalSelesai, $labelPeriode, $ubsName;
 
-    public function __construct($rows, $tanggalMulai, $tanggalSelesai, $labelPeriode)
+    public function __construct($rows, $tanggalMulai, $tanggalSelesai, $labelPeriode, $ubsName)
     {
         $this->rows = $rows;
         $this->tanggalMulai = $tanggalMulai;
         $this->tanggalSelesai = $tanggalSelesai;
         $this->labelPeriode = $labelPeriode;
+        $this->ubsName = $ubsName;
     }
 
     public function startCell(): string
@@ -32,35 +33,48 @@ class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCu
     public function array(): array
     {
         $data = [];
-        $totalSA_D = 0; $totalSA_K = 0;
-        $totalM_D = 0;  $totalM_K = 0;
-        $totalSK_D = 0; $totalSK_K = 0;
+        $totalSA_D = 0;
+        $totalSA_K = 0;
+        $totalM_D = 0;
+        $totalM_K = 0;
+        $totalSK_D = 0;
+        $totalSK_K = 0;
 
         foreach ($this->rows as $row) {
-            $saD = $row->saldo_awal > 0 ? $row->saldo_awal : 0;
-            $saK = $row->saldo_awal < 0 ? abs($row->saldo_awal) : 0;
-            $skD = $row->saldo_akhir > 0 ? $row->saldo_akhir : 0;
-            $skK = $row->saldo_akhir < 0 ? abs($row->saldo_akhir) : 0;
+            $saD = $row->sa_debit;
+            $saK = $row->sa_kredit;
+            $skD = $row->sak_debit;
+            $skK = $row->sak_kredit;
 
             $data[] = [
                 $row->kode_akun,
                 $row->nama_akun,
-                $saD, $saK,
-                $row->mutasi_debit, $row->mutasi_kredit,
-                $skD, $skK
+                $saD,
+                $saK,
+                $row->mutasi_debit,
+                $row->mutasi_kredit,
+                $skD,
+                $skK
             ];
 
-            $totalSA_D += $saD; $totalSA_K += $saK;
-            $totalM_D += $row->mutasi_debit; $totalM_K += $row->mutasi_kredit;
-            $totalSK_D += $skD; $totalSK_K += $skK;
+            $totalSA_D += $saD;
+            $totalSA_K += $saK;
+            $totalM_D += $row->mutasi_debit;
+            $totalM_K += $row->mutasi_kredit;
+            $totalSK_D += $skD;
+            $totalSK_K += $skK;
         }
 
         // Row Total
         $data[] = [
-            '', 'TOTAL AKHIR',
-            $totalSA_D, $totalSA_K,
-            $totalM_D, $totalM_K,
-            $totalSK_D, $totalSK_K
+            '',
+            'TOTAL AKHIR',
+            $totalSA_D,
+            $totalSA_K,
+            $totalM_D,
+            $totalM_K,
+            $totalSK_D,
+            $totalSK_K
         ];
 
         return $data;
@@ -75,7 +89,7 @@ class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCu
         $sheet->mergeCells('A2:H2');
         $sheet->mergeCells('A3:H3');
 
-        $sheet->setCellValue('A1', 'NERACA SALDO');
+        $sheet->setCellValue('A1', 'NERACA SALDO - ' . strtoupper($this->ubsName));
         $sheet->setCellValue('A2', 'Periode: ' . ($this->labelPeriode ?? '-'));
         $sheet->setCellValue('A3', \Carbon\Carbon::parse($this->tanggalMulai)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($this->tanggalSelesai)->format('d M Y'));
 
@@ -122,13 +136,13 @@ class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCu
         $accFormat = '"Rp" #,##0;-"Rp" #,##0;"";@';
 
         $sheet->getStyle('C8:H' . $lastRow)->getNumberFormat()->setFormatCode($accFormat);
-        
+
         // Kode Akun sebagai Text
         $sheet->getStyle('A8:A' . $lastRow)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
 
         // 4. BORDER & TOTAL
         $sheet->getStyle('A6:H' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('D9D9D9');
-        
+
         $sheet->getStyle('A' . $lastRow . ':H' . $lastRow)->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'DDEBF7']],

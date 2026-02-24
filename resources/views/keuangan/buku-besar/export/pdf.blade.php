@@ -122,8 +122,7 @@
 <body>
 
     <div class="header-container">
-        <h1 class="company-name">PT Alvin Bhakti Mandiri</h1>
-        <h2 class="report-title">BUKU BESAR</h2>
+        <h2 class="report-title">BUKU BESAR - {{ strtoupper($ubsName) }}</h2>
     </div>
 
     <table class="meta-table">
@@ -161,10 +160,19 @@
         </thead>
         <tbody>
             {{-- SALDO AWAL --}}
+            @php
+                $isKreditPDF = in_array(strtolower($normalBalance), ['kredit', 'credit', 'cr']);
+                $isDebitBalancePDF = $isKreditPDF ? $saldoAwal < 0 : $saldoAwal > 0;
+                $isKreditBalancePDF = $isKreditPDF ? $saldoAwal > 0 : $saldoAwal < 0;
+            @endphp
             <tr class="row-highlight">
                 <td colspan="2" class="text-right">SALDO AWAL</td>
-                <td class="text-right">-</td>
-                <td class="text-right">-</td>
+                <td class="text-right">
+                    {!! $isDebitBalancePDF ? '<span class="currency-symbol">Rp</span> ' . number_format(abs($saldoAwal), 0, ',', '.') : '-' !!}
+                </td>
+                <td class="text-right">
+                    {!! $isKreditBalancePDF ? '<span class="currency-symbol">Rp</span> ' . number_format(abs($saldoAwal), 0, ',', '.') : '-' !!}
+                </td>
                 <td class="text-right">
                     <span class="currency-symbol">Rp</span> {{ number_format($saldoAwal, 0, ',', '.') }}
                 </td>
@@ -175,7 +183,12 @@
             @forelse($rows as $row)
                 @php $currentSaldo += ($row->debit - $row->kredit); @endphp
                 <tr>
-                    <td class="text-center">{{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}</td>
+                    <td class="text-center">
+                        {{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}
+                        @if ($isHub && isset($row->ubs_abbr))
+                            <br><span style="font-size: 7.5pt; color: #555;">/ {{ $row->ubs_abbr }}</span>
+                        @endif
+                    </td>
                     <td>
                         {{ $row->keterangan }}
                         @if(isset($row->jurnal_id))

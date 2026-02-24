@@ -49,20 +49,37 @@
 
                 {{-- filter and export to pdf-excel --}}
                 <form method="GET" action="{{ route('keuangan.bukuBesar.index') }}"
-                    class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    class="relative mb-6 p-6 pt-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200
+                    dark:border-gray-700 shadow-sm">
+                    <span class="absolute -top-3 left-5 px-3 py-1 text-xs font-semibold 
+                    uppercase tracking-widest rounded-md
+                    bg-white dark:bg-gray-800 
+                    text-blue-600 dark:text-blue-400">
+                        Filter Laporan
+                    </span>
+
                     <div class="flex flex-wrap items-end gap-4">
+                        <!-- UBS / Hub -->
+                        <div class="w-full md:w-48">
+                            <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                                Pilih UBS / Hub
+                            </label>
 
-                        <div class="flex items-center gap-2 pb-2.5">
-                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-sm font-bold text-gray-700 dark:text-white uppercase tracking-wider">Filter</h3>
+                            <select name="ubs_id" class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                                        dark:bg-gray-700 dark:text-white border-gray-300" required>
+    
+                                {{-- Opsi HUB (All) default --}}
+                                <option value="all" {{ request('ubs_id', 'all') == 'all' ? 'selected' : '' }}>
+                                    HUB (Pusat)
+                                </option>
+                                @foreach ($ubsData as $ubs)
+                                    <option value="{{ $ubs->id }}" {{ request('ubs_id') == $ubs->id ? 'selected' : '' }}>
+                                        {{ $ubs->nama_ubs }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-
+                        
                         <!-- Akun -->
                         <div class="flex-1 min-w-[250px]">
                             <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
@@ -89,9 +106,8 @@
                             </select>
                         </div>
 
-
                         <!-- Periode -->
-                        <div class="flex-1 min-w-[200px]">
+                        <div class="flex-1 min-w-[250px]">
                             <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                                 Pilih Periode
                             </label>
@@ -187,7 +203,7 @@
                     {{-- HEADER INFO --}}
                     <div class="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
                         <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                            Buku Besar
+                            Buku Besar - {{ $ubsName }}
                         </h2>
 
                         <div class="grid md:grid-cols-3 gap-4 text-sm">
@@ -264,19 +280,25 @@
                                         </td>
                                         <td class="px-4 py-3">Saldo Awal</td>
                                         
+                                        @php
+                                            $isKredit = in_array(strtolower($normalBalance), ['kredit', 'credit', 'cr']);
+                                            $isDebitBalance = $isKredit ? $saldoAwal < 0 : $saldoAwal > 0;
+                                            $isKreditBalance = $isKredit ? $saldoAwal > 0 : $saldoAwal < 0;
+                                        @endphp
+                                        
                                         {{-- Debit --}}
                                         <td class="px-4 py-3 text-right">
-                                            {{ $saldoAwal > 0 ? 'Rp ' . number_format(abs($saldoAwal), 0, ',', '.') : '-' }}
+                                            {{ $isDebitBalance ? 'Rp ' . number_format(abs($saldoAwal), 0, ',', '.') : '-' }}
                                         </td>
                                         
                                         {{-- Kredit --}}
                                         <td class="px-4 py-3 text-right">
-                                            {{ $saldoAwal < 0 ? 'Rp ' . number_format(abs($saldoAwal), 0, ',', '.') : '-' }}
+                                            {{ $isKreditBalance ? 'Rp ' . number_format(abs($saldoAwal), 0, ',', '.') : '-' }}
                                         </td>
 
-                                        {{-- Saldo (Absolute) --}}
+                                        {{-- Saldo --}}
                                         <td class="px-4 py-3 text-right">
-                                            {{ 'Rp ' . number_format(abs($saldoAwal), 0, ',', '.') }}
+                                            {{ $saldoAwal < 0 ? '-Rp ' . number_format(abs($saldoAwal), 0, ',', '.') : 'Rp ' . number_format($saldoAwal, 0, ',', '.') }}
                                         </td>
                                     </tr>
 
@@ -286,6 +308,11 @@
                                             class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">
                                             <td class="px-4 py-3">
                                                 {{ \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y') }}
+                                                @if ($isHub)
+                                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold">
+                                                        / {{ $row->ubs_abbr }}
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td class="px-4 py-3">
                                                 <div class="font-medium text-gray-900 dark:text-white">
@@ -302,7 +329,7 @@
                                                 {{ $row->kredit > 0 ? 'Rp ' . number_format($row->kredit, 0, ',', '.') : '-' }}
                                             </td>
                                             <td class="px-4 py-3 text-right font-medium">
-                                                {{ 'Rp ' . number_format(abs($row->saldo), 0, ',', '.') }}
+                                                {{ $row->saldo < 0 ? '-Rp ' . number_format(abs($row->saldo), 0, ',', '.') : 'Rp ' . number_format($row->saldo, 0, ',', '.') }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -324,7 +351,7 @@
                                             Saldo Akhir
                                         </td>
                                         <td class="px-4 py-3 text-right text-base text-blue-600 dark:text-blue-400">
-                                            {{ 'Rp ' . number_format(abs($saldoAkhir), 0, ',', '.') }}
+                                            {{ $saldoAkhir < 0 ? '-Rp ' . number_format(abs($saldoAkhir), 0, ',', '.') : 'Rp ' . number_format($saldoAkhir, 0, ',', '.') }}
                                         </td>
                                     </tr>
                                 </tfoot>

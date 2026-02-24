@@ -60,19 +60,35 @@
 
 
                 {{-- filter and export to pdf-excel --}}
-                <form method="GET" action="{{ route('keuangan.laporanJurnal.index') }}"
-                    class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <div class="flex flex-wrap items-end gap-4">
+                <form method="GET" action="{{ route('keuangan.laporanJurnal.index') }}" class="relative mb-6 p-6 pt-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200
+                                        dark:border-gray-700 shadow-sm">
+                    <span class="absolute -top-3 left-5 px-3 py-1 text-xs font-semibold 
+                                        uppercase tracking-widest rounded-md
+                                        bg-white dark:bg-gray-800 
+                                        text-blue-600 dark:text-blue-400">
+                        Filter Laporan
+                    </span>
 
-                        <div class="flex items-center gap-2 pb-2.5">
-                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-sm font-bold text-gray-700 dark:text-white uppercase tracking-wider">Filter</h3>
+                    <div class="flex flex-wrap items-end gap-4">
+                        <!-- UBS / Hub -->
+                        <div class="flex-1 min-w-[250px]">
+                            <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                                Pilih UBS / Hub
+                            </label>
+
+                            <select name="ubs_id" class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                                                            dark:bg-gray-700 dark:text-white border-gray-300" required>
+                                {{-- Opsi HUB (All) default --}}
+                                <option value="all" {{ request('ubs_id', 'all') == 'all' ? 'selected' : '' }}>
+                                    HUB (Pusat)
+                                </option>
+                                @foreach ($ubsData as $ubs)
+                                    <option value="{{ $ubs->id }}" {{ request('ubs_id') == $ubs->id ? 'selected' : '' }}>
+                                        {{ $ubs->nama_ubs }}
+                                    </option>
+                                @endforeach
+                            </select>
+
                         </div>
 
                         <!-- Tanggal Mulai -->
@@ -165,8 +181,8 @@
                                     </a>
                                     <a href="{{ route('keuangan.laporanJurnal.exportExcel', request()->all()) }}"
                                         class="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300
-                                            hover:bg-green-50 dark:hover:bg-green-900/20
-                                            hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors group">
+                                                                                                            hover:bg-green-50 dark:hover:bg-green-900/20
+                                                                                                            hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors group">
                                         <svg class="w-5 h-5 me-3 text-gray-400 group-hover:text-green-500"
                                             fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
@@ -185,14 +201,13 @@
 
 
                 <div class="relative overflow-auto border border-gray-200 dark:border-gray-700 rounded-xl
-                            bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200" style="max-height: 600px;">
-
+                                                 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+                    style="max-height: 600px;">
                     <table class="w-full text-sm text-left border-collapse">
 
                         {{-- HEADER --}}
                         <thead class="sticky top-0 z-10
-                           bg-gray-200 text-gray-700
-                           dark:bg-gray-800 dark:text-gray-300">
+                                                bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
                             <tr>
                                 <th class="px-4 py-3">Tanggal</th>
                                 <th class="px-4 py-3">Kode Akun</th>
@@ -200,6 +215,9 @@
                                 <th class="px-4 py-3 text-center">Debit</th>
                                 <th class="px-4 py-3 text-center">Kredit</th>
                                 <th class="px-4 py-3">Keterangan</th>
+                                @if(Auth::user()->roles->first()->name == 'Superadmin')
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -208,12 +226,25 @@
                             @php $lastJurnalId = null; @endphp
 
                             @foreach ($rows as $row)
-                                <tr class="border-b border-gray-200 dark:border-gray-700
-                                           hover:bg-gray-50 dark:hover:bg-white/5">
-
+                                <tr
+                                    class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">
                                     <td class="px-4 py-3">
-                                        {{ $row->jurnal_id !== $lastJurnalId ? $row->tanggal->format('d-m-Y') : '' }}
+                                        @if ($row->jurnal_id !== $lastJurnalId)
+
+                                            <div class="font-medium text-gray-900 dark:text-gray-100">
+                                                {{ $row->tanggal->format('d-m-Y') }}
+                                            </div>
+                                            <div class="text-[11px] font-mono text-gray-500 mt-0.5" title="Nomor Jurnal">
+                                                {{ $row->nomor_jurnal }}
+                                            </div>
+                                            @if ($isHub)
+                                                <div class="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">
+                                                    / {{ $row->ubs_abbr }}
+                                                </div>
+                                            @endif
+                                        @endif
                                     </td>
+
 
                                     <td class="px-4 py-3">
                                         {{ $row->kode_akun }}
@@ -223,21 +254,53 @@
                                         {{ $row->nama_akun }}
                                     </td>
 
-                                    <td class="px-4 py-3 text-right
-                                               border-r border-l
-                                               border-gray-200 dark:border-gray-700">
+                                    <td
+                                        class="px-4 py-3 text-right
+                                                                                                                                                                               border-r border-l
+                                                                                                                                                                               border-gray-200 dark:border-gray-700">
                                         {{ $row->debit > 0 ? 'Rp ' . number_format($row->debit, 0, ',', '.') : '-' }}
                                     </td>
 
-                                    <td class="px-4 py-3 text-right
-                                               border-r border-l
-                                               border-gray-200 dark:border-gray-700">
+                                    <td
+                                        class="px-4 py-3 text-right
+                                                                                                                                                                               border-r border-l
+                                                                                                                                                                               border-gray-200 dark:border-gray-700">
                                         {{ $row->kredit > 0 ? 'Rp ' . number_format($row->kredit, 0, ',', '.') : '-' }}
                                     </td>
 
                                     <td class="px-4 py-3">
                                         {{ $row->jurnal_id !== $lastJurnalId ? $row->keterangan : '' }}
                                     </td>
+
+                                    @if(Auth::user()->roles->first()->name == 'Superadmin')
+                                        <td class="px-4 py-3">
+                                            @if ($row->jurnal_id !== $lastJurnalId)
+                                                <div class="flex items-center gap-2">
+                                                    <a href="{{ route('keuangan.transaksiJurnal.edit', $row->jurnal_id) }}"
+                                                        class="p-1.5 text-yellow-600 hover:bg-yellow-100 rounded-lg transition-colors dark:hover:bg-yellow-900/30 dark:text-yellow-400">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                            </path>
+                                                        </svg>
+                                                    </a>
+                                                    <form action="{{ route('keuangan.transaksiJurnal.destroy', $row->jurnal_id) }}"
+                                                        method="POST" class="delete-form">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button"
+                                                            class="delete-btn p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition-colors dark:hover:bg-red-900/30 dark:text-red-400">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                                </path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    @endif
                                 </tr>
 
                                 @php $lastJurnalId = $row->jurnal_id; @endphp
@@ -254,8 +317,8 @@
                                 </td>
 
                                 <td class="px-4 py-3 text-right
-                                   border-r border-l
-                                   border-gray-300 dark:border-gray-600">
+                                                        border-r border-l
+                                                        border-gray-300 dark:border-gray-600">
                                     <div class="flex justify-between items-center gap-2">
                                         <span>Rp</span>
                                         <span>{{ number_format($totalDebit, 0, ',', '.') }}</span>
@@ -263,22 +326,32 @@
                                 </td>
 
                                 <td class="px-4 py-3 text-right
-                                   border-r border-l
-                                   border-gray-300 dark:border-gray-600">
+                                                        border-r border-l
+                                                        border-gray-300 dark:border-gray-600">
                                     <div class="flex justify-between items-center gap-2">
                                         <span>Rp</span>
                                         <span>{{ number_format($totalKredit, 0, ',', '.') }}</span>
                                     </div>
                                 </td>
 
-                                <td class="px-4 py-3 text-right">
+                                <td colspan="2" class="px-4 py-3 text-right">
                                     @if ($totalDebit == $totalKredit)
-                                        <span class="text-green-600 dark:text-green-400 text-xs font-medium">
-                                            Seimbang
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                            <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor"
+                                                viewBox="0 0 8 8">
+                                                <circle cx="4" cy="4" r="3" />
+                                            </svg>
+                                            Balanced
                                         </span>
                                     @else
-                                        <span class="text-red-600 dark:text-red-400 text-xs font-medium">
-                                            Tidak Seimbang
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                            <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor"
+                                                viewBox="0 0 8 8">
+                                                <circle cx="4" cy="4" r="3" />
+                                            </svg>
+                                            Unbalanced
                                         </span>
                                     @endif
                                 </td>
@@ -301,15 +374,36 @@
         document.addEventListener('DOMContentLoaded', function () {
             flatpickr("#tanggalStart", {
                 dateFormat: "d-m-Y",
-                defaultDate: "{{ old('tanggalStart', now()->format('d-m-Y')) }}",
                 allowInput: true
             });
 
             flatpickr("#tanggalEnd", {
                 dateFormat: "d-m-Y",
-                // defaultDate: "{{ old('tanggalEnd', now()->format('d-m-Y')) }}",
                 allowInput: true
             });
+        });
+
+        // Delete button alert
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.delete-btn')) {
+                const btn = e.target.closest('.delete-btn');
+                const form = btn.closest('.delete-form');
+
+                Swal.fire({
+                    title: 'Yakin hapus transaksi jurnal ini?',
+                    text: "Apakah anda yakin menghapus Transaksi Jurnal ini?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
         });
     </script>
 @endsection

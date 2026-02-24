@@ -11,6 +11,7 @@ use App\Models\PeriodeKeuangan;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Ubs;
 
 class TransaksiJurnalController extends Controller
 {
@@ -18,6 +19,8 @@ class TransaksiJurnalController extends Controller
     public function create()
     {
         $today = Carbon::today();
+
+        $ubs = Ubs::orderBy('nama_ubs')->get();
 
         // Semua periode
         $periodeKeuangan = PeriodeKeuangan::orderBy('tanggal_mulai')->get();
@@ -64,6 +67,7 @@ class TransaksiJurnalController extends Controller
             'periodeAktif' => $periodeAktif,
             'defaultNomorJurnal' => $defaultNomorJurnal,
             'akunKeuangan' => $akunKeuangan,
+            'ubs' => $ubs,
         ]);
     }
 
@@ -73,6 +77,7 @@ class TransaksiJurnalController extends Controller
         $request->validate([
             // HEADER
             'periode_id' => 'required|exists:periode_keuangan,id',
+            'ubs_id' => 'required|exists:ubs,id',
             'tanggal_jurnal' => 'required|date',
             'nomor_jurnal' => 'required|unique:jurnal,nomor_jurnal',
             'keterangan' => 'required|string|max:255',
@@ -122,6 +127,7 @@ class TransaksiJurnalController extends Controller
                 'nomor_jurnal' => $request->nomor_jurnal,
                 'tanggal' => $request->tanggal_jurnal,
                 'periode_id' => $request->periode_id,
+                'ubs_id' => $request->ubs_id,
                 'jenis_jurnal' => $jenis,
                 'status' => 'posted',
                 'keterangan' => $request->keterangan,
@@ -153,5 +159,147 @@ class TransaksiJurnalController extends Controller
                 'error' => 'Terjadi kesalahan saat menyimpan jurnal.'
             ])->withInput();
         }
+    }
+
+    // Edit transaksi jurnal 
+    public function edit($id)
+    {
+        $today = Carbon::today();
+        $jurnal = Jurnal::with('details')->findOrFail($id);
+
+        $ubs = Ubs::orderBy('nama_ubs')->get();
+        // Semua periode
+        $periodeKeuangan = PeriodeKeuangan::orderBy('tanggal_mulai')->get();
+        // Periode aktif
+        $periodeAktif = PeriodeKeuangan::where('tanggal_mulai', '<=', $today)
+            ->where('tanggal_selesai', '>=', $today)
+            ->first();
+
+        // Ambil akun leaf
+        $akunKeuangan = AkunKeuangan::with('parent')
+            ->where('is_leaf', true)
+            ->orderBy('kode_akun')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->parent ? $item->parent->nama_akun : 'Lainnya';
+            });
+
+        // Mapping Data Detail untuk Form Edit Alpine.js
+        $initialDetails = $jurnal->details->map(function ($detail) {
+            return [
+                'akun_id' => $detail->akun_id,
+                'debit' => $detail->debit,
+                'kredit' => $detail->kredit,
+                'display_debit' => $detail->debit > 0 ? number_format($detail->debit, 0, ',', '.') : '',
+                'display_kredit' => $detail->kredit > 0 ? number_format($detail->kredit, 0, ',', '.') : '',
+            ];
+        });
+
+        return view('keuangan.transaksi-jurnal.edit', [
+            'breadcrumbs' => [
+                ['label' => 'Laporan Jurnal', 'url' => route('keuangan.laporanJurnal.index')],
+                ['label' => 'Edit Jurnal', 'url' => ''],
+            ],
+            'jurnal' => $jurnal,
+            'periodeKeuangan' => $periodeKeuangan,
+            'periodeAktif' => $periodeAktif,
+            'akunKeuangan' => $akunKeuangan,
+            'ubs' => $ubs,
+            'initialDetails' => $initialDetails,
+        ]);
+    }
+
+    // Update transaksi jurnal
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            // HEADER
+            'periode_id' => 'required|exists:periode_keuangan,id',
+            'ubs_id' => 'required|exists:ubs,id',
+            'tanggal_jurnal' => 'required|date',
+            'nomor_jurnal' => "required|unique:jurnal,nomor_jurnal,{$id}",
+            'keterangan' => 'required|string|max:255',
+            'jenis_jurnal' => 'required',
+            // DETAIL
+            'items' => 'required|array|min:2',
+            'items.*.akun_id' => [
+                'required',
+                Rule::exists('akun_keuangan', 'id')->where('is_leaf', true),
+            ],
+            'items.*.debit' => 'nullable|numeric|min:0',
+            'items.*.kredit' => 'nullable|numeric|min:0',
+        ]);
+
+        $totalDebit = 0;
+        $totalKredit = 0;
+
+        foreach ($request->items as $item) {
+            $debit = (float) ($item['debit'] ?? 0);
+            $kredit = (float) ($item['kredit'] ?? 0);
+
+            //  dua-duanya diisi
+            if ($debit > 0 && $kredit > 0) {
+                return back()->withErrors([
+                    'items' => 'Satu baris hanya boleh debit ATAU kredit.'
+                ])->withInput();
+            }
+
+            $totalDebit += $debit;
+            $totalKredit += $kredit;
+        }
+
+        if ($totalDebit <= 0 || $totalDebit !== $totalKredit) {
+            return back()->withErrors([
+                'items' => 'Total debit dan kredit harus seimbang dan lebih dari 0.'
+            ])->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $jurnal = Jurnal::findOrFail($id);
+
+            // JURNAL HEADER
+            $jurnal->update([
+                'nomor_jurnal' => $request->nomor_jurnal,
+                'tanggal' => $request->tanggal_jurnal,
+                'periode_id' => $request->periode_id,
+                'ubs_id' => $request->ubs_id,
+                'jenis_jurnal' => $request->jenis_jurnal,
+                'keterangan' => $request->keterangan,
+            ]);
+
+            // JURNAL DETAIL (Hapus yang lama, simpan ulang)
+            $jurnal->details()->delete();
+
+            foreach ($request->items as $item) {
+                JurnalDetail::create([
+                    'jurnal_id' => $jurnal->id,
+                    'akun_id' => $item['akun_id'],
+                    'debit' => $item['debit'] ?? 0,
+                    'kredit' => $item['kredit'] ?? 0,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('keuangan.laporanJurnal.index')
+                ->with('success', 'Transaksi Jurnal berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->withErrors([
+                'error' => 'Terjadi kesalahan saat memperbarui jurnal.'
+            ])->withInput();
+        }
+    }
+
+    // delete transkasi jurnal 
+    public function destroy($id)
+    {
+        $jurnal = Jurnal::findOrFail($id);
+        $jurnal->delete();
+        return redirect()->route('keuangan.laporanJurnal.index')->with('success', 'Transaksi Jurnal berhasil dihapus.');
     }
 }

@@ -14,15 +14,16 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, ShouldAutoSize, WithCustomStartCell
 {
-    protected $rows, $totalDebit, $totalKredit, $filters, $periode;
+    protected $rows, $totalDebit, $totalKredit, $filters, $periode, $ubsName;
 
-    public function __construct($rows, $totalDebit, $totalKredit, $filters, $periode)
+    public function __construct($rows, $totalDebit, $totalKredit, $filters, $periode, $ubsName = 'HUB')
     {
         $this->rows = $rows;
         $this->totalDebit = $totalDebit;
         $this->totalKredit = $totalKredit;
         $this->filters = $filters;
         $this->periode = $periode;
+        $this->ubsName = $ubsName;
     }
 
     public function startCell(): string
@@ -39,10 +40,19 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
     {
         $data = [];
         $lastJurnalId = null;
+        $isHub = $this->ubsName === 'HUB';
 
         foreach ($this->rows as $row) {
+            $tanggalVal = '';
+            if ($row->jurnal_id !== $lastJurnalId) {
+                $tanggalVal = $row->tanggal->format('d-m-Y');
+                if ($isHub) {
+                    $tanggalVal .= "\n/ " . $row->ubs_abbr;
+                }
+            }
+
             $data[] = [
-                $row->jurnal_id !== $lastJurnalId ? $row->tanggal->format('d-m-Y') : '',
+                $tanggalVal,
                 $row->kode_akun,
                 $row->nama_akun,
                 $row->debit > 0 ? $row->debit : 0,
@@ -60,12 +70,12 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
     {
         // 1. Tambahkan Judul Laporan
         $sheet->mergeCells('A1:F1');
-        $sheet->setCellValue('A1', 'LAPORAN JURNAL UMUM');
+        $sheet->setCellValue('A1', 'LAPORAN JURNAL UMUM (' . $this->ubsName . ')');
 
         // 2. Tambahkan Info Periode/Filter
         $sheet->mergeCells('A2:F2');
         $subTitle = "Periode: " . ($this->periode->nama_periode ?? '-');
-        if(!empty($this->filters['tanggalStart'])) {
+        if (!empty($this->filters['tanggalStart'])) {
             $subTitle = "Tanggal: " . $this->filters['tanggalStart'] . " s/d " . ($this->filters['tanggalEnd'] ?? 'Sekarang');
         }
         $sheet->setCellValue('A2', $subTitle);
@@ -95,11 +105,16 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
 
         $lastRow = $sheet->getHighestRow();
 
-    // Mengatur kolom B dari baris 4 sampai baris terakhir agar rata kiri
-    $sheet->getStyle('B4:B' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        // Wrap text untk Tanggal yang ada unitnya biar rapi
+        if ($this->ubsName === 'HUB') {
+            $sheet->getStyle('A4:A' . $lastRow)->getAlignment()->setWrapText(true);
+        }
 
-    $sheet->getStyle('B5:B' . $lastRow)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+        // Mengatur kolom B dari baris 4 sampai baris terakhir agar rata kiri
+        $sheet->getStyle('B4:B' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
-    return [];
+        $sheet->getStyle('B5:B' . $lastRow)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+
+        return [];
     }
 }

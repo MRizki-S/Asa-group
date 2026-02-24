@@ -15,15 +15,17 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class BukuBesarExport implements FromArray, WithHeadings, WithStyles, ShouldAutoSize, WithCustomStartCell
 {
-    protected $rows, $saldoAwal, $periode, $saldoAkhir, $akun;
+    protected $rows, $saldoAwal, $periode, $saldoAkhir, $akun, $ubsName, $normalBalance;
 
-    public function __construct($rows, $saldoAwal, $periode, $saldoAkhir, $akun)
+    public function __construct($rows, $saldoAwal, $periode, $saldoAkhir, $akun, $ubsName = 'HUB (Pusat)', $normalBalance = 'debit')
     {
         $this->rows = $rows;
         $this->saldoAwal = $saldoAwal;
         $this->periode = $periode;
         $this->saldoAkhir = $saldoAkhir;
         $this->akun = $akun;
+        $this->ubsName = $ubsName;
+        $this->normalBalance = $normalBalance;
     }
 
     public function startCell(): string
@@ -39,22 +41,32 @@ class BukuBesarExport implements FromArray, WithHeadings, WithStyles, ShouldAuto
     public function array(): array
     {
         $data = [];
+        $isKredit = in_array(strtolower($this->normalBalance), ['kredit', 'credit', 'cr']);
+        $isDebitBalance = $isKredit ? $this->saldoAwal < 0 : $this->saldoAwal > 0;
+        $isKreditBalance = $isKredit ? $this->saldoAwal > 0 : $this->saldoAwal < 0;
 
         // Baris Saldo Awal
         $data[] = [
             '',
             'SALDO AWAL',
-            '',
-            '',
+            $isDebitBalance ? abs($this->saldoAwal) : '',
+            $isKreditBalance ? abs($this->saldoAwal) : '',
             $this->saldoAwal
         ];
 
         $currentSaldo = $this->saldoAwal;
+        $isHub = $this->ubsName === 'HUB (Pusat)' || $this->ubsName === 'HUB';
 
         foreach ($this->rows as $row) {
             $currentSaldo += ($row->debit - $row->kredit);
+
+            $tanggalVal = \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y');
+            if ($isHub && isset($row->ubs_abbr)) {
+                $tanggalVal .= "\n/ " . $row->ubs_abbr;
+            }
+
             $data[] = [
-                \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y'),
+                $tanggalVal,
                 $row->keterangan,
                 $row->debit > 0 ? $row->debit : 0,
                 $row->kredit > 0 ? $row->kredit : 0,
@@ -83,12 +95,17 @@ class BukuBesarExport implements FromArray, WithHeadings, WithStyles, ShouldAuto
         $sheet->mergeCells('A2:E2');
         $sheet->mergeCells('A3:E3');
 
-        $sheet->setCellValue('A1', 'LAPORAN BUKU BESAR');
+        $sheet->setCellValue('A1', 'LAPORAN BUKU BESAR - ' . strtoupper($this->ubsName));
         $sheet->setCellValue('A2', 'Akun: ' . ($this->akun->kode_akun ?? '') . ' - ' . ($this->akun->nama_akun ?? 'Semua Akun'));
         $sheet->setCellValue('A3', 'Periode: ' . ($this->periode->nama_periode ?? 'Semua Periode'));
 
         // Styling Judul agar Rata Tengah (Center)  
         $sheet->getStyle('A1:A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Wrap Text untuk Tanggal
+        if ($this->ubsName === 'HUB (Pusat)' || $this->ubsName === 'HUB') {
+            $sheet->getStyle('A7:A' . $lastRow)->getAlignment()->setWrapText(true);
+        }
 
         // Style Font Judul (Tetap Bold untuk Baris 1)
         $sheet->getStyle('A1')->getFont()->setSize(16)->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('2F5597'));
@@ -111,7 +128,8 @@ class BukuBesarExport implements FromArray, WithHeadings, WithStyles, ShouldAuto
         }
 
         // 4. Format Accounting (Kolom C, D, E)
-        $currencyFormat = '_("Rp"* #,##0_);_("Rp"* (#,##0);_("Rp"* "-"??_);_(@_)';
+        // Menggunakan -#,##0_ agar nilai minus tampil min (-) bukan dalam kurung ()
+        $currencyFormat = '_("Rp"* #,##0_);_("Rp"* -#,##0_);_("Rp"* "-"??_);_(@_)';
         $sheet->getStyle('C7:E' . $lastRow)->getNumberFormat()->setFormatCode($currencyFormat);
 
         // 5. Border & Alignment Data

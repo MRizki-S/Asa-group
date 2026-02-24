@@ -42,8 +42,9 @@
     </div>
     @endif
 
-    <form action="{{ route('keuangan.transaksiJurnal.store') }}" method="POST">
+    <form action="{{ route('keuangan.transaksiJurnal.update', $jurnal->id) }}" method="POST">
         @csrf
+        @method('PUT')
 
         {{-- Jurnal Atas --}}
         <div x-data="{ open: true }"
@@ -81,7 +82,7 @@
                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-white @error('ubs_id') border-red-500 @enderror">
                             <option value="">Pilih UBS</option>
                             @foreach ($ubs as $dataUbs)
-                            <option value="{{ $dataUbs->id }}">
+                            <option value="{{ $dataUbs->id }}" {{ old('ubs_id', $jurnal->ubs_id) == $dataUbs->id ? 'selected' : '' }}>
                                 {{ $dataUbs->nama_ubs }}
                             </option>
                             @endforeach
@@ -99,7 +100,7 @@
                             <option value="">Pilih Periode</option>
                             @foreach ($periodeKeuangan as $periode)
                             <option value="{{ $periode->id }}"
-                                {{ old('periode_id', optional($periodeAktif)->id) == $periode->id ? 'selected' : '' }}>
+                                {{ old('periode_id', $jurnal->periode_id) == $periode->id ? 'selected' : '' }}>
                                 {{ $periode->nama_periode }}
                                 ({{ \Carbon\Carbon::parse($periode->tanggal_mulai)->format('d M Y') }} –
                                 {{ \Carbon\Carbon::parse($periode->tanggal_selesai)->format('d M Y') }})
@@ -123,7 +124,7 @@
                                 </svg>
                             </div>
                             <input type="text" id="tanggal_jurnal" name="tanggal_jurnal"
-                                value="{{ old('tanggal_jurnal', now()->format('Y-m-d')) }}"
+                                value="{{ old('tanggal_jurnal', $jurnal->tanggal->format('Y-m-d')) }}"
                                 class="flatpickr bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer @error('tanggal_jurnal') border-red-500 @enderror">
                         </div>
                     </div>
@@ -131,8 +132,8 @@
                     {{-- Nomor Jurnal --}}
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-gray-900 dark:text-white">Nomor Jurnal</label>
-                        <input type="text" name="nomor_jurnal" value="{{ old('nomor_jurnal', $defaultNomorJurnal) }}"
-                            class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed opacity-80 focus:bg-white focus:text-gray-900 dark:bg-gray-800 dark:border-gray-600 @error('nomor_jurnal') border-red-500 @enderror" />
+                        <input type="text" name="nomor_jurnal" value="{{ old('nomor_jurnal', $jurnal->nomor_jurnal) }}"
+                            class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 focus:bg-white focus:text-gray-900 dark:bg-gray-800 dark:border-gray-600 @error('nomor_jurnal') border-red-500 @enderror" />
                         @error('nomor_jurnal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -147,8 +148,8 @@
                             class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5
                                 cursor-not-allowed
                                 dark:bg-gray-800 dark:text-gray-400">
-                            <option value="umum" selected>Jurnal Umum</option>
-                            <option value="saldo_awal">Saldo Awal</option>
+                            <option value="umum" {{ old('jenis_jurnal', $jurnal->jenis_jurnal) == 'umum' ? 'selected' : '' }}>Jurnal Umum</option>
+                            <option value="saldo_awal" {{ old('jenis_jurnal', $jurnal->jenis_jurnal) == 'saldo_awal' ? 'selected' : '' }}>Saldo Awal</option>
                             <!-- <option value="penyesuaian">Jurnal Penyesuaian</option>
                                 <option value="penutup">Jurnal Penutup</option> -->
                         </select>
@@ -168,7 +169,7 @@
                                 resize-none transition-all duration-200
                                 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:bg-white
                                 dark:bg-gray-700 dark:border-gray-600 dark:text-white
-                                @error('keterangan') border-red-500 @enderror">{{ old('keterangan') }}</textarea>
+                                @error('keterangan') border-red-500 @enderror">{{ old('keterangan', $jurnal->keterangan) }}</textarea>
                         @error('keterangan')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -178,7 +179,7 @@
         </div>
 
         {{-- jurnal detail transaksi --}}
-        <div x-data="jurnalBaris()">
+        <div x-data="jurnalBaris({{ $initialDetails->toJson() }})">
             <div
                 class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6 mt-4 overflow-hidden">
                 <div class="px-5 py-4 sm:px-6 sm:py-5">
@@ -217,7 +218,7 @@
                                                     @foreach ($akunKeuangan as $kategori => $daftarAkun)
                                                     <optgroup label="{{ $kategori }}">
                                                         @foreach ($daftarAkun as $akun)
-                                                        <option value="{{ $akun->id }}">
+                                                        <option value="{{ $akun->id }}" :selected="baris.akun_id == {{ $akun->id }}">
                                                             {{ $akun->kode_akun }} - {{ $akun->nama_akun }}
                                                         </option>
                                                         @endforeach
@@ -324,14 +325,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         flatpickr("#tanggal_jurnal", {
             dateFormat: "d-m-Y",
-            defaultDate: "{{ old('tanggal_jurnal', now()->format('d-m-Y')) }}",
+            defaultDate: "{{ old('tanggal_jurnal', $jurnal->tanggal->format('d-m-Y')) }}",
             allowInput: true
         });
     });
 
-    function jurnalBaris() {
+    function jurnalBaris(initialData) {
         return {
-            barisJurnal: [{
+            barisJurnal: initialData && initialData.length > 0 ? initialData : [{
                     akun_id: '',
                     debit: 0,
                     kredit: 0,

@@ -49,25 +49,16 @@
 
             {{-- FILTER NERACA SALDO --}}
             <form method="GET" action="{{ route('keuangan.neracaSaldo.index') }}" x-data="{ tipe: '{{ request('tipe', 'bulan') }}' }"
-                class="mb-6 p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                class="relative mb-6 p-6 pt-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200
+                    dark:border-gray-700 shadow-sm">
+                <span class="absolute -top-3 left-5 px-3 py-1 text-xs font-semibold 
+                    uppercase tracking-widest rounded-md
+                    bg-white dark:bg-gray-800 
+                    text-blue-600 dark:text-blue-400">
+                    Filter Laporan
+                </span>
 
                 <div class="flex flex-wrap items-end gap-6">
-
-                    {{-- ICON + TITLE --}}
-                    <div class="flex items-center gap-3 pb-2.5">
-                        <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                            </svg>
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-700 dark:text-white uppercase tracking-wider">
-                            Filter
-                        </h3>
-                    </div>
-
-
                     {{-- JENIS LAPORAN --}}
                     <div>
                         <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
@@ -146,14 +137,35 @@
 
                                 <option value="">Pilih Tahun...</option>
 
-                                @for ($i = 2024; $i <= now()->year; $i++)
-                                    <option value="{{ $i }}" {{ request('tahun') == $i ? 'selected' : '' }}>
-                                        {{ $i }}
-                                    </option>
-                                    @endfor
+                                @for ($i = now()->year; $i >= 2024; $i--)
+                                <option value="{{ $i }}" {{ request('tahun') == $i ? 'selected' : '' }}>
+                                    {{ $i }}
+                                </option>
+                                @endfor
                             </select>
                         </div>
 
+                    </div>
+
+                    <!-- UBS / Hub -->
+                    <div class="w-full md:w-48">
+                        <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+                            Pilih UBS / Hub
+                        </label>
+
+                        <select name="ubs_id" class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
+                                        dark:bg-gray-700 dark:text-white border-gray-300" required>
+
+                            {{-- Opsi HUB (All) default --}}
+                            <option value="all" {{ request('ubs_id', 'all') == 'all' ? 'selected' : '' }}>
+                                HUB (Pusat)
+                            </option>
+                            @foreach ($ubsData as $ubs)
+                            <option value="{{ $ubs->id }}" {{ request('ubs_id') == $ubs->id ? 'selected' : '' }}>
+                                {{ $ubs->nama_ubs }}
+                            </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     {{-- BUTTON TAMPILKAN --}}
@@ -233,7 +245,7 @@
                     <div class="flex flex-col md:flex-row md:items-center md:justify-start gap-4">
                         <div>
                             <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
-                                Neraca Saldo
+                                Neraca Saldo - {{ $ubsName }}
                             </h2>
 
                             @if($labelPeriode)
@@ -331,26 +343,26 @@
 
                             @forelse ($rows as $row)
                             @php
-                            // Saldo Awal
-                            $saDebit = $row->saldo_awal > 0 ? $row->saldo_awal : 0;
-                            $saKredit = $row->saldo_awal < 0 ? abs($row->saldo_awal) : 0;
+                                // Saldo Awal
+                                $saDebit = $row->sa_debit;
+                                $saKredit = $row->sa_kredit;
 
                                 // Mutasi
                                 $mutDebit = $row->mutasi_debit;
                                 $mutKredit = $row->mutasi_kredit;
 
                                 // Saldo Akhir
-                                $sakDebit = $row->saldo_akhir > 0 ? $row->saldo_akhir : 0;
-                                $sakKredit = $row->saldo_akhir < 0 ? abs($row->saldo_akhir) : 0;
+                                $sakDebit = $row->sak_debit;
+                                $sakKredit = $row->sak_kredit;
 
-                                    // Totals
-                                    $totalSaldoAwalDebit += $saDebit;
-                                    $totalSaldoAwalKredit += $saKredit;
-                                    $totalMutasiDebit += $mutDebit;
-                                    $totalMutasiKredit += $mutKredit;
-                                    $totalSaldoAkhirDebit += $sakDebit;
-                                    $totalSaldoAkhirKredit += $sakKredit;
-                                    @endphp
+                                // Totals
+                                $totalSaldoAwalDebit += $saDebit;
+                                $totalSaldoAwalKredit += $saKredit;
+                                $totalMutasiDebit += $mutDebit;
+                                $totalMutasiKredit += $mutKredit;
+                                $totalSaldoAkhirDebit += $sakDebit;
+                                $totalSaldoAkhirKredit += $sakKredit;
+                            @endphp
 
                                     <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">
                                         <td class="px-4 py-3 border">{{ $row->kode_akun }}</td>
