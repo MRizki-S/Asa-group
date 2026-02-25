@@ -39,8 +39,8 @@ class PengajuanPemesananController extends Controller
             ->where('status_pengajuan', 'pending')
             ->orderByDesc('created_at');
 
-        // 🔸 Filter tambahan jika login adalah Sales
-        if ($user->hasAnyRole(['Sales'])) {
+        // 🔸 Filter tambahan jika login adalah Marketing
+        if ($user->hasAnyRole(roles: ['Marketing'])) {
             $query->where('sales_id', $user->id);
         }
 
@@ -90,8 +90,9 @@ class PengajuanPemesananController extends Controller
             'keterlambatan', // snapshot keterlambatan
             'pembatalan',    // snapshot pembatalan
             'bonusCash',
+            'bonusKpr',
         ])->findOrFail($id);
-
+        // dd($pengajuan);
         return view('marketing.pengajuan-pemesanan.show', [
             'pengajuan'     => $pengajuan,
             'breadcrumbs'   => [

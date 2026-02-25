@@ -55,16 +55,23 @@
             @csrf
             @method('PUT')
 
+            @php
+                // cek apakah user boleh update berkas
+                $bolehUpdate = auth()->user()->can('marketing.kelola-pemesanan.update-berkas');
+            @endphp
+
             {{-- Form Ganti Bank & Status KPR --}}
             <div
                 class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                 <!-- Bank -->
                 <div>
                     <label for="bank_id" class="block text-sm font-medium text-gray-700 mb-1">
                         Bank
                     </label>
                     <select id="bank_id" name="bank_id"
-                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
+                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                        {{ $bolehUpdate ? '' : 'disabled' }}>
                         @foreach ($bankList as $bank)
                             <option value="{{ $bank->id }}"
                                 {{ $pemesanan->kpr->bank_id == $bank->id ? 'selected' : '' }}>
@@ -73,11 +80,12 @@
                         @endforeach
                     </select>
 
-                    <!-- 💡 Keterangan Lebih Terbaca -->
-                    <div class="mt-2 text-sm text-gray-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
-                        💬 Jika ingin mengganti bank, pilih bank baru, lalu klik
-                        <span class="font-semibold text-blue-700">Simpan Perubahan</span>.
-                    </div>
+                    @if ($bolehUpdate)
+                        <div class="mt-2 text-sm text-gray-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
+                            💬 Jika ingin mengganti bank, pilih bank baru, lalu klik
+                            <span class="font-semibold text-blue-700">Simpan Perubahan</span>.
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Status KPR -->
@@ -86,7 +94,8 @@
                         Status KPR
                     </label>
                     <select id="status_kpr" name="status_kpr"
-                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
+                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                        {{ $bolehUpdate ? '' : 'disabled' }}>
                         @foreach ($statusList as $value => $label)
                             <option value="{{ $value }}"
                                 {{ $pemesanan->kpr->status_kpr == $value ? 'selected' : '' }}>
@@ -95,20 +104,22 @@
                         @endforeach
                     </select>
 
-                    <!-- ℹ️ Info alert -->
-                    <div
-                        class="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2 text-sm text-blue-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
-                        </svg>
-                        <p>
-                            Jika <span class="font-semibold">status KPR</span> diubah menjadi
-                            <span class="font-semibold text-blue-600">"ACC"</span>, sistem akan
-                            <span class="font-semibold">mengirimkan notifikasi WhatsApp</span> secara otomatis ke customer.
-                        </p>
-                    </div>
+                    @if ($bolehUpdate)
+                        <div
+                            class="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2 text-sm text-blue-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
+                            </svg>
+                            <p>
+                                Jika <span class="font-semibold">status KPR</span> diubah menjadi
+                                <span class="font-semibold text-blue-600">"ACC"</span>, sistem akan
+                                <span class="font-semibold">mengirimkan notifikasi WhatsApp</span> secara otomatis ke
+                                customer.
+                            </p>
+                        </div>
+                    @endif
                 </div>
 
             </div>
@@ -157,10 +168,12 @@
                                         <td class="py-3 px-4 text-center text-gray-600">
                                             {{ $dok->updatedBy->username ?? '-' }}
                                         </td>
+
                                         <td class="py-3 px-4 text-center">
                                             <input type="checkbox" name="dokumen[{{ $dok->id }}]" value="1"
-                                                {{ $dok->status ? 'checked' : '' }}
-                                                class="w-5 h-5 accent-blue-600 rounded focus:ring-blue-500">
+                                                {{ $dok->status ? 'checked' : '' }} {{ $bolehUpdate ? '' : 'disabled' }}
+                                                class="w-5 h-5 accent-blue-600 rounded focus:ring-blue-500
+                                            {{ $bolehUpdate ? '' : 'cursor-not-allowed opacity-60' }}">
                                         </td>
                                     </tr>
                                 @endforeach
@@ -178,10 +191,12 @@
                     class="inline-flex items-center gap-1 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
                     <i class="ri-arrow-go-back-line"></i> Kembali
                 </a>
-                <button type="submit"
-                    class="ml-2 inline-flex items-center gap-1 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-lg shadow hover:shadow-md hover:scale-[1.02] transition">
-                    <i class="ri-save-3-line"></i> Simpan Perubahan
-                </button>
+                @if ($bolehUpdate)
+                    <button type="submit"
+                        class="ml-2 inline-flex items-center gap-1 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-lg shadow hover:shadow-md hover:scale-[1.02] transition">
+                        <i class="ri-save-3-line"></i> Simpan Perubahan
+                    </button>
+                @endif
             </div>
         </form>
     </div>

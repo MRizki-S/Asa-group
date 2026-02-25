@@ -22,7 +22,7 @@ class SettingPpjbJsonController extends Controller
 
         // pisahkan berdasarkan jenis pembayaran
         $cash = $settings->where('jenis_pembayaran', 'CASH')->values();
-        $kpr  = $settings->firstWhere('jenis_pembayaran', 'KPR');
+        $kpr  = $settings->where('jenis_pembayaran', 'KPR')->values();
 
         return response()->json([
             'success' => true,

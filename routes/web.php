@@ -1,6 +1,12 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PerumahaanSelectController;
+
+// Etalase
 use App\Http\Controllers\Etalase\BlokController;
 use App\Http\Controllers\Etalase\EtalaseJsonController;
 use App\Http\Controllers\Etalase\KualifikasiBlokController;
@@ -11,9 +17,22 @@ use App\Http\Controllers\Etalase\TahapKualifikasiController;
 use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
+
+// Gudang
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\StockBarangController;
+
+// Keuangan
+use App\Http\Controllers\Keuangan\AkunKeuanganController;
+use App\Http\Controllers\Keuangan\BukuBesarController;
+use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
+use App\Http\Controllers\Keuangan\LaporanJurnalController;
+use App\Http\Controllers\Keuangan\NeracaSaldoController;
+use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
+use App\Http\Controllers\Keuangan\TransaksiJurnalController;
+
+// Marketing
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
@@ -25,18 +44,18 @@ use App\Http\Controllers\Marketing\PengajuanPembatalanController;
 use App\Http\Controllers\Marketing\PengajuanPemesananController;
 use App\Http\Controllers\Marketing\PindahUnitController;
 use App\Http\Controllers\Marketing\SettingBonusCashController;
+use App\Http\Controllers\Marketing\SettingBonusKprController;
 use App\Http\Controllers\Marketing\SettingCaraBayarController;
 use App\Http\Controllers\Marketing\SettingKeterlambatanController;
-use App\Http\Controllers\marketing\SettingMutuPpjbController;
+use App\Http\Controllers\Marketing\SettingMutuPpjbController;
 use App\Http\Controllers\Marketing\SettingPembatalanController;
-use App\Http\Controllers\marketing\SettingPpjbController;
+use App\Http\Controllers\Marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
-use App\Http\Controllers\marketing\SettingPromoPpjbController;
-use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+
+// Superadmin
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -63,7 +82,7 @@ Route::get('/', function () {
 })->middleware('auth');
 
 // fitur dalam pengembangan
-Route::get('/under-development', function() {
+Route::get('/under-development', function () {
     return view('pages.under-development');
 })->name('under-development');
 
@@ -131,10 +150,12 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
             ->names('unit'); // jangan pakai except('index')
     });
 
-    Route::get('/perumahaan/{perumahaan:slug}/tahap-json',
-        [EtalaseJsonController::class, 'listByPerumahaan'])
+    Route::get(
+        '/perumahaan/{perumahaan:slug}/tahap-json',
+        [EtalaseJsonController::class, 'listByPerumahaan']
+    )
         ->name('tahap.list'); // untuk ambil tahap sesuai perumahaan (ajax)
-                          // Ambil Unit berdasar  kan tahap
+    // Ambil Unit berdasar  kan tahap
     Route::get('/tahap/{tahapId}/unit-json', [EtalaseJsonController::class, 'getUnitsByTahap']);
     Route::get('/etalase/unit/{id}/harga-json', [EtalaseJsonController::class, 'getUnitHarga']);
 
@@ -320,6 +341,31 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
                 ->name('settingPPJB.bonusCash.reject');
         });
 
+
+        /**
+         * =========================
+         * BONUS CASH
+         * =========================
+         */
+        Route::prefix('/bonus-kpr')->group(function () {
+            Route::get('/edit', [SettingBonusKprController::class, 'edit'])
+                ->name('settingPPJB.bonusKpr.edit');
+            Route::post('/pengajuan-update', [SettingBonusKprController::class, 'pengajuanUpdate'])
+                ->name('settingPPJB.bonusKpr.pengajuanUpdate');
+            Route::patch('/{batch}/nonaktif', [SettingBonusKprController::class, 'nonAktif'])
+                ->name('settingPPJB.bonusKpr.nonAktif');
+            Route::delete('/{batch}/cancel', [SettingBonusKprController::class, 'cancelPengajuan'])
+                ->name('settingPPJB.bonusKpr.cancel');
+            Route::get('/history', [SettingBonusKprController::class, 'history'])
+                ->name('settingPPJB.bonusKpr.history');
+
+            // // Approval & Penolakan
+            Route::patch('/{bonusKpr}/approve', [SettingBonusKprController::class, 'approvePengajuan'])
+                ->name('settingPPJB.bonusKpr.approve');
+            Route::delete('/{bonusKpr}/reject', [SettingBonusKprController::class, 'rejectPengajuan'])
+                ->name('settingPPJB.bonusKpr.reject');
+        });
+
         /**
          * =========================
          * CARA BAYAR
@@ -399,17 +445,55 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
 
     // Daftar Nota Masuk
     Route::get('/nota-masuk', [NotaBarangMasukController::class, 'index'])->name('gudang.notaBarangMasuk.index');
-    Route::get('gudang/nota-barang-masuk/{nomorNota}',[NotaBarangMasukController::class, 'show'])->name('gudang.notaBarangMasuk.show');
-    Route::delete('gudang/nota-barang-masuk/{nomorNota}',[NotaBarangMasukController::class, 'destroy'])->name('gudang.notaBarangMasuk.destroy');
+    Route::get('gudang/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'show'])->name('gudang.notaBarangMasuk.show');
+    Route::delete('gudang/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'destroy'])->name('gudang.notaBarangMasuk.destroy');
     // Tambah Nota Masuk
     Route::get('/nota-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
     Route::post('/nota-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
 });
 
+// keuangan Group
+Route::middleware('auth')->prefix('keuangan')->group(function () {
+    Route::get('/', function () {
+        return view('superadmin.dashboard.index');
+    })->name('superadmin.dashboard.index');
+
+    // Periode Keuangan
+    Route::resource('periode-keuangan', PeriodeKeuanganController::class)->names('keuangan.periodeKeuangan');
+
+    // Kategori Akun
+    Route::get('/kategori-akun', [KategoriAkunKeuanganController::class, 'index'])->name('keuangan.kategoriAkun.index');
+
+    // Akun Keuangan
+    Route::resource('/akun-keuangan', controller: AkunKeuanganController::class)->names('keuangan.akunKeuangan');
+
+    // Transaksi jurnal
+    Route::get('/transaksi-jurnal', [TransaksiJurnalController::class, 'create'])->name('keuangan.transaksiJurnal.create');
+    Route::post('/transaksi-jurnal', [TransaksiJurnalController::class, 'store'])->name('keuangan.transaksiJurnal.store');
+    Route::get('/transaksi-jurnal/{id}/edit', [TransaksiJurnalController::class, 'edit'])->name('keuangan.transaksiJurnal.edit');
+    Route::put('/transaksi-jurnal/{id}', [TransaksiJurnalController::class, 'update'])->name('keuangan.transaksiJurnal.update');
+    Route::delete('/transaksi-jurnal/{id}', [TransaksiJurnalController::class, 'destroy'])->name('keuangan.transaksiJurnal.destroy');
+
+    Route::prefix('/laporan')->group(function () {
+        Route::get('/jurmal-umum', [LaporanJurnalController::class, 'index'])->name('keuangan.laporanJurnal.index');
+        Route::get('/jurnal-umum/export-excel', [LaporanJurnalController::class, 'exportExcel'])->name('keuangan.laporanJurnal.exportExcel');
+        Route::get('/jurnal-umum/export-pdf', [LaporanJurnalController::class, 'exportPdf'])->name('keuangan.laporanJurnal.exportPdf');
+
+        Route::get('/buku-besar', [BukuBesarController::class, 'index'])->name('keuangan.bukuBesar.index');
+        Route::get('/buku-besar/export-excel', [BukuBesarController::class, 'exportExcel'])->name('keuangan.bukuBesar.exportExcel');
+        Route::get('/buku-besar/export-pdf', [BukuBesarController::class, 'exportPdf'])->name('keuangan.bukuBesar.exportPdf');
+
+        Route::get('/neraca-saldo', [NeracaSaldoController::class, 'index'])->name('keuangan.neracaSaldo.index');
+        Route::get('/neraca-saldo/export-excel', [NeracaSaldoController::class, 'exportExcel'])->name('keuangan.neracaSaldo.exportExcel');
+        Route::get('/neraca-saldo/export-pdf', [NeracaSaldoController::class, 'exportPdf'])->name('keuangan.neracaSaldo.exportPdf');
+    });
+});
+
+
 // Superadmin Menu
-Route::middleware('auth')->prefix('superadmin')->group(function() {
+Route::middleware('auth')->prefix('superadmin')->group(function () {
     // role dan hak akses
-      Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
+    Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
 
     // akun karyawan
     Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');

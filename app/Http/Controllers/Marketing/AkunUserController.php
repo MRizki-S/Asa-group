@@ -41,8 +41,8 @@ class AkunUserController extends Controller
             ])
             ->latest();
 
-        // 🔸 Filter tambahan jika login adalah Sales atau Project Manager
-        if (Auth::user()->hasAnyRole(['Sales'])) {
+        // 🔸 Filter tambahan jika login adalah Marketing atau Project Manager
+        if (Auth::user()->hasAnyRole(['Marketing'])) {
             $query->whereHas('booking', function ($q) {
                 $q->where('sales_id', Auth::id());
             });

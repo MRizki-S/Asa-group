@@ -180,7 +180,7 @@ class KelengkapanBerkasKprController extends Controller
                             . "Terima kasih telah mempercayakan proses pembelian rumah Anda kepada kami. 😊";
 
                         // Kirim pesan
-                        $this->notification->sendWhatsApp($customer->no_hp, $messageCustomer);
+                        // $this->notification->sendWhatsApp($customer->no_hp, $messageCustomer);
                     }
                 }
             }

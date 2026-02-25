@@ -68,7 +68,7 @@ class PengajuanPembatalanController extends Controller
 
             // ✅ Commit transaksi
             DB::commit();
-    
+
             return redirect()->back()->with('success', 'Pengajuan pembatalan berhasil dikirim ke Project Manager.');
         } catch (\Throwable $e) {
             // ❌ Jika gagal, rollback database
@@ -106,8 +106,8 @@ class PengajuanPembatalanController extends Controller
         ->where('status_pengajuan', 'pending')
         ->orderByDesc('created_at');
 
-        // 🔸 Filter tambahan kalau login sebagai SALES
-        if ($user->hasRole('Sales')) {
+        // 🔸 Filter tambahan kalau login sebagai Marketing
+        if ($user->hasRole('Marketing')) {
             $query->where('diajukan_oleh', $user->id);
         }
 

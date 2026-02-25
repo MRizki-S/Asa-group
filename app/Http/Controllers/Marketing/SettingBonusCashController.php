@@ -343,7 +343,7 @@ class SettingBonusCashController extends Controller
             ->with('success', 'Pengajuan Bonus Cash berhasil disetujui dan diaktifkan.');
     }
 
-
+    // Manager Keuangan aksi untuk tolak pengajuan Bonus Cash baru
     public function rejectPengajuan(PpjbBonusCashBatch $bonusCash)
     {
         try {

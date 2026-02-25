@@ -206,10 +206,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'mei-marketing',
-                    'nama_lengkap' => 'YASINTA MAULADAVA MEILANI',
-                    'no_hp' => '6285238617670',
-                    'password' => 'mei#iilhr22h',
+                    'username' => 'devilhr-marketing',
+                    'nama_lengkap' => 'DEVINTA ADELIA',
+                    'no_hp' => '6285856141227',
+                    'password' => '12345678',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,

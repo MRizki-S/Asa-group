@@ -42,18 +42,18 @@
 
                     @can('marketing.setting-ppjb.kelola.pengajuan-perubahaan')
                         <div class="flex items-center gap-2">
-                            @if (!$caraBayarPendingKpr)
-                                <button @click="openModal = true"
-                                    class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                                    Ajukan Cara Bayar Baru
-                                </button>
-                            @endif
+                            {{-- @if (!$caraBayarPendingKpr) --}}
+                            <button @click="openModal = true"
+                                class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                                Ajukan Cara Bayar Baru
+                            </button>
+                            {{-- @endif --}}
                         </div>
                     @endcan
                 </div>
 
                 {{-- Tidak ada data --}}
-                @if (!$caraBayarActiveKpr && !$caraBayarPendingKpr)
+                @if ($caraBayarActiveKpr->isEmpty() && $caraBayarPendingKpr->isEmpty())
                     <div class="mb-4">
                         <div
                             class="rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/20 p-4 text-center">
@@ -65,13 +65,13 @@
                 @endif
 
                 {{-- Aktif --}}
-                @if ($caraBayarActiveKpr)
+                @foreach ($caraBayarActiveKpr as $item)
                     <div class="mb-4">
                         <div
                             class="rounded-xl border border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/20 p-4 flex flex-col">
                             <div class="flex items-center justify-between mb-2">
                                 <h4 class="font-semibold text-green-800 dark:text-green-300 text-lg">
-                                    {{ $caraBayarActiveKpr->nama_cara_bayar ?? 'Cara Bayar KPR (Aktif)' }}
+                                    {{ $item->nama_cara_bayar ?? 'Cara Bayar KPR (Aktif)' }}
                                 </h4>
                                 <span class="px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">ACC</span>
                             </div>
@@ -81,7 +81,7 @@
                                 <div class="flex-1 min-w-[150px]">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
                                         Cicilan</label>
-                                    <input type="text" readonly value="{{ $caraBayarActiveKpr->nama_cara_bayar ?? '-' }}"
+                                    <input type="text" readonly value="{{ $item->nama_cara_bayar ?? '-' }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 dark:bg-gray-700 dark:text-white">
                                 </div>
 
@@ -89,7 +89,7 @@
                                 <div class="flex-1 min-w-[150px]">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jumlah
                                         Cicilan</label>
-                                    <input type="text" readonly value="{{ $caraBayarActiveKpr->jumlah_cicilan }} x"
+                                    <input type="text" readonly value="{{ $item->jumlah_cicilan }} x"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 dark:bg-gray-700 dark:text-white">
                                 </div>
 
@@ -98,7 +98,7 @@
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Minimal
                                         DP</label>
                                     <input type="text" readonly
-                                        value="Rp {{ number_format($caraBayarActiveKpr->minimal_dp, 0, ',', '.') }}"
+                                        value="Rp {{ number_format($item->minimal_dp, 0, ',', '.') }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 dark:bg-gray-700 dark:text-white">
                                 </div>
 
@@ -113,13 +113,13 @@
 
                             <div class="flex justify-between items-center mt-2">
                                 <p class="text-sm text-gray-500">
-                                    Disetujui oleh <strong>{{ $caraBayarActiveKpr->approver->username ?? '-' }}</strong>
-                                    pada {{ $caraBayarActiveKpr->updated_at?->translatedFormat('d M Y') ?? '-' }}
+                                    Disetujui oleh <strong>{{ $item->approver->username ?? '-' }}</strong>
+                                    pada {{ $item->updated_at?->translatedFormat('d M Y') ?? '-' }}
                                 </p>
                                 <div class="mt-4 flex justify-end">
                                     @can('marketing.setting-ppjb.kelola.nonaktif')
-                                        <form action="{{ route('settingPPJB.caraBayar.nonAktif', $caraBayarActiveKpr) }}"
-                                            method="POST" class="delete-form">
+                                        <form action="{{ route('settingPPJB.caraBayar.nonAktif', $item) }}" method="POST"
+                                            class="delete-form">
                                             @csrf
                                             @method('PATCH')
                                             <button type="button"
@@ -132,10 +132,10 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                @endforeach
 
                 {{-- Pending --}}
-                @if ($caraBayarPendingKpr)
+                @foreach ($caraBayarPendingKpr as $item)
                     <div class="mb-4">
                         <div
                             class="rounded-xl border border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20 p-4 flex flex-col shadow-sm transition hover:shadow-md">
@@ -144,7 +144,7 @@
                                 <h4
                                     class="font-semibold text-yellow-800 dark:text-yellow-300 text-lg flex items-center gap-2">
                                     <span>📄
-                                        {{ $caraBayarPendingKpr->nama_cara_bayar ?? 'Cara Bayar KPR - Diajukan (Pending)' }}</span>
+                                        {{ $item->nama_cara_bayar ?? 'Cara Bayar KPR - Diajukan (Pending)' }}</span>
                                 </h4>
                                 <span
                                     class="px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700 font-semibold">Pending</span>
@@ -155,8 +155,7 @@
                                 <div class="flex-1 min-w-[150px]">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
                                         Cicilan</label>
-                                    <input type="text" readonly
-                                        value="{{ $caraBayarPendingKpr->nama_cara_bayar ?? '-' }}"
+                                    <input type="text" readonly value="{{ $item->nama_cara_bayar ?? '-' }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 dark:bg-gray-700 dark:text-white">
                                 </div>
 
@@ -164,7 +163,7 @@
                                 <div class="flex-1 min-w-[150px]">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jumlah
                                         Cicilan</label>
-                                    <input type="text" readonly value="{{ $caraBayarPendingKpr->jumlah_cicilan }} x"
+                                    <input type="text" readonly value="{{ $item->jumlah_cicilan }} x"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 dark:bg-gray-700 dark:text-white">
                                 </div>
 
@@ -173,15 +172,15 @@
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Minimal
                                         DP</label>
                                     <input type="text" readonly
-                                        value="Rp {{ number_format($caraBayarPendingKpr->minimal_dp, 0, ',', '.') }}"
+                                        value="Rp {{ number_format($item->minimal_dp, 0, ',', '.') }}"
                                         class="bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 dark:bg-gray-700 dark:text-white">
                                 </div>
                             </div>
 
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
                                 <p class="text-sm text-gray-500">
-                                    Diajukan oleh <strong>{{ $caraBayarPendingKpr->pengaju->username ?? '-' }}</strong>
-                                    pada {{ $caraBayarPendingKpr->created_at?->translatedFormat('d M Y') ?? '-' }}
+                                    Diajukan oleh <strong>{{ $item->pengaju->username ?? '-' }}</strong>
+                                    pada {{ $item->created_at?->translatedFormat('d M Y') ?? '-' }}
                                 </p>
 
                                 {{-- Tombol Aksi --}}
@@ -189,8 +188,8 @@
 
                                     @can('marketing.setting-ppjb.kelola.action')
                                         {{-- Tombol Tolak --}}
-                                        <form action="{{ route('settingPPJB.caraBayar.reject', $caraBayarPendingKpr) }}"
-                                            method="POST" class="delete-form">
+                                        <form action="{{ route('settingPPJB.caraBayar.reject', $item) }}" method="POST"
+                                            class="delete-form">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button"
@@ -205,8 +204,7 @@
                                         </form>
 
                                         {{-- Tombol ACC --}}
-                                        <form
-                                            action="{{ route('settingPPJB.caraBayar.approve', $caraBayarPendingKpr) }}"method="POST"
+                                        <form action="{{ route('settingPPJB.caraBayar.approve', $item) }}"method="POST"
                                             class="approve-form">
                                             @csrf
                                             @method('PATCH')
@@ -224,8 +222,7 @@
 
                                     @can('marketing.setting-ppjb.kelola.cancel')
                                         {{-- Tombol untuk pengaju --}}
-                                        <form
-                                            action="{{ route('settingPPJB.caraBayar.cancelPengajuan', $caraBayarPendingKpr) }}"
+                                        <form action="{{ route('settingPPJB.caraBayar.cancelPengajuan', $item) }}"
                                             method="POST" class="delete-form">
                                             @csrf
                                             @method('DELETE')
@@ -239,7 +236,7 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                @endforeach
 
             </div>
 
@@ -319,15 +316,15 @@
                                 <div class="mt-4 flex justify-end">
 
                                     @can('marketing.setting-ppjb.kelola.nonaktif')
-                                    <form action="{{ route('settingPPJB.caraBayar.nonAktif', $item) }}" method="POST"
-                                        class="delete-form">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="button"
-                                            class="nonAktifkanCaraBayar px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
-                                            Nonaktifkan
-                                        </button>
-                                    </form>
+                                        <form action="{{ route('settingPPJB.caraBayar.nonAktif', $item) }}" method="POST"
+                                            class="delete-form">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="button"
+                                                class="nonAktifkanCaraBayar px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">
+                                                Nonaktifkan
+                                            </button>
+                                        </form>
                                     @endcan
 
                                 </div>
@@ -440,7 +437,6 @@
                 @endforeach
 
             </div>
-
 
 
             <!-- Modal -->

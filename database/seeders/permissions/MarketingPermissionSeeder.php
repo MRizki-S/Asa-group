@@ -26,7 +26,7 @@ class MarketingPermissionSeeder extends Seeder
             'marketing.kelola-pemesanan.tagihan.read',
             'marketing.kelola-pemesanan.pengajuan-pembatalan',
             'marketing.kelola-pemesanan.print-ppjb',
-            'marketing.kelola-pemesanan.lihat-berkas',
+            'marketing.kelola-pemesanan.read-berkas',
             'marketing.kelola-pemesanan.update-berkas',
             'marketing.kelola-pemesanan.pengajuan-adendum', // masih belum ada fiturnya
 

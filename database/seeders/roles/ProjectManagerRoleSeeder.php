@@ -79,7 +79,7 @@ class ProjectManagerRoleSeeder extends Seeder
                 // Kelola Pemesanan
                 'marketing.kelola-pemesanan.read',
                 'marketing.kelola-pemesanan.tagihan.read',
-                'marketing.kelola-pemesanan.lihat-berkas',
+                'marketing.kelola-pemesanan.read-berkas',
 
                 // Pengajuan
                 'marketing.pengajuan-pemesanan.read',

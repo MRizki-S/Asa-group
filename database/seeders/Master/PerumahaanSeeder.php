@@ -25,7 +25,7 @@ class PerumahaanSeeder extends Seeder
         ];
 
         foreach ($data as $item) {
-            Perumahaan::create($item);
+            Perumahaan::firstOrCreate($item);
         }
 
          $this->command->info('✅ PerumahaanSeeder selesai: semua perumahaan berhasil dibuat.');

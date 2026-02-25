@@ -198,22 +198,32 @@
         // pembayaran / angsuran
         caraBayar: '',
         caraBayarCash: [],
-        caraBayarKpr: null,
+        caraBayarKpr: [],        // list skema KPR
+        selectedKpr: null,       // skema KPR terpilih
+
         selectedCash: '',
         jumlahCicilan: '',
         minimalDp: '',
         angsuranList: [],
 
-        // bonus
-        bonusList: [{ nama_bonus: '' }],
-        bonusOptions: @js(
-            $bonusCash?->items->map(
-                fn($i) => [
-                    'nama_bonus' => $i->nama_bonus,
-                    'nominal' => $i->nominal_bonus,
-                ],
-            ) ?? [],
-        ),
+        // === BONUS CASH ===
+bonusCashList: [{ nama_bonus: '' }],
+bonusCashOptions: @js(
+    $bonusCash?->items->map(fn($i) => [
+        'nama_bonus' => $i->nama_bonus,
+        'nominal'    => $i->nominal_bonus,
+    ]) ?? []
+),
+
+// === BONUS KPR ===
+bonusKprList: [{ nama_bonus: '' }],
+bonusKprOptions: @js(
+    $bonusKpr?->items->map(fn($i) => [
+        'nama_bonus' => $i->nama_bonus,
+        'nominal'    => $i->nominal_bonus,
+    ]) ?? []
+),
+
 
         isLoading: false,
 
@@ -247,15 +257,12 @@
                 const data = await res.json();
 
                 this.caraBayarCash = Array.isArray(data?.data?.cash) ? data.data.cash : [];
-                this.caraBayarKpr = data?.data?.kpr ?? null;
+                this.caraBayarKpr = Array.isArray(data?.data?.kpr) ? data.data.kpr : [];
+                this.selectedKpr = null;
+
 
                 // auto isi jika sudah pilih sebelumnya
-                if (this.caraBayar === 'kpr' && this.caraBayarKpr) {
-                    const jumlah = parseInt(this.caraBayarKpr.jumlah_cicilan) || 0;
-                    this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
-                    this.minimalDp = parseInt(this.caraBayarKpr.minimal_dp) || '';
-                    if (jumlah > 0) this.generateAngsuran(jumlah);
-                }
+
 
                 if (this.caraBayar === 'cash' && this.selectedCash) {
                     const found = this.caraBayarCash.find(c => c.nama_cara_bayar === this.selectedCash);
@@ -275,28 +282,38 @@
         // === PEMILIHAN CARA BAYAR ===
         pilihCash(cashItem) {
             this.caraBayar = 'cash';
-            this.selectedCash = cashItem.nama_cara_bayar;
+            this.selectedCash = cashItem
 
             const jumlah = parseInt(cashItem.jumlah_cicilan) || 0;
-            this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
+            this.jumlahCicilan = jumlah ? jumlah: '';
             this.minimalDp = parseInt(cashItem.minimal_dp) || 0;
             this.generateAngsuran(jumlah);
         },
+
+        pilihKpr(kprItem) {
+            this.caraBayar = 'kpr';
+            this.selectedKpr = kprItem;
+
+            const jumlah = parseInt(kprItem.jumlah_cicilan) || 0;
+            this.jumlahCicilan = jumlah ? jumlah : '';
+            this.minimalDp = parseInt(kprItem.minimal_dp) || 0;
+
+            this.generateAngsuran(jumlah);
+        },
+
 
         onCaraBayarChange(val) {
             this._resetAngsuranState({ keepCaraBayar: true });
 
             if (val === 'kpr') {
-                if (this.caraBayarKpr) {
-                    const jumlah = parseInt(this.caraBayarKpr.jumlah_cicilan) || 0;
-                    this.jumlahCicilan = jumlah ? jumlah + ' x' : '';
-                    this.minimalDp = parseInt(this.caraBayarKpr.minimal_dp) || 0;
-                    if (jumlah > 0) this.generateAngsuran(jumlah);
-                } else if (this.selectedCustomer?.booking?.perumahaan_id) {
-                    this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
-                }
+                this.selectedKpr = null;
+            }
+
+            if (val === 'cash') {
+                this.selectedCash = '';
             }
         },
+
 
         // === ANGSURAN ===
         generateAngsuran(jumlah) {
@@ -336,27 +353,46 @@
             if (!opts.keepCaraBayar) this.caraBayar = '';
         },
 
-        // === BONUS HANDLER ===
-        availableOptions(index) {
-            const selected = this.bonusList.map(b => b.nama_bonus).filter(Boolean);
-            return this.bonusOptions.filter(opt =>
-                !selected.includes(opt.nama_bonus) || opt.nama_bonus === this.bonusList[index].nama_bonus
-            );
-        },
+        availableBonusCash(index) {
+    const selected = this.bonusCashList.map(b => b.nama_bonus).filter(Boolean);
+    return this.bonusCashOptions.filter(opt =>
+        !selected.includes(opt.nama_bonus) ||
+        opt.nama_bonus === this.bonusCashList[index].nama_bonus
+    );
+},
 
-        getNominal(nama_bonus) {
-            const found = this.bonusOptions.find(o => o.nama_bonus === nama_bonus);
-            return found ? found.nominal : '';
-        },
+getNominalCash(nama) {
+    const found = this.bonusCashOptions.find(o => o.nama_bonus === nama);
+    return found ? found.nominal : '';
+},
 
-        addBonus() {
-            const remaining = this.bonusOptions.filter(opt =>
-                !this.bonusList.some(b => b.nama_bonus === opt.nama_bonus)
-            );
-            if (remaining.length > 0) {
-                this.bonusList.push({ nama_bonus: '' });
-            }
-        },
+addBonusCash() {
+    const remaining = this.bonusCashOptions.filter(opt =>
+        !this.bonusCashList.some(b => b.nama_bonus === opt.nama_bonus)
+    );
+    if (remaining.length) this.bonusCashList.push({ nama_bonus: '' });
+},
+
+availableBonusKpr(index) {
+    const selected = this.bonusKprList.map(b => b.nama_bonus).filter(Boolean);
+    return this.bonusKprOptions.filter(opt =>
+        !selected.includes(opt.nama_bonus) ||
+        opt.nama_bonus === this.bonusKprList[index].nama_bonus
+    );
+},
+
+getNominalKpr(nama) {
+    const found = this.bonusKprOptions.find(o => o.nama_bonus === nama);
+    return found ? found.nominal : '';
+},
+
+addBonusKpr() {
+    const remaining = this.bonusKprOptions.filter(opt =>
+        !this.bonusKprList.some(b => b.nama_bonus === opt.nama_bonus)
+    );
+    if (remaining.length) this.bonusKprList.push({ nama_bonus: '' });
+},
+
 
         // === SELECT2 ===
         initSelect2() {

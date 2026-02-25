@@ -1,33 +1,36 @@
 <?php
+
 namespace App\Http\Controllers\Marketing;
 
-use App\Http\Controllers\Controller;
-use App\Models\CustomerBooking;
-use App\Models\PemesananUnit;
-use App\Models\PemesananUnitBonusCash;
-use App\Models\PemesananUnitCaraBayar;
-use App\Models\PemesananUnitCash;
-use App\Models\PemesananUnitCashDokumen;
-use App\Models\PemesananUnitCicilan;
-use App\Models\PemesananUnitDataDiri;
-use App\Models\PemesananUnitKeterlambatan;
-use App\Models\PemesananUnitKpr;
-use App\Models\PemesananUnitMutu;
-use App\Models\PemesananUnitPembatalan;
-use App\Models\PemesananUnitPromo;
+use App\Models\Unit;
+use App\Models\User;
 use App\Models\Perumahaan;
-use App\Models\PpjbBonusCashBatch;
+use Illuminate\Http\Request;
+use App\Models\PemesananUnit;
 use App\Models\PpjbCaraBayar;
-use App\Models\PpjbKeterlambatan;
 use App\Models\PpjbMutuBatch;
 use App\Models\PpjbPembatalan;
 use App\Models\PpjbPromoBatch;
-use App\Models\Unit;
-use App\Models\User;
-use App\Services\NotificationGroupService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CustomerBooking;
+use App\Models\PemesananUnitKpr;
+use App\Models\PemesananUnitCash;
+use App\Models\PemesananUnitMutu;
+use App\Models\PpjbBonusKprBatch;
+use App\Models\PpjbKeterlambatan;
+use App\Models\PemesananUnitPromo;
+use App\Models\PpjbBonusCashBatch;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PemesananUnitCicilan;
+use Illuminate\Support\Facades\Auth;
+use App\Models\PemesananUnitBonusKpr;
+use App\Models\PemesananUnitDataDiri;
+use App\Models\PemesananUnitBonusCash;
+use App\Models\PemesananUnitCaraBayar;
+use App\Models\PemesananUnitPembatalan;
+use App\Models\PemesananUnitCashDokumen;
+use App\Models\PemesananUnitKeterlambatan;
+use App\Services\NotificationGroupService;
 
 class PemesananUnitController extends Controller
 {
@@ -66,7 +69,7 @@ class PemesananUnitController extends Controller
         // ===== Customer Booking (SUDAH DIFILTER PERUMAHAAAN) =====
         $query = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
             ->where('perumahaan_id', $perumahaanId) // 🔥 FILTER UTAMA
-            ->where('status', 'active')
+            ->where('status', operator: 'active')
             ->whereDoesntHave('user.pemesananSebagaiCustomer');
 
         // 🔐 Role restriction
@@ -133,7 +136,15 @@ class PemesananUnitController extends Controller
             ->where('status_aktif', 1)
             ->latest('id')
             ->first();
-        // dd($bonusCas h);
+
+        // ===== 4️⃣ Bonus KPR Batch Aktif =====
+        $bonusKpr = PpjbBonusKprBatch::with(['items'])
+            ->where('perumahaan_id', $perumahaanId)
+            ->where('status_aktif', 1)
+            ->latest('id')
+            ->first();
+
+        // dd($bonusKpr);
         return view('marketing.pemesanan-unit.create', [
             'customersData' => $customersData,
             'keterlambatan' => $keterlambatan,
@@ -141,25 +152,27 @@ class PemesananUnitController extends Controller
             'promoCash'     => $promoCash,
             'promoKpr'      => $promoKpr,
             'bonusCash'     => $bonusCash,
+            'bonusKpr'      => $bonusKpr,
             'breadcrumbs'   => [
                 ['label' => 'Pemesanan Unit', 'url' => route('marketing.pemesananUnit.index')],
             ],
         ]);
     }
 
-/**
- * Show the form for creating a new resource.
- */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         //
     }
 
-/**
- * Store a newly created resource in storage.
- */
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
+        // dd($request->all());
         // 🧩 VALIDASI SEBELUM TRANSAKSI
         $request->validate([
             // === FIELD UMUM ===
@@ -186,10 +199,16 @@ class PemesananUnitController extends Controller
             'cara_bayar'                => 'required|in:cash,kpr',
 
             // bonus cash (opsional)
-            'nama_bonus'                => 'nullable|array',
-            'nama_bonus.*'              => 'nullable|string|max:255',
-            'nominal_bonus'             => 'nullable|array',
-            'nominal_bonus.*'           => 'nullable|numeric|min:0',
+            'nama_bonus_cash'                => 'nullable|array',
+            'nama_bonus_cash.*'              => 'nullable|string|max:255',
+            'nominal_bonus_cash'             => 'nullable|array',
+            'nominal_bonus_cash.*'           => 'nullable|numeric|min:0',
+
+            // bonus kpr (opsional)
+            'nama_bonus_kpr'                => 'nullable|array',
+            'nama_bonus_kpr.*'              => 'nullable|string|max:255',
+            'nominal_bonus_kpr'             => 'nullable|array',
+            'nominal_bonus_kpr.*'           => 'nullable|numeric|min:0',
 
             // === FIELD CASH (wajib jika cara_bayar = cash) ===
             'cash_harga_rumah'          => 'required_if:cara_bayar,cash|min:0',
@@ -323,9 +342,9 @@ class PemesananUnitController extends Controller
                 }
 
                 // 🔹 Simpan bonus cash (jika ada)
-                if ($request->has('nama_bonus') && is_array($request->nama_bonus)) {
-                    foreach ($request->nama_bonus as $index => $namaBonus) {
-                        $nominalBonus = $request->nominal_bonus[$index] ?? 0;
+                if ($request->has('nama_bonus_cash') && is_array($request->nama_bonus_cash)) {
+                    foreach ($request->nama_bonus_cash as $index => $namaBonus) {
+                        $nominalBonus = $request->nominal_bonus_cash[$index] ?? 0;
 
                         PemesananUnitBonusCash::create([
                             'pemesanan_unit_id' => $pemesanan->id,
@@ -334,7 +353,6 @@ class PemesananUnitController extends Controller
                         ]);
                     }
                 }
-
             } elseif ($request->cara_bayar === 'kpr') {
                 // 🔹 Simpan data ke tabel pemesanan_unit_kpr
                 PemesananUnitKpr::create([
@@ -350,44 +368,57 @@ class PemesananUnitController extends Controller
                     'harga_total'           => $request->kpr_harga_total,
                     'status_kpr'            => 'proses',
                 ]);
-            }
 
-            // update status unit menjadi sold
-            // $unit->update(['status_unit' => 'sold']);
+                // 🔹 Simpan bonus kpr (jika ada)
+                if ($request->has('nama_bonus_kpr') && is_array($request->nama_bonus_kpr)) {
+                    foreach ($request->nama_bonus_kpr as $index => $namaBonus) {
+                        $nominalBonus = $request->nominal_bonus_kpr[$index] ?? 0;
+
+                        PemesananUnitBonusKpr::create([
+                            'pemesanan_unit_id' => $pemesanan->id,
+                            'nama_bonus'        => $namaBonus,
+                            'nominal_bonus'     => $nominalBonus,
+                        ]);
+                    }
+                }
+            }
 
             // ✅ Commit transaksi
             DB::commit();
 
-            // Kirim notifikasi ke grup WhatsApp Marketing ASA
-            // Ambil group ID dari .env
-            $groupId       = env('FONNTE_ID_GROUP_MARKETING_ADL');
+            // Ambil nama perumahan
             $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
-            $namaTahap     = $unit->tahap->nama_tahap ?? '-';
-            $namaUnit      = $unit->nama_unit ?? '-';
 
-            // Tentukan panjang maksimum label agar sejajar
-            $pad = 12;
+            // Mapping group berdasarkan perumahan
+            $groupMap = [
+                'Asa Dreamland'           => env('FONNTE_ID_GROUP_MARKETING_ADL'),
+                'Lembah Hijau Residence'  => env('FONNTE_ID_GROUP_MARKETING_LHR'),
+            ];
 
-            $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
-            $namaTahap     = $unit->tahap->nama_tahap ?? '-';
-            $namaUnit      = $unit->nama_unit ?? '-';
+            // Tentukan group ID
+            $groupId = $groupMap[$namaPerumahan] ?? null;
 
+            // Data lainnya
+            $namaTahap = $unit->tahap->nama_tahap ?? '-';
+            $namaUnit  = $unit->nama_unit ?? '-';
+
+            // Pesan
             $messageGroup =
-            "🛎️ *Pengajuan Pemesanan Unit Baru*\n\n" .
-            "```\n" .
-            "Sales       : {$sales->nama_lengkap}\n" .
-            "Customer    : {$request->nama_pribadi}\n" .
-            "Perumahan   : {$namaPerumahan}\n" .
-            "Tahap       : {$namaTahap}\n" .
-            "Unit        : {$namaUnit}\n" .
-            "Cara Bayar  : " . strtoupper($request->cara_bayar) . "\n" .
+                "🛎️ *Pengajuan Pemesanan Unit Baru*\n\n" .
+                "```\n" .
+                "Sales       : {$sales->nama_lengkap}\n" .
+                "Customer    : {$request->nama_pribadi}\n" .
+                "Perumahan   : {$namaPerumahan}\n" .
+                "Tahap       : {$namaTahap}\n" .
+                "Unit        : {$namaUnit}\n" .
+                "Cara Bayar  : " . strtoupper($request->cara_bayar) . "\n" .
                 "Status      : Pending\n" .
                 "```\n\n" .
-                "Menunggu persetujuan admin KPR 🕓";
+                "Menunggu persetujuan Staff KPR 🕓";
 
-            // Kirim ke groupp
+            // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
-                $this->notificationGroup->send($groupId, $messageGroup);
+                // $this->notificationGroup->send($groupId, $messageGroup);
             }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');
@@ -486,11 +517,12 @@ class PemesananUnitController extends Controller
          * 🔹 SNAPSHOT CARA BAYAR
          * ======================================
          */
-        $caraBayar = PpjbCaraBayar::where('perumahaan_id', $pemesananUnit->perumahaan_id)
-            ->where('status_aktif', true)
+        // dd($request->all());
+        $caraBayar = PpjbCaraBayar::where('id', $request->cara_bayar_id)
+            ->where('status_aktif', 1)
             ->where('status_pengajuan', 'acc')
             ->first();
-
+        // dd($caraBayar);
         if ($caraBayar) {
             PemesananUnitCaraBayar::create([
                 'pemesanan_unit_id' => $pemesananUnit->id,
@@ -498,36 +530,35 @@ class PemesananUnitController extends Controller
                 'minimal_dp'        => $caraBayar->minimal_dp,
             ]);
         }
-
     }
 
-/**
- * Display the specified resource.
- */
+    /**
+     * Display the specified resource.
+     */
     public function show(string $id)
     {
         //
     }
 
-/**
- * Show the form for editing the specified resource.
- */
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(string $id)
     {
         //
     }
 
-/**
- * Update the specified resource in storage.
- */
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-/**
- * Remove the specified resource from storage.
- */
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(string $id)
     {
         //

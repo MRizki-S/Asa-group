@@ -85,7 +85,7 @@ class MasterKprDokumenSeeder extends Seeder
 
             // ---- DATA DIRI
             foreach ($dokumenDataDiri as $namaDokumen) {
-                MasterKprDokumen::create([
+                MasterKprDokumen::firstOrCreate([
                     'bank_id'      => $bank->id,
                     'kategori'     => 'data_diri',
                     'nama_dokumen' => $namaDokumen,
@@ -95,7 +95,7 @@ class MasterKprDokumenSeeder extends Seeder
 
             // ---- DATA KERJA
             foreach ($dokumenDataKerjaUmum as $namaDokumen) {
-                MasterKprDokumen::create([
+                MasterKprDokumen::firstOrCreate([
                     'bank_id'      => $bank->id,
                     'kategori'     => 'data_kerja',
                     'nama_dokumen' => $namaDokumen,
@@ -106,7 +106,7 @@ class MasterKprDokumenSeeder extends Seeder
             // Jika bank adalah BTN, tambahkan dokumen ekstra
             if ($bankNama === 'BTN') {
                 foreach ($dokumenDataKerjaBTN as $namaDokumen) {
-                    MasterKprDokumen::create([
+                    MasterKprDokumen::firstOrCreate([
                         'bank_id'      => $bank->id,
                         'kategori'     => 'data_kerja',
                         'nama_dokumen' => $namaDokumen,
@@ -117,7 +117,7 @@ class MasterKprDokumenSeeder extends Seeder
 
             // ---- FORM BANK
             foreach ($dokumenFormBank as $namaDokumen) {
-                MasterKprDokumen::create([
+                MasterKprDokumen::firstOrCreate([
                     'bank_id'      => $bank->id,
                     'kategori'     => 'form_bank',
                     'nama_dokumen' => $namaDokumen,
@@ -127,7 +127,7 @@ class MasterKprDokumenSeeder extends Seeder
 
             // ---- DEVELOPER
             foreach ($dokumenDeveloperUmum as $namaDokumen) {
-                MasterKprDokumen::create([
+                MasterKprDokumen::firstOrCreate([
                     'bank_id'      => $bank->id,
                     'kategori'     => 'developer',
                     'nama_dokumen' => $namaDokumen,
@@ -138,7 +138,7 @@ class MasterKprDokumenSeeder extends Seeder
         }
 
         // Tambahkan SLF untuk bank BRI dengan id 3
-        MasterKprDokumen::create([
+        MasterKprDokumen::firstOrCreate([
             'bank_id'      => '3',
             'kategori'     => 'developer',
             'nama_dokumen' => 'SLF (BRI)',
