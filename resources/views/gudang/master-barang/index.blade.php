@@ -189,6 +189,7 @@
             const dataTable = new simpleDatatables.DataTable("#table-masterBarang", {
                 searchable: true,
                 sortable: true,
+                perPageSelect: [10, 25, 50, 100]
             });
         }
     </script>

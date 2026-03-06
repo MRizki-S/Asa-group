@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\StockGudangHub;
+use App\Models\TransferGudangHubUbs;
+use App\Models\NotaBarangMasukDetail;
 use Illuminate\Database\Eloquent\Model;
 
 class MasterBarang extends Model
@@ -29,5 +31,15 @@ class MasterBarang extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function notaDetails()
+    {
+        return $this->hasMany(NotaBarangMasukDetail::class, 'barang_id');
+    }
+
+    public function transferGudang()
+    {
+        return $this->hasMany(TransferGudangHubUbs::class, 'barang_id');
     }
 }

@@ -282,6 +282,7 @@
                     $(selectEl).select2({
                         placeholder: 'Cari barang...',
                         allowClear: true,
+                        theme: 'bootstrap4',
                         width: '100%'
                     })
 

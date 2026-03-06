@@ -445,8 +445,8 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
 
     // Daftar Nota Masuk
     Route::get('/nota-masuk', [NotaBarangMasukController::class, 'index'])->name('gudang.notaBarangMasuk.index');
-    Route::get('gudang/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'show'])->name('gudang.notaBarangMasuk.show');
-    Route::delete('gudang/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'destroy'])->name('gudang.notaBarangMasuk.destroy');
+    Route::get('/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'show'])->name('gudang.notaBarangMasuk.show');
+    Route::delete('/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'destroy'])->name('gudang.notaBarangMasuk.destroy');
     // Tambah Nota Masuk
     Route::get('/nota-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
     Route::post('/nota-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');

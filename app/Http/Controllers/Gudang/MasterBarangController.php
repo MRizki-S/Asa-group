@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Gudang;
 
 use App\Models\Ubs;
-use App\Models\StockBarang;
 use App\Models\MasterBarang;
 use Illuminate\Http\Request;
 use App\Models\StockGudangHub;
@@ -32,23 +31,23 @@ class MasterBarangController extends Controller
             'stockHub:id,barang_id,minimal_stock',
             'stockUbs:id,barang_id,minimal_stock',
         ])->select([
-            'id',
-            'kode_barang',
-            'nama_barang',
-            'satuan',
-            'created_by',
-            'created_at',
-        ])
+                    'id',
+                    'kode_barang',
+                    'nama_barang',
+                    'satuan',
+                    'created_by',
+                    'created_at',
+                ])
             ->with('creator:id,username,nama_lengkap')
-            ->orderByDesc('created_at')
+            ->orderBy('kode_barang')
             ->get();
 
         return view('gudang.master-barang.index', [
             'masterBarang' => $masterBarang,
-            'breadcrumbs'  => [
+            'breadcrumbs' => [
                 [
                     'label' => 'Master Barang',
-                    'url'   => route('gudang.masterBarang.index'),
+                    'url' => route('gudang.masterBarang.index'),
                 ],
             ],
         ]);
@@ -61,7 +60,7 @@ class MasterBarangController extends Controller
 
         // Generate kode baru
         if ($lastBarang) {
-            $lastId  = intval(str_replace('BRG-', '', $lastBarang->kode_barang));
+            $lastId = intval(str_replace('BRG-', '', $lastBarang->kode_barang));
             $newKode = 'BRG-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
         } else {
             $newKode = 'BRG-0001';
@@ -69,14 +68,14 @@ class MasterBarangController extends Controller
 
         return view('gudang.master-barang.create', [
             'newKodeBarang' => $newKode,
-            'breadcrumbs'   => [
+            'breadcrumbs' => [
                 [
                     'label' => 'Master Barang',
-                    'url'   => route('gudang.masterBarang.index'),
+                    'url' => route('gudang.masterBarang.index'),
                 ],
                 [
                     'label' => 'Tambah Master Barang',
-                    'url'   => route('gudang.masterBarang.create'),
+                    'url' => route('gudang.masterBarang.create'),
                 ],
             ],
         ]);
@@ -87,7 +86,7 @@ class MasterBarangController extends Controller
         $validated = $request->validate([
             'kode_barang' => 'required|string|unique:master_barang,kode_barang',
             'nama_barang' => 'required|string|max:255|unique:master_barang,nama_barang',
-            'satuan'      => 'required|string|max:100',
+            'satuan' => 'required|string|max:100',
             'minimal_stock_hub' => 'required|numeric',
             'minimal_stock_ubs' => 'required|numeric',
         ]);
@@ -100,14 +99,14 @@ class MasterBarangController extends Controller
             $barang = MasterBarang::create([
                 'kode_barang' => $validated['kode_barang'],
                 'nama_barang' => $validated['nama_barang'],
-                'satuan'      => $validated['satuan'],
-                'created_by'  => Auth::id(),
+                'satuan' => $validated['satuan'],
+                'created_by' => Auth::id(),
             ]);
 
             // INSERT STOCK GUDANG HUB
             StockGudangHub::create([
-                'barang_id'     => $barang->id,
-                'jumlah_stock'  => 0,
+                'barang_id' => $barang->id,
+                'jumlah_stock' => 0,
                 'minimal_stock' => $validated['minimal_stock_hub'],
             ]);
 
@@ -118,12 +117,12 @@ class MasterBarangController extends Controller
 
             foreach ($allUbs as $ubs) {
                 $stockUbsData[] = [
-                    'barang_id'     => $barang->id,
-                    'ubs_id'        => $ubs->id,
-                    'jumlah_stock'  => 0,
+                    'barang_id' => $barang->id,
+                    'ubs_id' => $ubs->id,
+                    'jumlah_stock' => 0,
                     'minimal_stock' => $validated['minimal_stock_ubs'],
-                    'created_at'    => now(),
-                    'updated_at'    => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }
 
@@ -149,17 +148,17 @@ class MasterBarangController extends Controller
             ->firstOrFail();
         // dd($barangEdit);
         return view('gudang.master-barang.edit', [
-            'barangEdit'        => $barangEdit,
+            'barangEdit' => $barangEdit,
             'minimal_stock_hub' => optional($barangEdit->stockHub)->minimal_stock,
             'minimal_stock_ubs' => optional($barangEdit->stockUbs->first())->minimal_stock,
-            'breadcrumbs'       => [
+            'breadcrumbs' => [
                 [
                     'label' => 'Master Barang',
-                    'url'   => route('gudang.masterBarang.index'),
+                    'url' => route('gudang.masterBarang.index'),
                 ],
                 [
                     'label' => 'Edit Master Barang',
-                    'url'   => route('gudang.masterBarang.edit', $kode_barang),
+                    'url' => route('gudang.masterBarang.edit', $kode_barang),
                 ],
             ],
         ]);
@@ -169,10 +168,10 @@ class MasterBarangController extends Controller
     public function update(Request $request, $kode_barang)
     {
         $validated = $request->validate([
-            'nama_barang'        => 'required|string|max:255',
-            'satuan'             => 'required|string|max:50',
-            'minimal_stock_hub'  => 'required|numeric|min:0',
-            'minimal_stock_ubs'  => 'required|numeric|min:0',
+            'nama_barang' => 'required|string|max:255',
+            'satuan' => 'required|string|max:50',
+            'minimal_stock_hub' => 'required|numeric|min:0',
+            'minimal_stock_ubs' => 'required|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($validated, $kode_barang) {
@@ -182,22 +181,43 @@ class MasterBarangController extends Controller
 
             $masterBarang->update([
                 'nama_barang' => $validated['nama_barang'],
-                'satuan'      => $validated['satuan'],
+                'satuan' => $validated['satuan'],
             ]);
 
             // Stock HUB
-            StockGudangHub::where('barang_id', $masterBarang->id)
-                ->update([
+            $stockHub = StockGudangHub::where('barang_id', $masterBarang->id)->first();
+            if ($stockHub) {
+                $stockHub->update([
                     'minimal_stock' => $validated['minimal_stock_hub'],
-                    'updated_at'    => now(),
                 ]);
+            } else {
+                StockGudangHub::create([
+                    'barang_id' => $masterBarang->id,
+                    'jumlah_stock' => 0,
+                    'minimal_stock' => $validated['minimal_stock_hub'],
+                ]);
+            }
 
             // Stock UBS
-            StockGudangUbs::where('barang_id', $masterBarang->id)
-                ->update([
-                    'minimal_stock' => $validated['minimal_stock_ubs'],
-                    'updated_at'    => now(),
-                ]);
+            $allUbs = Ubs::select('id')->get();
+            foreach ($allUbs as $ubs) {
+                $stockUbs = StockGudangUbs::where('barang_id', $masterBarang->id)
+                    ->where('ubs_id', $ubs->id)
+                    ->first();
+
+                if ($stockUbs) {
+                    $stockUbs->update([
+                        'minimal_stock' => $validated['minimal_stock_ubs'],
+                    ]);
+                } else {
+                    StockGudangUbs::create([
+                        'barang_id' => $masterBarang->id,
+                        'ubs_id' => $ubs->id,
+                        'jumlah_stock' => 0,
+                        'minimal_stock' => $validated['minimal_stock_ubs'],
+                    ]);
+                }
+            }
         });
 
         return redirect()
