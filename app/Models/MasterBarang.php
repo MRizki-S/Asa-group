@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\StockGudangHub;
-use App\Models\TransferGudangHubUbs;
+use App\Models\BarangSatuanKonversi;
 use App\Models\NotaBarangMasukDetail;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,23 +13,23 @@ class MasterBarang extends Model
     protected $fillable = [
         'kode_barang',
         'nama_barang',
-        'satuan',
-        'created_by',
+        'base_unit_id',
+        'is_stock'
     ];
 
-    public function stockHub()
+    public function baseUnit()
     {
-        return $this->hasOne(StockGudangHub::class, 'barang_id');
+        return $this->belongsTo(MasterSatuan::class, 'base_unit_id');
     }
 
-    public function stockUbs()
+    public function konversiSatuan()
     {
-        return $this->hasMany(StockGudangUbs::class, 'barang_id');
+        return $this->hasMany(BarangSatuanKonversi::class, 'barang_id');
     }
 
-    public function creator()
+    public function stock()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasMany(StockGudang::class, 'barang_id');
     }
 
     public function notaDetails()

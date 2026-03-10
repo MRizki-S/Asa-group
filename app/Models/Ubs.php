@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Models\Jurnal;
-use App\Models\StockGudangUbs;
-use App\Models\TransferGudangHubUbs;
 use Illuminate\Database\Eloquent\Model;
 
 class Ubs extends Model
@@ -18,14 +16,8 @@ class Ubs extends Model
         return $this->hasMany(Jurnal::class);
     }
 
-    public function stockBarang()
+    public function stock()
     {
-        return $this->hasMany(StockGudangUbs::class, 'ubs_id');
-    }
-
-    // relasi ke fifo transfer gudang hub ke ubs 
-    public function transfers()
-    {
-        return $this->hasMany(TransferGudangHubUbs::class, 'ke_ubs_id');
+        return $this->hasMany(StockGudang::class, 'ubs_id');
     }
 }
