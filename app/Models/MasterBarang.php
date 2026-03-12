@@ -22,7 +22,7 @@ class MasterBarang extends Model
         return $this->belongsTo(MasterSatuan::class, 'base_unit_id');
     }
 
-    public function konversiSatuan()
+    public function satuanKonversi()
     {
         return $this->hasMany(BarangSatuanKonversi::class, 'barang_id');
     }

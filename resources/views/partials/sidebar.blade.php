@@ -1004,7 +1004,7 @@
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
                                 <li>
-                                    <a href="{{ route('gudang.masterBarang.index') }}"
+                                    <a href="{{ route('gudang.masterSatuanBarang.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
                                         :class="page === 'MasterSatuan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         <svg xmlns="http://www.w3.org/2000/svg"

@@ -22,7 +22,7 @@ return new class extends Migration
                 ->constrained('master_satuan')
                 ->cascadeOnDelete();
 
-            $table->decimal('konversi_ke_base', 18, 6);
+            $table->decimal('konversi_ke_base', 18, 3);
 
             $table->boolean('is_default')->default(false);
 

@@ -11,7 +11,7 @@ class BarangSatuanKonversi extends Model
     protected $fillable = [
         'barang_id',
         'satuan_id',
-        'konversi',
+        'konversi_ke_base',
         'is_default'
     ];
 

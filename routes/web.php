@@ -20,6 +20,7 @@ use App\Http\Controllers\Etalase\UnitController;
 
 // Gudang
 use App\Http\Controllers\Gudang\MasterBarangController;
+use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\StockBarangController;
 
@@ -56,6 +57,7 @@ use App\Http\Controllers\Marketing\SettingPromoPpjbController;
 // Superadmin
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
+use App\Models\MasterSatuan;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -439,6 +441,9 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Stock Barang
     Route::get('/stock-barang', [StockBarangController::class, 'stockIndex'])
         ->name('gudang.stockBarang.index');
+
+    // Master satuan barang controller
+    Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');
 
     // Master Barang
     Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
