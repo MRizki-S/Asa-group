@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use App\Models\User;
 use App\Models\NotaBarangMasukDetail;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class NotaBarangMasuk extends Model
 {
-    use HasFactory;
-
     protected $table = 'nota_barang_masuk';
 
     protected $fillable = [
@@ -18,24 +15,26 @@ class NotaBarangMasuk extends Model
         'tanggal_nota',
         'supplier',
         'cara_bayar',
+        'status',
         'created_by',
+        'posted_at'
     ];
 
     protected $casts = [
         'tanggal_nota' => 'date',
+        'posted_at' => 'datetime'
     ];
 
-    // RELASI
 
-    // 1 nota punya banyak detail
-    public function details()
-    {
-        return $this->hasMany(NotaBarangMasukDetail::class, 'nota_id');
-    }
-
-    // User pembuat nota
+    // user pembuat
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    // detail barang
+    public function details()
+    {
+        return $this->hasMany(NotaBarangMasukDetail::class, 'nota_id');
     }
 }

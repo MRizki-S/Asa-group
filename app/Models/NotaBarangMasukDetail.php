@@ -3,49 +3,46 @@
 namespace App\Models;
 
 use App\Models\MasterBarang;
+use App\Models\MasterSatuan;
+use App\Models\NotaBarangMasuk;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class NotaBarangMasukDetail extends Model
 {
-    use HasFactory;
-
     protected $table = 'nota_barang_masuk_detail';
 
     protected $fillable = [
         'nota_id',
         'barang_id',
         'merk',
-        'jumlah_masuk',
+        'jumlah_input',
+        'satuan_id',
+        'jumlah_base',
         'harga_satuan',
         'harga_total',
-        'jumlah_sisa',
+        'jumlah_sisa'
     ];
 
     protected $casts = [
-        'jumlah_masuk' => 'decimal:2',
-        'jumlah_sisa'  => 'decimal:2',
+        'jumlah_input' => 'decimal:3',
+        'jumlah_base' => 'decimal:3',
+        'jumlah_sisa' => 'decimal:3',
         'harga_satuan' => 'decimal:2',
-        'harga_total'  => 'decimal:2',
+        'harga_total' => 'decimal:2'
     ];
 
-    // RELASI
-
-    // Detail milik 1 nota
     public function nota()
     {
         return $this->belongsTo(NotaBarangMasuk::class, 'nota_id');
     }
 
-    // Detail untuk 1 barang
     public function barang()
     {
         return $this->belongsTo(MasterBarang::class, 'barang_id');
     }
 
-    // Kalau nanti kamu pakai barang_keluar_fifo
-    // public function barangKeluarFifo()
-    // {
-    //     return $this->hasMany(BarangKeluarFifo::class, 'nota_detail_id');
-    // }
+    public function satuan()
+    {
+        return $this->belongsTo(MasterSatuan::class, 'satuan_id');
+    }
 }

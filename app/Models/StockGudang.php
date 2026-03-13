@@ -16,6 +16,11 @@ class StockGudang extends Model
         'minimal_stock'
     ];
 
+    protected $casts = [
+        'jumlah_stock' => 'decimal:3',
+        'minimal_stock' => 'decimal:3'
+    ];
+
     public function barang()
     {
         return $this->belongsTo(MasterBarang::class, 'barang_id');
