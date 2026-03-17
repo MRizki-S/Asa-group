@@ -42,6 +42,9 @@ use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
 use App\Http\Controllers\Keuangan\BukuBesarController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
+use App\Http\Controllers\masterQcRap;
+use App\Http\Controllers\Produksi\MasterQcRapController;
+use App\Http\Controllers\Produksi\MasterUpahController;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -466,4 +469,11 @@ Route::middleware('auth')->prefix('superadmin')->group(function () {
 
     // akun karyawan
     Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
+});
+
+
+// Produksi
+Route::middleware('auth')->prefix('produksi')->group(function () {
+    Route::resource('master-qc-rap', MasterQcRapController::class)->names('produksi.masterQcRap');
+    Route::resource('master-upah', MasterUpahController::class)->names('produksi.masterUpah');
 });
