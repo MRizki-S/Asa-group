@@ -1,12 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PerumahaanSelectController;
-
-// Etalase
 use App\Http\Controllers\Etalase\BlokController;
 use App\Http\Controllers\Etalase\EtalaseJsonController;
 use App\Http\Controllers\Etalase\KualifikasiBlokController;
@@ -17,14 +11,12 @@ use App\Http\Controllers\Etalase\TahapKualifikasiController;
 use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
-
-// Gudang
+use App\Http\Controllers\Gudang\DaftarNotaMasukController;
+use App\Http\Controllers\Gudang\DraftNotaMasukController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\StockBarangController;
-
-// Keuangan
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Keuangan\BukuBesarController;
 use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
@@ -32,8 +24,6 @@ use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
-
-// Marketing
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
@@ -53,11 +43,12 @@ use App\Http\Controllers\Marketing\SettingPembatalanController;
 use App\Http\Controllers\Marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\Marketing\SettingPromoPpjbController;
-
-// Superadmin
+use App\Http\Controllers\PerumahaanSelectController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use App\Models\MasterSatuan;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -448,13 +439,22 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Master Barang
     Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
 
-    // Daftar Nota Masuk
-    Route::get('/nota-masuk', [NotaBarangMasukController::class, 'index'])->name('gudang.notaBarangMasuk.index');
-    Route::get('/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'show'])->name('gudang.notaBarangMasuk.show');
-    Route::delete('/nota-barang-masuk/{nomorNota}', [NotaBarangMasukController::class, 'destroy'])->name('gudang.notaBarangMasuk.destroy');
     // Tambah Nota Masuk
-    Route::get('/nota-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
-    Route::post('/nota-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+    Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
+    Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+    Route::get('/barang/{id}/satuan', [NotaBarangMasukController::class, 'getSatuan']);
+    // List Draft nota masuk
+    Route::get('/draft-nota-masuk', [DraftNotaMasukController::class, 'index'])->name('gudang.draftNotaMasuk.index');
+    Route::get('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'edit'])->name('gudang.draftNotaMasuk.edit');
+    Route::patch('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'update'])->name('gudang.draftNotaMasuk.update'); /// update change draft nota masuk
+    Route::patch('/draft-nota-masuk/{nomorNota}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit'); /// submit draft nota masuk menjadi posting
+    Route::delete('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
+
+    // Daftar Nota Masuk
+    Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
+    Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
+    Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
 });
 
 // keuangan Group

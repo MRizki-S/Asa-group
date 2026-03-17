@@ -38,60 +38,32 @@
             class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-                {{-- Judul --}}
-                <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                    Daftar Nota Barang Masuk
-                </h3>
+                {{-- Judul & Status --}}
+                <div class="flex items-center gap-3">
+                    <h3 class="text-base font-bold text-gray-800 dark:text-white/90">
+                        Draft Nota Barang Masuk
+                    </h3>
+                    <span class="px-2 py-1 text-xs font-bold uppercase tracking-wider text-yellow-800 bg-yellow-100 rounded-lg">
+                        Draft Mode
+                    </span>
+                </div>
 
-                {{-- Filter Tanggal --}}
-                <form method="GET" action="{{ route('gudang.daftarNotaMasuk.index') }}"
-                    class="flex items-center gap-2">
-
-                    <div class="relative" x-data="{ tanggal: '{{ request('tanggal', now()->toDateString()) }}' }">
-
-                        <!-- Icon Kalender -->
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"> <svg
-                                class="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-                            </svg>
-                        </div>
-
-                        <!-- INPUT (Flatpickr handle format) -->
-                        <input type="text" name="tanggal" x-ref="tanggal" x-init="flatpickr($refs.tanggal, {
-                                defaultDate: tanggal,
-                                dateFormat: 'Y-m-d', // format untuk backend
-                                altInput: true,
-                                altFormat: 'd-m-Y', // format tampil UI
-                            })"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-            focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5
-            dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    </div>
-
-                    <button type="submit"
-                        class="inline-flex items-center gap-1
-        rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white
-        hover:bg-blue-700 transition">
-                        Terapkan
-                    </button>
-
-                    <div class="h-6 w-[1px] bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-                    <a href="{{route('gudang.draftNotaMasuk.index') }}"
-                        class="inline-flex items-center gap-1 rounded-md bg-yellow-400 px-3 py-1.5 text-sm font-medium text-yellow-900 hover:bg-yellow-500 transition">
-                        Draft Nota
+                {{-- Aksis --}}
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}"
+                        class="inline-flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Daftar Nota Final (Posted)
                     </a>
-                </form>
-
-
+                </div>
             </div>
 
 
 
 
-            <table id="table-daftarNotaMasuk">
+            <table id="table-DraftNotaMasuk">
                 <thead>
                     <tr>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
@@ -156,16 +128,16 @@
                         {{-- Aksi --}}
                         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
 
-                            {{-- SHOW / DETAIL --}}
-                            <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
-                                class="inline-flex items-center gap-1
-                                        text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
-                                        dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
+                            {{-- EDIT --}}
+                            <a href="{{ route('gudang.draftNotaMasuk.edit', $nota->nomor_nota) }}"
+                                        class="inline-flex items-center gap-1
+                                        text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
+                                        dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
                                         px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                        focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
+                                        focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
                                         active:scale-95">
-                                Detail
-                            </a>
+                                        Edit 
+                                    </a>
                         </td>
 
                     </tr>
@@ -183,8 +155,8 @@
 
 {{-- sweatalert 2 for delete data --}}
 <script>
-    if (document.getElementById("table-daftarNotaMasuk") && typeof simpleDatatables.DataTable !== 'undefined') {
-        const dataTable = new simpleDatatables.DataTable("#table-daftarNotaMasuk", {
+    if (document.getElementById("table-DraftNotaMasuk") && typeof simpleDatatables.DataTable !== 'undefined') {
+        const dataTable = new simpleDatatables.DataTable("#table-DraftNotaMasuk", {
             searchable: true,
             sortable: true,
             perPageSelect: [5, 10, 20, 50],

@@ -37,7 +37,8 @@
     sidebarToggle: false,
     scrollTop: false
     }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
-    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))" :class="{ 'dark bg-gray-900': darkMode === true }">
+    $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    @sidebar-minimize.window="sidebarToggle = true" :class="{ 'dark bg-gray-900': darkMode === true }">
     <!-- Preloader -->
     {{-- @include('partials.preloader') --}}
 
@@ -92,10 +93,10 @@
                 timerProgressBar: true,
                 showConfirmButton: false,
                 backdrop: `
-                rgba(0,0,0,0.4)
-                left top
-                no-repeat
-            `
+                    rgba(0,0,0,0.4)
+                    left top
+                    no-repeat
+                `
             })
         </script>
     @elseif (session('error'))

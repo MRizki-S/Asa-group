@@ -1003,6 +1003,7 @@
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
+                                <!-- Master Satuan -->
                                 <li>
                                     <a href="{{ route('gudang.masterSatuanBarang.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1027,7 +1028,7 @@
                                     </a>
                                 </li>
 
-                                <!-- Daftar Nota Masuk -->
+                                <!-- Daftar Material Barang -->
                                 <li>
                                     <a href="{{ route('gudang.masterBarang.index') }}" class="menu-dropdown-item group flex items-center"
                                         :class="page === 'MasterBarang' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1157,7 +1158,7 @@
 
                                 <!-- Daftar Nota Masuk -->
                                 <li>
-                                    <a href="{{ route('gudang.notaBarangMasuk.index') }}" class="menu-dropdown-item group flex items-center"
+                                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}" class="menu-dropdown-item group flex items-center"
                                         :class="page === 'DaftarNotaMasuk' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
                                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -1252,7 +1253,7 @@
 
                                 <!-- Daftar Nota Masuk -->
                                 <li>
-                                    <a href="{{ route('gudang.notaBarangMasuk.index') }}" class="menu-dropdown-item group flex items-center"
+                                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}" class="menu-dropdown-item group flex items-center"
                                         :class="page === 'BarangReturnGudang' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         <svg class="w-5 h-5 text-gray-800 dark:text-white"
                                             aria-hidden="true"
@@ -1411,7 +1412,7 @@
 
                                 <!-- Daftar Nota Masuk -->
                                 <li>
-                                    <a href="{{ route('gudang.notaBarangMasuk.index') }}"
+                                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}"
                                         @click="selected = (selected === 'DaftarNotaMasuk' ? '' : 'DaftarNotaMasuk')"
                                         class="menu-item group"
                                         :class="(selected === 'DaftarNotaMasuk') && (page === 'DaftarNotaMasuk') ?
