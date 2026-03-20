@@ -1193,12 +1193,12 @@
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Item Unit Menunggu Pengawas-->
                     <li>
-                        <a href="{{ route('marketing.akunUser.index') }}"
-                            @click="selected = (selected === 'AkunUser' ? '':'AkunUser')" class="menu-item group"
-                            :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-active' :
+                        <a href="{{ route('produksi.pengajuanPembangunanUnit.index') }}"
+                            @click="selected = (selected === 'PengajuanPembangunan' ? '':'PengajuanPembangunan')" class="menu-item group"
+                            :class="(selected === 'PengajuanPembangunan') && (page === 'PengajuanPembangunan') ? 'menu-item-active' :
                             'menu-item-inactive'">
 
-                            <svg :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-icon-active' : ''"
+                            <svg :class="(selected === 'PengajuanPembangunan') && (page === 'PengajuanPembangunan') ? 'menu-item-icon-active' : ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20"
                                 fill="currentColor">
@@ -1209,7 +1209,7 @@
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Unit Menunggu Pengawas
+                                Permintaan Dibangun
                             </span>
                         </a>
                     </li>
@@ -1218,9 +1218,9 @@
 
                     <!-- Menu Item Pembangunan Unit-->
                     <li>
-                        <a href="{{ route('marketing.akunUser.index') }}"
-                            @click="selected = (selected === 'AkunUser' ? '':'AkunUser')" class="menu-item group"
-                            :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-active' :
+                        <a href="{{ route('produksi.pembangunanUnit.index') }}"
+                            @click="selected = (selected === 'pembangunanUnit' ? '':'pembangunanUnit')" class="menu-item group"
+                            :class="(selected === 'pembangunanUnit') && (page === 'pembangunanUnit') ? 'menu-item-active' :
                             'menu-item-inactive'">
 
                             <svg :class="(selected === 'PembangunanUnit') && (page === 'PembangunanUnit') ?
@@ -1241,7 +1241,7 @@
 
 
                     <!-- Menu Item Riwayat Pembangunan -->
-                    <li>
+                    {{-- <li>
                         <a href="/marketing/manage-pemesanan"
                             @click="selected = (selected === 'ManagePemesanan' ? '':'ManagePemesanan')"
                             class="menu-item group"
@@ -1263,7 +1263,7 @@
                                 Riwayat Pembangunan
                             </span>
                         </a>
-                    </li>
+                    </li> --}}
                     <!-- Menu Item Riwayat Pembangunan -->
                 </ul>
             </div>

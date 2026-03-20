@@ -3,7 +3,7 @@
 @section('pageActive', 'MasterQC-RAP')
 
 @section('content')
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{ openQc: null }">
 
     <div x-data="{ pageName: 'Detail Master QC & RAP' }">
         @include('partials.breadcrumb')
@@ -40,123 +40,160 @@
         </div>
     </div>
 
-    {{-- 2. LANGKAH QC --}}
-    <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
-            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500">1. Daftar Langkah QC</h3>
-            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
-        </div>
+    {{-- HEADER SECTION --}}
+    <div class="flex items-center gap-4 mb-6">
+        <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500">Struktur QC & Rencana Anggaran</h3>
+        <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+    </div>
 
-        <div class="space-y-4">
-            @foreach($container->urutan as $index => $qc)
-                <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="flex-none w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
+    {{-- ACCORDION MASTER LOOP --}}
+    <div class="space-y-4 mb-10">
+        @foreach($container->urutan as $index => $qc)
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden"
+                 x-data="{ isOpen: false }">
+
+                {{-- Header Accordion --}}
+                <div @click="isOpen = !isOpen"
+                     class="flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors bg-white dark:bg-gray-800">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
                             {{ $qc->qc_ke }}
                         </div>
-                        <div class="flex-1">
+                        <div>
                             <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ $qc->nama_qc }}</h4>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $qc->tugas->count() }} Tugas</p>
                         </div>
                     </div>
-
-                    <div class="ml-14 space-y-2">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tugas / Checklist:</p>
-                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                            @foreach($qc->tugas as $tIndex => $tugas)
-                                <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <svg class="w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    {{ $tugas->tugas }}
-                                </li>
-                            @endforeach
-                        </ul>
+                    <div class="flex items-center gap-6">
+                        <div class="hidden md:flex gap-4 text-right">
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase">Sub-Total Upah</p>
+                                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">Rp {{ number_format($qc->rapUpah->sum('nominal_standar'), 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="isOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
                     </div>
                 </div>
-            @endforeach
-        </div>
+
+                {{-- Body Accordion --}}
+                <div x-show="isOpen" x-collapse x-cloak>
+                    <div class="p-6 border-t border-gray-100 dark:border-gray-700 space-y-8">
+
+                        {{-- A. DAFTAR TUGAS --}}
+                        <div>
+                            <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Daftar Checklist Tugas
+                            </p>
+                            <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 ml-3">
+                                @foreach($qc->tugas as $tugas)
+                                    <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
+                                        <svg class="w-4 h-4 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        {{ $tugas->tugas }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {{-- B. RAP BAHAN PER QC --}}
+                            <div class="space-y-3">
+                                <p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Rencana Anggaran Bahan
+                                </p>
+                                <div class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="bg-gray-50 dark:bg-gray-700/30 text-gray-500 uppercase">
+                                            <tr>
+                                                <th class="px-4 py-2">Barang</th>
+                                                <th class="px-4 py-2 text-right">Qty</th>
+                                                <th class="px-4 py-2">Satuan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+                                            @forelse($qc->rapBahan as $bahan)
+                                                <tr>
+                                                    <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">{{ $bahan->barang_id ?? 'Semen' }} (dummy)</td>
+                                                    <td class="px-4 py-2.5 text-right font-bold text-gray-900 dark:text-white">{{ number_format($bahan->jumlah_kebutuhan_standar, 0) }}</td>
+                                                    <td class="px-4 py-2.5 text-gray-500">{{ $bahan->satuan }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="3" class="px-4 py-4 text-center text-gray-400 italic">Tidak ada bahan.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {{-- C. RAP UPAH PER QC --}}
+                            <div class="space-y-3">
+                                <p class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Rencana Anggaran Upah
+                                </p>
+                                <div class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="bg-gray-50 dark:bg-gray-700/30 text-gray-500 uppercase">
+                                            <tr>
+                                                <th class="px-4 py-2">Pekerjaan</th>
+                                                <th class="px-4 py-2 text-right">Nominal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+                                            @forelse($qc->rapUpah as $upah)
+                                                <tr>
+                                                    <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">{{ $upah->masterUpah->nama_upah }}</td>
+                                                    <td class="px-4 py-2.5 text-right font-bold text-blue-600 dark:text-blue-400">Rp {{ number_format($upah->nominal_standar, 0, ',', '.') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="2" class="px-4 py-4 text-center text-gray-400 italic">Tidak ada upah.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                        <tfoot class="bg-amber-50/30 dark:bg-amber-900/10 font-bold border-t dark:border-gray-700">
+                                            <tr>
+                                                <td class="px-4 py-2 text-gray-600 dark:text-gray-400 uppercase text-[9px]">Sub-Total Upah QC</td>
+                                                <td class="px-4 py-2 text-right text-amber-700 dark:text-amber-400">Rp {{ number_format($qc->rapUpah->sum('nominal_standar'), 0, ',', '.') }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
 
-    {{-- 3. RAP BAHAN --}}
-    <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
-            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500">2. Rencana Anggaran Bahan</h3>
-            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
-        </div>
+    {{-- RINGKASAN TOTAL AKHIR (Versi Slim & Elegant) --}}
+    <div class="rounded-2xl border border-gray-200 bg-white p-2 shadow-sm transition-all dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex flex-col items-center justify-between gap-4 rounded-xl px-5 py-4 md:flex-row">
 
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase text-xs font-bold">
-                    <tr>
-                        <th class="px-6 py-4">Langkah QC</th>
-                        <th class="px-6 py-4">Nama Barang</th>
-                        <th class="px-6 py-4 text-right">Jumlah Standar</th>
-                        <th class="px-6 py-4">Satuan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @forelse($container->rapBahan as $bahan)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
-                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                <span class="px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs">
-                                    QC-{{ $bahan->urutan->qc_ke }}: {{ $bahan->urutan->nama_qc }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600 dark:text-gray-300">{{ $bahan->barang_id ?? 'Semen' }} (dummy)</td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-gray-900 dark:text-white">{{ number_format($bahan->jumlah_kebutuhan_standar, 2) }}</td>
-                            <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ $bahan->satuan }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Data bahan tidak tersedia.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <div class="flex items-center gap-4">
+                {{-- Icon Container Slim --}}
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 dark:bg-blue-500">
+                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
 
-    {{-- 4. RAP UPAH --}}
-    <div class="mb-12">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
-            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-500">3. Rencana Anggaran Upah</h3>
-            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
-        </div>
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                        Total Anggaran
+                    </h3>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">Estimasi akumulasi upah QC</p>
+                </div>
+            </div>
 
-        <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase text-xs font-bold">
-                    <tr>
-                        <th class="px-6 py-4">Langkah QC</th>
-                        <th class="px-6 py-4">Jenis Pekerjaan</th>
-                        <th class="px-6 py-4 text-right">Nominal Standar</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                    @forelse($container->rapUpah as $upah)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
-                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                <span class="px-2 py-1 rounded bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 text-xs">
-                                    QC-{{ $upah->urutan->qc_ke }}: {{ $upah->urutan->nama_qc }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600 dark:text-gray-300">{{ $upah->masterUpah->nama_upah }}</td>
-                            <td class="px-6 py-4 text-right font-mono font-bold text-blue-600 dark:text-blue-400">
-                                Rp {{ number_format($upah->nominal_standar, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="3" class="px-6 py-10 text-center text-gray-400 italic">Data upah tidak tersedia.</td></tr>
-                    @endforelse
-                </tbody>
-                <tfoot class="bg-gray-50 dark:bg-gray-700/50 border-t dark:border-gray-700">
-                    <tr>
-                        <td colspan="2" class="px-6 py-4 text-right font-bold text-gray-800 dark:text-white uppercase text-xs">Total Anggaran Upah:</td>
-                        <td class="px-6 py-4 text-right font-mono font-bold text-lg text-blue-700 dark:text-blue-300">
-                            Rp {{ number_format($container->rapUpah->sum('nominal_standar'), 0, ',', '.') }}
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
+            {{-- Price Display Slim --}}
+            <div class="flex items-baseline gap-1">
+                <span class="text-sm font-bold text-gray-400 dark:text-gray-500">Rp</span>
+                <p class="text-lg font-black tracking-tight text-gray-900 dark:text-white ">
+                    {{ number_format($container->rapUpah->sum('nominal_standar'), 0, ',', '.') }}
+                </p>
+            </div>
         </div>
     </div>
 

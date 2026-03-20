@@ -91,4 +91,17 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
+
+    // Produksi
+    public function pengajuanDiajukan() {
+        return $this->hasMany(PengajuanPembangunanUnit::class, 'diajukan_oleh');
+    }
+
+    public function pengajuanDirespon() {
+        return $this->hasMany(PengajuanPembangunanUnit::class, 'direspon_oleh');
+    }
+
+    public function pembangunanUnit(){
+        return $this->hasMany(PembangunanUnit::class, 'pengawas_id');
+    }
 }

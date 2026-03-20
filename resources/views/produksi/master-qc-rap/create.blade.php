@@ -9,7 +9,6 @@
             @include('partials.breadcrumb')
         </div>
 
-        {{-- Alert Error Validasi --}}
         @if ($errors->any())
             <div class="flex p-4 mb-6 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-sm" role="alert">
                 <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -43,7 +42,7 @@
                                 class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 transition">
                                 <option value="" class="dark:bg-gray-800">-- Pilih Type --</option>
                                 @foreach ($allType ?? [] as $item)
-                                    <option value="{{ $item->id }}" {{ old('type_id') == $item->id ? 'selected' : '' }} class="dark:bg-gray-800">
+                                    <option value="{{ $item->id }}" {{ old('type_id') == $item->id ? 'selected' : '' }}>
                                         {{ $item->nama_type }}
                                     </option>
                                 @endforeach
@@ -51,7 +50,7 @@
                         </div>
 
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Container</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama QC</label>
                             <input type="text" name="nama_container" required placeholder="Masukkan nama container..."
                                 value="{{ old('nama_container') }}"
                                 class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 transition" />
@@ -118,6 +117,7 @@
                 qcGroups: [],
                 bahanGroups: [],
                 upahGroups: [],
+                openAccordions: {},
 
                 generateQc() {
                     const jumlah = parseInt(this.tempJumlahQc);
@@ -153,57 +153,95 @@
                     this.qcGroups = [];
                     this.bahanGroups = [];
                     this.upahGroups = [];
+                    this.openAccordions = {};
                     for (let i = 1; i <= jumlah; i++) {
                         this.qcGroups.push({
                             qc_ke: i,
                             nama_qc: `QC-${i}`,
                             tugas: ['']
                         });
+                        if(i === 1) this.openAccordions[0] = true;
                     }
                 },
+
                 addQc() {
-                const next = this.qcGroups.length + 1;
-                this.qcGroups.push({ qc_ke: next, nama_qc: `QC-${next}`, tugas: [''] });
+                    const next = this.qcGroups.length + 1;
+                    const index = this.qcGroups.length;
+                    this.qcGroups.push({ qc_ke: next, nama_qc: `QC-${next}`, tugas: [''] });
+                    this.openAccordions[index] = true;
                 },
 
                 removeQc(index) {
                     Swal.fire({
                         title: 'Hapus Langkah QC?',
-                        text: 'Menghapus langkah ini akan menghapus RAP Bahan & Upah terkait yang sudah dipilih!',
+                        text: 'Menghapus langkah ini akan menghapus RAP Bahan & Upah terkait!',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Ya, Hapus',
-                        cancelButtonText: 'Batal'
+                        confirmButtonColor: '#d33'
                     }).then((r) => {
                         if (r.isConfirmed) {
                             this.qcGroups.splice(index, 1);
                             this.qcGroups.forEach((g, i) => g.qc_ke = i + 1);
-                            this.bahanGroups = this.bahanGroups.filter(b => b.urutan_idx < this.qcGroups.length);
-                            this.upahGroups = this.upahGroups.filter(u => u.urutan_idx < this.qcGroups.length);
+                            this.bahanGroups = this.bahanGroups.filter(b => b.urutan_idx !== index);
+                            this.upahGroups = this.upahGroups.filter(u => u.urutan_idx !== index);
                         }
                     });
                 },
 
-                addTugas(qcIndex) { this.qcGroups[qcIndex].tugas.push(''); },
-                removeTugas(qcIndex, tugasIndex) { this.qcGroups[qcIndex].tugas.splice(tugasIndex, 1); },
-                addBahan() { this.bahanGroups.push({ urutan_idx: '', barang_id: '', jumlah: '', satuan: '' }); },
-                removeBahan(index) { this.bahanGroups.splice(index, 1); },
-                addUpah() { this.upahGroups.push({ urutan_idx: '', master_upah_id: '', nominal: '' }); },
-                removeUpah(index) { this.upahGroups.splice(index, 1); }
+                toggleAccordion(index) {
+                    this.openAccordions[index] = !this.openAccordions[index];
+                },
+
+                addTugas(qcIndex) {
+                    this.qcGroups[qcIndex].tugas.push('');
+                },
+
+                removeTugas(qcIndex, tugasIndex) {
+                    this.qcGroups[qcIndex].tugas.splice(tugasIndex, 1);
+                },
+
+                addBahan(indexQC) {
+                    this.bahanGroups.push({
+                        urutan_idx: indexQC,
+                        barang_id: '',
+                        jumlah_kebutuhan_standar: 0,
+                        satuan: ''
+                    });
+                    this.openAccordions[indexQC] = true;
+                },
+
+                removeBahan(index) {
+                    this.bahanGroups.splice(index, 1);
+                },
+
+                formatRupiah(val) {
+                    if (!val) return '';
+                    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                },
+
+                parseNumber(val) {
+                    return val.replace(/\./g, '').replace(/[^0-9]/g, '');
+                },
+
+                addUpah(indexQC) {
+                    this.upahGroups.push({
+                        urutan_idx: indexQC,
+                        master_upah_id: '',
+                        nominal_standar: 0
+                    });
+                    this.openAccordions[indexQC] = true;
+                },
+
+                removeUpah(index) {
+                    this.upahGroups.splice(index, 1);
+                }
             }
         }
     </script>
     <style>
         [x-cloak] { display: none !important; }
-        select option {
-            background-color: white;
-            color: black;
-        }
-        .dark select option {
-            background-color: #1f2937;
-            color: white;
-        }
+        select option { background-color: white; color: black; }
+        .dark select option { background-color: #1f2937; color: white; }
     </style>
 @endsection

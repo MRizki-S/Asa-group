@@ -45,6 +45,8 @@ use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 use App\Http\Controllers\masterQcRap;
 use App\Http\Controllers\Produksi\MasterQcRapController;
 use App\Http\Controllers\Produksi\MasterUpahController;
+use App\Http\Controllers\Produksi\PembangunanUnitController;
+use App\Http\Controllers\Produksi\PengajuanPembangunanUnitController;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -476,4 +478,8 @@ Route::middleware('auth')->prefix('superadmin')->group(function () {
 Route::middleware('auth')->prefix('produksi')->group(function () {
     Route::resource('master-qc-rap', MasterQcRapController::class)->names('produksi.masterQcRap');
     Route::resource('master-upah', MasterUpahController::class)->names('produksi.masterUpah');
+    Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
+    Route::resource('pengajuan-pembangunan', PengajuanPembangunanUnitController::class)->names('produksi.pengajuanPembangunanUnit');
+    Route::post('/pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
+    ->name('produksi.pembangunanUnit.updateTask');
 });

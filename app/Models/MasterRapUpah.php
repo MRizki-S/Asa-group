@@ -28,4 +28,8 @@ class MasterRapUpah extends Model
     {
         return $this->belongsTo(MasterUpah::class);
     }
+
+    public function pembangunanUnitRapUpah(){
+        return $this->hasOne(PembangunanUnitRapUpah::class);
+    }
 }

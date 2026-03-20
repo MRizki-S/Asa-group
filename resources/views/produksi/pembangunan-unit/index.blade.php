@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'MasterQC-RAP')
+@section('pageActive', 'pembangunanUnit')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'Master QC RAP' }">
+        <div x-data="{ pageName: 'Pembangunan Unit' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -39,31 +39,40 @@
                 {{-- tambah data --}}
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        List Master QC & RAP
+                        List Pembangunan Unit
+                        {{ $perumahaanSlug ? ' - ' . ucwords(str_replace('-', ' ', $perumahaanSlug)) : '' }}
                     </h3>
 
-                    @can('etalase.blok.create')
-                        <a href="{{ route('produksi.masterQcRap.create') }}"
+                    {{-- @can('etalase.blok.create')
+                        <a href="{{ route('produksi.pembangunanUnit.create') }}"
                             class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            + Tambah QC & RAP
+                            + Tambah Pembangunan Unit
                         </a>
-                    @endcan
+                    @endcan --}}
                 </div>
 
-                <form method="GET" action="{{ route('produksi.masterQcRap.index') }}" class="mb-4 flex items-center gap-3">
+                <form method="GET" action="{{ route('produksi.pembangunanUnit.index') }}"
+                    class="mb-4 flex items-center gap-3" x-data="{
+                        tahap: [],
+                        async fetchTahap() {
+                            const res = await fetch(`/etalase/perumahaan/{{ $perumahaanSlug }}/tahap-json`);
+                            if (!res.ok) return;
+                            this.tahap = await res.json();
+                        }
+                    }" x-init="fetchTahap()">
                     <h3 class="text-sm text-gray-500 dark:text-white/90">Filter -</h3>
 
-                    <!-- Select Type -->
+                    <!-- Select Tahap -->
                     <div>
-                        <select name="typeFil"
+                        <select name="tahapFil"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                            dark:bg-gray-600 dark:text-white">
-                            <option value="">Semua Type</option>
-                            @foreach ($allType as $item)
-                                <option value="{{ $item->slug }}" {{ $item->slug === $typeSlug ? 'selected' : '' }}>
-                                    {{ $item->nama_type }}
+                    dark:bg-gray-600 dark:text-white">
+                            <option value="">Semua Tahap</option>
+                            <template x-for="t in tahap" :key="t.id">
+                                <option :value="t.slug" :selected="t.slug === '{{ $tahapSlug }}'"
+                                    x-text="t.nama_tahap">
                                 </option>
-                            @endforeach
+                            </template>
                         </select>
                     </div>
 
@@ -71,58 +80,59 @@
                         Terapkan
                     </button>
 
-                    <a href="{{ route('produksi.masterQcRap.index') }}"
+                    <a href="{{ route('produksi.pembangunanUnit.index') }}"
                         class="px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300">
                         Reset
                     </a>
                 </form>
-                <table id="table-qc">
+
+
+                <table id="table-pembangunan-unit">
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Type Unit
+                                Unit
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Nama QC
+                                Tahap
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Jumlah Langkah QC
+                                QC
+                            </th>
+                            <th class="max-w-[100px] bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                Proses Pembangunan
                             </th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Dibuat Pada
+                                Pengawas
                             </th>
-                            @canany(['etalase.blok.update', ' etalase.blok.delete'])
+                            {{-- @canany(['etalase.blok.update', ' etalase.blok.delete'])
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Aksi
                                 </th>
-                            @endcanany
+                            @endcanany --}}
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($allQcContainer as $item)
+                        @foreach ($allPembangunanUnit as $item)
                             <tr>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->type->nama_type }}</td>
+                                    {{ $item->unit->nama_unit }}</td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->nama_container }}</td>
+                                    {{ $item->tahap->nama_tahap }}</td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->urutan->count() }}</td>
+                                    {{ $item->qcContainer->nama_container }}</td>
+                                <td
+                                    class="p-0 font-medium bg-blue-400 text-white whitespace-nowrap dark:text-white text-center">
+                                    <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
+                                        class="block w-full h-full"> {{ $item->total_progres }}%
+                                    </a>
+                                </td>
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->created_at->format('d M Y H:i:s') }}</td>
+                                    {{ $item->pengawas->nama_lengkap ?? '-' }}</td>
 
                                 {{-- @canany(['produksi.qc-urutan.update', 'produksi.qc-urutan.delete']) --}}
-                                <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                    {{-- @can('produksi.qc-urutan.update') --}}
-                                    <a href="{{ route('produksi.masterQcRap.show', $item->id) }}"
-                                        class="btn-edit inline-flex items-center gap-1
-                                    text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
-                                    dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
-                                    px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                    focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
-                                    active:scale-95">
-                                        Detail
-                                    </a>
-                                    <a href="{{ route('produksi.masterQcRap.edit', $item) }}"
+                                {{-- <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                    <a href="{{ route('produksi.pembangunanUnit.edit', $item) }}"
                                         class="btn-edit inline-flex items-center gap-1
                                     text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
                                     dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
@@ -130,20 +140,20 @@
                                     focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
                                     active:scale-95">
                                         Edit
-                                    </a>
-                                    {{-- @endcan --}}
+                                    </a> --}}
+                                {{-- @endcan --}}
 
-                                    {{-- @can('produksi.qc-urutan.delete') --}}
-                                    <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST" class="delete-form">
+                                {{-- @can('produksi.qc-urutan.delete') --}}
+                                {{-- <form action="{{ route('produksi.pembangunanUnit.destroy', $item->id) }}" method="POST" class="delete-form">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button"
                                             class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
                                             Delete
                                         </button>
-                                    </form>
-                                    {{-- @endcan --}}
-                                </td>
+                                    </form> --}}
+                                {{-- @endcan --}}
+                                {{-- </td> --}}
                                 {{-- @endcanany --}}
                             </tr>
                         @endforeach
@@ -168,7 +178,7 @@
 
                 Swal.fire({
                     title: 'Yakin hapus data ini?',
-                    text: "Apakah anda yakin menghapus qc ini? Semua data yang terkait dengan qc akan ikut terhapus.",
+                    text: "Apakah anda yakin menghapus pembangunan unit ini? Semua data yang terkait dengan pembangunan unit akan ikut terhapus.",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -186,8 +196,8 @@
 
 
     <script>
-        if (document.getElementById("table-qc") && typeof simpleDatatables.DataTable !== 'undefined') {
-            const dataTable = new simpleDatatables.DataTable("#table-qc", {
+        if (document.getElementById("table-pembangunan-unit") && typeof simpleDatatables.DataTable !== 'undefined') {
+            const dataTable = new simpleDatatables.DataTable("#table-pembangunan-unit", {
                 searchable: true,
                 sortable: false
             });

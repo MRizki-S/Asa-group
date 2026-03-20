@@ -196,6 +196,11 @@
                                     </svg>
                                 </span>
                             </th>
+                               @can('etalase.unit.detail')
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    Pembangunan
+                                </th>
+                            @endcan
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
@@ -235,6 +240,21 @@
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                     Rp {{ number_format($item->harga_final, 0, ',', '.') }}
                                 </td>
+                                @can('etalase.unit.detail')
+                                <td>
+                                    <button type="button"
+                                        class="btn-ajukan-pembangunan w-full inline-flex justify-center items-center gap-1
+                                        text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200
+                                        dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700
+                                        px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95"
+                                        data-unit-id="{{ $item->id }}"
+                                        data-perumahaan-id="{{ $perumahaan->id }}"
+                                        data-tahap-id="{{ $item->tahap_id }}"
+                                        data-nama-unit="{{ $item->nama_unit }}">
+                                        Ajukan
+                                    </button>
+                                </td>
+                                @endcan
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                     @can('etalase.unit.detail')
                                         <a href="{{ route('unit.show', parameters: ['perumahaan' => $perumahaan->slug, 'unit' => $item]) }}"
@@ -272,17 +292,28 @@
                                             </button>
                                         </form>
                                     @endcan
+
+
                                 </td>
+
+
 
                             </tr>
                         @endforeach
-
                     </tbody>
                 </table>
             </div>
         </div>
 
     </div>
+
+    {{-- Form pengajuan pembangunan --}}
+    <form id="form-pengajuan-pembangunan" action="{{ route('produksi.pengajuanPembangunanUnit.store') }}" method="POST" style="display: none;">
+        @csrf
+        <input type="hidden" name="unit_id" id="input-unit-id">
+        <input type="hidden" name="perumahaan_id" id="input-perumahaan-id">
+        <input type="hidden" name="tahap_id" id="input-tahap-id">
+    </form>
     <!-- ===== Main Content End ===== -->
 
     {{-- sweatalert 2 for delete data --}}
@@ -307,7 +338,37 @@
                     }
                 });
             }
+
+            if (e.target.closest('.btn-ajukan-pembangunan')) {
+                const btn = e.target.closest('.btn-ajukan-pembangunan');
+                const unitId = btn.getAttribute('data-unit-id');
+                const perumahaanId = btn.getAttribute('data-perumahaan-id');
+                const tahapId = btn.getAttribute('data-tahap-id');
+                const namaUnit = btn.getAttribute('data-nama-unit');
+
+                Swal.fire({
+                    title: 'Konfirmasi Pengajuan',
+                    text: `Apakah Anda yakin ingin mengajukan pembangunan untuk unit ${namaUnit}?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#7e3af2',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Ajukan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('input-unit-id').value = unitId;
+                        document.getElementById('input-perumahaan-id').value = perumahaanId;
+                        document.getElementById('input-tahap-id').value = tahapId;
+
+                        document.getElementById('form-pengajuan-pembangunan').submit();
+                    }
+                });
+            }
         });
+
+
+
 
         if (document.getElementById("table-unit") && typeof simpleDatatables.DataTable !== 'undefined') {
             const dataTable = new simpleDatatables.DataTable("#table-unit", {

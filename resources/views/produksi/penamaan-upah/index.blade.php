@@ -19,7 +19,7 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </span>
-                <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="Cari penamaan upah secara instan..."
+                <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="Cari penamaan upah..."
                     class="w-full text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" />
             </div>
 
@@ -29,7 +29,7 @@
             </button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" x-show="pagedData.length > 0">
             <template x-for="upah in pagedData" :key="upah.id">
                 <div class="group rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col h-full justify-between">
@@ -54,6 +54,34 @@
                     </div>
                 </div>
             </template>
+        </div>
+
+        <div x-show="allData.length === 0"
+             class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16 dark:border-gray-700">
+            <div class="rounded-full bg-blue-50 p-4 dark:bg-blue-900/20">
+                <svg class="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Belum Ada Data Upah</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Database masih kosong. Silahkan tambahkan data baru.</p>
+            <button @click="openModal('create')" class="mt-4 text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                + Tambah Data Sekarang
+            </button>
+        </div>
+
+        <div x-show="allData.length > 0 && filteredData.length === 0"
+             class="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-gray-50 py-16 dark:border-gray-700 dark:bg-gray-800/50">
+            <div class="rounded-full bg-gray-200 p-4 dark:bg-gray-700">
+                <svg class="h-10 w-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Data Tidak Ditemukan</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Tidak ada hasil yang cocok untuk "<span class="font-medium text-gray-900 dark:text-white" x-text="searchQuery"></span>"</p>
+            <button @click="searchQuery = ''" class="mt-4 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+                Bersihkan Pencarian
+            </button>
         </div>
 
         <div class="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-6 dark:border-gray-700" x-show="filteredData.length > 0">
@@ -144,6 +172,4 @@
             }
         }
     </script>
-
-
 @endsection

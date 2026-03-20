@@ -24,4 +24,8 @@ class MasterRapBahan extends Model
     {
         return $this->belongsTo(MasterQcUrutan::class, 'master_qc_urutan_id');
     }
+
+    public function pembangunanUnitRapBahan(){
+        return $this->hasOne(PembangunanUnitRapBahan::class);
+    }
 }

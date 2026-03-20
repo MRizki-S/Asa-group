@@ -28,4 +28,9 @@ class MasterQcUrutan extends Model
     {
         return $this->hasMany(MasterRapUpah::class);
     }
+
+    public function pembangunanUnitQc(){
+        return $this->hasOne(PembangunanUnitQc::class);
+    }
+
 }

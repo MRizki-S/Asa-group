@@ -5,22 +5,22 @@
 @section('content')
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
      x-data="qcEditForm(
-        {{ $container->urutan->map(fn($u) => [
+        @js($container->urutan->map(fn($u) => [
             'qc_ke' => $u->qc_ke,
             'nama_qc' => $u->nama_qc,
             'tugas' => $u->tugas->pluck('tugas')->toArray()
-        ])->toJson() }},
-        {{ $container->rapBahan->map(fn($b) => [
+        ])),
+        @js($container->rapBahan->map(fn($b) => [
             'urutan_idx' => $container->urutan->search(fn($u) => $u->id == $b->master_qc_urutan_id),
             'barang_id' => $b->barang_id ?? 1,
             'jumlah_kebutuhan_standar' => $b->jumlah_kebutuhan_standar,
             'satuan' => $b->satuan
-        ])->toJson() }},
-        {{ $container->rapUpah->map(fn($up) => [
+        ])),
+        @js($container->rapUpah->map(fn($up) => [
             'urutan_idx' => $container->urutan->search(fn($u) => $u->id == $up->master_qc_urutan_id),
             'master_upah_id' => $up->master_upah_id,
             'nominal_standar' => $up->nominal_standar
-        ])->toJson() }}
+        ]))
      )">
 
     <div x-data="{ pageName: 'Edit Master QC & RAP' }">
@@ -124,11 +124,17 @@
             qcGroups: initialQc || [],
             bahanGroups: initialBahan || [],
             upahGroups: initialUpah || [],
+            openAccordions: {},
+
+            toggleAccordion(index) {
+                this.openAccordions[index] = !this.openAccordions[index];
+            },
 
             addQc() {
                 const next = this.qcGroups.length + 1;
                 this.qcGroups.push({ qc_ke: next, nama_qc: `QC-${next}`, tugas: [''] });
             },
+
             removeQc(index) {
                 Swal.fire({
                     title: 'Hapus Langkah QC?',
@@ -142,21 +148,66 @@
                 }).then((r) => {
                     if (r.isConfirmed) {
                         this.qcGroups.splice(index, 1);
+                        // Re-order qc_ke
                         this.qcGroups.forEach((g, i) => g.qc_ke = i + 1);
-                        this.bahanGroups = this.bahanGroups.filter(b => b.urutan_idx < this.qcGroups.length);
-                        this.upahGroups = this.upahGroups.filter(u => u.urutan_idx < this.qcGroups.length);
+                        // Filter out materials and wages that belong to the deleted index
+                        this.bahanGroups = this.bahanGroups.filter(b => b.urutan_idx !== index);
+                        this.upahGroups = this.upahGroups.filter(u => u.urutan_idx !== index);
+
+                        // Adjust remaining urutan_idx to keep sync
+                        this.bahanGroups.forEach(b => { if(b.urutan_idx > index) b.urutan_idx--; });
+                        this.upahGroups.forEach(u => { if(u.urutan_idx > index) u.urutan_idx--; });
                     }
                 });
             },
-            addTugas(idx) { this.qcGroups[idx].tugas.push(''); },
-            removeTugas(idx, tIdx) { this.qcGroups[idx].tugas.splice(tIdx, 1); },
-            addBahan() { this.bahanGroups.push({ urutan_idx: 0, barang_id: 1, jumlah_kebutuhan_standar: '', satuan: '' }); },
-            removeBahan(idx) { this.bahanGroups.splice(idx, 1); },
-            addUpah() { this.upahGroups.push({ urutan_idx: 0, master_upah_id: 1, nominal_standar: '' }); },
-            removeUpah(idx) { this.upahGroups.splice(idx, 1); }
+
+            addTugas(idx) {
+                this.qcGroups[idx].tugas.push('');
+            },
+
+            removeTugas(idx, tIdx) {
+                this.qcGroups[idx].tugas.splice(tIdx, 1);
+            },
+
+            addBahan(indexQC) {
+                this.bahanGroups.push({
+                    urutan_idx: indexQC,
+                    barang_id: '',
+                    jumlah_kebutuhan_standar: 0,
+                    satuan: ''
+                });
+                this.openAccordions[indexQC] = true;
+            },
+
+            removeBahan(idx) {
+                this.bahanGroups.splice(idx, 1);
+            },
+
+            formatRupiah(val) {
+                if (!val) return '';
+                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            },
+
+            parseNumber(val) {
+                return val.replace(/\./g, '').replace(/[^0-9]/g, '');
+            },
+
+            addUpah(indexQC) {
+                this.upahGroups.push({
+                    urutan_idx: indexQC,
+                    master_upah_id: '',
+                    nominal_standar: 0
+                });
+                this.openAccordions[indexQC] = true;
+            },
+
+            removeUpah(idx) {
+                this.upahGroups.splice(idx, 1);
+            }
         }
     }
 </script>
+
 <style>
     [x-cloak] { display: none !important; }
     select option { background-color: white; color: black; }

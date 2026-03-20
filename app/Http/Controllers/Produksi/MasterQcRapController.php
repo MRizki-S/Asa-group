@@ -62,7 +62,7 @@ class MasterQcRapController extends Controller
         return view('produksi.master-qc-rap.create', [
             'breadcrumbs' => [
                 ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
-                ['label' => 'Tambah Qc', 'url' => route('produksi.masterQcRap.create')],
+                ['label' => 'Tambah Qc Rap', 'url' => route('produksi.masterQcRap.create')],
             ],
             'allType' => $allType,
             'allUpah' => $allUpah,
@@ -188,7 +188,7 @@ class MasterQcRapController extends Controller
 
         $breadcrumbs = [
             ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
-            ['label' => 'Edit Qc', 'url' => route('produksi.masterQcRap.edit', $id)],
+            ['label' => 'Edit Qc Rap', 'url' => route('produksi.masterQcRap.edit', $id)],
         ];
 
         return view('produksi.master-qc-rap.edit', compact('breadcrumbs', 'container', 'allType', 'allUpah'));
