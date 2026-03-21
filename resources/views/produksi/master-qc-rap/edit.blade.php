@@ -12,9 +12,9 @@
         ])),
         @js($container->rapBahan->map(fn($b) => [
             'urutan_idx' => $container->urutan->search(fn($u) => $u->id == $b->master_qc_urutan_id),
-            'barang_id' => $b->barang_id ?? 1,
+            'barang_id' => $b->master_barang_id ?? 0,
             'jumlah_kebutuhan_standar' => $b->jumlah_kebutuhan_standar,
-            'satuan' => $b->satuan
+            'satuan_id' => $b->master_satuan_id ?? 0,
         ])),
         @js($container->rapUpah->map(fn($up) => [
             'urutan_idx' => $container->urutan->search(fn($u) => $u->id == $up->master_qc_urutan_id),
@@ -174,7 +174,7 @@
                     urutan_idx: indexQC,
                     barang_id: '',
                     jumlah_kebutuhan_standar: 0,
-                    satuan: ''
+                    satuan_id: ''
                 });
                 this.openAccordions[indexQC] = true;
             },

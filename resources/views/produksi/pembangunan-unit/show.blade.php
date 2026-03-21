@@ -125,7 +125,7 @@
                             <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800">
                                 <div>
                                     <p class="text-sm font-bold text-gray-800 dark:text-gray-200">{{ $bahan->nama_barang }}</p>
-                                    <p class="text-xs text-gray-500">Qty: {{ $bahan->jumlah_standar }} {{ $bahan->satuan }}</p>
+                                    <p class="text-xs text-gray-500">Qty: {{ number_format($bahan->jumlah_standar, 0) }} {{ $bahan->satuan }}</p>
                                 </div>
                                 <span class="px-3 py-1 text-[10px] font-bold rounded bg-green-100 text-green-700 uppercase">Tersedia</span>
                             </div>

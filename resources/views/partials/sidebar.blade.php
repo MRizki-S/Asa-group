@@ -1286,12 +1286,12 @@
             <!-- Gudang -  Group -->
 
 
-            @can('akses-produksi')
-            <!-- Master Produksi RAP -->
+            {{-- @can('akses-produksi') --}}
+            <!-- Produksi -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
-                        Master Produksi RAP
+                    Produksi
                     </span>
 
                     <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
@@ -1306,12 +1306,13 @@
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Menu Master QC & RAP-->
                     <li>
-                        <a href="{{ route('marketing.akunUser.index') }}"
-                            @click="selected = (selected === 'AkunUser' ? '':'AkunUser')" class="menu-item group"
-                            :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-active' :
-                                                    'menu-item-inactive'">
+                        <a href="{{ route('produksi.masterQcRap.index') }}"
+                            @click="selected = (selected === 'MasterQC-RAP' ? '':'MasterQC-RAP')"
+                            class="menu-item group"
+                            :class="(selected === 'MasterQC-RAP') && (page === 'MasterQC-RAP') ? 'menu-item-active' :
+                            'menu-item-inactive'">
 
-                            <svg :class="(selected === 'AkunUser') && (page === 'AkunUser') ? 'menu-item-icon-active' : ''"
+                            <svg :class="(selected === 'MasterQC-RAP') && (page === 'MasterQC-RAP') ? 'menu-item-icon-active' : ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
                                 fill="none">
@@ -1335,216 +1336,82 @@
 
                     <!-- Menu Penamaan Upah -->
                     <li>
-                        <a href="{{ route('marketing.akunUser.index') }}"
+                        <a href="{{ route('produksi.masterUpah.index') }}"
                             @click="selected = (selected === 'PenamaanUpah' ? '':'PenamaanUpah')"
                             class="menu-item group"
                             :class="(selected === 'PenamaanUpah') && (page === 'PenamaanUpah') ? 'menu-item-active' :
-                                                    'menu-item-inactive'">
+                            'menu-item-inactive'">
 
                             <svg :class="(selected === 'PenamaanUpah') && (page === 'PenamaanUpah') ? 'menu-item-icon-active' :
-                                                    ''"
+                            ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="currentColor">
                                 <title>money-settings-24-regular</title>
                                 <path
-                                    d="M128 129.09V232a8 8 0 0 1-3.84-1l-88-48.18a8 8 0 0 1-4.16-7V80.18a8 8 0 0 1 .7-3.25Z"
-                                    opacity=".2" />
-                                <path
-                                    d="m223.68 66.15l-88-48.15a15.88 15.88 0 0 0-15.36 0l-88 48.17a16 16 0 0 0-8.32 14v95.64a16 16 0 0 0 8.32 14l88 48.17a15.88 15.88 0 0 0 15.36 0l88-48.17a16 16 0 0 0 8.32-14V80.18a16 16 0 0 0-8.32-14.03M128 32l80.34 44l-29.77 16.3l-80.35-44Zm0 88L47.66 76l33.9-18.56l80.34 44ZM40 90l80 43.78v85.79l-80-43.75Zm176 85.78l-80 43.79v-85.75l32-17.51V152a8 8 0 0 0 16 0v-44.45L216 90v85.77Z" />
+                                    d="M10.5 8a3 3 0 1 0 0 6a3 3 0 0 0 0-6M9 11a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M2 7.25A2.25 2.25 0 0 1 4.25 5h12.5A2.25 2.25 0 0 1 19 7.25v3.924A6.5 6.5 0 0 0 17.5 11V9.5h-.75a2.25 2.25 0 0 1-2.25-2.25V6.5h-8v.75A2.25 2.25 0 0 1 4.25 9.5H3.5v3h.75a2.25 2.25 0 0 1 2.25 2.25v.75h4.813c-.154.478-.255.98-.294 1.5H4.25A2.25 2.25 0 0 1 2 14.75zM4.401 18.5h6.676c.08.523.223 1.026.421 1.5H7a3 3 0 0 1-2.599-1.5M20.5 11.732A6.5 6.5 0 0 1 22 12.81V10a3 3 0 0 0-1.5-2.599zM4.25 6.5a.75.75 0 0 0-.75.75V8h.75A.75.75 0 0 0 5 7.25V6.5zM17.5 8v-.75a.75.75 0 0 0-.75-.75H16v.75c0 .414.336.75.75.75zm-14 6.75c0 .414.336.75.75.75H5v-.75a.75.75 0 0 0-.75-.75H3.5zm10.778-.774a2 2 0 0 1-1.441 2.496l-.584.144a5.7 5.7 0 0 0 .006 1.808l.54.13a2 2 0 0 1 1.45 2.51l-.187.631c.44.386.94.699 1.484.922l.494-.519a2 2 0 0 1 2.899 0l.498.525a5.3 5.3 0 0 0 1.483-.913l-.198-.686a2 2 0 0 1 1.441-2.496l.584-.144a5.7 5 0 0 0-.006-1.808l-.54-.13a2 2 0 0 1-1.45-2.51l.187-.63a5.3 5.3 0 0 0-1.484-.922l-.493.518a2 2 0 0 1-2.9 0l-.498-.525a5.3 5.3 0 0 0-1.483.912zM17.5 19c-.8 0-1.45-.672-1.45-1.5S16.7 16 17.5 16s1.45.672 1.45 1.5S18.3 19 17.5 19" />
                             </svg>
+
+
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                 Penamaan Upah
                             </span>
                         </a>
                     </li>
-                    <!-- Menu Item Master Barang -->
+                    <!-- Menu Penamaan Upah -->
 
+                    <!-- Menu Item Unit Menunggu Pengawas-->
                     <li>
-                        <a href="#" @click.prevent="selected = (selected === 'NotaMasukGroup' ? '':'NotaMasukGroup')"
-                            class="menu-item group"
-                            :class="(selected === 'NotaMasukGroup') || (page === 'DaftarNotaMasuk' ||
-                                                    page === 'TambahNotaMasuk') ? 'menu-item-active' :
-                                                'menu-item-inactive'">
-                            <svg :class="(selected === 'NotaMasukGroup') && (page === 'NotaMasukGroup') ?
-                                                'menu-item-icon-active' : ''"
+                        <a href="{{ route('produksi.pengajuanPembangunanUnit.index') }}"
+                            @click="selected = (selected === 'PengajuanPembangunan' ? '':'PengajuanPembangunan')" class="menu-item group"
+                            :class="(selected === 'PengajuanPembangunan') && (page === 'PengajuanPembangunan') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+
+                            <svg :class="(selected === 'PengajuanPembangunan') && (page === 'PengajuanPembangunan') ? 'menu-item-icon-active' : ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <title>package-receive</title>
-                                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
-                                    <path stroke-linejoin="round" d="M12 22c-.818 0-1.6-.325-3.163-.974C4.946 19.41 3 18.602 3 17.243V7.745
-                                                            M12 22c.818 0 1.6-.325 3.163-.974C19.054 19.41 21 18.602 21 17.243V7.745
-                                                            M12 22v-9.831
-                                                            M3 7.745c0 .603.802.985 2.405 1.747l2.92 1.39
-                                                            C10.13 11.74 11.03 12.17 12 12.17
-                                                            M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
-                                                            M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39
-                                                            C13.87 11.74 12.97 12.17 12 12.17
-                                                            m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
-                                                            M6 13.152l2 .983" />
-                                    <path
-                                        d="M12.004 2v7m0 0c.263.004.522-.18.714-.405L14 7.062
-                                                                                                                   M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
-                                </g>
+                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <title>home-person-20-regular</title>
+
+                                <path
+                                    d="M8.998 2.388a1.5 1.5 0 0 1 2.005 0l5.5 4.942A1.5 1.5 0 0 1 17 8.445v.956a3 3 0 0 0-1-.36v-.596a.5.5 0 0 0-.166-.371l-5.5-4.942a.5.5 0 0 0-.668 0l-5.5 4.942A.5.5 0 0 0 4 8.445V15.5a.5.5 0 0 0 .5.5H7a.5.5 0 0 0 .5-.5V12A1.5 1.5 0 0 1 9 10.5h2a1.5 1.5 0 0 1 1.5 1.5v2.207a2.5 2.5 0 0 0-1 .792v-3a.5.5 0 0 0-.5-.5H9a.5.5 0 0 0-.5.5v3.5A1.5 1.5 0 0 1 7 17H4.5A1.5 1.5 0 0 1 3 15.5V8.446c0-.425.18-.83.498-1.115zM17.5 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.5 4.5c0 1.245-1 2.5-3.5 2.5S12 17.75 12 16.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5" />
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Nota Masuk
+                                Permintaan Dibangun
                             </span>
-
-                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
-                                :class="[(selected === 'NotaMasukGroup') ? 'menu-item-arrow-active' :
-                                                        'menu-item-arrow-inactive',
-                                                        sidebarToggle ? 'lg:hidden' : ''
-                                                    ]"
-                                width="20" height="20" viewBox="0 0 20 20" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
-                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
                         </a>
-
-                        <!-- Dropdown Menu Start -->
-                        <div class="overflow-hidden transform translate"
-                            :class="(selected === 'NotaMasukGroup') ? 'block' : 'hidden'">
-                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
-                                class="flex flex-col mt-2 menu-dropdown pl-9">
-
-                                <!-- Daftar Nota Masuk -->
-                                <li>
-                                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}"
-                                        @click="selected = (selected === 'DaftarNotaMasuk' ? '' : 'DaftarNotaMasuk')"
-                                        class="menu-item group"
-                                        :class="(selected === 'DaftarNotaMasuk') && (page === 'DaftarNotaMasuk') ?
-                                                            'menu-item-active' :
-                                                            'menu-item-inactive'">
-                                        <svg :class="(selected === 'DaftarNotaMasuk') && (page === 'DaftarNotaMasuk') ?
-                                                            'menu-item-icon-active' : ''"
-                                            class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                            <title>receipt</title>
-                                            <g fill="none" stroke="currentColor" stroke-linecap="round"
-                                                stroke-width="2">
-                                                <path stroke-linejoin="round"
-                                                    d="M19 21H7a4 4 0 0 1-4-4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v13c0 1.657.343 3 2 3" />
-                                                <path stroke-linejoin="round"
-                                                    d="M21 10a2 2 0 0 0-2-2h-2v10.5c0 1.38.62 2.5 2 2.5s2-1.12 2-2.5z" />
-                                                <path d="M13 11H7m6-4H7m3 8H7" />
-                                            </g>
-                                        </svg>
-
-
-                                        <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                            Daftar Nota Masuk
-                                        </span>
-                                    </a>
-                                </li>
-                                <!-- Menu Item Daftar Nota Masuk -->
-
-                                <!-- Menu Item Tambah Nota Masuk -->
-                                <li>
-                                    <a href="{{ route('gudang.notaBarangMasuk.create') }}"
-                                        @click="selected = (selected === 'TambahNotaMasuk' ? '' : 'TambahNotaMasuk')"
-                                        class="menu-item group"
-                                        :class="(selected === 'TambahNotaMasuk') && (page === 'TambahNotaMasuk') ?
-                                                            'menu-item-active' :
-                                                            'menu-item-inactive'">
-
-                                        <svg :class="(selected === 'TambahNotaMasuk') && (page === 'TambahNotaMasuk') ?
-                                                            'menu-item-icon-active' : ''"
-                                            class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                            <title>package-receive</title>
-                                            <g fill="none" stroke="currentColor" stroke-linecap="round"
-                                                stroke-width="1.5">
-                                                <path stroke-linejoin="round" d="M12 22c-.818 0-1.6-.325-3.163-.974C4.946 19.41 3 18.602 3 17.243V7.745
-                                                            M12 22c.818 0 1.6-.325 3.163-.974C19.054 19.41 21 18.602 21 17.243V7.745
-                                                            M12 22v-9.831
-                                                            M3 7.745c0 .603.802.985 2.405 1.747l2.92 1.39
-                                                            C10.13 11.74 11.03 12.17 12 12.17
-                                                            M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
-                                                            M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39
-                                                            C13.87 11.74 12.97 12.17 12 12.17
-                                                            m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
-                                                            M6 13.152l2 .983" />
-                                                <path d="M12.004 2v7m0 0c.263.004.522-.18.714-.405L14 7.062
-                                                                    M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
-                                            </g>
-                                        </svg>
-                                        <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                            Tambah Nota Masuk
-                                        </span>
-                                    </a>
-                                </li>
-                                <!-- Menu Item Tambah Nota Masuk -->
-
-                            </ul>
-                        </div>
-                        <!-- Dropdown Menu End -->
                     </li>
+                    <!-- Menu Item Unit Menunggu Pengawas-->
 
-                    {{-- Menu Permintaaan Barang Keluar --}}
+
+                    <!-- Menu Item Pembangunan Unit-->
                     <li>
-                        <a href="{{ route('gudang.notaBarangMasuk.create') }}"
-                            @click="selected = (selected === 'BarangKeluar' ? '' : 'BarangKeluar')"
-                            class="menu-item group"
-                            :class="(selected === 'BarangKeluar') && (page === 'BarangKeluar') ?
-                                                'menu-item-active' :
-                                                'menu-item-inactive'">
+                        <a href="{{ route('produksi.pembangunanUnit.index') }}"
+                            @click="selected = (selected === 'pembangunanUnit' ? '':'pembangunanUnit')" class="menu-item group"
+                            :class="(selected === 'pembangunanUnit') && (page === 'pembangunanUnit') ? 'menu-item-active' :
+                            'menu-item-inactive'">
 
-                            <svg :class="(selected === 'BarangKeluar') && (page === 'BarangKeluar') ?
-                                                'menu-item-icon-active' : ''"
+                            <svg :class="(selected === 'PembangunanUnit') && (page === 'PembangunanUnit') ?
+                            'menu-item-icon-active' : ''"
                                 class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"
-                                viewBox="0 0 24 24">
-                                <title xmlns="">package-sent-01</title>
-                                <path fill="none" stroke="currentColor" stroke-linecap="round"
-                                    stroke-linejoin="round" stroke-width="1.5"
-                                    d="M2.5 7.5v6c0 3.771 0 5.657 1.172 6.828S6.729 21.5 10.5 21.5H14m7.5-9.5V7.5M3.87 5.315L2.5
-                                                         7.5h19l-1.252-2.087c-.854-1.423-1.28-2.134-1.969-2.524c-.687-.389-1.517-.389-3.176-.389h-6.15c-1.623
-                                                         0-2.435 0-3.113.375c-.678.376-1.109 1.064-1.97 2.44M12 7.5v-5m-2 8h4m7.5 7s-2.21-3-3-3s-3 3-3 3m3-2.5v6.5" />
+                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <title>home-gear-line</title>
+                                <path
+                                    d="M19 21H5a1 1 0 0 1-1-1v-9H1l10.327-9.388a1 1 0 0 1 1.346 0L23 11h-3v9a1 1 0 0 1-1 1M6 19h12V9.157l-6-5.454l-6 5.454zm2.591-5.191a3.5 3.5 0 0 1 0-1.622l-.991-.572l1-1.732l.991.573a3.5 3.5 0 0 1 1.404-.812V8.5h2v1.144c.532.159 1.01.44 1.404.812l.991-.573l1 1.731l-.991.573a3.5 3.5 0 0 1 0 1.622l.991.572l-1 1.731l-.991-.572a3.5 3.5 0 0 1-1.404.811v1.145h-2V16.35a3.5 3.5 0 0 1-1.404-.811l-.991.572l-1-1.73zm3.404.688a1.5 1.5 0 1 0 0-2.998a1.5 1.5 0 0 0 0 2.998" />
                             </svg>
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Permintaan Barang Keluar
+                                Pembangunan Unit
                             </span>
                         </a>
                     </li>
-                    <!-- Menu Item Permintaan Barang Keluar -->
-
-                    <!-- Menu Item Barang Return -->
-                    <li>
-                        <a href="{{ route('gudang.notaBarangMasuk.create') }}"
-                            @click="selected = (selected === 'BarangReturn' ? '' : 'BarangReturn')"
-                            class="menu-item group"
-                            :class="(selected === 'BarangReturn') && (page === 'BarangReturn') ?
-                                                'menu-item-active' :
-                                                'menu-item-inactive'">
-
-                            <svg :class="(selected === 'BarangReturn') && (page === 'BarangReturn') ?
-                                                'menu-item-icon-active' : ''"
-                                class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <title>delivery-return-01</title>
-                                <path fill="none" stroke="currentColor" stroke-linecap="round"
-                                    stroke-linejoin="round" stroke-width="1.5" d="M2.5 7.5v6c0 3.771 0 5.657 1.17 6.828C4.843 21.5 6.729 21.5 10.5 21.5H14m7.5-7.5V7.5
-                                                    M3.868 5.315L2.5 7.5h19l-1.252-2.087c-.854-1.423-1.28-2.134-1.968-2.524
-                                                    c-.688-.389-1.517-.389-3.177-.389h-6.15c-1.624 0-2.436 0-3.114.375
-                                                    c-.678.376-1.109 1.064-1.97 2.44
-                                                    M12 7.5v-5
-                                                    m4 12s-2.5 1.841-2.5 2.5s2.5 2.5 2.5 2.5
-                                                    M14 17h5.25a2.25 2.25 0 1 1 0 4.5h-.75
-                                                    m-8.5-11h4" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Barang Return
-                            </span>
-                        </a>
-                    </li>
-                    <!-- Menu Item Baran Return -->
+                    <!-- Menu Item Pembangunan Unit-->
                 </ul>
             </div>
-            @endcan
-            <!-- Produksi Rap -  Group -->
+
+            <!-- Produksi -->
+            {{-- @endcan --}}
 
             <!-- Superadmin -  Group -->
             @role('Superadmin')

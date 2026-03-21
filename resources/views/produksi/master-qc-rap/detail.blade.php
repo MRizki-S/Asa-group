@@ -115,9 +115,9 @@
                                         <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
                                             @forelse($qc->rapBahan as $bahan)
                                                 <tr>
-                                                    <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">{{ $bahan->barang_id ?? 'Semen' }} (dummy)</td>
+                                                    <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">{{ $bahan->barang->nama_barang ?? '-' }}</td>
                                                     <td class="px-4 py-2.5 text-right font-bold text-gray-900 dark:text-white">{{ number_format($bahan->jumlah_kebutuhan_standar, 0) }}</td>
-                                                    <td class="px-4 py-2.5 text-gray-500">{{ $bahan->satuan }}</td>
+                                                    <td class="px-4 py-2.5 text-gray-500">{{ $bahan->satuan->nama ?? '-' }}</td>
                                                 </tr>
                                             @empty
                                                 <tr><td colspan="3" class="px-4 py-4 text-center text-gray-400 italic">Tidak ada bahan.</td></tr>

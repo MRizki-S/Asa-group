@@ -23,4 +23,8 @@ class MasterSatuan extends Model
     {
         return $this->hasMany(MasterBarang::class, 'base_unit_id');
     }
+
+    public function masterRapBahan(){
+        return $this->hasMany(MasterRapBahan::class);
+    }
 }

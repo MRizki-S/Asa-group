@@ -4,11 +4,13 @@ namespace Database\Seeders;
 
 use App\Models\Blok;
 use App\Models\KualifikasiBlok;
+use App\Models\MasterBarang;
 use App\Models\MasterQcContainer;
 use App\Models\MasterQcTugas;
 use App\Models\MasterQcUrutan;
 use App\Models\MasterRapBahan;
 use App\Models\MasterRapUpah;
+use App\Models\MasterSatuan;
 use App\Models\MasterUpah;
 use App\Models\Tahap;
 use App\Models\TahapKualifikasi;
@@ -112,12 +114,24 @@ class TestingSeeder extends Seeder
             'tugas' => 'keterangan tugas'
         ]);
 
+        MasterSatuan::create([
+            'nama' => 'pcs'
+        ]);
+
+        MasterBarang::create([
+            'kode_barang' => 'BRG-001',
+            'nama_barang' => 'Keramik',
+            'base_unit_id' => 1,
+            'is_stock' => true
+        ]);
+
         MasterRapBahan::create([
             'type_id' => 1,
             'master_qc_container_id' => 1,
             'master_qc_urutan_id' => 1,
+            'master_barang_id' => 1,
             'jumlah_kebutuhan_standar' => 12,
-            'satuan' => 'sak',
+            'master_satuan_id' => 1,
         ]);
 
         MasterUpah::create([

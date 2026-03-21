@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('type_id')->constrained('type')->cascadeOnDelete();
             $table->foreignId('master_qc_container_id')->constrained('master_qc_container')->cascadeOnDelete();
             $table->foreignId('master_qc_urutan_id')->constrained('master_qc_urutan')->cascadeOnDelete();
-            // $table->foreignId('barang_id')->constrained('barang')->cascadeOnDelete();
+            $table->foreignId('master_barang_id')->constrained('master_barang')->cascadeOnDelete();
             $table->decimal('jumlah_kebutuhan_standar', 15, 2);
-            $table->string('satuan');
+            $table->foreignId('master_satuan_id')->constrained('master_satuan')->cascadeOnDelete();
             $table->timestamps();
         });
     }

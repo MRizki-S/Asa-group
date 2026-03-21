@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Produksi;
 
 use App\Http\Controllers\Controller;
+use App\Models\MasterBarang;
 use App\Models\MasterQcContainer;
 use App\Models\MasterQcTugas;
 use App\Models\MasterQcUrutan;
 use App\Models\MasterRapBahan;
 use App\Models\MasterRapUpah;
+use App\Models\MasterSatuan;
 use App\Models\MasterUpah;
 use App\Models\Type;
 use Illuminate\Http\Request;
@@ -58,6 +60,8 @@ class MasterQcRapController extends Controller
     {
         $allType = Type::all();
         $allUpah = MasterUpah::all();
+        $allBarang = MasterBarang::all();
+        $allSatuan = MasterSatuan::all();
 
         return view('produksi.master-qc-rap.create', [
             'breadcrumbs' => [
@@ -66,6 +70,8 @@ class MasterQcRapController extends Controller
             ],
             'allType' => $allType,
             'allUpah' => $allUpah,
+            'allBarang' => $allBarang,
+            'allSatuan' => $allSatuan
         ]);
     }
 
@@ -122,10 +128,11 @@ class MasterQcRapController extends Controller
                     $targetUrutanId = $urutanIds[$b['urutan_idx']] ?? null;
                     MasterRapBahan::create([
                         'type_id' => $request->type_id,
+                        'master_barang_id' => $b['barang_id'],
                         'master_qc_container_id' => $container->id,
                         'master_qc_urutan_id' => $targetUrutanId,
                         'jumlah_kebutuhan_standar' => $b['jumlah_kebutuhan_standar'],
-                        'satuan' => $b['satuan'],
+                        'master_satuan_id' => $b['satuan_id'],
                     ]);
                 }
             }
@@ -164,8 +171,10 @@ class MasterQcRapController extends Controller
             'type',
             'urutan.tugas',
             'rapBahan.urutan',
+            'rapBahan.barang',
+            'rapBahan.satuan',
             'rapUpah.urutan',
-            'rapUpah.masterUpah'
+            'rapUpah.masterUpah',
         ])->findOrFail($id);
 
         return view('Produksi.master-qc-rap.detail', [
@@ -186,12 +195,15 @@ class MasterQcRapController extends Controller
         $allType = Type::all();
         $allUpah = MasterUpah::all();
 
+        $allBarang = MasterBarang::all();
+        $allSatuan = MasterSatuan::all();
+
         $breadcrumbs = [
             ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
             ['label' => 'Edit Qc Rap', 'url' => route('produksi.masterQcRap.edit', $id)],
         ];
 
-        return view('produksi.master-qc-rap.edit', compact('breadcrumbs', 'container', 'allType', 'allUpah'));
+        return view('produksi.master-qc-rap.edit', compact('breadcrumbs', 'container', 'allType', 'allUpah', 'allBarang', 'allSatuan'));
     }
 
     /**
@@ -258,9 +270,9 @@ class MasterQcRapController extends Controller
                             'type_id' => $request->type_id,
                             'master_qc_container_id' => $container->id,
                             'master_qc_urutan_id' => $newUrutanId,
-                            'barang_id' => $bahanItem['barang_id'] ?? 1,
+                            'master_barang_id' => $bahanItem['barang_id'] ?? 1,
                             'jumlah_kebutuhan_standar' => $bahanItem['jumlah_kebutuhan_standar'],
-                            'satuan' => $bahanItem['satuan'],
+                            'master_satuan_id' => $bahanItem['satuan_id'],
                         ]);
                     }
                 }

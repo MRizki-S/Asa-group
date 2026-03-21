@@ -200,8 +200,8 @@ class PembangunanUnitController extends Controller
                         'pembangunan_unit_id' => $pembangunan->id,
                         'pembangunan_unit_qc_id' => $pembangunanUnitQc->id,
                         'master_rap_bahan_id' =>  $bahan->id,
-                        'nama_barang' => 'nunggu tabel barang',
-                        'satuan' => $bahan->satuan,
+                        'nama_barang' => $bahan->barang->nama_barang,
+                        'satuan' => $bahan->satuan->nama,
                         'jumlah_standar' => $bahan->jumlah_kebutuhan_standar,
                     ]);
                 }

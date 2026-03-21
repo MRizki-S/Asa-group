@@ -206,7 +206,7 @@
                         urutan_idx: indexQC,
                         barang_id: '',
                         jumlah_kebutuhan_standar: 0,
-                        satuan: ''
+                        satuan_id: ''
                     });
                     this.openAccordions[indexQC] = true;
                 },
