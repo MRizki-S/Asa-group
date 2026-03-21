@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
             MasterPerumahaanSeeder::class,
             MasterBankSeeder::class,
             MasterKprDokumenSeeder::class,
-
+            
             // Master Data Keuangan
             KategoriAkunKeuanganSeeder::class,
             AkunKeuanganSeeder::class,

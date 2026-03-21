@@ -1,47 +1,54 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Etalase\BlokController;
+use App\Http\Controllers\Etalase\EtalaseJsonController;
+use App\Http\Controllers\Etalase\KualifikasiBlokController;
+use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
+use App\Http\Controllers\Etalase\PerumahaanController;
+use App\Http\Controllers\Etalase\TahapController;
+use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
-use App\Http\Controllers\Etalase\TahapController;
-use App\Http\Controllers\PerumahaanSelectController;
-use App\Http\Controllers\Etalase\TahapTypeController;
-use App\Http\Controllers\Marketing\AdendumController;
-use App\Http\Controllers\Etalase\PerumahaanController;
-use App\Http\Controllers\Marketing\AkunUserController;
-use App\Http\Controllers\Etalase\EtalaseJsonController;
-use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Gudang\DaftarNotaMasukController;
+use App\Http\Controllers\Gudang\DraftNotaMasukController;
+use App\Http\Controllers\Gudang\MasterBarangController;
+use App\Http\Controllers\Gudang\MasterSatuanBarangController;
+use App\Http\Controllers\Gudang\NotaBarangMasukController;
+use App\Http\Controllers\Gudang\StockBarangController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
-use App\Http\Controllers\Marketing\AdendumListController;
-use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Keuangan\BukuBesarController;
+use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
 use App\Http\Controllers\Keuangan\LaporanJurnalController;
-use App\Http\Controllers\Etalase\KualifikasiBlokController;
-use App\Http\Controllers\Marketing\PemesananUnitController;
-use App\Http\Controllers\Superadmin\AkunKaryawanController;
-use App\Http\Controllers\Superadmin\RoleHakAksesController;
-use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
-use App\Http\Controllers\Marketing\ManagePemesananController;
-use App\Http\Controllers\Marketing\SettingBonusKprController;
-use App\Http\Controllers\Marketing\SettingMutuPpjbController;
-use App\Http\Controllers\Marketing\SettingPpjbJsonController;
-use App\Http\Controllers\Marketing\SettingBonusCashController;
-use App\Http\Controllers\Marketing\SettingCaraBayarController;
-use App\Http\Controllers\Marketing\SettingPromoPpjbController;
-use App\Http\Controllers\Marketing\SettingPembatalanController;
-use App\Http\Controllers\Marketing\PengajuanPemesananController;
-use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
-use App\Http\Controllers\Marketing\PengajuanPembatalanController;
-use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
-use App\Http\Controllers\Marketing\SettingKeterlambatanController;
-use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
-use App\Http\Controllers\Keuangan\BukuBesarController;
-use App\Http\Controllers\Keuangan\NeracaSaldoController;
+use App\Http\Controllers\Marketing\AdendumController;
+use App\Http\Controllers\Marketing\AdendumListController;
+use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
+use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
+use App\Http\Controllers\Marketing\ManagePemesananController;
+use App\Http\Controllers\Marketing\PemesananUnitController;
+use App\Http\Controllers\Marketing\PengajuanPembatalanController;
+use App\Http\Controllers\Marketing\PengajuanPemesananController;
+use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Marketing\SettingBonusCashController;
+use App\Http\Controllers\Marketing\SettingBonusKprController;
+use App\Http\Controllers\Marketing\SettingCaraBayarController;
+use App\Http\Controllers\Marketing\SettingKeterlambatanController;
+use App\Http\Controllers\Marketing\SettingMutuPpjbController;
+use App\Http\Controllers\Marketing\SettingPembatalanController;
+use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Marketing\SettingPpjbJsonController;
+use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Superadmin\AkunKaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
+use App\Models\MasterSatuan;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\masterQcRap;
 use App\Http\Controllers\Produksi\MasterQcRapController;
 use App\Http\Controllers\Produksi\MasterUpahController;
@@ -249,7 +256,6 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             ->name('marketing.adendum.reject');
     });
 
-
     // route setting ppjb
     Route::prefix('/setting')->group(function () {
         // halaman utama setting
@@ -425,6 +431,36 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     });
 });
 
+// Gudang
+Route::middleware('auth')->prefix('gudang')->group(function () {
+
+    // Stock Barang
+    Route::get('/stock-barang', [StockBarangController::class, 'stockIndex'])
+        ->name('gudang.stockBarang.index');
+
+    // Master satuan barang controller
+    Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');
+
+    // Master Barang
+    Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
+
+    // Tambah Nota Masuk
+    Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
+    Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+    Route::get('/barang/{id}/satuan', [NotaBarangMasukController::class, 'getSatuan']);
+    // List Draft nota masuk
+    Route::get('/draft-nota-masuk', [DraftNotaMasukController::class, 'index'])->name('gudang.draftNotaMasuk.index');
+    Route::get('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'edit'])->name('gudang.draftNotaMasuk.edit');
+    Route::patch('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'update'])->name('gudang.draftNotaMasuk.update'); /// update change draft nota masuk
+    Route::patch('/draft-nota-masuk/{nomorNota}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit'); /// submit draft nota masuk menjadi posting
+    Route::delete('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
+
+    // Daftar Nota Masuk
+    Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
+    Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
+    Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
+});
 
 // keuangan Group
 Route::middleware('auth')->prefix('keuangan')->group(function () {
