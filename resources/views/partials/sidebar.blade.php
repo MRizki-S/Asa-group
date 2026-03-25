@@ -11,7 +11,7 @@
             <!-- Tulisan di samping logo -->
             <span class="text-xl font-bold" :class="sidebarToggle ? 'hidden' : ''">
                 <span class="text-blue-500">Asa</span>
-                <span class="text-black dark:text-white">Group</span>
+                <span class="text-black xc dark:text-white">Group</span>
             </span>
         </a>
     </div>
@@ -961,6 +961,41 @@
                 </h3>
 
                 <ul class="flex flex-col gap-2 mb-6">
+                    <!-- menu stock barang dan transfer stok -->
+                    <li>
+                        <a href="{{ route('gudang.stockBarang.index') }}"
+                            @click="selected = (selected === 'StokBarangGudang' ? '' : 'StokBarangGudang')"
+                            class="menu-item group"
+                            :class="(selected === 'StokBarangGudang') && (page === 'StokBarangGudang') ?
+                                'menu-item-active' :
+                                'menu-item-inactive'">
+
+                            <svg
+                                :class="(selected === 'Packages') && (page === 'Packages') ? 'menu-item-icon-active' : ''"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                class="size-6">
+
+                                <title>packages</title>
+
+                                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                                    <path d="m7 16.5l-5-3l5-3l5 3V19l-5 3z" />
+                                    <path d="M2 13.5V19l5 3m0-5.455l5-3.03m5 2.985l-5-3l5-3l5 3V19l-5 3zM12 19l5 3m0-5.5l5-3m-10 0V8L7 5l5-3l5 3v5.5M7 5.03v5.455M12 8l5-3" />
+                                </g>
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Stok Barang
+                            </span>
+                        </a>
+                    </li>
+                    <!-- menu stock barang dan transfer stok -->
+
                     <!-- Menu Group Item Master Gudang  -->
                     <li>
                         <a href="#"
@@ -1050,7 +1085,7 @@
                                                 C20.198 5.498 21 5.886 21 6.5s-.802 1.002-2.405 1.778l-2.92 1.413
                                                 C13.87 10.564 12.97 11 12 11s-1.871-.436-3.674-1.309
                                                 M6 12l2 1
-                                                m9-9L7 9"/>
+                                                m9-9L7 9" />
                                         </svg>
                                         Material/Barang
                                     </a>
@@ -1091,10 +1126,10 @@
                                         M3 7.745c0-.604.802-.986 2.405-1.748L7.5 5
                                         M21 7.745c0 .603-.802.985-2.405 1.747l-2.92 1.39C13.87 11.74 12.97 12.17 12 12.17
                                         m9-4.424c0-.604-.802-.986-2.405-1.748L16.5 5
-                                        M6 13.152l2 .983"/>
+                                        M6 13.152l2 .983" />
                                     <path d="M12.004 2v7
                                         m0 0c.263.004.522-.18.714-.405L14 7.062
-                                        M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062"/>
+                                        M12.004 9c-.254-.003-.511-.186-.714-.405L10 7.062" />
                                 </g>
                             </svg>
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1139,9 +1174,9 @@
                                                     d="M11 22c-.818 0-1.6-.33-3.163-.99C3.946 19.366 2 18.543 2 17.16V7
                                                     m9 15V11.355
                                                     M11 22c.725 0 1.293-.26 2.5-.777
-                                                    M20 7v4"/>
+                                                    M20 7v4" />
                                                 <path d="M15 17.5h7
-                                                    M18.5 21v-7"/>
+                                                    M18.5 21v-7" />
                                                 <path stroke-linejoin="round"
                                                     d="M7.326 9.691L4.405 8.278C2.802 7.502 2 7.114 2 6.5
                                                     s.802-1.002 2.405-1.778l2.92-1.413C9.13 2.436 10.03 2 11 2
@@ -1149,7 +1184,7 @@
                                                     s-.802 1.002-2.405 1.778l-2.92 1.413C12.87 10.564 11.97 11 11 11
                                                     s-1.871-.436-3.674-1.309
                                                     M5 12l2 1
-                                                    m9-9L6 9"/>
+                                                    m9-9L6 9" />
                                             </g>
                                         </svg>
                                         Tambah Nota Masuk
@@ -1180,7 +1215,7 @@
                     </li>
                     <!-- Menu Item Nota Barang Masuk-->
 
-                     <!-- Menu Group Item Material Proyek  -->
+                    <!-- Menu Group Item Material Proyek  -->
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'MaterialProyekGroup' ? '':'MaterialProyekGroup')"
@@ -1203,9 +1238,9 @@
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="1.5">
-                                    <path d="M9 21v-6a2 2 0 0 1 2-2h2c.641 0 1.212.302 1.578.771"/>
-                                    <path d="M20.136 11.136L12 3l-9 9h2v7a2 2 0 0 0 2 2h6.344"/>
-                                    <path d="M19 22v-6m3 3l-3-3l-3 3"/>
+                                    <path d="M9 21v-6a2 2 0 0 1 2-2h2c.641 0 1.212.302 1.578.771" />
+                                    <path d="M20.136 11.136L12 3l-9 9h2v7a2 2 0 0 0 2 2h6.344" />
+                                    <path d="M19 22v-6m3 3l-3-3l-3 3" />
                                 </g>
                             </svg>
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1232,7 +1267,7 @@
                                 <li>
                                     <a href="{{ route('gudang.notaBarangMasuk.create') }}" class="menu-dropdown-item group flex items-center"
                                         :class="page === 'PermintaanBarang' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                       <svg xmlns="http://www.w3.org/2000/svg"
+                                        <svg xmlns="http://www.w3.org/2000/svg"
                                             :class="(selected === 'MaterialProyekGroup') ||
                                             (page === 'PermintaanBarang' ||
                                             page === 'proFormLayout') ?
@@ -1243,9 +1278,9 @@
                                             viewBox="0 0 32 32">
                                             <title>delivery-parcel</title>
                                             <path fill="currentColor"
-                                                d="m29.482 8.624l-10-5.5a1 1 0 0 0-.964 0l-10 5.5a1 1 0 0 0 0 1.752L18 15.591V26.31l-3.036-1.67L14 26.391l4.518 2.485a1 1 0 0 0 .964 0l10-5.5A1 1 0 0 0 30 22.5v-13a1 1 0 0 0-.518-.876M19 5.142L26.925 9.5L19 13.858L11.075 9.5Zm9 16.767l-8 4.4V15.59l8-4.4Z"/>
+                                                d="m29.482 8.624l-10-5.5a1 1 0 0 0-.964 0l-10 5.5a1 1 0 0 0 0 1.752L18 15.591V26.31l-3.036-1.67L14 26.391l4.518 2.485a1 1 0 0 0 .964 0l10-5.5A1 1 0 0 0 30 22.5v-13a1 1 0 0 0-.518-.876M19 5.142L26.925 9.5L19 13.858L11.075 9.5Zm9 16.767l-8 4.4V15.59l8-4.4Z" />
                                             <path fill="currentColor"
-                                                d="M10 16H2v-2h8zm2 8H4v-2h8zm2-4H6v-2h8z"/>
+                                                d="M10 16H2v-2h8zm2 8H4v-2h8zm2-4H6v-2h8z" />
                                         </svg>
                                         Permintaan Barang
                                     </a>
@@ -1265,12 +1300,12 @@
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
                                                 stroke-width="1.5">
-                                                <path d="M2.5 7.5v6c0 3.771 0 5.657 1.17 6.828C4.843 21.5 6.729 21.5 10.5 21.5H14m7.5-7.5V7.5"/>
-                                                <path d="M3.868 5.315L2.5 7.5h19l-1.252-2.087c-.854-1.423-1.28-2.134-1.968-2.524c-.688-.389-1.517-.389-3.177-.389h-6.15c-1.624 0-2.436 0-3.114.375c-.678.376-1.109 1.064-1.97 2.44"/>
-                                                <path d="M12 7.5v-5"/>
-                                                <path d="M16 14.5s-2.5 1.841-2.5 2.5s2.5 2.5 2.5 2.5"/>
-                                                <path d="M14 17h5.25a2.25 2.25 0 1 1 0 4.5h-.75"/>
-                                                <path d="M10 10.5h4"/>
+                                                <path d="M2.5 7.5v6c0 3.771 0 5.657 1.17 6.828C4.843 21.5 6.729 21.5 10.5 21.5H14m7.5-7.5V7.5" />
+                                                <path d="M3.868 5.315L2.5 7.5h19l-1.252-2.087c-.854-1.423-1.28-2.134-1.968-2.524c-.688-.389-1.517-.389-3.177-.389h-6.15c-1.624 0-2.436 0-3.114.375c-.678.376-1.109 1.064-1.97 2.44" />
+                                                <path d="M12 7.5v-5" />
+                                                <path d="M16 14.5s-2.5 1.841-2.5 2.5s2.5 2.5 2.5 2.5" />
+                                                <path d="M14 17h5.25a2.25 2.25 0 1 1 0 4.5h-.75" />
+                                                <path d="M10 10.5h4" />
                                             </g>
                                         </svg>
                                         Barang Return
@@ -1285,7 +1320,7 @@
             </div>
             <!-- Gudang -  Group -->
 
-            
+
             @can('akses-produksi')
             <!-- Master Produksi RAP -->
             <div>

@@ -430,8 +430,10 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
 Route::middleware('auth')->prefix('gudang')->group(function () {
 
     // Stock Barang
-    Route::get('/stock-barang', [StockBarangController::class, 'stockIndex'])
+    Route::get('/stok-barang', [StockBarangController::class, 'stockIndex'])
         ->name('gudang.stockBarang.index');
+    Route::get('/stok-barang/export-pdf', [StockBarangController::class, 'exportPdf'])->name('gudang.stockBarang.exportPdf');
+    Route::get('/stok-barang/export-excel', [StockBarangController::class, 'exportExcel'])->name('gudang.stockBarang.exportExcel');
 
     // Master satuan barang controller
     Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');
