@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Gudang;
 
+use App\Exports\StockBarangExport;
 use App\Http\Controllers\Controller;
-use App\Models\MasterBarang;
-use App\Models\Ubs;
-use App\Models\StockGudang;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
-use App\Models\PeriodeKeuangan;
 use App\Models\Jurnal;
+use App\Models\MasterBarang;
+use App\Models\PeriodeKeuangan;
+use App\Models\StockGudang;
+use App\Models\Ubs;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockBarangController extends Controller
 {
-    public function stockIndex(Request $request)
+    private function getStockBarangData(Request $request)
     {
         $ubsId = $request->get('ubs_id', 'all');
         $cariMaterial = $request->get('cariMaterial');
@@ -21,7 +23,7 @@ class StockBarangController extends Controller
         $ubsData = Ubs::all();
 
         // Query Utama MasterBarang
-        $query = MasterBarang::query()->with('baseUnit');
+        $query = MasterBarang::query()->with(['baseUnit', 'satuanKonversi.satuan']);
 
         // Eager Load Nota Details HANYA saat filter "all" (Semua Gudang)
         if ($ubsId == 'all') {
@@ -68,6 +70,13 @@ class StockBarangController extends Controller
 
         $stocks = $query->orderBy('kode_barang')->get();
 
+        return [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial];
+    }
+
+    public function stockIndex(Request $request)
+    {
+        [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial] = $this->getStockBarangData($request);
+
         return view('gudang.stock-barang.index', [
             'breadcrumbs' => [
                 [
@@ -80,6 +89,40 @@ class StockBarangController extends Controller
             'selectedUbs' => $ubsId,
             'titleGudang' => $titleGudang,
         ]);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial] = $this->getStockBarangData($request);
+
+        $ubsFileName = $ubsId === 'all' ? 'Semua_Gudang' : ($ubsId === 'hub' ? 'HUB_Pusat' : str_replace(' ', '_', $titleGudang));
+        
+        $tanggal = now()->format('Y-m-d');
+        $filename = 'Stock_Barang_' . $ubsFileName . '_' . $tanggal . '.xlsx';
+
+        return Excel::download(
+            new StockBarangExport($stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial),
+            $filename
+        );
+    }
+
+
+    public function exportPdf(Request $request)
+    {
+        [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial] = $this->getStockBarangData($request);
+
+        $ubsFileName = $ubsId === 'all' ? 'Semua_Gudang' : ($ubsId === 'hub' ? 'HUB_Pusat' : str_replace(' ', '_', $titleGudang));
+        
+        $tanggal = now()->format('Y-m-d');
+        $filename = 'Stock_Barang_' . $ubsFileName . '_' . $tanggal . '.pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gudang.stock-barang.export.pdf', [
+            'stocks' => $stocks,
+            'titleGudang' => $titleGudang,
+            'ubsId' => $ubsId
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download($filename);
     }
 
 }

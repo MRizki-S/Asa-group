@@ -179,10 +179,11 @@
                         <thead class="bg-gray-800 text-white sticky top-0 z-10">
                             <tr>
                                 <th class="border px-3 py-2 text-left whitespace-nowrap w-[20%]">Kode Barang</th>
-                                <th class="border px-3 py-2 text-left whitespace-nowrap w-[50%]">Nama Barang</th>
+                                <th class="border px-3 py-2 text-left whitespace-nowrap w-[40%]">Nama Barang</th>
+                                <th class="border px-3 py-2 text-center whitespace-nowrap w-[15%]">Satuan</th>
                                 <th class="border px-3 py-2 text-center whitespace-nowrap w-[15%]">Total Stock</th>
                                 @if($selectedUbs != 'all')
-                                <th class="border px-3 py-2 text-center whitespace-nowrap w-[15%]">Minimal Stock</th>
+                                <th class="border px-3 py-2 text-center whitespace-nowrap w-[10%]">Minimal Stock</th>
                                 @endif
                             </tr>
                         </thead>
@@ -192,7 +193,48 @@
                             dan membuat satu
                         <tbody> per barang agar x-data bekerja mandiri per baris
                             --}}
+                            @php
+                                if (!function_exists('formatStock')) {
+                                    function formatStock($val) {
+                                        $formatted = number_format((float)$val, 2, ',', '.');
+                                        $formatted = rtrim($formatted, '0');
+                                        $formatted = rtrim($formatted, ',');
+                                        return $formatted;
+                                    }
+                                }
+                            @endphp
                             @foreach($stocks as $barang)
+                                @php
+                                    $defaultKonversi = $barang->satuanKonversi->where('is_default', true)->first();
+                                    
+                                    if ($defaultKonversi) {
+                                        $satuanNama = $defaultKonversi->satuan->nama ?? 'Unknown';
+                                        $konversiRate = (float)$defaultKonversi->konversi_ke_base;
+                                    } else {
+                                        $satuanNama = $barang->baseUnit->nama ?? '-';
+                                        $konversiRate = 1;
+                                    }
+
+                                    $stockVal = 0;
+                                    $minStockVal = 0;
+
+                                    if($selectedUbs == 'all') {
+                                        // Secara default base stock
+                                        $stockVal = $barang->stock->sum('jumlah_stock');
+                                    } elseif ($selectedUbs == 'hub') {
+                                        $stockVal = $barang->stockHub->jumlah_stock ?? 0;
+                                        $minStockVal = $barang->stockHub->minimal_stock ?? 0;
+                                    } else {
+                                        $s = $barang->stock->first();
+                                        $stockVal = $s->jumlah_stock ?? 0;
+                                        $minStockVal = $s->minimal_stock ?? 0;
+                                    }
+                                    
+                                    // Divide by conversion rate
+                                    $stockDisplay = $stockVal / $konversiRate;
+                                    $minStockDisplay = $minStockVal / $konversiRate;
+                                @endphp
+
                                 <tbody x-data="{ open: false }" class="border-b">
                                     {{-- ROW UTAMA --}}
                                     <tr @click="open = !open"
@@ -213,28 +255,15 @@
                                         <td class="border px-3 py-2 text-blue-800">
                                             {{ $barang->nama_barang }}
                                         </td>
+                                        <td class="border px-3 py-2 text-center text-gray-700">
+                                            {{ $satuanNama }}
+                                        </td>
                                         <td class="border px-3 py-2 text-center font-bold">
-                                            @php
-                                                $stockVal = 0;
-                                                $minStockVal = 0;
-                                                if($selectedUbs == 'all') {
-                                                    // Jika semua gudang, jumlahkan semua stok yang ada di database untuk barang ini
-                                                    $stockVal = $barang->stock->sum('jumlah_stock');
-                                                } elseif ($selectedUbs == 'hub') {
-                                                    $stockVal = $barang->stockHub->jumlah_stock ?? 0;
-                                                    $minStockVal = $barang->stockHub->minimal_stock ?? 0;
-                                                } else {
-                                                    // Ambil dari collection stock yang sudah difilter di controller
-                                                    $s = $barang->stock->first();
-                                                    $stockVal = $s->jumlah_stock ?? 0;
-                                                    $minStockVal = $s->minimal_stock ?? 0;
-                                                }
-                                            @endphp
-                                            {{ number_format($stockVal, 0, ',', '.') }}
+                                            {{ formatStock($stockDisplay) }}
                                         </td>
                                         @if($selectedUbs != 'all')
                                         <td class="border px-3 py-2 text-center italic text-gray-500">
-                                            {{ number_format($minStockVal, 0, ',', '.') }}
+                                            {{ formatStock($minStockDisplay) }}
                                         </td>
                                         @endif
                                     </tr>
@@ -244,7 +273,7 @@
                                     <tr x-show="open" x-transition:enter="transition ease-out duration-200"
                                         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                                         style="display: none;">
-                                        <td colspan="3" class="border p-0 bg-gray-50">
+                                        <td colspan="4" class="border p-0 bg-gray-50">
                                             <div class="p-4 bg-white border-l-4 border-blue-500 m-2 shadow-inner">
                                                 <table class="w-full text-xs border">
                                                     <thead class="bg-gray-100 text-gray-600">
@@ -254,29 +283,32 @@
                                                             <th class="border px-3 py-1 text-left">Supplier</th>
                                                             <th class="border px-3 py-1 text-center">Masuk</th>
                                                             <th class="border px-3 py-1 text-center text-blue-700">Sisa</th>
+                                                            <th class="border px-3 py-1 text-center">Satuan</th>
                                                             <th class="border px-3 py-1 text-right">Harga Satuan</th>
                                                             <th class="border px-3 py-1 text-right">Harga Total</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @forelse($barang->notaDetails as $detail)
+                                                            @php
+                                                                $dMasuk = ($detail->jumlah_base ?? 0) / $konversiRate;
+                                                                $dSisa = ($detail->jumlah_sisa ?? 0) / $konversiRate;
+                                                                $dHargaUnit = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * $konversiRate;
+                                                                $dHargaTotal = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
+                                                            @endphp
                                                             <tr class="hover:bg-yellow-50 border-b border-gray-100">
                                                                 <td class="px-3 py-1 font-medium">{{ $detail->nota->nomor_nota }}</td>
                                                                 <td class="px-3 py-1">{{ $detail->merk }}</td>
                                                                 <td class="px-3 py-1">{{ $detail->nota->supplier }}</td>
-                                                                <td class="px-3 py-1 text-center">{{ $detail->jumlah_input + 0 }}</td>
-                                                                <td class="px-3 py-1 text-center font-bold text-blue-600">
-                                                                    {{ $detail->jumlah_sisa + 0 }}</td>
-                                                                <td class="px-3 py-1 text-right tabular-nums">Rp
-                                                                    {{ number_format($detail->harga_satuan, 0, ',', '.') }}</td>
-                                                                <td class="px-3 py-1 text-right font-semibold tabular-nums">
-                                                                    Rp
-                                                                    {{ number_format($detail->jumlah_sisa * $detail->harga_satuan, 0, ',', '.') }}
-                                                                </td>
+                                                                <td class="px-3 py-1 text-center">{{ formatStock($dMasuk) }}</td>
+                                                                <td class="px-3 py-1 text-center font-bold text-blue-600">{{ formatStock($dSisa) }}</td>
+                                                                <td class="px-3 py-1 text-center font-medium">{{ $satuanNama }}</td>
+                                                                <td class="px-3 py-1 text-right tabular-nums">Rp {{ formatStock($dHargaUnit) }}</td>
+                                                                <td class="px-3 py-1 text-right font-semibold tabular-nums">Rp {{ formatStock($dHargaTotal) }}</td>
                                                             </tr>
                                                         @empty
                                                             <tr>
-                                                                <td colspan="7" class="px-3 py-2 text-center text-gray-400">Tidak ada
+                                                                <td colspan="8" class="px-3 py-2 text-center text-gray-400">Tidak ada
                                                                     stock FIFO aktif</td>
                                                             </tr>
                                                         @endforelse
