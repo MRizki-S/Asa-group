@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\master;
+namespace Database\Seeders\Master;
 
 use App\Models\MasterBank;
 use Illuminate\Database\Seeder;
@@ -11,7 +11,7 @@ class MasterBankSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-     public function run(): void
+    public function run(): void
     {
         $banks = [
             [

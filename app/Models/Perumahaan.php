@@ -90,4 +90,13 @@ class Perumahaan extends Model
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
+
+    // Produksi
+    public function pengajuanPembangunanUnit(){
+        return $this->hasMany(PengajuanPembangunanUnit::class);
+    }
+
+    public function pembangunanUnit(){
+        return $this->hasMany(PembangunanUnit::class);
+    }
 }
