@@ -17,9 +17,7 @@ class MasterUpahController extends Controller
 
         return view('Produksi.penamaan-upah.index', [
             'allMasterUpah' => $allMasterUpah,
-            'breadcrumbs'   => [
-                ['label' => 'Penamaan Upah', 'url' => route('produksi.masterUpah.index')],
-            ],
+            'breadcrumbs' => [['label' => 'Penamaan Upah', 'url' => route('produksi.masterUpah.index')]],
         ]);
     }
 
@@ -36,18 +34,20 @@ class MasterUpahController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama_upah' => 'required|string|max:255|unique:master_upah,nama_upah',
-        ], [
-            'nama_upah.unique' => 'Nama upah ini sudah ada di database.',
-        ]);
+        $request->validate(
+            [
+                'nama_upah' => 'required|string|max:255|unique:master_upah,nama_upah',
+            ],
+            [
+                'nama_upah.unique' => 'Nama upah ini sudah ada di database.',
+            ],
+        );
 
         MasterUpah::create([
-            'nama_upah' => $request->nama_upah
+            'nama_upah' => $request->nama_upah,
         ]);
 
-        return redirect()->route('produksi.masterUpah.index')
-            ->with('success', 'Penamaan upah baru berhasil ditambahkan.');
+        return redirect()->route('produksi.masterUpah.index')->with('success', 'Penamaan upah baru berhasil ditambahkan.');
     }
 
     /**
@@ -78,11 +78,10 @@ class MasterUpahController extends Controller
         ]);
 
         $masterUpah->update([
-            'nama_upah' => $request->nama_upah
+            'nama_upah' => $request->nama_upah,
         ]);
 
-        return redirect()->route('produksi.masterUpah.index')
-            ->with('success', 'Penamaan upah berhasil diperbarui.');
+        return redirect()->route('produksi.masterUpah.index')->with('success', 'Penamaan upah berhasil diperbarui.');
     }
 
     /**
@@ -98,7 +97,6 @@ class MasterUpahController extends Controller
 
         $masterUpah->delete();
 
-        return redirect()->route('produksi.masterUpah.index')
-            ->with('success', 'Penamaan upah berhasil dihapus.');
+        return redirect()->route('produksi.masterUpah.index')->with('success', 'Penamaan upah berhasil dihapus.');
     }
 }

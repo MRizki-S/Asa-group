@@ -3,6 +3,9 @@
 @section('pageActive', 'PengajuanPembangunan')
 
 @section('content')
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
+
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="pengajuanManager({{ $allPengajuan->map(
             fn($p) => [
                 'id' => $p->id,
@@ -60,14 +63,6 @@
                         class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase">Dibangun</button>
                 </div>
             </div>
-{{--
-            <a href="{{ route('produksi.pengajuanPembangunanUnit.create') }}"
-                class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg transition-all">
-                <svg class="w-5 h-5 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Buat Pengajuan
-            </a> --}}
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4"
@@ -180,11 +175,9 @@
                 </svg>
             </div>
             <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Belum Ada Pengajuan</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 italic">Database masih kosong. Silahkan menunggu pengajuan
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 italic">Database masih kosong. Silahkan menunggu
+                pengajuan
                 baru oleh projek manager.</p>
-            {{-- <a href="{{ route('produksi.pengajuanPembangunanUnit.create') }}"
-                class="mt-4 px-6 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-lg">+
-                Buat Sekarang</a> --}}
         </div>
 
         <div x-show="allData.length > 0 && filteredData.length === 0"
@@ -216,76 +209,7 @@
             </div>
         </div>
 
-        <div x-show="isModalOpen"
-            class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm" x-cloak
-            x-transition>
-            <div @click.away="closeModal()" class="relative w-full max-w-md p-4">
-                <div class="bg-white rounded-xl shadow-2xl dark:bg-gray-800">
-                    <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Assign Pengawas Proyek</h3>
-                        <button @click="closeModal()" class="text-gray-400 hover:text-gray-900"><svg class="w-5 h-5"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg></button>
-                    </div>
-                    <form :action="'{{ route('produksi.pembangunanUnit.store') }}'" method="POST" class="p-4 space-y-4">
-                        @csrf
-                        <input type="hidden" name="pengajuan_id" :value="selectedItem?.id">
-                        <div
-                            class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
-                            <p class="text-sm font-bold text-blue-800 dark:text-blue-300"
-                                x-text="'Unit: ' + selectedItem?.unit"></p>
-                            <p class="text-xs text-blue-600 dark:text-blue-400" x-text="selectedItem?.perumahaan"></p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Pengawas Proyek</label>
-                                <select name="pengawas_id" required
-                                    class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all">
-                                    <option value="">-- Pilih Pengawas --</option>
-                                    @foreach ($allPengawas as $pm)
-                                        <option value="{{ $pm->id }}">{{ $pm->nama_lengkap }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Template QC (Quality
-                                    Control)</label>
-                                <select name="qc_container_id" required
-                                    class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all">
-                                    <option value="">-- Pilih Template QC --</option>
-                                    @foreach ($allQcContainer as $qc)
-                                        <option value="{{ $qc->id }}">{{ $qc->nama_container }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal Mulai</label>
-                                <input type="date" name="tanggal_mulai" required value="{{ date('Y-m-d') }}"
-                                    class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Estimasi
-                                    Selesai</label>
-                                <input type="date" name="tanggal_selesai" required
-                                    class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all">
-                            </div>
-                        </div>
-                        <div class="flex justify-end gap-3 mt-6">
-                            <button type="button" @click="closeModal()"
-                                class="px-4 py-2 text-sm text-gray-500 font-medium">Batal</button>
-                            <button type="submit"
-                                class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-md transition">Konfirmasi
-                                & Simpan</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        @include('produksi.pengajuan-pembangunan.partials.modal')
 
         <template x-for="item in allData" :key="'form-' + item.id">
             <form :class="'delete-form-' + item.id" :action="'/produksi/pengajuan-pembangunan/' + item.id" method="POST"
@@ -309,7 +233,7 @@
                 get filteredData() {
                     return this.allData.filter(item => {
                         const matchesSearch = item.unit.toLowerCase().includes(this.searchQuery
-                        .toLowerCase()) ||
+                                .toLowerCase()) ||
                             item.qcContainerName.toLowerCase().includes(this.searchQuery.toLowerCase());
                         const matchesStatus = this.filterStatus === 'all' || item.status === this.filterStatus;
                         return matchesSearch && matchesStatus;

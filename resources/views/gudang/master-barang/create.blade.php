@@ -192,14 +192,14 @@
                                                 required
                                                 x-init="
                                                         $nextTick(() => {
-                                                            $($el).select2({ 
+                                                            $($el).select2({
                                                                 theme: 'bootstrap4',
                                                                 width: '100%',
                                                                 placeholder: 'Pilih Satuan'
                                                             }).on('change', function(e) {
                                                                 item.satuan_id = e.target.value;
                                                             });
-                                                            
+
                                                             $watch('item.satuan_id', (value) => {
                                                                 if ($($el).val() !== value) {
                                                                     $($el).val(value).trigger('change.select2');

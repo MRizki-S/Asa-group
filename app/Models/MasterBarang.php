@@ -42,7 +42,8 @@ class MasterBarang extends Model
         return $this->hasMany(TransferGudangHubUbs::class, 'barang_id');
     }
 
-    public function masterRapBahan(){
+    public function masterRapBahan()
+    {
         return $this->hasMany(MasterRapBahan::class);
     }
 }

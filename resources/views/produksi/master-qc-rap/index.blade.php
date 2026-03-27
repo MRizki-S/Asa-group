@@ -3,6 +3,8 @@
 @section('pageActive', 'MasterQC-RAP')
 
 @section('content')
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
@@ -50,12 +52,13 @@
                     @endcan
                 </div>
 
-                <form method="GET" action="{{ route('produksi.masterQcRap.index') }}" class="mb-4 flex items-center gap-3">
+                <form method="GET" action="{{ route('produksi.masterQcRap.index') }}"
+                    class="mb-4 flex items-center gap-3">
                     <h3 class="text-sm text-gray-500 dark:text-white/90">Filter -</h3>
 
                     <!-- Select Type -->
                     <div>
-                        <select name="typeFil"
+                        <select name="typeFil" id="selectType"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                             dark:bg-gray-600 dark:text-white">
                             <option value="">Semua Type</option>
@@ -66,6 +69,16 @@
                             @endforeach
                         </select>
                     </div>
+                    <script>
+                        $(document).ready(function() {
+                            $('#selectType').select2({
+                                placeholder: "Semua Type",
+                                theme: 'bootstrap4',
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        });
+                    </script>
 
                     <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         Terapkan
@@ -134,7 +147,8 @@
                                     {{-- @endcan --}}
 
                                     {{-- @can('produksi.qc-urutan.delete') --}}
-                                    <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST" class="delete-form">
+                                    <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST"
+                                        class="delete-form">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button"
@@ -156,10 +170,8 @@
     <!-- ===== Main Content End ===== -->
 
 
-    {{-- modal create kualifikasi-blok --}}
     {{-- @include('Etalase.kualifikasi-blok.modal.modal-create-Blok') --}}
 
-    {{-- sweatalert 2 for delete data --}}
     <script>
         document.addEventListener('click', function(e) {
             if (e.target.closest('.delete-btn')) {

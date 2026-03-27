@@ -1,18 +1,11 @@
-<div x-show="isModalOpen"
-    class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-    x-cloak
-    x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="opacity-0"
-    x-transition:enter-end="opacity-100"
-    x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0">
+<div x-show="isModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
-    <div @click.away="closeModal()"
-         class="relative w-full max-w-md p-4"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="scale-95 opacity-0"
-         x-transition:enter-end="scale-100 opacity-100">
+    <div @click.away="closeModal()" class="relative w-full max-w-md p-4"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="scale-95 opacity-0"
+        x-transition:enter-end="scale-100 opacity-100">
 
         <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
 
@@ -38,10 +31,10 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-                        Nama Upah / Kategori Pekerjaan
+                        Nama Upah
                     </label>
                     <input type="text" name="nama_upah" x-model="formData.nama" required
-                        placeholder="Contoh: Upah Pasang Keramik"
+                        placeholder="Contoh: Borongan pondasi"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5
                             dark:bg-gray-600 dark:border-gray-500 dark:text-white dark:placeholder-gray-400
                             focus:ring-blue-600 focus:border-blue-600 outline-none transition">
@@ -58,7 +51,6 @@
                     </button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>

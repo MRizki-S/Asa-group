@@ -3,6 +3,8 @@
 @section('pageActive', 'pembangunanUnit')
 
 @section('content')
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
@@ -42,13 +44,6 @@
                         List Pembangunan Unit
                         {{ $perumahaanSlug ? ' - ' . ucwords(str_replace('-', ' ', $perumahaanSlug)) : '' }}
                     </h3>
-
-                    {{-- @can('etalase.blok.create')
-                        <a href="{{ route('produksi.pembangunanUnit.create') }}"
-                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            + Tambah Pembangunan Unit
-                        </a>
-                    @endcan --}}
                 </div>
 
                 <form method="GET" action="{{ route('produksi.pembangunanUnit.index') }}"
@@ -64,7 +59,7 @@
 
                     <!-- Select Tahap -->
                     <div>
-                        <select name="tahapFil"
+                        <select name="tahapFil" id="selectTahap"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                     dark:bg-gray-600 dark:text-white">
                             <option value="">Semua Tahap</option>
@@ -74,6 +69,16 @@
                                 </option>
                             </template>
                         </select>
+                        <script>
+                            $(document).ready(function() {
+                                $('#selectTahap').select2({
+                                    placeholder: "Semua Tahap",
+                                    theme: 'bootstrap4',
+                                    allowClear: true,
+                                    width: '100%'
+                                });
+                            });
+                        </script>
                     </div>
 
                     <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
@@ -86,75 +91,90 @@
                     </a>
                 </form>
 
-
                 <table id="table-pembangunan-unit">
                     <thead>
                         <tr>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Unit
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Tahap</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">QC</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Progres &
+                                Status</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Pengawas
                             </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Tahap
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                QC
-                            </th>
-                            <th class="max-w-[100px] bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Proses Pembangunan
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Pengawas
-                            </th>
-                            {{-- @canany(['etalase.blok.update', ' etalase.blok.delete'])
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Aksi
-                                </th>
-                            @endcanany --}}
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Serah
+                                Terima</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($allPembangunanUnit as $item)
                             <tr>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->unit->nama_unit }}</td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->tahap->nama_tahap }}</td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->qcContainer->nama_container }}</td>
-                                <td
-                                    class="p-0 font-medium bg-blue-400 text-white whitespace-nowrap dark:text-white text-center">
+                                <td class="font-bold text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                    {{ $item->unit->nama_unit }}
+                                </td>
+                                <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
+                                    {{ $item->tahap->nama_tahap }}
+                                </td>
+                                <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
+                                    {{ $item->qcContainer->nama_container }}
+                                </td>
+
+                                <td class="p-0 text-center" style="padding: 0 !important;">
+                                    @php
+                                        $bgClass = 'bg-blue-500 hover:bg-blue-600';
+                                        $statusIcon = '';
+
+                                        if ($item->status_pembangunan === 'selesai') {
+                                            $bgClass = 'bg-green-500 hover:bg-green-600';
+                                            $statusIcon = '<i class="fa-solid fa-circle-check mr-1"></i>';
+                                        } elseif ($item->status_pembangunan === 'selesai dengan catatan') {
+                                            $bgClass = 'bg-yellow-500 hover:bg-yellow-600';
+                                            $statusIcon = '<i class="fa-solid fa-circle-exclamation mr-1"></i>';
+                                        }
+                                    @endphp
+
                                     <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
-                                        class="block w-full h-full"> {{ $item->total_progres }}%
+                                        class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} text-white transition-all group">
+                                        <span class="text-sm font-black">{!! $statusIcon !!}
+                                            {{ $item->total_progres }}%</span>
+                                        <span class="text-[9px] uppercase font-bold opacity-80 group-hover:opacity-100">
+                                            {{ $item->status_pembangunan }}
+                                        </span>
                                     </a>
                                 </td>
+
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->pengawas->nama_lengkap ?? '-' }}</td>
+                                    {{ $item->pengawas->nama_lengkap ?? '-' }}
+                                </td>
 
-                                {{-- @canany(['produksi.qc-urutan.update', 'produksi.qc-urutan.delete']) --}}
-                                {{-- <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                    <a href="{{ route('produksi.pembangunanUnit.edit', $item) }}"
-                                        class="btn-edit inline-flex items-center gap-1
-                                    text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
-                                    dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
-                                    px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                    focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
-                                    active:scale-95">
-                                        Edit
-                                    </a> --}}
-                                {{-- @endcan --}}
+                                <td class="whitespace-nowrap text-center">
+                                    @php
+                                        $st = $item->status_serah_terima;
 
-                                {{-- @can('produksi.qc-urutan.delete') --}}
-                                {{-- <form action="{{ route('produksi.pembangunanUnit.destroy', $item->id) }}" method="POST" class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                            Delete
-                                        </button>
-                                    </form> --}}
-                                {{-- @endcan --}}
-                                {{-- </td> --}}
-                                {{-- @endcanany --}}
+                                        $config = [
+                                            'pending' => [
+                                                'bg' => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+                                                'label' => 'Pending',
+                                            ],
+                                            'siap_serah_terima' => [
+                                                'bg' =>
+                                                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                                'label' => 'Siap Serah Terima',
+                                            ],
+                                            'siap_lpa' => [
+                                                'bg' =>
+                                                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+                                                'label' => 'Siap LPA',
+                                            ],
+                                        ];
+
+                                        $current = $config[$st] ?? $config['pending'];
+                                    @endphp
+
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight {{ $current['bg'] }} border border-transparent">
+                                        {{ $current['label'] }}
+                                    </span>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -166,10 +186,8 @@
     <!-- ===== Main Content End ===== -->
 
 
-    {{-- modal create kualifikasi-blok --}}
     {{-- @include('Etalase.kualifikasi-blok.modal.modal-create-Blok') --}}
 
-    {{-- sweatalert 2 for delete data --}}
     <script>
         document.addEventListener('click', function(e) {
             if (e.target.closest('.delete-btn')) {

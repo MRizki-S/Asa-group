@@ -21,7 +21,7 @@
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-init="$dispatch('sidebar-minimize')">
 
     <!-- Breadcrumb -->
-    <div x-data="{ pageName: 'TambahNotaMasuk' }">
+    <div x-data="{ pageName: 'TambahNotaMasuk' }">  
         @include('partials.breadcrumb')
     </div>
 
@@ -92,9 +92,9 @@
                                     <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
                                 </svg>
                             </div>
-                            <input type="date" name="tanggal_nota_display" 
-                                x-init="flatpickr($el, { 
-                                    dateFormat: 'd-m-Y', 
+                            <input type="date" name="tanggal_nota_display"
+                                x-init="flatpickr($el, {
+                                    dateFormat: 'd-m-Y',
                                     defaultDate: '{{ now()->format('d-m-Y') }}',
                                     onChange: (selectedDates, dateStr, instance) => {
                                         tampil = dateStr;
@@ -111,7 +111,7 @@
                             Status
                         </label>
                         <input type="text" id="status" name="status" readonly value="Draft"
-                            class="w-full bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm font-bold rounded-lg p-2.5 
+                            class="w-full bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm font-bold rounded-lg p-2.5
                dark:bg-yellow-900/30 dark:border-yellow-600 dark:text-yellow-400 cursor-not-allowed">
                     </div>
                 </div>
@@ -440,7 +440,7 @@
                 })
             },
 
-            // reset semua inputan ketika ganti barang 
+            // reset semua inputan ketika ganti barang
             resetRow(index) {
                 this.items[index].merk = ''
                 this.items[index].jumlah = 1

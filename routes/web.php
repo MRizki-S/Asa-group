@@ -43,17 +43,19 @@ use App\Http\Controllers\Marketing\SettingPembatalanController;
 use App\Http\Controllers\Marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+use App\Http\Controllers\masterQcRap;
 use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Produksi\MasterQcRapController;
+use App\Http\Controllers\Produksi\MasterUpahController;
+use App\Http\Controllers\Produksi\PembangunanUnitController;
+use App\Http\Controllers\Produksi\PembangunanUnitOrderController;
+use App\Http\Controllers\Produksi\PembangunanUnitUpahController;
+use App\Http\Controllers\Produksi\PengajuanPembangunanUnitController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use App\Models\MasterSatuan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\masterQcRap;
-use App\Http\Controllers\Produksi\MasterQcRapController;
-use App\Http\Controllers\Produksi\MasterUpahController;
-use App\Http\Controllers\Produksi\PembangunanUnitController;
-use App\Http\Controllers\Produksi\PengajuanPembangunanUnitController;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -459,7 +461,6 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
     Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
-
 });
 
 // keuangan Group
@@ -516,6 +517,13 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     Route::resource('master-upah', MasterUpahController::class)->names('produksi.masterUpah');
     Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
     Route::resource('pengajuan-pembangunan', PengajuanPembangunanUnitController::class)->names('produksi.pengajuanPembangunanUnit');
+
+    Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderController::class, 'store'])
+        ->name('produksi.pembangunanUnit.orderStore');
     Route::post('/pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
-    ->name('produksi.pembangunanUnit.updateTask');
+        ->name('produksi.pembangunanUnit.updateTask');
+    Route::post('/pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
+        ->name('produksi.pembangunanUnit.updateSerahTerima');
+    Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitUpahController::class, 'store'])
+        ->name('produksi.pembangunanUnit.upahStore');
 });

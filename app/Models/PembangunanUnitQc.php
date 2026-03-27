@@ -16,26 +16,32 @@ class PembangunanUnitQc extends Model
         'tanggal_selesai'
     ];
 
-    public function pembangunanUnit(){
+    public function pembangunanUnit()
+    {
         return $this->belongsTo(PembangunanUnit::class, 'pembangunan_unit_id');
     }
 
-    public function masterQc(){
+    public function masterQc()
+    {
         return $this->belongsTo(MasterQcUrutan::class, 'master_qc_urutan_id');
     }
 
-    public function pembangunanUnitQcTask(){
+    public function pembangunanUnitQcTask()
+    {
         return $this->hasMany(PembangunanUnitQcTask::class);
     }
 
-    public function pembangunanUnitRapBahan(){
+    public function pembangunanUnitRapBahan()
+    {
         return $this->hasMany(PembangunanUnitRapBahan::class);
     }
-    public function pembangunanUnitRapUpah(){
+    public function pembangunanUnitRapUpah()
+    {
         return $this->hasMany(PembangunanUnitRapUpah::class);
     }
 
-    public function getPersentaseAttribute() {
+    public function getPersentaseAttribute()
+    {
         $total = $this->pembangunanUnitQcTask->count();
         if ($total == 0) return 0;
         $selesai = $this->pembangunanUnitQcTask->where('selesai', 1)->count();

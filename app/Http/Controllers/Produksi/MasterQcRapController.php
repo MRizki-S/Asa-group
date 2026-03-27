@@ -24,10 +24,7 @@ class MasterQcRapController extends Controller
     public function index(Request $request)
     {
         // Mulai query dengan relasi type & urutan
-        $query = MasterQcContainer::with([
-            'type:id,nama_type,slug',
-            'urutan',
-        ])->latest('created_at');
+        $query = MasterQcContainer::with(['type:id,nama_type,slug', 'urutan'])->latest('created_at');
 
         // ===== Filter Tahap (slug) =====
         if ($request->filled('typeFil')) {
@@ -44,12 +41,10 @@ class MasterQcRapController extends Controller
 
         $typeSlug = $request->query('typeFil');
         return view('Produksi.master-qc-rap.index', [
-            'allQcContainer'        => $allQcContainer,
-            'typeSlug'      => $typeSlug,
-            'allType'       => $allType,
-            'breadcrumbs'    => [
-                ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
-            ],
+            'allQcContainer' => $allQcContainer,
+            'typeSlug' => $typeSlug,
+            'allType' => $allType,
+            'breadcrumbs' => [['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')]],
         ]);
     }
 
@@ -60,18 +55,15 @@ class MasterQcRapController extends Controller
     {
         $allType = Type::all();
         $allUpah = MasterUpah::all();
-        $allBarang = MasterBarang::all();
+        $allBarang = MasterBarang::with('satuanKonversi.satuan')->get();
         $allSatuan = MasterSatuan::all();
 
         return view('produksi.master-qc-rap.create', [
-            'breadcrumbs' => [
-                ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
-                ['label' => 'Tambah Qc Rap', 'url' => route('produksi.masterQcRap.create')],
-            ],
+            'breadcrumbs' => [['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')], ['label' => 'Tambah Qc Rap', 'url' => route('produksi.masterQcRap.create')]],
             'allType' => $allType,
             'allUpah' => $allUpah,
             'allBarang' => $allBarang,
-            'allSatuan' => $allSatuan
+            'allSatuan' => $allSatuan,
         ]);
     }
 
@@ -153,12 +145,12 @@ class MasterQcRapController extends Controller
 
             DB::commit();
 
-            return redirect()->route('produksi.masterQcRap.index')
-                            ->with('success', 'Data Container berhasil disimpan!');
-
+            return redirect()->route('produksi.masterQcRap.index')->with('success', 'Data Container berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Gagal: ' . $e->getMessage()]);
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Gagal: ' . $e->getMessage()]);
         }
     }
 
@@ -167,22 +159,11 @@ class MasterQcRapController extends Controller
      */
     public function show(string $id)
     {
-        $container = MasterQcContainer::with([
-            'type',
-            'urutan.tugas',
-            'rapBahan.urutan',
-            'rapBahan.barang',
-            'rapBahan.satuan',
-            'rapUpah.urutan',
-            'rapUpah.masterUpah',
-        ])->findOrFail($id);
+        $container = MasterQcContainer::with(['type', 'urutan.tugas', 'rapBahan.urutan', 'rapBahan.barang', 'rapBahan.satuan', 'rapUpah.urutan', 'rapUpah.masterUpah'])->findOrFail($id);
 
         return view('Produksi.master-qc-rap.detail', [
-            'container'       => $container,
-            'breadcrumbs'    => [
-                ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
-                ['label' => 'Detail', 'url' => route('produksi.masterQcRap.show', $id)],
-            ],
+            'container' => $container,
+            'breadcrumbs' => [['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')], ['label' => 'Detail', 'url' => route('produksi.masterQcRap.show', $id)]],
         ]);
     }
 
@@ -195,13 +176,10 @@ class MasterQcRapController extends Controller
         $allType = Type::all();
         $allUpah = MasterUpah::all();
 
-        $allBarang = MasterBarang::all();
+        $allBarang = MasterBarang::with('satuanKonversi.satuan')->get();
         $allSatuan = MasterSatuan::all();
 
-        $breadcrumbs = [
-            ['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')],
-            ['label' => 'Edit Qc Rap', 'url' => route('produksi.masterQcRap.edit', $id)],
-        ];
+        $breadcrumbs = [['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')], ['label' => 'Edit Qc Rap', 'url' => route('produksi.masterQcRap.edit', $id)]];
 
         return view('produksi.master-qc-rap.edit', compact('breadcrumbs', 'container', 'allType', 'allUpah', 'allBarang', 'allSatuan'));
     }
@@ -296,10 +274,11 @@ class MasterQcRapController extends Controller
 
             DB::commit();
             return redirect()->route('produksi.masterQcRap.index')->with('success', 'Data Master Berhasil Diperbarui!');
-
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Gagal Update: ' . $e->getMessage()]);
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Gagal Update: ' . $e->getMessage()]);
         }
     }
     /**
@@ -310,7 +289,6 @@ class MasterQcRapController extends Controller
         $masterQc = MasterQcContainer::findOrFail($id);
         $masterQc->delete();
 
-        return redirect()->route('produksi.masterQcRap.index')
-            ->with('success', 'Container QC berhasil dihapus.');
+        return redirect()->route('produksi.masterQcRap.index')->with('success', 'Container QC berhasil dihapus.');
     }
 }

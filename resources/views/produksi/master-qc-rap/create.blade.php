@@ -3,6 +3,9 @@
 @section('pageActive', 'MasterQC-RAP')
 
 @section('content')
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
+
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="qcForm()">
 
         <div x-data="{ pageName: 'Master QC & RAP' }">
@@ -10,9 +13,12 @@
         </div>
 
         @if ($errors->any())
-            <div class="flex p-4 mb-6 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-sm" role="alert">
-                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            <div class="flex p-4 mb-6 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-sm"
+                role="alert">
+                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
                 </svg>
                 <div>
                     <span class="font-medium">Terjadi kesalahan validasi:</span>
@@ -31,14 +37,15 @@
             {{-- Card Informasi Utama --}}
             <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 mb-6 shadow-sm">
                 <div class="px-5 py-4 sm:px-6 sm:py-5">
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white mb-5 border-b border-gray-100 dark:border-gray-700 pb-3">
+                    <h3
+                        class="text-base font-semibold text-gray-800 dark:text-white mb-5 border-b border-gray-100 dark:border-gray-700 pb-3">
                         Informasi Utama QC
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type Unit</label>
-                            <select name="type_id" required
+                            <select name="type_id" required id="selectTypeUnit"
                                 class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 transition">
                                 <option value="" class="dark:bg-gray-800">-- Pilih Type --</option>
                                 @foreach ($allType ?? [] as $item)
@@ -49,6 +56,17 @@
                             </select>
                         </div>
 
+                        <script>
+                            $(document).ready(function() {
+                                $('#selectTypeUnit').select2({
+                                    placeholder: "-- Pilih Type --",
+                                    theme: 'bootstrap4',
+                                    allowClear: true,
+                                    width: '100%'
+                                });
+                            });
+                        </script>
+
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama QC</label>
                             <input type="text" name="nama_container" required placeholder="Masukkan nama container..."
@@ -57,7 +75,8 @@
                         </div>
 
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Jumlah Langkah QC</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Jumlah Langkah
+                                QC</label>
                             <div class="flex gap-2">
                                 <input type="number" x-model="tempJumlahQc" min="1" max="50" placeholder="0"
                                     class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5 focus:ring-blue-500" />
@@ -74,13 +93,22 @@
             {{-- Tab Dashboard --}}
             <div class="mb-6">
                 <div class="flex border-b border-gray-200 dark:border-gray-700">
-                    <button type="button" @click="tab = 'qc'" :class="tab === 'qc' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'" class="px-6 py-3 border-b-2 font-medium text-sm transition-all focus:outline-none">
+                    <button type="button" @click="tab = 'qc'"
+                        :class="tab === 'qc' ? 'border-blue-600 text-blue-600' :
+                            'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                        class="px-6 py-3 border-b-2 font-medium text-sm transition-all focus:outline-none">
                         1. Langkah QC
                     </button>
-                    <button type="button" @click="tab = 'bahan'" :class="tab === 'bahan' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'" class="px-6 py-3 border-b-2 font-medium text-sm transition-all focus:outline-none">
+                    <button type="button" @click="tab = 'bahan'"
+                        :class="tab === 'bahan' ? 'border-blue-600 text-blue-600' :
+                            'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                        class="px-6 py-3 border-b-2 font-medium text-sm transition-all focus:outline-none">
                         2. RAP Bahan
                     </button>
-                    <button type="button" @click="tab = 'upah'" :class="tab === 'upah' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'" class="px-6 py-3 border-b-2 font-medium text-sm transition-all focus:outline-none">
+                    <button type="button" @click="tab = 'upah'"
+                        :class="tab === 'upah' ? 'border-blue-600 text-blue-600' :
+                            'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                        class="px-6 py-3 border-b-2 font-medium text-sm transition-all focus:outline-none">
                         3. RAP Upah
                     </button>
                 </div>
@@ -118,6 +146,29 @@
                 bahanGroups: [],
                 upahGroups: [],
                 openAccordions: {},
+                allBarang: @json($allBarang),
+
+                getAvailableSatuan(barangId) {
+                    if (!barangId || barangId == 0) return [];
+                    const barang = this.allBarang.find(b => b.id == barangId);
+
+                    if (barang && barang.satuan_konversi) {
+                        return barang.satuan_konversi.map(k => ({
+                            id: k.satuan_id,
+                            nama: k.satuan ? k.satuan.nama : 'N/A'
+                        }));
+                    }
+                    return [];
+                },
+
+                updateBarang(bIndex, newBarangId) {
+                    this.bahanGroups[bIndex].barang_id = newBarangId;
+                    this.bahanGroups[bIndex].satuan_id = 0;
+                    this.$nextTick(() => {
+                        const selectSatuan = $(`select[name="bahan[${bIndex}][satuan_id]"]`);
+                        selectSatuan.val(0).trigger('change');
+                    });
+                },
 
                 generateQc() {
                     const jumlah = parseInt(this.tempJumlahQc);
@@ -160,14 +211,18 @@
                             nama_qc: `QC-${i}`,
                             tugas: ['']
                         });
-                        if(i === 1) this.openAccordions[0] = true;
+                        if (i === 1) this.openAccordions[0] = true;
                     }
                 },
 
                 addQc() {
                     const next = this.qcGroups.length + 1;
                     const index = this.qcGroups.length;
-                    this.qcGroups.push({ qc_ke: next, nama_qc: `QC-${next}`, tugas: [''] });
+                    this.qcGroups.push({
+                        qc_ke: next,
+                        nama_qc: `QC-${next}`,
+                        tugas: ['']
+                    });
                     this.openAccordions[index] = true;
                 },
 
@@ -240,8 +295,18 @@
         }
     </script>
     <style>
-        [x-cloak] { display: none !important; }
-        select option { background-color: white; color: black; }
-        .dark select option { background-color: #1f2937; color: white; }
+        [x-cloak] {
+            display: none !important;
+        }
+
+        select option {
+            background-color: white;
+            color: black;
+        }
+
+        .dark select option {
+            background-color: #1f2937;
+            color: white;
+        }
     </style>
 @endsection

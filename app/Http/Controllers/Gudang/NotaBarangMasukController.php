@@ -48,7 +48,7 @@ class NotaBarangMasukController extends Controller
         // Ambil master barang
         $masterBarangs = MasterBarang::select('id', 'kode_barang', 'nama_barang')
             ->get();
-        
+
         return view('gudang.nota-barang-masuk.create', [
             'newNomorNota' => $nowNomorNota,
             'masterBarangs' => $masterBarangs,
@@ -134,5 +134,5 @@ class NotaBarangMasukController extends Controller
     }
 
 
-    
+
 }

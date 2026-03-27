@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('qc_container_id')->nullable()->constrained('master_qc_container')->onDelete('set null');
             $table->timestamp('tanggal_mulai')->nullable();
             $table->timestamp('tanggal_selesai')->nullable();
-            $table->enum('status_pembangunan', ['pending', 'proses', 'selesai'])->default('pending');
+            $table->enum('status_pembangunan', ['pending', 'proses', 'selesai', 'selesai dengan catatan'])->default('pending');
             $table->enum('status_serah_terima', ['pending', 'siap_serah_terima', 'siap_lpa'])->default('pending');
             $table->timestamps();
         });
