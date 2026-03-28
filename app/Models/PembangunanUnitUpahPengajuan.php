@@ -18,10 +18,19 @@ class PembangunanUnitUpahPengajuan extends Model
         'catatan_pengawas',
         'status_pengajuan',
         'tanggal_diajukan',
+        'disetujui_mgr_produksi',
+        'disetujui_mgr_dukungan',
+        'disetujui_akuntan',
+        'alasan_ditolak',
+        'ditolak_pada',
     ];
 
     protected $casts = [
         'tanggal_diajukan' => 'datetime',
+        'disetujui_mgr_produksi' => 'datetime',
+        'disetujui_mgr_dukungan' => 'datetime',
+        'disetujui_akuntan' => 'datetime',
+        'ditolak_pada' => 'datetime',
         'nominal_diajukan' => 'decimal:2',
     ];
 
@@ -54,13 +63,13 @@ class PembangunanUnitUpahPengajuan extends Model
      */
     public function getStatusStyleAttribute(): string
     {
+        if (str_contains($this->status_pengajuan, 'ditolak')) {
+            return 'bg-red-100 text-red-700 border-red-200';
+        }
+
         return match ($this->status_pengajuan) {
-            'diajukan' => 'bg-amber-100 text-amber-600',
-            'disetujui_mgr_produksi' => 'bg-blue-100 text-blue-600',
-            'disetujui_mgr_dukungan' => 'bg-purple-100 text-purple-600',
-            'disetujui_akuntan' => 'bg-green-100 text-green-600',
-            'ditolak_mgr_produksi', 'ditolak_mgr_dukungan', 'ditolak_akuntan' => 'bg-red-100 text-red-600',
-            default => 'bg-gray-100 text-gray-600',
+            'disetujui' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            default     => 'bg-amber-100 text-amber-700 border-amber-200',
         };
     }
 
@@ -69,6 +78,13 @@ class PembangunanUnitUpahPengajuan extends Model
      */
     public function getStatusLabelAttribute(): string
     {
-        return str_replace('_', ' ', ucfirst($this->status_pengajuan));
+        if (str_contains($this->status_pengajuan, 'ditolak')) {
+            return ucwords(str_replace('_', ' ', $this->status_pengajuan));
+        }
+
+        return match ($this->status_pengajuan) {
+            'disetujui' => 'Disetujui',
+            default     => 'Pending',
+        };
     }
 }
