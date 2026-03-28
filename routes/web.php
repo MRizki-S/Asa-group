@@ -520,10 +520,16 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderController::class, 'store'])
         ->name('produksi.pembangunanUnit.orderStore');
-    Route::post('/pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
+    Route::post('pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
         ->name('produksi.pembangunanUnit.updateTask');
-    Route::post('/pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
+    Route::post('pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
         ->name('produksi.pembangunanUnit.updateSerahTerima');
     Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitUpahController::class, 'store'])
         ->name('produksi.pembangunanUnit.upahStore');
+
+    Route::get('persetujuan-upah', [PembangunanUnitUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
+    Route::patch('persetujuan-upah/{id}/update-status', [PembangunanUnitUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
 });
+
+
+Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->name('keuangan.persetujuanUpah.index');

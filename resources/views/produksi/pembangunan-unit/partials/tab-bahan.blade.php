@@ -1,15 +1,27 @@
 <div x-show="tab === 'bahan'" class="space-y-4">
-    <div class="flex justify-end items-center px-1">
-        {{-- Tombol hanya muncul jika ada data di pembangunanUnitRapBahan --}}
+    {{-- Header --}}
+    <div class="flex justify-between items-center px-1">
+        <div class="flex items-center gap-3">
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Riwayat Order Bahan</h4>
+            <span class="bg-blue-100 text-blue-600 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                {{ \App\Models\PembangunanUnitBarangOrder::where('pembangunan_unit_qc_id', $qc->id)->count() }} Total
+            </span>
+        </div>
+
         @if ($qc->pembangunanUnitRapBahan->count() > 0)
             <button @click="prepareOrder({{ json_encode($qc->pembangunanUnitRapBahan) }}, {{ $qc->id }})"
-                class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase">
+                class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
                 Order Barang
             </button>
         @endif
     </div>
 
-    {{-- Riwayat Permintaan  --}}
+    {{-- Tabel Order Bahan --}}
     @php
         $orders = \App\Models\PembangunanUnitBarangOrder::with('details.barang')
             ->where('pembangunan_unit_qc_id', $qc->id)
@@ -18,136 +30,194 @@
     @endphp
 
     @if ($orders->count() > 0)
-        <div class="mt-10 space-y-5">
-            <div class="flex items-center gap-3 px-1">
-                <h4 class="text-xs font-bold text-gray-700 uppercase tracking-widest">Riwayat Permintaan</h4>
-                <div class="h-[1px] flex-1 bg-gray-100 dark:bg-gray-800"></div>
-            </div>
+        <div
+            class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 dark:bg-gray-800/50">
+                    <tr>
+                        <th class="w-10 px-4 py-3"></th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">ID Request
+                        </th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Item</th>
+                        <th
+                            class="w-40 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">
+                            Status</th>
+                    </tr>
+                </thead>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @foreach ($orders as $order)
-                    <div
-                        class="group bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+                    <tbody x-data="{ open: false }" class="border-t border-gray-100 dark:border-gray-800">
+                        {{-- Row Utama --}}
+                        <tr @click="open = !open"
+                            class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                            <td class="px-4 py-4 text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-3 h-3 text-gray-400 transition-transform duration-300 mx-auto"
+                                    :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </td>
+                            <td class="px-4 py-4">
+                                <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
+                                    {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y') }}
+                                </p>
+                                <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
+                                    REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                                </p>
+                            </td>
+                            <td class="px-4 py-4 text-xs text-gray-600 dark:text-gray-400">
+                                {{ $order->details->count() }} Jenis Barang
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                @php
+                                    $statusMap = [
+                                        'menunggu' => 'bg-amber-50 text-amber-600 border-amber-100',
+                                        'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                        'selesai' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                        'ditolak' => 'bg-red-50 text-red-600 border-red-100',
+                                    ];
+                                    $style =
+                                        $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                @endphp
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                    {{ $order->status_order }}
+                                </span>
+                            </td>
+                        </tr>
 
-                        {{-- Header Card --}}
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p
-                                        class="text-xs font-black text-gray-800 dark:text-white uppercase tracking-tight">
-                                        REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</p>
-                                    <p class="text-[10px] text-gray-500 font-medium">
-                                        {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y') }}
-                                        • {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->format('H:i') }}
-                                    </p>
-                                </div>
-                            </div>
-                            @php
-                                $statusMap = [
-                                    'menunggu' => 'bg-amber-50 text-amber-600 border-amber-100',
-                                    'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                    'selesai' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                    'ditolak' => 'bg-red-50 text-red-600 border-red-100',
-                                ];
-                                $currentStyle =
-                                    $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
-                            @endphp
-                            <span
-                                class="px-2.5 py-1 text-[9px] font-black rounded-full uppercase border {{ $currentStyle }}">
-                                {{ $order->status_order }}
-                            </span>
-                        </div>
+                        {{-- Accordion Detail --}}
+                        <tr x-show="open" x-cloak>
+                            <td colspan="4" class="p-0 border-none bg-gray-50/50 dark:bg-gray-900/40">
+                                <div x-show="open" x-collapse
+                                    class="px-10 py-6 border-t border-gray-100 dark:border-gray-800">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                        {{-- List Items --}}
-                        <div
-                            class="bg-gray-50/50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-800 p-3 mb-3">
-                            <table class="w-full">
-                                <tbody class="divide-y divide-gray-100/50 dark:divide-gray-800/50">
-                                    @foreach ($order->details as $det)
-                                        @php
-                                            $isOver = $det->jumlah_input > ($det->jumlah_base ?? 0);
-                                        @endphp
-                                        <tr>
-                                            <td class="py-2">
-                                                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-tight">
-                                                    {{ $det->nama_barang ?? '-' }}</p>
-                                                @if ($det->alasan_permintaan_tidak_sesuai_rap)
-                                                    <p
-                                                        class="text-[9px] text-red-500 italic mt-0.5 flex items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5"
-                                                            viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                        Note: {{ $det->alasan_permintaan_tidak_sesuai_rap }}
-                                                    </p>
-                                                @endif
-                                            </td>
-                                            <td class="py-2 text-right">
-                                                <div class="flex flex-col items-end">
-                                                    <span
-                                                        class="text-[11px] font-black {{ $isOver ? 'text-red-600' : 'text-gray-800 dark:text-white' }}">
-                                                        {{ str_replace('.', ',', (float) $det->jumlah_input) }}
-                                                        <span
-                                                            class="text-[9px] font-medium text-gray-400 ms-1">{{ $det->satuan ?? '-' }}</span>
-                                                    </span>
-                                                    @if ($isOver)
-                                                        <span
-                                                            class="text-[8px] font-bold text-red-500 uppercase tracking-tighter bg-red-50 px-1 rounded">Over
-                                                            RAP</span>
-                                                    @endif
+                                        {{-- Daftar Barang yang di-order --}}
+                                        <div class="space-y-4">
+                                            <div class="flex justify-between items-end mb-2">
+                                                <h5
+                                                    class="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                                    Detail Item Barang</h5>
+                                                <span
+                                                    class="text-[9px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
+                                                    {{ $order->details->count() }} Items
+                                                </span>
+                                            </div>
+
+                                            {{-- Container dengan Scroll Overflow --}}
+                                            <div
+                                                class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                                                <div class="max-h-[280px] overflow-y-auto custom-scrollbar">
+                                                    <table class="w-full text-left border-collapse">
+                                                        <thead
+                                                            class="bg-gray-50/80 dark:bg-gray-700/50 sticky top-0 z-10 backdrop-blur-sm">
+                                                            <tr>
+                                                                <th
+                                                                    class="px-3 py-2 text-[9px] font-bold text-gray-400 uppercase border-b border-gray-100 dark:border-gray-700">
+                                                                    Nama Barang</th>
+                                                                <th
+                                                                    class="px-3 py-2 text-[9px] font-bold text-gray-400 uppercase text-right border-b border-gray-100 dark:border-gray-700">
+                                                                    Jumlah</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                                            @foreach ($order->details as $det)
+                                                                @php $isOver = $det->jumlah_input > ($det->jumlah_base ?? 0); @endphp
+                                                                <tr
+                                                                    class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                                                    <td class="px-3 py-2.5">
+                                                                        <p
+                                                                            class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
+                                                                            {{ $det->nama_barang ?? '-' }}
+                                                                        </p>
+                                                                        @if ($det->alasan_permintaan_tidak_sesuai_rap)
+                                                                            <p
+                                                                                class="text-[9px] text-red-500 italic mt-0.5 flex items-center gap-1">
+                                                                                <span
+                                                                                    class="w-1 h-1 rounded-full bg-red-400"></span>
+                                                                                Ket:
+                                                                                {{ $det->alasan_permintaan_tidak_sesuai_rap }}
+                                                                            </p>
+                                                                        @endif
+                                                                    </td>
+                                                                    <td class="px-3 py-2.5 text-right vertical-top">
+                                                                        <p
+                                                                            class="text-[11px] font-black {{ $isOver ? 'text-red-600' : 'text-gray-800 dark:text-white' }}">
+                                                                            {{ str_replace('.', ',', (float) $det->jumlah_input) }}
+                                                                            <span
+                                                                                class="text-[9px] font-medium text-gray-400 ms-0.5">{{ $det->satuan ?? '-' }}</span>
+                                                                        </p>
+                                                                        @if ($isOver)
+                                                                            <span
+                                                                                class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded-[4px] border border-red-100">Over
+                                                                                RAP</span>
+                                                                        @endif
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                            </div>
 
-                        {{-- Global Note --}}
-                        @if ($order->catatan)
-                            <div class="mb-4 px-3 py-2 bg-blue-50/30 border-s-2 border-blue-400 rounded-e-lg">
-                                <p class="text-[9px] font-bold text-blue-600 uppercase mb-0.5">Catatan Permintaan:</p>
-                                <p class="text-[10px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                                    {{ $order->catatan }}</p>
-                            </div>
-                        @endif
+                                            {{-- Info Footer Kecil --}}
+                                            @if ($order->details->count() > 5)
+                                                <p
+                                                    class="text-[8px] text-gray-400 italic text-center uppercase tracking-tighter">
+                                                    Scroll ke bawah untuk melihat item lainnya
+                                                </p>
+                                            @endif
+                                        </div>
+                                        {{-- Catatan & Aksi --}}
+                                        <div class="space-y-4">
+                                            <div>
+                                                <h5
+                                                    class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                                    Catatan Permintaan</h5>
+                                                <div
+                                                    class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm min-h-[60px]">
+                                                    <p
+                                                        class="text-xs text-gray-600 dark:text-gray-400 italic leading-relaxed">
+                                                        "{{ $order->catatan ?? 'Tidak ada catatan permintaan.' }}"
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                        {{-- Actions --}}
-                        <div class="flex gap-2">
-                            <button
-                                class="flex-1 py-2 text-[9px] font-black bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg uppercase border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-500 transition-all duration-300 flex items-center justify-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16 15L12 19L8 15M12 19V5" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16" />
-                                </svg>
-                                Return
-                            </button>
-                            {{-- <button
-                                class="w-10 py-2 text-[9px] flex items-center justify-center bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-blue-50 hover:text-blue-500 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button> --}}
-                        </div>
-                    </div>
+                                            <div class="pt-2">
+                                                <button
+                                                    class="w-full py-2 text-[9px] font-black bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg uppercase border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-500 transition-all duration-300 flex items-center justify-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2.5" d="M16 15L12 19L8 15M12 19V5M4 4h16" />
+                                                    </svg>
+                                                    Ajukan Return (Jika Selesai)
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
                 @endforeach
-            </div>
+            </table>
+        </div>
+    @else
+        {{-- Empty State --}}
+        <div
+            class="py-16 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl bg-gray-50/30">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300 mb-4" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <h5 class="text-xs font-bold text-gray-600 dark:text-gray-300">Belum Ada Riwayat Order</h5>
+            <p class="text-[10px] text-gray-400 mt-1 text-center">Data order bahan bangunan belum tersedia untuk QC ini.
+            </p>
         </div>
     @endif
 </div>

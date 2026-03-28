@@ -22,17 +22,22 @@ return new class extends Migration
             $table->text('catatan_pengawas')->nullable();
 
             $table->enum('status_pengajuan', [
-                'draft',
-                'diajukan',
-                'disetujui_mgr_produksi',
+                'req_mgr_produksi',
                 'ditolak_mgr_produksi',
-                'disetujui_mgr_dukungan',
+                'req_mgr_dukungan',
                 'ditolak_mgr_dukungan',
-                'disetujui_akuntan',
-                'ditolak_akuntan'
-            ])->default('draft');
+                'req_akuntan',
+                'ditolak_akuntan',
+                'disetujui'
+            ])->default('req_mgr_produksi');
 
             $table->dateTime('tanggal_diajukan')->nullable();
+
+            $table->timestamp('disetujui_mgr_produksi')->nullable();
+            $table->timestamp('disetujui_mgr_dukungan')->nullable();
+            $table->timestamp('disetujui_akuntan')->nullable();
+            $table->text('alasan_ditolak')->nullable();
+            $table->timestamp('ditolak_pada')->nullable();
             $table->timestamps();
         });
     }

@@ -40,6 +40,11 @@ class PembangunanUnitQc extends Model
         return $this->hasMany(PembangunanUnitRapUpah::class);
     }
 
+    public function pembangunanUnitUpahPengajuan()
+    {
+        return $this->hasMany(PembangunanUnitUpahPengajuan::class, 'pembangunan_unit_qc_id')->latest();
+    }
+
     public function getPersentaseAttribute()
     {
         $total = $this->pembangunanUnitQcTask->count();

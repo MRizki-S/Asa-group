@@ -48,9 +48,13 @@
                                     </div>
 
                                     <div x-show="item.checked" x-collapse class="space-y-3">
-                                        <input type="number" x-model.number="item.nominal_pengajuan"
-                                            placeholder="Masukkan nominal Rp..."
-                                            class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-600 outline-none font-bold">
+
+                                        <input type="hidden" x-model.number="item.nominal_pengajuan">
+
+                                        <input type="text" x-bind:value="formatRupiah(item.nominal_pengajuan)"
+                                            @input="item.nominal_pengajuan = parseNumber($event.target.value)"
+                                            placeholder="0"
+                                            class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg text-left font-mono">
 
                                         <textarea x-model="item.catatan_pengawas" placeholder="Catatan khusus pekerjaan ini..."
                                             class="w-full px-3 py-2 text-[11px] border border-gray-200 rounded-lg outline-none bg-white min-h-[50px]"></textarea>

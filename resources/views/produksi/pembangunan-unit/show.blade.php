@@ -15,8 +15,17 @@
         catatanUpah: '',
         unitStatus: '{{ $data->status_pembangunan ?? 'proses' }}',
         statusST: '{{ $data->status_serah_terima ?? 'pending' }}',
-
-        // Fungsi untuk update URL tanpa refresh halaman
+    
+        formatRupiah(val) {
+            if (!val) return '';
+            return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        },
+    
+        parseNumber(val) {
+            return val.replace(/\./g, '').replace(/[^0-9]/g, '');
+        },
+    
+    
         updateUrl(qcIndex, tabName) {
             const url = new URL(window.location);
             if (qcIndex !== null) {
@@ -28,16 +37,16 @@
             if (tabName) url.searchParams.set('tab', tabName);
             window.history.replaceState({}, '', url);
         },
-
+    
         async updateStatusST(newVal) {
             try {
                 const res = await axios.post('{{ route('produksi.pembangunanUnit.updateSerahTerima', $data->id) }}', {
                     status_serah_terima: newVal
                 });
-
+    
                 if (res.data.success) {
                     this.statusST = newVal;
-
+    
                     if (res.data.unit_status) {
                         this.unitStatus = res.data.unit_status;
                     }
@@ -47,7 +56,7 @@
                 alert('Gagal memperbarui status.');
             }
         },
-
+    
         prepareUpah(upahArray, qcId) {
             this.selectedQcId = qcId;
             this.catatanUpah = '';
@@ -60,7 +69,7 @@
             }));
             this.openUpahModal = true;
         },
-
+    
         async submitUpah() {
             const selected = this.itemsToPay.filter(i => i.checked);
             if (selected.length === 0) return alert('Pilih minimal satu upah.');
@@ -83,7 +92,7 @@
                 this.loadingUpah = false;
             }
         },
-
+    
         prepareOrder(bahanArray, qcId) {
             this.selectedQcId = qcId;
             this.catatanGlobal = '';
@@ -100,7 +109,7 @@
             }));
             this.openRequest = true;
         },
-
+    
         async submitRequest() {
             const selectedItems = this.itemsToOrder.filter(i => i.checked);
             if (selectedItems.length === 0) return alert('Pilih minimal satu barang.');
