@@ -372,14 +372,21 @@
     <script>
         // Datepicker Flatpickr tanggal jurnal
         document.addEventListener('DOMContentLoaded', function () {
-            flatpickr("#tanggalStart", {
+            const startPicker = flatpickr("#tanggalStart", {
                 dateFormat: "d-m-Y",
-                allowInput: true
+                allowInput: true,
+                onChange: function(selectedDates, dateStr) {
+                    endPicker.set('minDate', dateStr);
+                }
             });
 
-            flatpickr("#tanggalEnd", {
+            const endPicker = flatpickr("#tanggalEnd", {
                 dateFormat: "d-m-Y",
-                allowInput: true
+                allowInput: true,
+                minDate: document.getElementById('tanggalStart').value,
+                onChange: function(selectedDates, dateStr) {
+                    startPicker.set('maxDate', dateStr);
+                }
             });
         });
 

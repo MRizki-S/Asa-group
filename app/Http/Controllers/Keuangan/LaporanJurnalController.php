@@ -30,13 +30,17 @@ class LaporanJurnalController extends Controller
             ->where('tanggal_selesai', '>=', $today)
             ->first();
 
-        if (!$periodeAktif) {
+        // Hanya return kosong jika tidak ada search DAN tidak ada periode aktif hari ini
+        if (!$periodeAktif && !$tanggalStart && !$tanggalEnd) {
             return [collect(), 0, 0, null];
         }
 
         $jurnals = Jurnal::posted()
             ->where('jenis_jurnal', 'umum')
-            ->where('periode_id', $periodeAktif->id)
+            // Gunakan periode_id hanya jika tidak sedang searching range tanggal
+            ->when(!$tanggalStart && !$tanggalEnd && $periodeAktif, function ($q) use ($periodeAktif) {
+                $q->where('periode_id', $periodeAktif->id);
+            })
             ->when($request->filled('ubs_id') && $request->ubs_id != 'all', function ($q) use ($request) {
                 $q->where('ubs_id', $request->ubs_id);
             })
@@ -90,6 +94,13 @@ class LaporanJurnalController extends Controller
 
     public function index(Request $request)
     {
+        $request->validate([
+            'tanggalStart' => 'nullable',
+            'tanggalEnd' => 'nullable|after_or_equal:tanggalStart',
+        ], [
+            'tanggalEnd.after_or_equal' => 'Sampai tanggal tidak boleh mendahului tanggal dari.',
+        ]);
+
         [$rows, $totalDebit, $totalKredit, $periodeAktif] = $this->getJurnalRows($request);
 
         $ubsData = Ubs::all();
@@ -153,6 +164,11 @@ class LaporanJurnalController extends Controller
     // export excel
     public function exportExcel(Request $request)
     {
+        $request->validate([
+            'tanggalStart' => 'nullable',
+            'tanggalEnd' => 'nullable|after_or_equal:tanggalStart',
+        ]);
+
         [$rows, $totalDebit, $totalKredit, $periodeAktif] = $this->getJurnalRows($request);
 
         // Logic ubsName & ubsAbbr
@@ -183,6 +199,11 @@ class LaporanJurnalController extends Controller
 
     public function exportPdf(Request $request)
     {
+        $request->validate([
+            'tanggalStart' => 'nullable',
+            'tanggalEnd' => 'nullable|after_or_equal:tanggalStart',
+        ]);
+
         [$rows, $totalDebit, $totalKredit, $periodeAktif] = $this->getJurnalRows($request);
 
         // Logic ubsName & ubsAbbr
