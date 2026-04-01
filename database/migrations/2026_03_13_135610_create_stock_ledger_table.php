@@ -34,7 +34,7 @@ return new class extends Migration
             ]);
 
             $table->string('ref_type', 50);
-            $table->unsignedBigInteger('ref_id');
+            $table->unsignedBigInteger('ref_id')->nullable();
 
             $table->decimal('qty_masuk', 18, 3)->default(0);
             $table->decimal('qty_keluar', 18, 3)->default(0);
