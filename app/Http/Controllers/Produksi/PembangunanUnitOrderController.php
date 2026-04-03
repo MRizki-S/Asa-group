@@ -23,7 +23,8 @@ class PembangunanUnitOrderController extends Controller
             'items.*.satuan_id' => 'required',
             'items.*.satuan' => 'required',
             'items.*.jumlah_input' => 'required|numeric|min:0.001',
-            'items.*.jumlah_standar' => 'required|numeric|min:0.001',
+            'items.*.faktor_konversi' => 'required|numeric|min:0.001',
+            'jenis_order' => 'required|string|in:stock,direct'
         ]);
 
         try {
@@ -34,7 +35,7 @@ class PembangunanUnitOrderController extends Controller
             $order = PembangunanUnitBarangOrder::create([
                 'pembangunan_unit_id' => $request->pembangunan_unit_id,
                 'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
-                'jenis_order' => 'stock',
+                'jenis_order' => $request->jenis_order,
                 'tanggal_diajukan' => now(),
                 'status_order' => 'menunggu',
                 'catatan' => $request->catatan,
@@ -49,10 +50,9 @@ class PembangunanUnitOrderController extends Controller
                     'satuan_id' => $item['satuan_id'],
                     'satuan' => $item['satuan'],
                     'ubs_id' => $pembangunanUnit->perumahaan_id,
-                    'rap_bahan_id' => $item['pembangunan_unit_rap_bahan_id'],
+                    'rap_bahan_id' => $item['pembangunan_unit_rap_bahan_id'] ?? null,
                     'jumlah_input' => $item['jumlah_input'],
-                    'jumlah_base' => $item['jumlah_standar'],
-                    'satuan_id' => $item['satuan_id'] ?? null,
+                    'jumlah_base'   => (float)$item['faktor_konversi'] * (float)$item['jumlah_input'],
                     'alasan_permintaan_tidak_sesuai_rap' => $item['alasan'] ?? null,
                 ]);
             }

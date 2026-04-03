@@ -117,35 +117,63 @@
                                         class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-2">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Rencana Anggaran Bahan
                                     </p>
-                                    <div class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-                                        <table class="w-full text-xs text-left">
-                                            <thead class="bg-gray-50 dark:bg-gray-700/30 text-gray-500 uppercase">
-                                                <tr>
-                                                    <th class="px-4 py-2">Barang</th>
-                                                    <th class="px-4 py-2 text-center">Qty</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-                                                @forelse($qc->rapBahan as $bahan)
+                                    <div
+                                        class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-transparent">
+                                        <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                            <table class="w-full text-xs text-left border-collapse">
+                                                <thead
+                                                    class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-500 uppercase shadow-sm">
                                                     <tr>
-                                                        <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">
-                                                            {{ $bahan->barang->nama_barang ?? '-' }}</td>
-                                                        <td
-                                                            class="px-4 py-2.5 text-center font-bold text-gray-900 dark:text-white">
-                                                            {{ str_replace('.', ',', (float) $bahan->jumlah_kebutuhan_standar) }}
-                                                            {{ $bahan->satuan->nama ?? '-' }}
-                                                        </td>
+                                                        <th class="px-4 py-2 bg-gray-50 dark:bg-gray-800">Barang</th>
+                                                        <th class="px-4 py-2 text-center bg-gray-50 dark:bg-gray-800">Qty
+                                                        </th>
                                                     </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="3"
-                                                            class="px-4 py-4 text-center text-gray-400 italic">Tidak ada
-                                                            bahan.</td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+                                                    @forelse($qc->rapBahan as $bahan)
+                                                        <tr
+                                                            class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                                            <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">
+                                                                {{ $bahan->barang->nama_barang ?? '-' }}
+                                                            </td>
+                                                            <td
+                                                                class="px-4 py-2.5 text-center font-bold text-gray-900 dark:text-white">
+                                                                {{ str_replace('.', ',', (float) $bahan->jumlah_kebutuhan_standar) }}
+                                                                <span
+                                                                    class="text-[10px] font-medium text-gray-500">{{ $bahan->satuan->nama ?? '-' }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="2"
+                                                                class="px-4 py-8 text-center text-gray-400 italic">
+                                                                Tidak ada bahan.
+                                                            </td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
+
+                                    <style>
+                                        .custom-scrollbar::-webkit-scrollbar {
+                                            width: 4px;
+                                        }
+
+                                        .custom-scrollbar::-webkit-scrollbar-track {
+                                            background: transparent;
+                                        }
+
+                                        .custom-scrollbar::-webkit-scrollbar-thumb {
+                                            background: #e2e8f0;
+                                            border-radius: 10px;
+                                        }
+
+                                        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+                                            background: #334155;
+                                        }
+                                    </style>
                                 </div>
 
                                 {{-- C. RAP UPAH PER QC --}}

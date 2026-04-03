@@ -532,4 +532,4 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 });
 
 
-Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->name('keuangan.persetujuanUpah.index');
+Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');

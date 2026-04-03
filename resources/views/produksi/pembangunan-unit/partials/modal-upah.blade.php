@@ -16,8 +16,8 @@
 
             <form @submit.prevent="submitUpah" class="p-5 space-y-4">
 
-                {{-- Header Action: Select All --}}
-                <div class="flex items-center justify-between px-1">
+                <div
+                    class="flex items-center justify-between p-3 mb-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-600 rounded-xl">
                     <label class="flex items-center gap-2 cursor-pointer group">
                         <input type="checkbox" @change="itemsToPay.forEach(i => i.checked = $el.checked)"
                             :checked="itemsToPay.length > 0 && itemsToPay.every(i => i.checked)"
@@ -26,7 +26,7 @@
                             class="text-[11px] font-black text-gray-500 uppercase tracking-widest group-hover:text-blue-600">Pilih
                             Semua</span>
                     </label>
-                    <span class="text-[10px] text-gray-400 font-bold"
+                    <span class="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full"
                         x-text="itemsToPay.filter(i => i.checked).length + ' Item Terpilih'"></span>
                 </div>
 
@@ -84,9 +84,9 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                     <button type="button" @click="openUpahModal = false"
-                        class="px-5 py-2 text-xs font-bold text-gray-500 uppercase">Batal</button>
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">Batal</button>
                     <button type="submit" :disabled="loadingUpah || !itemsToPay.some(i => i.checked)"
-                        class="px-6 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-md disabled:opacity-50 uppercase tracking-widest">
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm transition disabled:opacity-50">
                         Kirim Pengajuan
                     </button>
                 </div>
