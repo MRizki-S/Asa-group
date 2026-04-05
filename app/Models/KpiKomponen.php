@@ -24,4 +24,9 @@ class KpiKomponen extends Model
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(KpiTask::class, 'komponen_id');
+    }
 }

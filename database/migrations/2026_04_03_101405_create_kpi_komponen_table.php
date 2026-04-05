@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kpi_komponens', function (Blueprint $table) {
+        Schema::create('kpi_komponen', function (Blueprint $table) {
             $table->id();
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+            $table->string('nama_komponen');
+            $table->enum('tipe_perhitungan', ['KEPATUHAN', 'DEVIASI_BUDGET', "SELISIH_STOK", "KONDISI_LANGSUNG", "AKKUMULASI_NILAI"]);
+            $table->string('label_total');
+            $table->string('label_tercapai');
+            $table->string('label_tidak_tercapai');
+            $table->boolean('is_active');
             $table->timestamps();
         });
     }
@@ -23,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kpi_komponens');
+        Schema::dropIfExists('kpi_komponen');
     }
 };

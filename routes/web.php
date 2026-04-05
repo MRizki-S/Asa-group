@@ -24,6 +24,8 @@ use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
+use App\Http\Controllers\Kpi\KpiKomponenController;
+use App\Http\Controllers\Kpi\KpiUserController;
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
@@ -531,5 +533,12 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     Route::patch('persetujuan-upah/{id}/update-status', [PembangunanUnitUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
 });
 
-
 Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
+
+// KPI
+Route::middleware('auth')->prefix('kpi')->group(function () {
+    Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');
+    Route::resource('user', KpiUserController::class)->names('kpi.user');
+});
+Route::get('/kpi-user/get-role-data/{roleId}', [KpiUserController::class, 'getRoleData'])->name('kpi.user.getRoleData');
+Route::get('/kpi-user/{id}/export-excel', [KpiUserController::class, 'exportExcel'])->name('kpi.user.exportExcel');
