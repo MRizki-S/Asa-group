@@ -528,6 +528,8 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
         ->name('produksi.pembangunanUnit.updateSerahTerima');
     Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitUpahController::class, 'store'])
         ->name('produksi.pembangunanUnit.upahStore');
+    Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
+        ->name('produksi.pembangunanUnit.updateTaskNote');
 
     Route::get('persetujuan-upah', [PembangunanUnitUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
     Route::patch('persetujuan-upah/{id}/update-status', [PembangunanUnitUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');

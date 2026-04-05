@@ -328,4 +328,18 @@ class PembangunanUnitController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id) {}
+
+    public function updateTaskNote(Request $request, $id)
+    {
+        $request->validate([
+            'catatan' => 'nullable|string'
+        ]);
+
+        $task = PembangunanUnitQcTask::findOrFail($id);
+        $task->update([
+            'catatan' => $request->catatan
+        ]);
+
+        return back()->with('success', 'Berhasil memperbarui catatan');
+    }
 }

@@ -12,9 +12,11 @@ class PembangunanUnitQcTask extends Model
         'tugas',
         'selesai',
         'keterangan_selesai',
+        'catatan'
     ];
 
-    public function pembangunanUnitQc(){
+    public function pembangunanUnitQc()
+    {
         return $this->belongsTo(PembangunanUnitQc::class, 'pembangunan_unit_qc_id');
     }
 }

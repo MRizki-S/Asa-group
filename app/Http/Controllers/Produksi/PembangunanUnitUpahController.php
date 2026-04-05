@@ -51,6 +51,8 @@ class PembangunanUnitUpahController extends Controller
             $allUpahPengajuan = $allUpahPengajuan->whereIn('status_pengajuan', ['req_mgr_dukungan', 'ditolak_mgr_dukungan']);
         } elseif ($user->hasRole('Staff Akuntansi')) {
             $allUpahPengajuan = $allUpahPengajuan->whereIn('status_pengajuan', ['req_akuntan', 'ditolak_akuntan']);
+        } elseif ($user->hasRole('Superadmin')) {
+            $allUpahPengajuan = $allUpahPengajuan->whereIn('status_pengajuan', ['req_akuntan', 'ditolak_akuntan', 'req_mgr_dukungan', 'ditolak_mgr_dukungan']);
         } else {
             $allUpahPengajuan = [];
         }

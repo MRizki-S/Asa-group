@@ -118,29 +118,35 @@
         },
     
         async submitRequest() {
-            const selectedItems = this.itemsToOrder.filter(i => i.checked);
-            if (selectedItems.length === 0) return alert('Pilih minimal satu barang.');
+            const selectedFromRap = this.itemsToOrder.filter(i => i.checked);
+    
+            const selectedFromAdditional = this.itemsAdditional.filter(i => i.barang_id != 0);
+    
+            const finalItems = [...selectedFromRap, ...selectedFromAdditional];
+    
+            if (finalItems.length === 0) return alert('Pilih atau tambah minimal satu barang.');
+    
             this.loadingRequest = true;
             try {
                 await axios.post('{{ route('produksi.pembangunanUnit.orderStore') }}', {
                     pembangunan_unit_id: '{{ $data->id }}',
                     pembangunan_unit_qc_id: this.selectedQcId,
                     catatan: this.catatanGlobal,
-                    {{-- items: selectedItems --}}
-                    items: this.itemsToOrder.filter(i => i.checked),
+                    items: finalItems,
                     jenis_order: this.filterType,
                 });
                 location.reload();
             } catch (error) {
-                console.error(error.response.data);
-                alert('Gagal mengirim order.');
+                console.error(error.response?.data);
+                alert('Gagal mengirim order: ' + (error.response?.data?.message || 'Terjadi kesalahan'));
             } finally {
-                this.loadingRequest = false;
+                this.loadingRequest = true;
             }
         },
     
         addAdditionalItem() {
             this.itemsAdditional.push({
+                pembangunan_unit_rap_bahan_id: null,
                 barang_id: 0,
                 nama_barang: '',
                 jumlah_input: 1,
@@ -148,9 +154,9 @@
                 satuan: '',
                 is_stock: this.filterType === 'stock',
                 checked: true,
-                pembangunan_unit_rap_bahan_id: null,
                 alasan: 'Barang tambahan di luar RAP',
-                faktor_konversi: 1
+                faktor_konversi: 1,
+                jumlah_standar: 0
             });
         },
     
@@ -160,22 +166,17 @@
     
         updateBarangDetail(index) {
             const item = this.itemsAdditional[index];
-            // Cari data barang dari master list
             const selected = this.allBarang.find(b => b.id == item.barang_id);
     
             if (selected) {
                 item.nama_barang = selected.nama_barang;
     
-                // RESET satuan ke pilihan pertama dari barang baru
+                // Ambil satuan pertama sebagai default
                 if (selected.available_satuan && selected.available_satuan.length > 0) {
                     const firstSatuan = selected.available_satuan[0];
                     item.satuan_id = firstSatuan.id;
                     item.satuan = firstSatuan.nama;
                     item.faktor_konversi = firstSatuan.faktor;
-                } else {
-                    item.satuan_id = 0;
-                    item.satuan = '';
-                    item.faktor_konversi = 1;
                 }
             }
         },

@@ -4,7 +4,7 @@
 
     <div @click.away="openRequest = false"
         class="relative w-full transition-all duration-300 p-4 flex flex-col max-h-[95vh]"
-        :class="showAdditional ? 'max-w-6xl' : 'max-w-xl'">
+        :class="showAdditional ? 'max-w-4xl' : 'max-w-xl'">
 
         <div
             class="relative bg-white rounded-xl shadow-xl dark:bg-gray-700 overflow-hidden border border-gray-100 flex flex-col h-full">
@@ -121,6 +121,7 @@
                                                     placeholder="Jumlah"
                                                     class="text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
                                                 <select x-model="extra.satuan_id"
+                                                    @change="const s = getAvailableSatuan(extra.barang_id).find(opt => opt.id == $el.value); extra.satuan = s ? s.nama : ''; extra.faktor_konversi = s ? s.faktor : 1"
                                                     class="text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
                                                     <option value="">Satuan</option>
                                                     <template x-for="s in getAvailableSatuan(extra.barang_id)"
@@ -135,8 +136,11 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                <div class="flex-none p-4 border-t border-gray-100 bg-gray-50/80 space-y-3">
+
+                    <div class="p-2 bg-amber-50 rounded-xl border border-amber-100">
                         <label
                             class="block text-[10px] font-black text-amber-600 uppercase mb-1 flex items-center gap-1">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -146,29 +150,29 @@
                             Catatan Order
                         </label>
                         <textarea x-model="catatanGlobal" placeholder="Tulis catatan tambahan untuk keseluruhan order ini..."
-                            class="w-full px-3 py-2 text-xs border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 bg-white min-h-[60px] shadow-sm"></textarea>
+                            class="w-full px-3 py-1.5 text-xs border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 bg-white min-h-[50px] shadow-sm"></textarea>
                     </div>
-                </div>
 
-                <div class="flex-none flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50/30">
-                    <button type="button"
-                        @click="showAdditional = !showAdditional; if(showAdditional && itemsAdditional.length === 0) addAdditionalItem()"
-                        class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all"
-                        :class="showAdditional ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'">
-                        <i class="fa-solid"
-                            :class="showAdditional ? 'fa-minus-circle' : 'fa-plus-circle text-xs'"></i>
-                        <span class="text-[10px] font-black uppercase tracking-wider"
-                            x-text="showAdditional ? 'Sembunyikan Luar RAP' : 'Tambah Barang Luar RAP'"></span>
-                    </button>
-
-                    <div class="flex gap-3">
-                        <button type="button" @click="openRequest = false"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">Batal</button>
-                        <button type="submit"
-                            :disabled="loadingRequest || (!itemsToOrder.some(i => i.checked) && itemsAdditional.length === 0)"
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm transition disabled:opacity-50">
-                            Kirim Order
+                    <div class="flex items-center justify-between">
+                        <button type="button"
+                            @click="showAdditional = !showAdditional; if(showAdditional && itemsAdditional.length === 0) addAdditionalItem()"
+                            class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all"
+                            :class="showAdditional ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'">
+                            <i class="fa-solid"
+                                :class="showAdditional ? 'fa-minus-circle' : 'fa-plus-circle text-xs'"></i>
+                            <span class="text-[10px] font-black uppercase tracking-wider"
+                                x-text="showAdditional ? 'Sembunyikan Luar RAP' : 'Tambah Barang Luar RAP'"></span>
                         </button>
+
+                        <div class="flex gap-3">
+                            <button type="button" @click="openRequest = false"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">Batal</button>
+                            <button type="submit"
+                                :disabled="loadingRequest || (!itemsToOrder.some(i => i.checked) && itemsAdditional.length === 0)"
+                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-50">
+                                Kirim Order
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>

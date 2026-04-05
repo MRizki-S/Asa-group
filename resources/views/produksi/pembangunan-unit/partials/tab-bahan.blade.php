@@ -173,7 +173,7 @@
                                                                             <span
                                                                                 class="text-[9px] font-medium text-gray-400 ms-0.5">{{ $det->satuan ?? '-' }}</span>
                                                                         </p>
-                                                                        @if ($isOver)
+                                                                        @if ($isOver && $det->rap_bahan_id != null)
                                                                             <span
                                                                                 class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded-[4px] border border-red-100">Melebihi
                                                                                 RAP</span>
