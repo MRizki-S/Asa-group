@@ -110,8 +110,7 @@
                                                     </div>
                                                     <p class="text-xs text-red-700 dark:text-red-400 font-medium">
                                                         {{ $item->alasan_ditolak }}</p>
-                                                    <p
-                                                        class="text-[8px] text-red-400 mt-2 font-bold uppercase italic italic">
+                                                    <p class="text-[8px] text-red-400 mt-2 font-bold uppercase italic">
                                                         Ditolak pada: {{ $item->ditolak_pada?->format('d/m/Y H:i') }}
                                                     </p>
                                                 </div>

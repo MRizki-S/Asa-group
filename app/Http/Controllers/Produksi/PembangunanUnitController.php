@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Produksi;
 
 use App\Http\Controllers\Controller;
+use App\Models\MasterBarang;
 use App\Models\MasterQcContainer;
 use App\Models\PembangunanUnit;
 use App\Models\PembangunanUnitQc;
@@ -210,10 +211,29 @@ class PembangunanUnitController extends Controller
      */
     public function show(string $id)
     {
-        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah'])->findOrFail($id);
+        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
+        $allBarang = MasterBarang::with(['satuanKonversi.satuan'])
+            ->select('id', 'kode_barang', 'nama_barang', 'is_stock')
+            ->get()
+            ->map(function ($barang) {
+                return [
+                    'id' => $barang->id,
+                    'kode_barang' => $barang->kode_barang,
+                    'nama_barang' => $barang->nama_barang,
+                    'is_stock' => (bool) $barang->is_stock,
+                    'available_satuan' => $barang->satuanKonversi->map(function ($konv) {
+                        return [
+                            'id' => $konv->satuan_id,
+                            'nama' => $konv->satuan->nama,
+                            'faktor' => $konv->konversi_ke_base
+                        ];
+                    })
+                ];
+            });
 
         return view('Produksi.pembangunan-unit.show', [
             'data' => $data,
+            'allBarang' => $allBarang,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')], ['label' => 'Detail ' . $data->unit->nama_unit, 'url' => '#']],
         ]);
     }

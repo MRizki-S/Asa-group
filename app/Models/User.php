@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\Company;
@@ -93,15 +94,18 @@ class User extends Authenticatable
     }
 
     // Produksi
-    public function pengajuanDiajukan() {
+    public function pengajuanDiajukan()
+    {
         return $this->hasMany(PengajuanPembangunanUnit::class, 'diajukan_oleh');
     }
 
-    public function pengajuanDirespon() {
+    public function pengajuanDirespon()
+    {
         return $this->hasMany(PengajuanPembangunanUnit::class, 'direspon_oleh');
     }
 
-    public function pembangunanUnit(){
+    public function pembangunanUnit()
+    {
         return $this->hasMany(PembangunanUnit::class, 'pengawas_id');
     }
 }

@@ -38,7 +38,8 @@
                         <th class="w-10 px-4 py-3"></th>
                         <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">ID Request
                         </th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Item</th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">
+                            Item</th>
                         <th
                             class="w-40 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">
                             Status</th>
@@ -67,8 +68,24 @@
                                     REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                                 </p>
                             </td>
-                            <td class="px-4 py-4 text-xs text-gray-600 dark:text-gray-400">
-                                {{ $order->details->count() }} Jenis Barang
+                            <td class="px-4 py-4 text-xs text-center">
+                                <div class="flex items-center flex-col gap-1">
+                                    @if ($order->jenis_order === 'stock')
+                                        <span
+                                            class="inline-flex items-center w-fit px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                                            Stock
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center w-fit px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
+                                            Direct
+                                        </span>
+                                    @endif
+
+                                    <span class="text-[10px] text-gray-400 font-medium">
+                                        {{ $order->details->count() }} Item
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-4 text-center">
                                 @php
@@ -125,7 +142,13 @@
                                                         </thead>
                                                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                                                             @foreach ($order->details as $det)
-                                                                @php $isOver = $det->jumlah_input > ($det->jumlah_base ?? 0); @endphp
+                                                                @php
+                                                                    $isOver =
+                                                                        $det->jumlah_input >
+                                                                        ($det->rapBahan->jumlah_standar ?? 0);
+
+                                                                    $isRap = $det->rapBahan ? true : false;
+                                                                @endphp
                                                                 <tr
                                                                     class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                                                                     <td class="px-3 py-2.5">
@@ -152,8 +175,13 @@
                                                                         </p>
                                                                         @if ($isOver)
                                                                             <span
-                                                                                class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded-[4px] border border-red-100">Over
+                                                                                class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded-[4px] border border-red-100">Melebihi
                                                                                 RAP</span>
+                                                                        @endif
+                                                                        @if (!$isRap)
+                                                                            <span
+                                                                                class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded-[4px] border border-red-100">
+                                                                                Diluar RAP</span>
                                                                         @endif
                                                                     </td>
                                                                 </tr>
@@ -216,7 +244,8 @@
                     d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
             <h5 class="text-xs font-bold text-gray-600 dark:text-gray-300">Belum Ada Riwayat Order</h5>
-            <p class="text-[10px] text-gray-400 mt-1 text-center">Data order bahan bangunan belum tersedia untuk QC ini.
+            <p class="text-[10px] text-gray-400 mt-1 text-center">Data order bahan bangunan belum tersedia untuk QC
+                ini.
             </p>
         </div>
     @endif
