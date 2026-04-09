@@ -128,16 +128,6 @@
                         </div>
                     </div>
 
-                    {{-- Nomor Jurnal --}}
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Nomor Jurnal</label>
-                        <input type="text" name="nomor_jurnal" value="{{ old('nomor_jurnal', $defaultNomorJurnal) }}"
-                            class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed opacity-80 focus:bg-white focus:text-gray-900 dark:bg-gray-800 dark:border-gray-600 @error('nomor_jurnal') border-red-500 @enderror" />
-                        @error('nomor_jurnal')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Default Jenis Jurnal -->
                     <div>
                         <label for="jenis_jurnal" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -148,15 +138,25 @@
                                 cursor-not-allowed
                                 dark:bg-gray-800 dark:text-gray-400">
                             <option value="umum" selected>Jurnal Umum</option>
+                            <option value="penyesuaian">Jurnal Penyesuaian</option>
                             <option value="saldo_awal">Saldo Awal</option>
-                            <!-- <option value="penyesuaian">Jurnal Penyesuaian</option>
-                                <option value="penutup">Jurnal Penutup</option> -->
+                            <!-- <option value="penutup">Jurnal Penutup</option> -->
                         </select>
 
                         @error('jenis_jurnal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- Nomor Jurnal --}}
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Nomor Jurnal</label>
+                        <input type="text" name="nomor_jurnal" value="{{ old('nomor_jurnal', $defaultNomorJurnal) }}" readonly
+                            class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed opacity-80 focus:bg-white focus:text-gray-900 dark:bg-gray-800 dark:border-gray-600 @error('nomor_jurnal') border-red-500 @enderror" />
+                        @error('nomor_jurnal')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>                    
 
                     <!-- Keterangan -->
                     <div class="md:col-span-2">
