@@ -18,7 +18,7 @@ class AkunKeuanganSeeder extends Seeder
         // ============================
 
         // Aset kategori id: 1
-        $aset = AkunKeuangan::firstOrCreate(
+        $aset = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1000'],
             [
                 'nama_akun' => 'Aset',
@@ -29,7 +29,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // ASET LANCAR
-        $asetLancar = AkunKeuangan::firstOrCreate(
+        $asetLancar = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1100'],
             [
                 'nama_akun' => 'Aset Lancar',
@@ -40,7 +40,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // KAS
-        $kas = AkunKeuangan::firstOrCreate(
+        $kas = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1101'],
             [
                 'nama_akun' => 'Kas',
@@ -56,11 +56,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1101-3', 'nama_akun' => 'Kas Kecil Material Produksi', 'parent_id' => $kas->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1101-4', 'nama_akun' => 'Kas Kecil Kasbon Tukang', 'parent_id' => $kas->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // BANK
-        $bank = AkunKeuangan::firstOrCreate(
+        $bank = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1102'],
             [
                 'nama_akun' => 'Bank',
@@ -71,26 +71,26 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         foreach ([
-            ['kode_akun' => '1102-1', 'nama_akun' => 'BCA an. Alvin Zakaria', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-2', 'nama_akun' => 'BCA xx91', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-3', 'nama_akun' => 'BCA xx92', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-4', 'nama_akun' => 'BRI an. Alvin Bhakti Mandiri', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-5', 'nama_akun' => 'BRI an. Alvin Zakaria', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-6', 'nama_akun' => 'BRI an. Alvin Zakaria (xx562)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-7', 'nama_akun' => 'Bank Jatim Syariah', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-8', 'nama_akun' => 'BTN an. Alvin Bhakti Mandiri', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-9', 'nama_akun' => 'BTN an. Alvin Zakaria', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-1',  'nama_akun' => 'BCA an. Alvin Zakaria', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-2',  'nama_akun' => 'BCA xx91', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-3',  'nama_akun' => 'BCA xx92', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-4',  'nama_akun' => 'BRI an. Alvin Bhakti Mandiri (xx302)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-5',  'nama_akun' => 'Mandiri an. Alvin Bhakti Mandiri (x7001)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-6',  'nama_akun' => 'BRI an. Alvin Zakaria (xx562)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-7',  'nama_akun' => 'Bank Jatim Syariah an. PT. Alvin Bhakti Mandiri (xx136)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-8',  'nama_akun' => 'BTN an. Alvin Bhakti Mandiri (xx084)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-9',  'nama_akun' => 'BTN an. Alvin Zakaria', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1102-10', 'nama_akun' => 'BTN Syariah an. Alvin Zakaria', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-11', 'nama_akun' => 'BNI an. Alvin Bhakti Mandiri', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-12', 'nama_akun' => 'Mandiri an. Alvin Bhakti Mandiri', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-14', 'nama_akun' => 'Bank Jatim an. PT. Alvin Bhakti Mandiri', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
-            ['kode_akun' => '1102-15', 'nama_akun' => 'BTN TAG', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-11', 'nama_akun' => 'BNI an. Alvin Bhakti Mandiri (xx186)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-12', 'nama_akun' => 'Mandiri an. Alvin Bhakti Mandiri (8813)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-13', 'nama_akun' => 'Mandiri an. Alvin Bhakti Mandiri (3088)', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
+            ['kode_akun' => '1102-14', 'nama_akun' => 'BTN TAG', 'parent_id' => $bank->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // PIUTANG
-        $piutang = AkunKeuangan::firstOrCreate(
+        $piutang = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1103'],
             [
                 'nama_akun' => 'Piutang',
@@ -118,11 +118,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1103-15', 'nama_akun' => 'BRT Produksi Mangoon', 'parent_id' => $piutang->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1103-16', 'nama_akun' => 'BRT Marketing', 'parent_id' => $piutang->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // UANG MUKA
-        $uangMuka = AkunKeuangan::firstOrCreate(
+        $uangMuka = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1104'],
             [
                 'nama_akun' => 'Uang Muka',
@@ -142,11 +142,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1104-7', 'nama_akun' => 'TITIPAN PEMBATALAN', 'parent_id' => $uangMuka->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1104-8', 'nama_akun' => 'TITIPAN LAIN-LAIN', 'parent_id' => $uangMuka->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ASET TETAP
-        $asetTetap = AkunKeuangan::firstOrCreate(
+        $asetTetap = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1200'],
             [
                 'nama_akun' => 'Aset Tetap',
@@ -157,7 +157,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // PERSEDIAAN (Moved under Aset Tetap based on request)
-        $persediaan = AkunKeuangan::firstOrCreate(
+        $persediaan = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1201'],
             [
                 'nama_akun' => 'Persediaan',
@@ -173,11 +173,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1201-3', 'nama_akun' => 'Persediaan Tanah Matang', 'parent_id' => $persediaan->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1201-4', 'nama_akun' => 'Tanah Lain-Lain', 'parent_id' => $persediaan->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // Inventaris Rumah Contoh
-        $rumahContoh = AkunKeuangan::firstOrCreate(
+        $rumahContoh = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1202'],
             [
                 'nama_akun' => 'Inventaris Rumah Contoh',
@@ -191,11 +191,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1202-1', 'nama_akun' => 'Inventaris Rumah Contoh', 'parent_id' => $rumahContoh->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1202-2', 'nama_akun' => 'Akumulasi Penyusutan Rumah Contoh', 'parent_id' => $rumahContoh->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // Inventaris Bangunan dan Kantor
-        $bangunanKantor = AkunKeuangan::firstOrCreate(
+        $bangunanKantor = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1203'],
             [
                 'nama_akun' => 'Inventaris Bangunan dan Kantor',
@@ -209,11 +209,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1203-1', 'nama_akun' => 'Inventaris Bangunan dan Kantor', 'parent_id' => $bangunanKantor->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1203-2', 'nama_akun' => 'Akumulasi Penyusutan Bangunan dan Kantor', 'parent_id' => $bangunanKantor->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // Inventaris Kendaraan
-        $kendaraan = AkunKeuangan::firstOrCreate(
+        $kendaraan = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1204'],
             [
                 'nama_akun' => 'Inventaris Kendaraan',
@@ -227,11 +227,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1204-1', 'nama_akun' => 'Inventaris Kendaraan & Mesin', 'parent_id' => $kendaraan->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1204-2', 'nama_akun' => 'Akumulasi Penyusutan Kendaraan & Mesin', 'parent_id' => $kendaraan->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // Inventaris & Peralatan Produksi
-        $peralatanProduksi = AkunKeuangan::firstOrCreate(
+        $peralatanProduksi = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '1205'],
             [
                 'nama_akun' => 'Inventaris & Peralatan Produksi',
@@ -245,7 +245,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '1205-1', 'nama_akun' => 'Inventaris & Peralatan Produksi', 'parent_id' => $peralatanProduksi->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
             ['kode_akun' => '1205-2', 'nama_akun' => 'Akumulasi Penyusutan Produksi', 'parent_id' => $peralatanProduksi->id, 'kategori_akun_id' => 1, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
 
@@ -257,7 +257,7 @@ class AkunKeuanganSeeder extends Seeder
         // kategori_akun_id = 2
         // ============================
 
-        $kewajiban = AkunKeuangan::firstOrCreate(
+        $kewajiban = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '2000'],
             [
                 'nama_akun' => 'Kewajiban',
@@ -267,7 +267,7 @@ class AkunKeuanganSeeder extends Seeder
             ]
         );
 
-        $kewajibanJangkaPanjang = AkunKeuangan::firstOrCreate(
+        $kewajibanJangkaPanjang = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '2100'],
             [
                 'nama_akun' => 'Kewajiban Jangka Panjang',
@@ -284,11 +284,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '2104', 'nama_akun' => 'Utang Pajak Penjualan', 'parent_id' => $kewajibanJangkaPanjang->id, 'kategori_akun_id' => 2, 'is_leaf' => true],
             ['kode_akun' => '2105', 'nama_akun' => 'Utang Saham', 'parent_id' => $kewajibanJangkaPanjang->id, 'kategori_akun_id' => 2, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // Kewajiban Jangka Pendek
-        $kewajibanJangkaPendek = AkunKeuangan::firstOrCreate(
+        $kewajibanJangkaPendek = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '2200'],
             [
                 'nama_akun' => 'Kewajiban Jangka Pendek',
@@ -299,7 +299,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // Utang Pajak (2201) dengan sub-akun
-        $utangPajak = AkunKeuangan::firstOrCreate(
+        $utangPajak = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '2201'],
             [
                 'nama_akun' => 'Utang Pajak',
@@ -317,7 +317,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '2201-5', 'nama_akun' => 'Utang Pajak - PPH PS 4 (2) PENJUALAN', 'parent_id' => $utangPajak->id, 'kategori_akun_id' => 2, 'is_leaf' => true],
             ['kode_akun' => '2201-6', 'nama_akun' => 'Utang Pajak - PPN KELUARAN / KURANG BAYAR', 'parent_id' => $utangPajak->id, 'kategori_akun_id' => 2, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         foreach ([
@@ -327,7 +327,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '2205', 'nama_akun' => 'Utang LHR', 'parent_id' => $kewajibanJangkaPendek->id, 'kategori_akun_id' => 2, 'is_leaf' => true],
             ['kode_akun' => '2206', 'nama_akun' => 'Utang Mangoon', 'parent_id' => $kewajibanJangkaPendek->id, 'kategori_akun_id' => 2, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ============================
@@ -335,7 +335,7 @@ class AkunKeuanganSeeder extends Seeder
         // kategori_akun_id = 3
         // ============================
 
-        $ekuitas = AkunKeuangan::firstOrCreate(
+        $ekuitas = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '3000'],
             [
                 'nama_akun' => 'Ekuitas',
@@ -349,7 +349,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '3100', 'nama_akun' => 'Modal', 'parent_id' => $ekuitas->id, 'kategori_akun_id' => 3, 'is_leaf' => true],
             ['kode_akun' => '3200', 'nama_akun' => 'Prive', 'parent_id' => $ekuitas->id, 'kategori_akun_id' => 3, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ============================
@@ -357,7 +357,7 @@ class AkunKeuanganSeeder extends Seeder
         // kategori_akun_id = 4
         // ============================
 
-        $pendapatan = AkunKeuangan::firstOrCreate(
+        $pendapatan = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '4000'],
             [
                 'nama_akun' => 'Pendapatan',
@@ -368,7 +368,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // 4100 Penjualan Rumah (leaf - tidak ada anak)
-        AkunKeuangan::firstOrCreate(
+        AkunKeuangan::updateOrCreate(
             ['kode_akun' => '4100'],
             [
                 'nama_akun' => 'Penjualan Rumah',
@@ -379,7 +379,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // 4200 Penambahan Bangunan Kelebihan Tanah (leaf - tidak ada anak)
-        AkunKeuangan::firstOrCreate(
+        AkunKeuangan::updateOrCreate(
             ['kode_akun' => '4200'],
             [
                 'nama_akun' => 'Penambahan Bangunan Kelebihan Tanah',
@@ -390,7 +390,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // 4300 Kelebihan Tanah (leaf - tidak ada anak)
-        AkunKeuangan::firstOrCreate(
+        AkunKeuangan::updateOrCreate(
             ['kode_akun' => '4300'],
             [
                 'nama_akun' => 'Kelebihan Tanah',
@@ -401,7 +401,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // 4400 Pendapatan Lain-Lain (punya anak)
-        $pendapatanLain = AkunKeuangan::firstOrCreate(
+        $pendapatanLain = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '4400'],
             [
                 'nama_akun' => 'Pendapatan Lain-Lain',
@@ -417,7 +417,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '4403', 'nama_akun' => 'Penjualan Aset Tetap', 'parent_id' => $pendapatanLain->id, 'kategori_akun_id' => 4, 'is_leaf' => true],
             ['kode_akun' => '4404', 'nama_akun' => 'Denda Atas Keterlambatan Bayar', 'parent_id' => $pendapatanLain->id, 'kategori_akun_id' => 4, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ============================
@@ -425,7 +425,7 @@ class AkunKeuanganSeeder extends Seeder
         // kategori_akun_id = 5
         // ============================
 
-        $biaya = AkunKeuangan::firstOrCreate(
+        $biaya = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5000'],
             [
                 'nama_akun' => 'Biaya',
@@ -436,7 +436,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // ---- 5001 Biaya Pajak Penjualan ----
-        $biayaPajak = AkunKeuangan::firstOrCreate(
+        $biayaPajak = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5001'],
             [
                 'nama_akun' => 'Biaya Pajak Penjualan',
@@ -453,11 +453,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5001-4', 'nama_akun' => 'PBB',   'parent_id' => $biayaPajak->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5001-5', 'nama_akun' => 'PPN',   'parent_id' => $biayaPajak->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5002 Biaya Realisasi KPR ----
-        $biayaKpr = AkunKeuangan::firstOrCreate(
+        $biayaKpr = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5002'],
             [
                 'nama_akun' => 'Biaya Realisasi KPR',
@@ -473,11 +473,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5002-3', 'nama_akun' => 'Bia LPA',                                    'parent_id' => $biayaKpr->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5002-4', 'nama_akun' => 'Cetak Plat KPR',                             'parent_id' => $biayaKpr->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5003 Biaya Pemasaran ----
-        $biayaPemasaran = AkunKeuangan::firstOrCreate(
+        $biayaPemasaran = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5003'],
             [
                 'nama_akun' => 'Biaya Pemasaran',
@@ -500,11 +500,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5003-11', 'nama_akun' => 'Sewa Alat & Talent',          'parent_id' => $biayaPemasaran->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5003-12', 'nama_akun' => 'Biaya Pemasaran Lainnya',     'parent_id' => $biayaPemasaran->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5004 Biaya Operasional Kantor Tetap ----
-        $biayaOpTetap = AkunKeuangan::firstOrCreate(
+        $biayaOpTetap = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5004'],
             [
                 'nama_akun' => 'Biaya Operasional Kantor Tetap',
@@ -515,7 +515,7 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         // 5004-6 Bia Utilitas (punya sub-akun)
-        $biayaUtilitas = AkunKeuangan::firstOrCreate(
+        $biayaUtilitas = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5004-6'],
             [
                 'nama_akun' => 'Bia Utilitas',
@@ -530,11 +530,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5004-6-2', 'nama_akun' => 'B. TELEPON',  'parent_id' => $biayaUtilitas->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5004-6-3', 'nama_akun' => 'B. INTERNET', 'parent_id' => $biayaUtilitas->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // 5004-7 Bia BPJS (punya sub-akun)
-        $biayaBpjs = AkunKeuangan::firstOrCreate(
+        $biayaBpjs = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5004-7'],
             [
                 'nama_akun' => 'Bia BPJS',
@@ -548,7 +548,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5004-7-1', 'nama_akun' => 'Bia BPJS Kesehatan',     'parent_id' => $biayaBpjs->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5004-7-2', 'nama_akun' => 'Bia BPJS Tenagakerjaan', 'parent_id' => $biayaBpjs->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // Sub-akun 5004 lainnya (leaf)
@@ -563,11 +563,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5004-10', 'nama_akun' => 'Bia Tol - Parkir',            'parent_id' => $biayaOpTetap->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5004-11', 'nama_akun' => 'Bia Ongkir',                  'parent_id' => $biayaOpTetap->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5005 Biaya Operasional Kantor Tidak Tetap ----
-        $biayaOpTidakTetap = AkunKeuangan::firstOrCreate(
+        $biayaOpTidakTetap = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5005'],
             [
                 'nama_akun' => 'Biaya Operasional Kantor Tidak Tetap',
@@ -585,11 +585,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5005-5', 'nama_akun' => 'P3K',                                       'parent_id' => $biayaOpTidakTetap->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5005-6', 'nama_akun' => 'Bia Perjalanan Dinas',                      'parent_id' => $biayaOpTidakTetap->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5006 Bia Pemeliharaan Aset & Inventaris ----
-        $biayaPemeliharaan = AkunKeuangan::firstOrCreate(
+        $biayaPemeliharaan = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5006'],
             [
                 'nama_akun' => 'Bia Pemeliharaan Aset & Inventaris',
@@ -606,11 +606,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5006-4', 'nama_akun' => 'Bia Pemeliharaan Gudang',             'parent_id' => $biayaPemeliharaan->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5006-5', 'nama_akun' => 'Bia Sewa Kantor',                     'parent_id' => $biayaPemeliharaan->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5007 Biaya Perijinan ----
-        $biayaPerijinan = AkunKeuangan::firstOrCreate(
+        $biayaPerijinan = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5007'],
             [
                 'nama_akun' => 'Biaya Perijinan',
@@ -631,28 +631,28 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5007-8', 'nama_akun' => 'Uji Air Bersih',      'parent_id' => $biayaPerijinan->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5007-9', 'nama_akun' => 'Bia2 Akomodasi',      'parent_id' => $biayaPerijinan->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5008 Bia Kelurahan (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5008'], ['nama_akun' => 'Bia Kelurahan',             'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5008'], ['nama_akun' => 'Bia Kelurahan',             'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5009 Biaya Lain-Lain (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5009'], ['nama_akun' => 'Biaya Lain - Lain',         'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5009'], ['nama_akun' => 'Biaya Lain - Lain',         'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5010 Biaya CSR & Sumbangan Warga (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5010'], ['nama_akun' => 'Biaya CSR & Sumbangan Warga', 'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5010'], ['nama_akun' => 'Biaya CSR & Sumbangan Warga', 'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5011 Biaya Web & Aplikasi (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5011'], ['nama_akun' => 'Biaya Web & Aplikasi',      'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5011'], ['nama_akun' => 'Biaya Web & Aplikasi',      'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5012 Biaya Arsitek & Konsultan (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5012'], ['nama_akun' => 'Biaya Arsitek & Konsultan', 'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5012'], ['nama_akun' => 'Biaya Arsitek & Konsultan', 'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5013 Beban Bunga Bank (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5013'], ['nama_akun' => 'Beban Bunga Bank',          'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5013'], ['nama_akun' => 'Beban Bunga Bank',          'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5014 Beban Bunga KYG PPT (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5014'], ['nama_akun' => 'Beban Bunga KYG PPT',       'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5014'], ['nama_akun' => 'Beban Bunga KYG PPT',       'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
         // ---- 5015 Biaya Admin dan Provisi (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5015'], ['nama_akun' => 'Biaya Admin dan Provisi',   'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5015'], ['nama_akun' => 'Biaya Admin dan Provisi',   'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
 
         // ---- 5016 Biaya Estate Management (punya anak) ----
-        $biayaEM = AkunKeuangan::firstOrCreate(
+        $biayaEM = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5016'],
             [
                 'nama_akun' => 'Biaya Estate Management',
@@ -671,11 +671,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5016-6', 'nama_akun' => 'EM Kebersihan Lingkungan',          'parent_id' => $biayaEM->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5016-7', 'nama_akun' => 'Biaya Estate Management lainnya',   'parent_id' => $biayaEM->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5018 Biaya Operasional Produksi ----
-        $biayaOpProduksi = AkunKeuangan::firstOrCreate(
+        $biayaOpProduksi = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5018'],
             [
                 'nama_akun' => 'Biaya Operasional Produksi',
@@ -695,14 +695,14 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5018-7', 'nama_akun' => 'Biaya Ongkir',                       'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5018-8', 'nama_akun' => 'Biaya Operasional Produksi Lainnya', 'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5019 Beban Bunga Proyek Lain (leaf) ----
-        AkunKeuangan::firstOrCreate(['kode_akun' => '5019'], ['nama_akun' => 'Beban Bunga Proyek Lain', 'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
+        AkunKeuangan::updateOrCreate(['kode_akun' => '5019'], ['nama_akun' => 'Beban Bunga Proyek Lain', 'parent_id' => $biaya->id, 'kategori_akun_id' => 5, 'is_leaf' => true]);
 
         // ---- 5020 Biaya Pembelian Tanah ----
-        $biayaPembelianTanah = AkunKeuangan::firstOrCreate(
+        $biayaPembelianTanah = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5020'],
             [
                 'nama_akun' => 'Biaya Pembelian Tanah',
@@ -720,11 +720,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5020-5', 'nama_akun' => 'Fee Pembebasan Lahan',                         'parent_id' => $biayaPembelianTanah->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5020-6', 'nama_akun' => 'Bi. Lain - Lain Terkait Pembelian Tanah',     'parent_id' => $biayaPembelianTanah->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5022 Biaya Sarana dan Prasarana ----
-        $biayaSarana = AkunKeuangan::firstOrCreate(
+        $biayaSarana = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5022'],
             [
                 'nama_akun' => 'Biaya Sarana dan Prasarana',
@@ -751,11 +751,11 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5022-14', 'nama_akun' => 'Biaya Gaji Tukang ASA',                                             'parent_id' => $biayaSarana->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5022-15', 'nama_akun' => 'Biaya Gaji Tukang LHR',                                             'parent_id' => $biayaSarana->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
         // ---- 5023 Biaya Pembangunan Unit ----
-        $biayaPembangunan = AkunKeuangan::firstOrCreate(
+        $biayaPembangunan = AkunKeuangan::updateOrCreate(
             ['kode_akun' => '5023'],
             [
                 'nama_akun' => 'Biaya Pembangunan Unit',
@@ -771,7 +771,7 @@ class AkunKeuanganSeeder extends Seeder
             ['kode_akun' => '5023-3', 'nama_akun' => 'Listrik',                             'parent_id' => $biayaPembangunan->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5023-4', 'nama_akun' => 'Bi. Lain - Lain Terkait Lapangan',   'parent_id' => $biayaPembangunan->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
-            AkunKeuangan::firstOrCreate(['kode_akun' => $item['kode_akun']], $item);
+            AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
         }
 
 
