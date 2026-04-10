@@ -128,19 +128,16 @@
                         </div>
                     </div>
 
-                    <!-- Default Jenis Jurnal -->
                     <div>
                         <label for="jenis_jurnal" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Jenis Jurnal
                         </label>
-                        <select name="jenis_jurnal"
-                            class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5
-                                cursor-not-allowed
-                                dark:bg-gray-800 dark:text-gray-400">
-                            <option value="umum" selected>Jurnal Umum</option>
-                            <option value="penyesuaian">Jurnal Penyesuaian</option>
-                            <option value="saldo_awal">Saldo Awal</option>
-                            <!-- <option value="penutup">Jurnal Penutup</option> -->
+                        <select id="jenis_jurnal" name="jenis_jurnal"
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                                dark:bg-gray-700 dark:text-white">
+                            <option value="umum" {{ old('jenis_jurnal', 'umum') === 'umum' ? 'selected' : '' }}>Jurnal Umum</option>
+                            <option value="penyesuaian" {{ old('jenis_jurnal') === 'penyesuaian' ? 'selected' : '' }}>Jurnal Penyesuaian</option>
+                            <option value="saldo_awal" {{ old('jenis_jurnal') === 'saldo_awal' ? 'selected' : '' }}>Saldo Awal</option>
                         </select>
 
                         @error('jenis_jurnal')
@@ -151,7 +148,8 @@
                     {{-- Nomor Jurnal --}}
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-gray-900 dark:text-white">Nomor Jurnal</label>
-                        <input type="text" name="nomor_jurnal" value="{{ old('nomor_jurnal', $defaultNomorJurnal) }}" readonly
+                        <input type="text" id="nomor_jurnal" name="nomor_jurnal"
+                            value="{{ old('nomor_jurnal', $defaultNomorJurnal) }}" readonly
                             class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed opacity-80 focus:bg-white focus:text-gray-900 dark:bg-gray-800 dark:border-gray-600 @error('nomor_jurnal') border-red-500 @enderror" />
                         @error('nomor_jurnal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -327,7 +325,30 @@
             defaultDate: "{{ old('tanggal_jurnal', now()->format('d-m-Y')) }}",
             allowInput: true
         });
+
+        // Auto-update Nomor Jurnal ketika Jenis Jurnal berubah
+        const jenisSelect = document.getElementById('jenis_jurnal');
+        const nomorInput  = document.getElementById('nomor_jurnal');
+
+        if (jenisSelect && nomorInput) {
+            jenisSelect.addEventListener('change', function () {
+                const jenis = this.value;
+                const url   = '{{ route("keuangan.transaksiJurnal.generateNomor") }}?jenis=' + jenis;
+
+                nomorInput.value = 'Memuat...';
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        nomorInput.value = data.nomor_jurnal;
+                    })
+                    .catch(() => {
+                        nomorInput.value = '';
+                    });
+            });
+        }
     });
+
 
     function jurnalBaris() {
         return {

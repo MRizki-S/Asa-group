@@ -30,24 +30,8 @@ class TransaksiJurnalController extends Controller
             ->where('tanggal_selesai', '>=', $today)
             ->first();
 
-        // Prefix: JU-YYYYMM
-        $prefix = 'JU-' . $today->format(format: 'Ym');
-
-        // Ambil jurnal terakhir di bulan tsb
-        $lastJurnal = Jurnal::where('nomor_jurnal', 'like', $prefix . '/%')
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $nextNumber = 1;
-
-        if ($lastJurnal) {
-            // JU-202602/0007 → ambil 0007
-            $lastSeq = (int) substr($lastJurnal->nomor_jurnal, -4);
-            $nextNumber = $lastSeq + 1;
-        }
-
-        // padding 4 digit
-        $defaultNomorJurnal = $prefix . '/' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        // Default nomor jurnal untuk jenis 'umum' (JU-)
+        $defaultNomorJurnal = $this->generateNomorJurnal('umum', $today);
 
         // Ambil akun leaf, lalu kelompokkan berdasarkan nama akun induknya
         $akunKeuangan = AkunKeuangan::with('parent') // pastikan ada relasi 'parent' di model
@@ -69,6 +53,49 @@ class TransaksiJurnalController extends Controller
             'akunKeuangan' => $akunKeuangan,
             'ubs' => $ubs,
         ]);
+    }
+
+    /**
+     * Generate nomor jurnal berdasarkan jenis dan tanggal.
+     * Prefix:
+     *   umum         → JU-
+     *   saldo_awal   → SA-
+     *   penyesuaian  → JP-
+     */
+    private function generateNomorJurnal(string $jenis, $date): string
+    {
+        $prefixMap = [
+            'umum'        => 'JU',
+            'saldo_awal'  => 'SA',
+            'penyesuaian' => 'JP',
+        ];
+
+        $prefixCode = $prefixMap[$jenis] ?? 'JU';
+        $prefix = $prefixCode . '-' . $date->format('Ym');
+
+        $lastJurnal = Jurnal::where('nomor_jurnal', 'like', $prefix . '/%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $nextNumber = 1;
+        if ($lastJurnal) {
+            $lastSeq = (int) substr($lastJurnal->nomor_jurnal, -4);
+            $nextNumber = $lastSeq + 1;
+        }
+
+        return $prefix . '/' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * AJAX endpoint: generate nomor jurnal berdasarkan jenis_jurnal yang dipilih user.
+     * GET /keuangan/transaksi-jurnal/generate-nomor?jenis=umum
+     */
+    public function generateNomor(Request $request)
+    {
+        $jenis = $request->input('jenis', 'umum');
+        $nomor = $this->generateNomorJurnal($jenis, Carbon::today());
+
+        return response()->json(['nomor_jurnal' => $nomor]);
     }
 
 

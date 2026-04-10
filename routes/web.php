@@ -437,11 +437,13 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
     Route::resource('/akun-keuangan', controller: AkunKeuanganController::class)->names('keuangan.akunKeuangan');
 
     // Transaksi jurnal
+    Route::get('/transaksi-jurnal/generate-nomor', [TransaksiJurnalController::class, 'generateNomor'])->name('keuangan.transaksiJurnal.generateNomor');
     Route::get('/transaksi-jurnal', [TransaksiJurnalController::class, 'create'])->name('keuangan.transaksiJurnal.create');
     Route::post('/transaksi-jurnal', [TransaksiJurnalController::class, 'store'])->name('keuangan.transaksiJurnal.store');
     Route::get('/transaksi-jurnal/{id}/edit', [TransaksiJurnalController::class, 'edit'])->name('keuangan.transaksiJurnal.edit');
     Route::put('/transaksi-jurnal/{id}', [TransaksiJurnalController::class, 'update'])->name('keuangan.transaksiJurnal.update');
     Route::delete('/transaksi-jurnal/{id}', [TransaksiJurnalController::class, 'destroy'])->name('keuangan.transaksiJurnal.destroy');
+
 
     Route::prefix('/laporan')->group(function () {
         Route::get('/jurmal-umum', [LaporanJurnalController::class, 'index'])->name('keuangan.laporanJurnal.index');
