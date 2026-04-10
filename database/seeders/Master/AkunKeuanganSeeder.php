@@ -686,13 +686,13 @@ class AkunKeuanganSeeder extends Seeder
         );
 
         foreach ([
-            ['kode_akun' => '5018-1', 'nama_akun' => 'Biaya BBM',                          'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
-            ['kode_akun' => '5018-2', 'nama_akun' => 'Biaya Konsumsi',                     'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
-            ['kode_akun' => '5018-3', 'nama_akun' => 'Biaya Token',                        'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
-            ['kode_akun' => '5018-4', 'nama_akun' => 'Biaya P3K',                          'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
-            ['kode_akun' => '5018-5', 'nama_akun' => 'Biaya ATK',                          'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
+            ['kode_akun' => '5018-1', 'nama_akun' => 'Biaya BBM Produksi',                          'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
+            ['kode_akun' => '5018-2', 'nama_akun' => 'Biaya Konsumsi Produksi',                     'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
+            ['kode_akun' => '5018-3', 'nama_akun' => 'Biaya Token Produksi',                        'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
+            ['kode_akun' => '5018-4', 'nama_akun' => 'Biaya P3K Produksi',                          'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
+            ['kode_akun' => '5018-5', 'nama_akun' => 'Biaya ATK Produksi',                          'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5018-6', 'nama_akun' => 'Biaya Perlengkapan Produksi',        'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
-            ['kode_akun' => '5018-7', 'nama_akun' => 'Biaya Ongkir',                       'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
+            ['kode_akun' => '5018-7', 'nama_akun' => 'Biaya Ongkir Produksi',                       'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
             ['kode_akun' => '5018-8', 'nama_akun' => 'Biaya Operasional Produksi Lainnya', 'parent_id' => $biayaOpProduksi->id, 'kategori_akun_id' => 5, 'is_leaf' => true],
         ] as $item) {
             AkunKeuangan::updateOrCreate(['kode_akun' => $item['kode_akun']], $item);
