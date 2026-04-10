@@ -18,7 +18,7 @@ return new class extends Migration
             $group->enum('jenis_order', ['stock', 'direct'])->default('stock');
             $group->text('catatan')->nullable();
             $group->dateTime('tanggal_diajukan');
-            $group->enum('status_order', ['menunggu', 'diproses', 'selesai', 'ditolak'])->default('menunggu');
+            $group->enum('status_order', ['diproses', 'selesai', 'ditolak', 'pengembalian'])->default('diproses');
             $group->dateTime('tanggal_selesai')->nullable();
             $group->foreignId('created_by')->constrained('users');
             $group->timestamps();

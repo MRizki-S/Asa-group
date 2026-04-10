@@ -29,6 +29,7 @@ return new class extends Migration
             $group->text('alasan_permintaan_tidak_sesuai_rap')->nullable();
 
             $group->decimal('jumlah_return', 18, 3)->default(0);
+            $group->text('keterangan_return')->nullable();
 
             $group->decimal('harga_satuan_snapshot', 18, 2)->nullable();
             $group->decimal('harga_total_snapshot', 18, 2)->nullable();

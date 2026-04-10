@@ -65,7 +65,6 @@
                     </template>
                 </div>
 
-                {{-- FEATURE TERBAIK: Catatan Global Auto-Fill --}}
                 <div class="p-3 bg-amber-50 rounded-xl border border-amber-100"
                     x-show="itemsToPay.some(i => i.checked)">
                     <label class="block text-[10px] font-black text-amber-600 uppercase mb-1 flex items-center gap-1">

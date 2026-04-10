@@ -19,6 +19,19 @@
         itemsAdditional: [],
         allBarang: {{ $allBarang->toJson() }},
         showAdditional: false,
+        openReturnModal: false,
+        returnItems: [],
+        returnOrderId: null,
+    
+        prepareReturn(orderId, items) {
+            this.returnOrderId = orderId;
+            this.returnItems = items.map(i => ({
+                ...i,
+                retur: i.retur ? parseFloat(i.retur) : 0,
+                keterangan: ''
+            }));
+            this.openReturnModal = true;
+        },
     
         formatRupiah(val) {
             if (!val) return '';
@@ -201,5 +214,6 @@
         {{-- 3. Modals --}}
         @include('produksi.pembangunan-unit.partials.modal-order')
         @include('produksi.pembangunan-unit.partials.modal-upah')
+        @include('produksi.pembangunan-unit.partials.modal-order-return')
     </div>
 @endsection

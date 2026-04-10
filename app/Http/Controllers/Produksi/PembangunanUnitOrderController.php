@@ -37,7 +37,7 @@ class PembangunanUnitOrderController extends Controller
                 'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
                 'jenis_order' => $request->jenis_order,
                 'tanggal_diajukan' => now(),
-                'status_order' => 'menunggu',
+                'status_order' => 'diproses',
                 'catatan' => $request->catatan,
                 'created_by' => Auth::id(),
             ]);
@@ -66,4 +66,52 @@ class PembangunanUnitOrderController extends Controller
     }
 
     public function update(Request $request) {}
+
+    public function storeReturn(Request $request, $orderId)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.detail_id' => 'required|exists:pembangunan_unit_barang_order_detail,id',
+            'items.*.jumlah_return' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $order = PembangunanUnitBarangOrder::findOrFail($orderId);
+            $hasReturn = false;
+
+            foreach ($request->items as $item) {
+                if ($item['jumlah_return'] > 0) {
+                    $detail = PembangunanUnitBarangOrderDetail::where('id', $item['detail_id'])
+                        ->where('order_id', $orderId)
+                        ->firstOrFail();
+
+                    if ($item['jumlah_return'] > $detail->jumlah_input) {
+                        return back()->with('error', "Jumlah retur {$detail->nama_barang} melebihi jumlah order.");
+                    }
+
+                    $detail->update([
+                        'jumlah_return' => $item['jumlah_return'],
+                        'keterangan_return' => $item['keterangan_return']
+                    ]);
+
+                    $hasReturn = true;
+                }
+            }
+
+            if ($hasReturn) {
+                $order->update([
+                    'status_order' => 'pengembalian',
+                    'updated_at' => now()
+                ]);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Data retur barang berhasil disimpan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

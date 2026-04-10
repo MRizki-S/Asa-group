@@ -33,7 +33,8 @@ class MasterQcContainer extends Model
     //     return $this->hasMany(PengajuanPembangunanUnit::class);
     // }
 
-    public function pembangunanUnit(){
+    public function pembangunanUnit()
+    {
         return $this->hasMany(PembangunanUnit::class);
     }
 }

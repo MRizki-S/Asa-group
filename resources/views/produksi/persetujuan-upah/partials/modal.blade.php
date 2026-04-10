@@ -50,9 +50,9 @@
                 <div x-show="showRejectReason" x-transition class="pt-2">
                     <label class="block text-[10px] font-bold text-red-500 uppercase mb-1">Alasan Penolakan <span
                             class="text-red-500">*</span></label>
-                    <textarea x-model="rejectReason" rows="2"
-                        class="w-full rounded-lg border-red-200 bg-red-50 p-3 text-xs focus:ring-red-500 focus:border-red-500 dark:bg-red-900/10 dark:text-red-200 outline-none transition-all"
-                        placeholder="Wajib diisi jika menolak..."></textarea>
+                    <textarea x-model="rejectReason" rows="3"
+                        class="w-full rounded-lg border-2 border-red-500 bg-white p-3 text-sm text-gray-900 placeholder-red-400 focus:ring-2 focus:ring-red-500 focus:outline-none dark:bg-gray-900 dark:text-red-100 transition-all shadow-sm"
+                        placeholder="Alasan penolakan wajib diisi..."></textarea>
                 </div>
 
                 <div class="flex flex-col gap-2 mt-6">

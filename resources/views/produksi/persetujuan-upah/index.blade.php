@@ -50,13 +50,27 @@
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
 
                 {{-- Header & Filter --}}
-
-                <div class="mb-4 flex items-center justify-start">
+                <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
                         Daftar Pengajuan Upah Unit
                     </h3>
 
-
+                    {{-- Filter Dropdown --}}
+                    <form action="{{ route('produksi.persetujuanUpah.index') }}" method="GET" id="form-filter">
+                        <div class="flex items-center gap-3">
+                            <label for="filter"
+                                class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tampilkan:</label>
+                            <select name="filter" id="filter" onchange="this.form.submit()"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-bold uppercase">
+                                <option value="menunggu" {{ $filter == 'menunggu' ? 'selected' : '' }}>Menunggu
+                                    Persetujuan</option>
+                                <option value="disetujui" {{ $filter == 'disetujui' ? 'selected' : '' }}>Sudah Disetujui
+                                </option>
+                                <option value="ditolak" {{ $filter == 'ditolak' ? 'selected' : '' }}>Pengajuan Ditolak
+                                </option>
+                            </select>
+                        </div>
+                    </form>
                 </div>
 
                 {{-- Table --}}
@@ -98,8 +112,38 @@
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center font-bold text-sm text-gray-700 dark:text-white">
-                                        Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}
+                                    <td class="px-4 py-4 text-center">
+                                        <div class="font-bold text-sm text-gray-700 dark:text-white leading-none">
+                                            Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}
+                                        </div>
+
+                                        @if ($item->alasan_ditolak)
+                                            <div class="mt-1.5 flex justify-center">
+                                                <div
+                                                    class="max-w-[150px] bg-red-50 dark:bg-red-800/50 px-2 py-1 rounded border border-red-100 dark:border-red-700">
+                                                    <p
+                                                        class="text-[9px] text-red-500 dark:text-red-400 italic leading-tight">
+                                                        <span
+                                                            class="font-black uppercase text-[8px] not-italic text-red-400">Alasan:</span>
+                                                        {{ $item->alasan_ditolak }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($item->catatan_pengawas && $filter === 'disetujui')
+                                            <div class="mt-1.5 flex justify-center">
+                                                <div
+                                                    class="max-w-[150px] bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded border border-gray-100 dark:border-gray-700">
+                                                    <p
+                                                        class="text-[9px] text-gray-500 dark:text-gray-400 italic leading-tight">
+                                                        <span
+                                                            class="font-black uppercase text-[8px] not-italic text-gray-400">Ket:</span>
+                                                        {{ $item->catatan_pengawas }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-4 text-center">
                                         <span
@@ -110,26 +154,46 @@
                                     <td class="px-4 py-4 text-center">
                                         @php
                                             $isFinal =
-                                                str_contains($item->status_pengajuan, 'ditolak') ||
-                                                $item->status_pengajuan === 'disetujui';
+                                                $item->status_pengajuan === 'disetujui' ||
+                                                $item->status_pengajuan === 'ditolak_mgr_produksi' ||
+                                                $item->disetujui_mgr_produksi !== null;
                                         @endphp
 
                                         @if (!$isFinal)
                                             <button type="button"
                                                 @click="openModal({
-                                                id: '{{ $item->id }}',
-                                                unit_nama: '{{ $item->pembangunanUnit->unit->nama_unit }}',
-                                                upah_nama: '{{ $item->nama_upah }}',
-                                                pengawas: '{{ $item->pembangunanUnit->pengawas->nama_lengkap ?? '-' }}',
-                                                nominal: 'Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}',
-                                                catatan: '{{ addslashes($item->catatan_pengawas) }}'
-                                            })"
+                                                        id: '{{ $item->id }}',
+                                                        unit_nama: '{{ $item->pembangunanUnit->unit->nama_unit }}',
+                                                        upah_nama: '{{ $item->nama_upah }}',
+                                                        pengawas: '{{ $item->pembangunanUnit->pengawas->nama_lengkap ?? '-' }}',
+                                                        nominal: 'Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}',
+                                                        catatan: '{{ addslashes($item->catatan_pengawas) }}'
+                                                    })"
                                                 class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-4 py-1.5 rounded-lg shadow-sm transition-all active:scale-95">
                                                 PROSES
                                             </button>
                                         @else
-                                            <span
-                                                class="text-[10px] text-gray-400 italic font-medium uppercase border border-gray-100 px-3 py-1 rounded-md">Selesai</span>
+                                            <div class="flex flex-col items-center justify-center gap-1">
+                                                <div class="flex flex-col items-center justify-center gap-1">
+                                                    @if ($item->status_pengajuan === 'ditolak_mgr_produksi')
+                                                        <span
+                                                            class="text-[9px] font-black text-red-500 uppercase tracking-tighter">Ditolak
+                                                            Pada:</span>
+                                                        <span
+                                                            class="text-[10px] text-gray-500 font-medium italic border border-red-50 px-2 py-0.5 rounded">
+                                                            {{ $item->ditolak_pada ?? '-' }}
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="text-[9px] font-black text-emerald-600 uppercase tracking-tighter">Disetujui
+                                                            Pada:</span>
+                                                        <span
+                                                            class="text-[10px] text-gray-500 font-medium italic border border-emerald-50 px-2 py-0.5 rounded">
+                                                            {{ $item->disetujui_mgr_produksi ?? '-' }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>

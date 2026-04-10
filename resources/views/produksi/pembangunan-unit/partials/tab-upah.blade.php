@@ -8,14 +8,21 @@
             </span>
         </div>
 
-        <button @click="prepareUpah({{ json_encode($qc->pembangunanUnitRapUpah) }}, {{ $qc->id }})"
-            class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Ajukan Upah
-        </button>
+        <div class="flex flex-row gap-2 items-center">
+            <a href="{{ route('produksi.pembangunanUnit.laporanUpah', $data->id) }}"
+                class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all uppercase flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-blue-500"></i>
+                Lihat Laporan Termin
+            </a>
+            <button @click="prepareUpah({{ json_encode($qc->pembangunanUnitRapUpah) }}, {{ $qc->id }})"
+                class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Ajukan Upah
+            </button>
+        </div>
     </div>
 
     {{-- Tabel Pengajuan --}}

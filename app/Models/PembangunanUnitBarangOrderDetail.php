@@ -22,6 +22,7 @@ class PembangunanUnitBarangOrderDetail extends Model
         'rap_bahan_id',
         'alasan_permintaan_tidak_sesuai_rap',
         'jumlah_return',
+        'keterangan_return',
         'harga_satuan_snapshot',
         'harga_total_snapshot'
     ];

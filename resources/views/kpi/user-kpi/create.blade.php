@@ -34,17 +34,27 @@
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Pilih
                                 Role</label>
                             <select name="role_id" x-model="selectedRole" @change="fetchData()"
-                                class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-3 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
+                                class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-5 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach ($roles as $role)
                                     <option value="{{ $role->id }}">{{ $role->name }}</option>
                                 @endforeach
                             </select>
                         </div>
+                        <script>
+                            $(document).ready(function() {
+                                $('#selectRole').select2({
+                                    placeholder: "Pilih Role",
+                                    theme: 'bootstrap4',
+                                    allowClear: true,
+                                    width: '100%'
+                                });
+                            });
+                        </script>
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Bulan</label>
                             <select name="bulan"
-                                class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-3 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
+                                class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-2 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 @for ($m = 1; $m <= 12; $m++)
                                     <option value="{{ $m }}" {{ date('m') == $m ? 'selected' : '' }}>
                                         {{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
@@ -54,7 +64,7 @@
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Tahun</label>
                             <select name="tahun"
-                                class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-3 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
+                                class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-2 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 @for ($y = date('Y'); $y >= date('Y') - 2; $y--)
                                     <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor

@@ -533,6 +533,12 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::get('persetujuan-upah', [PembangunanUnitUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
     Route::patch('persetujuan-upah/{id}/update-status', [PembangunanUnitUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
+
+    Route::post('order/{order}/return', [PembangunanUnitOrderController::class, 'storeReturn'])
+        ->name('produksi.order.storeReturn');
+
+    Route::get('pembangunan-unit/{id}/laporan-upah', [PembangunanUnitController::class, 'laporanUpah'])
+        ->name('produksi.pembangunanUnit.laporanUpah');
 });
 
 Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
