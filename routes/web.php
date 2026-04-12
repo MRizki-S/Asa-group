@@ -1,47 +1,50 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Etalase\BlokController;
+use App\Http\Controllers\Etalase\EtalaseJsonController;
+use App\Http\Controllers\Etalase\KualifikasiBlokController;
+use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
+use App\Http\Controllers\Etalase\PerumahaanController;
+use App\Http\Controllers\Etalase\TahapController;
+use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
-use App\Http\Controllers\Etalase\TahapController;
-use App\Http\Controllers\PerumahaanSelectController;
-use App\Http\Controllers\Etalase\TahapTypeController;
-use App\Http\Controllers\Marketing\AdendumController;
-use App\Http\Controllers\Etalase\PerumahaanController;
-use App\Http\Controllers\Marketing\AkunUserController;
-use App\Http\Controllers\Etalase\EtalaseJsonController;
-use App\Http\Controllers\Marketing\PindahUnitController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
-use App\Http\Controllers\Marketing\AdendumListController;
-use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Keuangan\BukuBesarController;
+use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
 use App\Http\Controllers\Keuangan\LaporanJurnalController;
-use App\Http\Controllers\Etalase\KualifikasiBlokController;
-use App\Http\Controllers\Marketing\PemesananUnitController;
-use App\Http\Controllers\Superadmin\AkunKaryawanController;
-use App\Http\Controllers\Superadmin\RoleHakAksesController;
-use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
-use App\Http\Controllers\Marketing\ManagePemesananController;
-use App\Http\Controllers\Marketing\SettingBonusKprController;
-use App\Http\Controllers\Marketing\SettingMutuPpjbController;
-use App\Http\Controllers\Marketing\SettingPpjbJsonController;
-use App\Http\Controllers\Marketing\SettingBonusCashController;
-use App\Http\Controllers\Marketing\SettingCaraBayarController;
-use App\Http\Controllers\Marketing\SettingPromoPpjbController;
-use App\Http\Controllers\Marketing\SettingPembatalanController;
-use App\Http\Controllers\Marketing\PengajuanPemesananController;
-use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
-use App\Http\Controllers\Marketing\PengajuanPembatalanController;
-use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
-use App\Http\Controllers\Marketing\SettingKeterlambatanController;
-use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
-use App\Http\Controllers\Keuangan\BukuBesarController;
-use App\Http\Controllers\Keuangan\NeracaSaldoController;
+use App\Http\Controllers\Kpi\KpiKomponenController;
+use App\Http\Controllers\Kpi\KpiReviewController;
+use App\Http\Controllers\Kpi\KpiUserController;
+use App\Http\Controllers\Marketing\AdendumController;
+use App\Http\Controllers\Marketing\AdendumListController;
+use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
+use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
+use App\Http\Controllers\Marketing\ManagePemesananController;
+use App\Http\Controllers\Marketing\PemesananUnitController;
+use App\Http\Controllers\Marketing\PengajuanPembatalanController;
+use App\Http\Controllers\Marketing\PengajuanPemesananController;
+use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Marketing\SettingBonusCashController;
+use App\Http\Controllers\Marketing\SettingBonusKprController;
+use App\Http\Controllers\Marketing\SettingCaraBayarController;
+use App\Http\Controllers\Marketing\SettingKeterlambatanController;
+use App\Http\Controllers\Marketing\SettingMutuPpjbController;
+use App\Http\Controllers\Marketing\SettingPembatalanController;
+use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Marketing\SettingPpjbJsonController;
+use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Superadmin\AkunKaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -457,6 +460,18 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
         Route::get('/neraca-saldo/export-pdf', [NeracaSaldoController::class, 'exportPdf'])->name('keuangan.neracaSaldo.exportPdf');
     });
 });
+
+
+// KPI
+Route::middleware('auth')->prefix('kpi')->group(function () {
+    Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');
+    Route::resource('user', KpiUserController::class)->names('kpi.user');
+    Route::get('/kpi-review', [KpiReviewController::class, 'index'])->name('kpi.review.index');
+    Route::get('/request-review/{id}', [KpiReviewController::class, 'sendNotif'])->name('kpi.request.review');
+    Route::put('/kpi-review/{id}', [KpiReviewController::class, 'update'])->name('kpi.review.update');
+});
+Route::get('/kpi-user/get-role-data/{roleId}', [KpiUserController::class, 'getRoleData'])->name('kpi.user.getRoleData');
+Route::get('/kpi-user/{id}/export-excel', [KpiUserController::class, 'exportExcel'])->name('kpi.user.exportExcel');
 
 
 // Superadmin Menu
