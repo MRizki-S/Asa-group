@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -78,8 +79,13 @@ class DatabaseSeeder extends Seeder
             // User Marketing Sistem
             UsersMarketingSystemSeeder::class,
 
-            // User Keuangan Sistem 
+            // User Keuangan Sistem
             UsersKeuanganSystemSeeder::class
+        ]);
+
+        //  5. KPI Indicator
+        $this->call([
+            KpiIndicatorSeeder::class
         ]);
     }
 }
