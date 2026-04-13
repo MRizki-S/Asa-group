@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Produksi;
 
 use App\Http\Controllers\Controller;
+use App\Models\MasterBarang;
 use App\Models\MasterQcContainer;
 use App\Models\PembangunanUnit;
 use App\Models\PembangunanUnitQc;
@@ -210,10 +211,29 @@ class PembangunanUnitController extends Controller
      */
     public function show(string $id)
     {
-        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah'])->findOrFail($id);
+        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
+        $allBarang = MasterBarang::with(['satuanKonversi.satuan'])
+            ->select('id', 'kode_barang', 'nama_barang', 'is_stock')
+            ->get()
+            ->map(function ($barang) {
+                return [
+                    'id' => $barang->id,
+                    'kode_barang' => $barang->kode_barang,
+                    'nama_barang' => $barang->nama_barang,
+                    'is_stock' => (bool) $barang->is_stock,
+                    'available_satuan' => $barang->satuanKonversi->map(function ($konv) {
+                        return [
+                            'id' => $konv->satuan_id,
+                            'nama' => $konv->satuan->nama,
+                            'faktor' => $konv->konversi_ke_base
+                        ];
+                    })
+                ];
+            });
 
         return view('Produksi.pembangunan-unit.show', [
             'data' => $data,
+            'allBarang' => $allBarang,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')], ['label' => 'Detail ' . $data->unit->nama_unit, 'url' => '#']],
         ]);
     }
@@ -308,4 +328,50 @@ class PembangunanUnitController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id) {}
+
+    public function updateTaskNote(Request $request, $id)
+    {
+        $request->validate([
+            'catatan' => 'nullable|string'
+        ]);
+
+        $task = PembangunanUnitQcTask::findOrFail($id);
+        $task->update([
+            'catatan' => $request->catatan
+        ]);
+
+        return back()->with('success', 'Berhasil memperbarui catatan');
+    }
+
+    public function laporanUpah($id)
+    {
+        $unit = \App\Models\PembangunanUnit::with([
+            'unit',
+            'pembangunanUnitQc',
+            'pembangunanUnitRapUpah',
+            'pembangunanUnitUpah'
+        ])->findOrFail($id);
+
+        $laporan = $unit->pembangunanUnitQc->map(function ($qc) use ($unit) {
+            $rap = $unit->pembangunanUnitRapUpah->where('pembangunan_unit_qc_id', $qc->id);
+            $real = $unit->pembangunanUnitUpah->where('pembangunan_unit_qc_id', $qc->id);
+
+            return [
+                'nama_qc'    => $qc->nama_qc,
+                'total_rap'  => $rap->sum('nominal_standar'),
+                'total_real' => $real->sum('total_nominal'),
+                'details'    => $rap->map(function ($r) use ($real) {
+                    $totalRealPerItem = $real->where('nama_upah', $r->nama_upah)->sum('total_nominal');
+
+                    return [
+                        'nama_upah'    => $r->nama_upah,
+                        'nominal_rap'  => $r->nominal_standar,
+                        'nominal_real' => $totalRealPerItem,
+                    ];
+                })
+            ];
+        });
+
+        return view('produksi.pembangunan-unit.laporan.upah', compact('unit', 'laporan'));
+    }
 }

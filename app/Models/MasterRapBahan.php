@@ -20,11 +20,13 @@ class MasterRapBahan extends Model
         return $this->belongsTo(MasterQcContainer::class);
     }
 
-    public function barang(){
+    public function barang()
+    {
         return $this->belongsTo(MasterBarang::class, 'master_barang_id');
     }
 
-    public function satuan(){
+    public function satuan()
+    {
         return $this->belongsTo(MasterSatuan::class, 'master_satuan_id');
     }
 
@@ -33,7 +35,8 @@ class MasterRapBahan extends Model
         return $this->belongsTo(MasterQcUrutan::class, 'master_qc_urutan_id');
     }
 
-    public function pembangunanUnitRapBahan(){
+    public function pembangunanUnitRapBahan()
+    {
         return $this->hasOne(PembangunanUnitRapBahan::class);
     }
 }

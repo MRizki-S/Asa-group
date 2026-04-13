@@ -12,57 +12,85 @@ use Illuminate\Support\Facades\DB;
 class PembangunanUnitUpahController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
+        $filter = $request->query('filter', 'menunggu');
+
         $query = PembangunanUnitUpahPengajuan::with([
             'pembangunanUnit.unit',
-            'pembangunanUnit.tahap',
             'pembangunanUnit.qcContainer',
             'pembangunanUnitQc'
         ])->latest();
 
-        $allUpahPengajuan = $query->get();
+        if ($filter === 'disetujui') {
+            $query->whereNotNull('disetujui_mgr_produksi');
+        } elseif ($filter === 'ditolak') {
+            $query->where('status_pengajuan', 'ditolak_mgr_produksi');
+        } else {
+            $query->where('status_pengajuan', 'req_mgr_produksi');
+        }
 
-        $allUpahPengajuan = $allUpahPengajuan->whereIn('status_pengajuan', ['req_mgr_produksi', 'ditolak_mgr_produksi']);
+        $allUpahPengajuan = $query->get();
 
         return view('produksi.persetujuan-upah.index', [
             'allUpahPengajuan' => $allUpahPengajuan,
+            'filter'           => $filter,
             'breadcrumbs'      => [
                 ['label' => 'Persetujuan Upah', 'url' => route('produksi.persetujuanUpah.index')]
             ],
         ]);
     }
 
-    public function indexKeuangan()
+    public function indexKeuangan(Request $request)
     {
+        $filter = $request->query('filter', 'menunggu');
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         $query = PembangunanUnitUpahPengajuan::with([
             'pembangunanUnit.unit',
-            'pembangunanUnit.tahap',
             'pembangunanUnit.qcContainer',
             'pembangunanUnitQc'
         ])->latest();
 
-        $allUpahPengajuan = $query->get();
-
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        if ($user->hasRole('Manager Dukungan & Layanan')) {
-            $allUpahPengajuan = $allUpahPengajuan->whereIn('status_pengajuan', ['req_mgr_dukungan', 'ditolak_mgr_dukungan']);
-        } elseif ($user->hasRole('Staff Akuntansi')) {
-            $allUpahPengajuan = $allUpahPengajuan->whereIn('status_pengajuan', ['req_akuntan', 'ditolak_akuntan']);
+        if ($filter === 'disetujui') {
+            if ($user->hasRole('Manager Dukungan & Layanan')) {
+                $query->whereNotNull('disetujui_mgr_dukungan');
+            } elseif ($user->hasRole('Staff Akuntansi')) {
+                $query->whereNotNull('disetujui_akuntan');
+            } elseif ($user->hasRole('Superadmin')) {
+                $query->whereNotNull('disetujui_mgr_dukungan')->whereNotNull('disetujui_akuntan');
+            }
+        } elseif ($filter === 'ditolak') {
+            if ($user->hasRole('Manager Dukungan & Layanan')) {
+                $query->where('status_pengajuan', 'ditolak_mgr_dukungan');
+            } elseif ($user->hasRole('Staff Akuntansi')) {
+                $query->where('status_pengajuan', 'ditolak_akuntan');
+            } elseif ($user->hasRole('Superadmin')) {
+                $query->whereIn('status_pengajuan', ['ditolak_mgr_dukungan', 'ditolak_akuntan']);
+            }
         } else {
-            $allUpahPengajuan = [];
+            if ($user->hasRole('Manager Dukungan & Layanan')) {
+                $query->where('status_pengajuan', 'req_mgr_dukungan');
+            } elseif ($user->hasRole('Staff Akuntansi')) {
+                $query->where('status_pengajuan', 'req_akuntan');
+            } elseif ($user->hasRole('Superadmin')) {
+                $query->whereIn('status_pengajuan', ['req_akuntan', 'req_mgr_dukungan']);
+            } else {
+                return redirect()->back()->with('error', 'Anda tidak memiliki akses.');
+            }
         }
+
+        $allUpahPengajuan = $query->get();
 
         return view('keuangan.persetujuan-upah.index', [
             'allUpahPengajuan' => $allUpahPengajuan,
+            'filter'           => $filter,
             'breadcrumbs'      => [
                 ['label' => 'Persetujuan Upah', 'url' => route('keuangan.persetujuanUpah.index')]
             ],
         ]);
     }
-
     public function update(Request $request, $id)
     {
         $request->validate([

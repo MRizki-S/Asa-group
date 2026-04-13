@@ -24,6 +24,8 @@ use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
+use App\Http\Controllers\Kpi\KpiKomponenController;
+use App\Http\Controllers\Kpi\KpiUserController;
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
@@ -526,10 +528,25 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
         ->name('produksi.pembangunanUnit.updateSerahTerima');
     Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitUpahController::class, 'store'])
         ->name('produksi.pembangunanUnit.upahStore');
+    Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
+        ->name('produksi.pembangunanUnit.updateTaskNote');
 
     Route::get('persetujuan-upah', [PembangunanUnitUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
     Route::patch('persetujuan-upah/{id}/update-status', [PembangunanUnitUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
+
+    Route::post('order/{order}/return', [PembangunanUnitOrderController::class, 'storeReturn'])
+        ->name('produksi.order.storeReturn');
+
+    Route::get('pembangunan-unit/{id}/laporan-upah', [PembangunanUnitController::class, 'laporanUpah'])
+        ->name('produksi.pembangunanUnit.laporanUpah');
 });
 
+Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
 
-Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->name('keuangan.persetujuanUpah.index');
+// KPI
+Route::middleware('auth')->prefix('kpi')->group(function () {
+    Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');
+    Route::resource('user', KpiUserController::class)->names('kpi.user');
+});
+Route::get('/kpi-user/get-role-data/{roleId}', [KpiUserController::class, 'getRoleData'])->name('kpi.user.getRoleData');
+Route::get('/kpi-user/{id}/export-excel', [KpiUserController::class, 'exportExcel'])->name('kpi.user.exportExcel');

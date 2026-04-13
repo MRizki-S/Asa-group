@@ -21,6 +21,7 @@ return new class extends Migration
                 'sesuai dengan catatan',
                 'belum sesuai'
             ])->default('belum sesuai');
+            $table->text('catatan')->nullable();
             $table->timestamps();
         });
     }

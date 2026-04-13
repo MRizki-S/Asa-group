@@ -15,6 +15,23 @@
         catatanUpah: '',
         unitStatus: '{{ $data->status_pembangunan ?? 'proses' }}',
         statusST: '{{ $data->status_serah_terima ?? 'pending' }}',
+        filterType: 'stock',
+        itemsAdditional: [],
+        allBarang: {{ $allBarang->toJson() }},
+        showAdditional: false,
+        openReturnModal: false,
+        returnItems: [],
+        returnOrderId: null,
+    
+        prepareReturn(orderId, items) {
+            this.returnOrderId = orderId;
+            this.returnItems = items.map(i => ({
+                ...i,
+                retur: i.retur ? parseFloat(i.retur) : 0,
+                keterangan: ''
+            }));
+            this.openReturnModal = true;
+        },
     
         formatRupiah(val) {
             if (!val) return '';
@@ -95,6 +112,7 @@
     
         prepareOrder(bahanArray, qcId) {
             this.selectedQcId = qcId;
+            this.filterType = 'stock';
             this.catatanGlobal = '';
             this.itemsToOrder = bahanArray.map(b => ({
                 pembangunan_unit_rap_bahan_id: b.id,
@@ -102,32 +120,84 @@
                 satuan_id: b.satuan_id,
                 nama_barang: b.nama_barang,
                 satuan: b.satuan,
-                jumlah_standar: Number(b.jumlah_standar),
+                faktor_konversi: Number(b.faktor_konversi),
                 jumlah_input: Number(b.jumlah_standar),
-                checked: true,
+                jumlah_standar: Number(b.jumlah_standar),
+                is_stock: b.is_stock,
+                checked: false,
                 alasan: ''
             }));
             this.openRequest = true;
         },
     
         async submitRequest() {
-            const selectedItems = this.itemsToOrder.filter(i => i.checked);
-            if (selectedItems.length === 0) return alert('Pilih minimal satu barang.');
+            const selectedFromRap = this.itemsToOrder.filter(i => i.checked);
+    
+            const selectedFromAdditional = this.itemsAdditional.filter(i => i.barang_id != 0);
+    
+            const finalItems = [...selectedFromRap, ...selectedFromAdditional];
+    
+            if (finalItems.length === 0) return alert('Pilih atau tambah minimal satu barang.');
+    
             this.loadingRequest = true;
             try {
                 await axios.post('{{ route('produksi.pembangunanUnit.orderStore') }}', {
                     pembangunan_unit_id: '{{ $data->id }}',
                     pembangunan_unit_qc_id: this.selectedQcId,
                     catatan: this.catatanGlobal,
-                    items: selectedItems
+                    items: finalItems,
+                    jenis_order: this.filterType,
                 });
-                location.reload(); // Setelah reload, URL parameter akan menjaga tab tetap terbuka
+                location.reload();
             } catch (error) {
-                console.error(error.response.data);
-                alert('Gagal mengirim order.');
+                console.error(error.response?.data);
+                alert('Gagal mengirim order: ' + (error.response?.data?.message || 'Terjadi kesalahan'));
             } finally {
-                this.loadingRequest = false;
+                this.loadingRequest = true;
             }
+        },
+    
+        addAdditionalItem() {
+            this.itemsAdditional.push({
+                pembangunan_unit_rap_bahan_id: null,
+                barang_id: 0,
+                nama_barang: '',
+                jumlah_input: 1,
+                satuan_id: 0,
+                satuan: '',
+                is_stock: this.filterType === 'stock',
+                checked: true,
+                alasan: 'Barang tambahan di luar RAP',
+                faktor_konversi: 1,
+                jumlah_standar: 0
+            });
+        },
+    
+        removeAdditionalItem(index) {
+            this.itemsAdditional.splice(index, 1);
+        },
+    
+        updateBarangDetail(index) {
+            const item = this.itemsAdditional[index];
+            const selected = this.allBarang.find(b => b.id == item.barang_id);
+    
+            if (selected) {
+                item.nama_barang = selected.nama_barang;
+    
+                // Ambil satuan pertama sebagai default
+                if (selected.available_satuan && selected.available_satuan.length > 0) {
+                    const firstSatuan = selected.available_satuan[0];
+                    item.satuan_id = firstSatuan.id;
+                    item.satuan = firstSatuan.nama;
+                    item.faktor_konversi = firstSatuan.faktor;
+                }
+            }
+        },
+    
+        getAvailableSatuan(barangId) {
+            if (!barangId || barangId == 0) return [];
+            const barang = this.allBarang.find(b => b.id == barangId);
+            return barang ? barang.available_satuan : [];
         }
     }">
 
@@ -144,5 +214,6 @@
         {{-- 3. Modals --}}
         @include('produksi.pembangunan-unit.partials.modal-order')
         @include('produksi.pembangunan-unit.partials.modal-upah')
+        @include('produksi.pembangunan-unit.partials.modal-order-return')
     </div>
 @endsection
