@@ -41,7 +41,7 @@
                         Akun Karyawan ABM GROUP
                     </h3>
 
-                    <a href=""
+                    <a href="{{ route('superadmin.akunKaryawan.create') }}"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         + Tambah Akun Karyawan
                     </a>
@@ -114,52 +114,58 @@
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ $item->no_hp ?? '-' }}
                                 </td>
+
                                 <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                     @php
-                                        $perum = $item->perumahaan?->nama_perumahaan;
+                                        $perum = $item->perumahaan;
+                                        $badgeText = 'HUB';
+                                        $badgeClass = 'bg-gray-400 text-white';
 
-                                        $badgeClass = match ($perum) {
-                                            'Asa Dreamland' => 'bg-sky-400 text-white',
-                                            'Lembah Hijau Residence' => 'bg-green-500 text-white',
-                                            default => 'bg-gray-400 text-white',
-                                        };
+                                        if ($perum) {
+                                            if ($perum->id == 2 || stripos($perum->nama_perumahaan, 'Lembah Hijau') !== false) {
+                                                $badgeText = 'LHR';
+                                                $badgeClass = 'bg-green-500 text-white';
+                                            } elseif ($perum->id == 1 || stripos($perum->nama_perumahaan, 'Asa Dreamland') !== false) {
+                                                $badgeText = 'ADL';
+                                                $badgeClass = 'bg-blue-600 text-white';
+                                            } else {
+                                                $badgeText = $perum->nama_perumahaan;
+                                            }
+                                        }
                                     @endphp
 
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $badgeClass }}">
-                                        {{ $perum ?? 'UBS' }}
+                                    <span class="px-3 py-1 text-[10px] font-bold uppercase rounded-full {{ $badgeClass }}">
+                                        {{ $badgeText }}
                                     </span>
                                 </td>
 
-
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    @forelse ($item->roles as $role)
-                                        <span
-                                            class="inline-block px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-700">
-                                            {{ $role->name }}
-                                        </span>
-                                    @empty
-                                        -
-                                    @endforelse
+                                <td class="text-sm text-gray-700 dark:text-gray-300">
+                                    {{ $item->roles->pluck('name')->implode(', ') ?: '-' }}
                                 </td>
 
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                     <a href="{{ route('superadmin.akunKaryawan.edit', $item->id) }}"
-                                        class="btn-edit inline-flex items-center gap-1
-                text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
-                dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
-                px-2.5 py-1.5 rounded-md transition-colors duration-200">
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
                                         Edit
                                     </a>
-                                    <a href="{{ route('superadmin.akunKaryawan.edit', $item->id) }}"
-                                        class="btn-edit inline-flex items-center gap-1
-                text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200
-                dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700
-                px-2.5 py-1.5 rounded-md transition-colors duration-200">
-                                        Delete
-                                    </a>
+                                    
+                                    <form action="{{ route('superadmin.akunKaryawan.destroy', $item->id) }}" method="POST" class="delete-form inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="delete-btn inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Hapus
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach
+
                     </tbody>
 
                 </table>
