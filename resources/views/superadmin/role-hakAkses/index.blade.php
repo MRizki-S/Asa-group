@@ -33,6 +33,21 @@
             </div>
         @endif
 
+        @if (session('success'))
+            <div class="flex p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+                role="alert">
+                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span class="sr-only">Success</span>
+                <div>
+                    <span class="font-medium">Berhasil!</span> {{ session('success') }}
+                </div>
+            </div>
+        @endif
+
         <div class="space-y-5 sm:space-y-6">
             <div
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
@@ -92,7 +107,7 @@
                                 </td>
 
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center items-center text-center">
-                                    <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
+                                    <a href="{{ route('superadmin.roleHakAkses.edit', $item->id) }}"
                                         class="btn-edit inline-flex items-center gap-1
                             text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
                             dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
@@ -101,8 +116,7 @@
                             active:scale-95">
                                         Edit
                                     </a>
-
-                                    <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
+                                    <form action="{{ route('superadmin.roleHakAkses.destroy', $item->id) }}" method="POST"
                                         class="delete-form">
                                         @csrf
                                         @method('DELETE')
