@@ -154,11 +154,13 @@
                        dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
                     Batal
                 </a>
+                @can('superadmin.role.update')
                 <button type="submit"
                     class="px-8 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700
                        focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 shadow-md">
                     Update Role
                 </button>
+                @endcan
             </div>
         </form>
     </div>

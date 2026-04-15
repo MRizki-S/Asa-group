@@ -1270,8 +1270,8 @@
                 <!-- Produksi -  Group -->
             @endcan
 
-            @role('Superadmin')
-                <!-- Superadmin -  Group -->
+            @canany(['superadmin.role.read', 'superadmin.akun-karyawan.read'])
+                <!-- Superadmin - Group -->
                 <div>
                     <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
                         <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1347,7 +1347,7 @@
                         <!-- Menu Item Akun Karyawan -->
                     </ul>
                 </div>
-            @endrole
+            @endcanany
         </nav>
         <!-- Sidebar Menu -->
     </div>

@@ -41,10 +41,12 @@
                         Akun Karyawan ABM GROUP
                     </h3>
 
+                    @can('superadmin.akun-karyawan.create')
                     <a href="{{ route('superadmin.akunKaryawan.create') }}"
                         class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                         + Tambah Akun Karyawan
                     </a>
+                    @endcan
                 </div>
 
 
@@ -95,9 +97,11 @@
                                     </svg>
                                 </span>
                             </th>
+                            @canany(['superadmin.akun-karyawan.edit', 'superadmin.akun-karyawan.delete'])
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -142,8 +146,10 @@
                                 <td class="text-sm text-gray-700 dark:text-gray-300">
                                     {{ $item->roles->pluck('name')->implode(', ') ?: '-' }}
                                 </td>
-
+                                
+                                @canany(['superadmin.akun-karyawan.update', 'superadmin.akun-karyawan.delete'])
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                    @can('superadmin.akun-karyawan.update')
                                     <a href="{{ route('superadmin.akunKaryawan.edit', $item->id) }}"
                                         class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +157,9 @@
                                         </svg>
                                         Edit
                                     </a>
+                                    @endcan
                                     
+                                    @can('superadmin.akun-karyawan.delete')
                                     <form action="{{ route('superadmin.akunKaryawan.destroy', $item->id) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
@@ -162,7 +170,9 @@
                                             Hapus
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
+                                @endcanany
                             </tr>
                         @endforeach
 

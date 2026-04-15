@@ -158,10 +158,12 @@
                         class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200">
                         Batal
                     </button>
+                    @can('superadmin.akun-karyawan.create')
                     <button type="submit"
                         class="px-10 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none transition-all">
                         Simpan Akun
                     </button>
+                    @endcan
                 </div>
             </form>
         </div>

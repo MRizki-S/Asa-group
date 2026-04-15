@@ -13,9 +13,13 @@ class RoleHakAksesController extends Controller
     public function index()
     {
         $roles = Role::withCount('permissions')->orderBy('name')->get();
-        // dd($roles);
+        $totalRoles = $roles->count();
+        $totalPermissions = Permission::count();
+
         return view('superadmin.role-hakAkses.index', [
             'roles' => $roles,
+            'totalRoles' => $totalRoles,
+            'totalPermissions' => $totalPermissions,
             'breadcrumbs' => [
                 [
                     'label' => 'Role dan Hak Akses',
