@@ -39,7 +39,7 @@
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white/90">
                     Tambah Akun Karyawan
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Silakan lengkapi data karyawan kelompok ASA GROUP.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Silakan lengkapi data karyawan ABM GROUP.</p>
             </div>
 
             <form action="{{ route('superadmin.akunKaryawan.store') }}" method="POST" class="p-6">

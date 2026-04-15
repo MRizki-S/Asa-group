@@ -7,7 +7,7 @@
     {{-- csrf token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Asa Group' }}</title>
+    <title>{{ $title ?? 'ABM Group' }}</title>
     @vite(['resources/css/app.css', 'resources/css/custom.css', 'resources/js/app.js'])
 
 
