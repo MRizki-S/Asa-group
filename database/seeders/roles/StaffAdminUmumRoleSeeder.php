@@ -16,7 +16,7 @@ class StaffAdminUmumRoleSeeder extends Seeder
 
             // Role
             $role = Role::firstOrCreate([
-                'name' => 'Staff Admin Umum',
+                'name' => 'Administrasi Proyek',
                 'guard_name' => 'web',
             ]);
 
@@ -64,7 +64,7 @@ class StaffAdminUmumRoleSeeder extends Seeder
 
             if ($missing->isNotEmpty()) {
                 throw new Exception(
-                    'Seeder Staff Admin Umum GAGAL. Permission belum terdaftar: ' .
+                    'Seeder Administrasi Proyek GAGAL. Permission belum terdaftar: ' .
                     $missing->implode(', ')
                 );
             }

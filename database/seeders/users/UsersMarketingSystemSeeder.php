@@ -29,10 +29,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Manager Dukungan & Layanan',
                 'data' => [
-                    'username' => 'heni',
+                    'username' => 'heni.mdl',
                     'nama_lengkap' => 'HENI HANDAYANI',
                     'no_hp' => '6285257782626',
-                    'password' => 'heni#mdl29i',
+                    'password' => 'heni#mdl90',
                     'type' => 'karyawan',
                     'perumahaan_id' => null,
                     'is_global' => true,
@@ -42,12 +42,12 @@ class UsersMarketingSystemSeeder extends Seeder
 
             // ================= PERUMAHAAAN ADL (ID:1) =================
             [
-                'role' => 'Project Manager',
+                'role' => 'Proyek Manager',
                 'data' => [
-                    'username' => 'project-manager-adl',
-                    'nama_lengkap' => 'Project Manager ADL',
+                    'username' => 'nurbi.pm',
+                    'nama_lengkap' => 'Nurbiyanti PM',
                     'no_hp' => '6285238617670',
-                    'password' => '12345678',
+                    'password' => 'nurbi#pm33',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
@@ -57,10 +57,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Staff KPR',
                 'data' => [
-                    'username' => 'rizqina',
-                    'nama_lengkap' => 'RIZQINA CAHYANI',
+                    'username' => 'rizqina.skpr',
+                    'nama_lengkap' => 'RIZQINA SKPR',
                     'no_hp' => '6285232221051',
-                    'password' => 'rizqina#1kpr67',
+                    'password' => 'rizqina#skpr21',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
@@ -68,12 +68,12 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Staff Admin Umum',
+                'role' => 'Administrasi Proyek',
                 'data' => [
-                    'username' => 'fina',
-                    'nama_lengkap' => 'FINA ATIKA NURMA R',
+                    'username' => 'fina.adp',
+                    'nama_lengkap' => 'FINA ATIKA Admin Proyek',
                     'no_hp' => '6289515806753',
-                    'password' => 'fina#adm23fd',
+                    'password' => 'fina#adp32',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
@@ -85,10 +85,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'nizar-marketing',
+                    'username' => 'nizar.mrk',
                     'nama_lengkap' => 'NIZAR MARKETING',
                     'no_hp' => '628990080441',
-                    'password' => 'nizar#mrk4dl',
+                    'password' => 'nizar#mrk21',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
@@ -98,10 +98,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'rizki-marketing',
+                    'username' => 'rizki.mrk',
                     'nama_lengkap' => 'RIZKI MARKETING',
                     'no_hp' => '6285238617670',
-                    'password' => 'rizkimrk#oadl2',
+                    'password' => 'rizki#mrk24',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
@@ -111,38 +111,65 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'devi-marketing',
-                    'nama_lengkap' => 'DEVI MARKETING',
-                    'no_hp' => '6285238617670',
-                    'password' => 'devi#eadl39',
-                    'type' => 'karyawan',
-                    'perumahaan_id' => 1,
-                    'is_global' => false,
-                    'tanggal_expired' => null,
-                ],
-            ],
-            [
-                'role' => 'Marketing',
-                'data' => [
-                    'username' => 'zakiyah-marketing',
+                    'username' => 'zakiyah.mrk',
                     'nama_lengkap' => 'ZAKIYAH MARKETING',
                     'no_hp' => '6285238617670',
-                    'password' => 'zakiyah#zaadl20',
+                    'password' => 'zakiyah#mrk44',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
                     'tanggal_expired' => null,
                 ],
             ],
+            [
+                'role' => 'Marketing',
+                'data' => [
+                    'username' => 'amar.mrk',
+                    'nama_lengkap' => 'MOCHAMAD AMARUDDIN MARKETING',
+                    'no_hp' => '6285238617670',
+                    'password' => 'amar#mrk52',
+                    'type' => 'karyawan',
+                    'perumahaan_id' => 1,
+                    'is_global' => false,
+                    'tanggal_expired' => null,
+                ],
+            ],
+            [
+                'role' => 'Marketing',
+                'data' => [
+                    'username' => 'dewi.mrk',
+                    'nama_lengkap' => 'NARULITA DEWI MARKETING',
+                    'no_hp' => '6285238617670',
+                    'password' => 'dewi#mrk02',
+                    'type' => 'karyawan',
+                    'perumahaan_id' => 1,
+                    'is_global' => false,
+                    'tanggal_expired' => null,
+                ],
+            ],
+            [
+                'role' => 'Marketing',
+                'data' => [
+                    'username' => 'andini.mrk',
+                    'nama_lengkap' => 'ANDINI NABILAH MARKETING',
+                    'no_hp' => '6285238617670',
+                    'password' => 'andini#mrk03',
+                    'type' => 'karyawan',
+                    'perumahaan_id' => 1,
+                    'is_global' => false,
+                    'tanggal_expired' => null,
+                ],
+            ],
+            
 
             // ================= PERUMAHAAAN LHR (ID:2) =================
             [
-                'role' => 'Project Manager',
+                'role' => 'Proyek Manager',
                 'data' => [
-                    'username' => 'ranu',
-                    'nama_lengkap' => 'RANUDIRJO DWI ADI',
+                    'username' => 'ranu.pm',
+                    'nama_lengkap' => 'RANUDIRJO DWI ADI PM',
                     'no_hp' => '6282244576918',
-                    'password' => 'ranu#1lhr30a',
+                    'password' => 'ranu#pm81',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,
@@ -152,10 +179,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Staff KPR',
                 'data' => [
-                    'username' => 'oong',
+                    'username' => 'oong.pm',
                     'nama_lengkap' => 'OONG YOGA YOSEANO W',
                     'no_hp' => '6282216970611',
-                    'password' => 'oong#2kpr73',
+                    'password' => 'oong#pm04',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,
@@ -163,12 +190,12 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Staff Admin Umum',
+                'role' => 'Administrasi Proyek',
                 'data' => [
-                    'username' => 'nadia',
+                    'username' => 'nadia.adp',
                     'nama_lengkap' => 'NADIA AYU PERMATASARI',
                     'no_hp' => '6282337348205',
-                    'password' => 'nadia#adm21h',
+                    'password' => 'nadia#adp04',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,
@@ -180,10 +207,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'irham-marketing',
-                    'nama_lengkap' => 'IRHAM AFANDI',
+                    'username' => 'irham.mrk',
+                    'nama_lengkap' => 'IRHAM AFANDI MARKETING',
                     'no_hp' => '6285811640875',
-                    'password' => 'irham#irlhr12',
+                    'password' => 'irham#mrk20',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,
@@ -193,10 +220,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'wahyu-marketing',
-                    'nama_lengkap' => 'WAHYU FAJAR SUGIYANTO',
+                    'username' => 'iyan.mrk',
+                    'nama_lengkap' => 'WAHYU FAJAR SUGIYANTO MARKETING',
                     'no_hp' => '6285238617670',
-                    'password' => 'wahyu#yulhr23a',
+                    'password' => 'iyan#mrk31',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,
@@ -206,10 +233,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'devilhr-marketing',
-                    'nama_lengkap' => 'DEVINTA ADELIA',
+                    'username' => 'devi.mrk',
+                    'nama_lengkap' => 'FANDO DEVI MARKETING',
                     'no_hp' => '6285856141227',
-                    'password' => '12345678',
+                    'password' => 'devi#mrk84',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,

@@ -46,7 +46,7 @@ class PengajuanPembatalanPemesananUnit extends Model
         return $this->belongsTo(User::class, 'diajukan_oleh');
     }
 
-    // 🔹 Relasi ke Project Manager
+    // 🔹 Relasi ke Proyek Manager
     public function disetujuiPemasaranOleh()
     {
         return $this->belongsTo(User::class, 'disetujui_pemasaran_oleh');
