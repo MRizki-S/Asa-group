@@ -7,7 +7,7 @@
     {{-- csrf token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Asa Group' }}</title>
+    <title>{{ $title ?? 'ABM Group' }}</title>
     @vite(['resources/css/app.css', 'resources/css/custom.css', 'resources/js/app.js'])
 
 
@@ -59,7 +59,7 @@
                                     alt="profile picture">
                                 <div
                                     class="flex items-center divide-x-2 rtl:divide-x-reverse divide-gray-500 dark:divide-gray-700">
-                                    <cite class="pe-3 font-medium text-white">ASA GROUP</cite>
+                                    <cite class="pe-3 font-medium text-white">ABM GROUP</cite>
                                 </div>
                             </figcaption>
                         </figure>
