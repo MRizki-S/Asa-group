@@ -46,7 +46,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'nurbi.pm',
                     'nama_lengkap' => 'Nurbiyanti PM',
-                    'no_hp' => '6285238617670',
+                    'no_hp' => '6285336404078',
                     'password' => 'nurbi#pm33',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
@@ -100,7 +100,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'rizki.mrk',
                     'nama_lengkap' => 'RIZKI MARKETING',
-                    'no_hp' => '6285238617670',
+                    'no_hp' => '6281231251190',
                     'password' => 'rizki#mrk24',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
@@ -113,7 +113,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'zakiyah.mrk',
                     'nama_lengkap' => 'ZAKIYAH MARKETING',
-                    'no_hp' => '6285238617670',
+                    'no_hp' => '6282232742672',
                     'password' => 'zakiyah#mrk44',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
@@ -126,7 +126,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'amar.mrk',
                     'nama_lengkap' => 'MOCHAMAD AMARUDDIN MARKETING',
-                    'no_hp' => '6285238617670',
+                    'no_hp' => '6285238617670', // masih make nomerku
                     'password' => 'amar#mrk52',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
@@ -137,10 +137,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Marketing',
                 'data' => [
-                    'username' => 'dewi.mrk',
+                    'username' => 'ruli.mrk',
                     'nama_lengkap' => 'NARULITA DEWI MARKETING',
-                    'no_hp' => '6285238617670',
-                    'password' => 'dewi#mrk02',
+                    'no_hp' => '6288805446892',
+                    'password' => 'ruli#mrk02',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
                     'is_global' => false,
@@ -152,7 +152,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'andini.mrk',
                     'nama_lengkap' => 'ANDINI NABILAH MARKETING',
-                    'no_hp' => '6285238617670',
+                    'no_hp' => '6285238617670', // masih make nomerku
                     'password' => 'andini#mrk03',
                     'type' => 'karyawan',
                     'perumahaan_id' => 1,
@@ -179,10 +179,10 @@ class UsersMarketingSystemSeeder extends Seeder
             [
                 'role' => 'Staff KPR',
                 'data' => [
-                    'username' => 'oong.pm',
+                    'username' => 'oong.skpr',
                     'nama_lengkap' => 'OONG YOGA YOSEANO W',
                     'no_hp' => '6282216970611',
-                    'password' => 'oong#pm04',
+                    'password' => 'oong#skpr04',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
                     'is_global' => false,
@@ -222,7 +222,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'iyan.mrk',
                     'nama_lengkap' => 'WAHYU FAJAR SUGIYANTO MARKETING',
-                    'no_hp' => '6285238617670',
+                    'no_hp' => '6282257252655',
                     'password' => 'iyan#mrk31',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,
@@ -235,7 +235,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 'data' => [
                     'username' => 'devi.mrk',
                     'nama_lengkap' => 'FANDO DEVI MARKETING',
-                    'no_hp' => '6285856141227',
+                    'no_hp' => '62881080521781',
                     'password' => 'devi#mrk84',
                     'type' => 'karyawan',
                     'perumahaan_id' => 2,

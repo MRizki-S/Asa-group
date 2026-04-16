@@ -619,7 +619,7 @@
 
                 if ($namaPerumahaan === 'Asa Dreamland') {
                     // Khusus ADL → Proyek Manager saja
-                    $bolehAction = $user->hasRole(['Proyek Manager', 'Superadmin']);
+                    $bolehAction = $user->hasRole(['Proyek Manager', 'Superadmin', 'Staff KPR']);
                 } else {
                     // Selain ADL → pakai permission (Staff KPR)
                     $bolehAction = $user->can('marketing.pengajuan-pemesanan.action');
