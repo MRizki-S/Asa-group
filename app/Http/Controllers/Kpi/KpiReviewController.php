@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Kpi;
 
 use App\Http\Controllers\Controller;
+use App\Models\KpiIndicator;
+use App\Models\KpiReviewRequest;
 use App\Models\KpiUser;
 use App\Models\KpiUserKomponen;
 use App\Models\User;
@@ -25,7 +27,16 @@ class KpiReviewController extends Controller
         $reviews = KpiUser::whereHas('details', function ($query) {
             $query->where('skor', 0);
         })
-            ->with(['user', 'details.tasks'])
+            ->whereHas('reviewRequests', function ($query) {
+                $query->whereIn('id', function ($sub) {
+                    $sub->selectRaw('max(id)')
+                        ->from('kpi_review_requests')
+                        ->groupBy('kpi_user_id');
+                })->whereNull('direspon_pada');
+            })
+            ->with(['user', 'details.tasks', 'reviewRequests' => function ($q) {
+                $q->latest();
+            }])
             ->latest()
             ->get();
 
@@ -33,38 +44,72 @@ class KpiReviewController extends Controller
             'reviews' => $reviews,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Review Materialitas (Skor 0)', 'url' => '#']
+                ['label' => 'Review Materialitas', 'url' => '#']
             ],
         ]);
     }
+
+    public function edit($id)
+    {
+
+        $kpiUser = KpiUser::with(['user', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $indicators = KpiIndicator::all();
+        $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
+
+        $bolehRequest = $kpiUser->reviewRequests->where('direspon_pada', null)->count() > 0 ? false : true;
+
+        return view('kpi.review.edit', [
+            'kpiUser' => $kpiUser,
+            'indicators' => $indicators,
+            'modeMapping' => $modeMapping,
+            'bolehRequest' =>  $bolehRequest,
+            'breadcrumbs' => [
+                ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
+                ['label' => 'Review Nilai: ' . $kpiUser->user->nama_lengkap, 'url' => '#']
+            ],
+        ]);
+    }
+
     public function update(Request $request, $id)
     {
         $request->validate([
-            'skor_custom' => 'required|array',
+            'skor_custom'   => 'required|array',
             'skor_custom.*' => 'in:0,70',
+            'status'        => 'required|in:draft,final',
         ]);
 
         DB::transaction(function () use ($request, $id) {
             $kpiUser = KpiUser::findOrFail($id);
 
+            KpiReviewRequest::where('kpi_user_id', $id)
+                ->whereNull('direspon_pada')
+                ->update(['direspon_pada' => now()]);
+
             foreach ($request->skor_custom as $detailId => $skor) {
                 $detail = KpiUserKomponen::findOrFail($detailId);
+
                 $detail->update([
                     'skor' => $skor,
                     'nilai_akhir' => ($detail->bobot / 100) * $skor,
-                    'catatan_tambahan' => $detail->catatan_tambahan . " (Materialitas: $skor)"
+                    'nilai_tetap' => true,
                 ]);
             }
 
-            $kpiUser->update(['total_nilai' => $kpiUser->details()->sum('nilai_akhir')]);
+            $kpiUser->update([
+                'status'      => $request->status,
+            ]);
         });
 
-        return back()->with('success', 'Skor materialitas berhasil diperbarui.');
+        return redirect()->route('kpi.review.index')->with('success', 'Review materialitas dan status KPI berhasil diperbarui.');
     }
 
     public function sendNotif($id)
     {
         $kpiUser = KpiUser::with(['user', 'details'])->findOrFail($id);
+
+        $buatRequest = KpiReviewRequest::create([
+            'kpi_user_id' => $id
+        ]);
 
         // $manager = User::role('Manager Dukungan & Layanan')->first();
 

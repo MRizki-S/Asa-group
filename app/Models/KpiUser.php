@@ -29,4 +29,9 @@ class KpiUser extends Model
     {
         return $this->details()->sum('nilai_akhir') ?? 0;
     }
+
+    public function reviewRequests()
+    {
+        return $this->hasMany(KpiReviewRequest::class, 'kpi_user_id');
+    }
 }

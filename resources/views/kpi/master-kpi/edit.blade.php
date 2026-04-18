@@ -20,7 +20,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Role</label>
-                            <select name="role_id" id="selectRole"
+                            <select name="role_id" id="selectRole" required
                                 class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-2 px-3 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 @foreach ($allRoles as $role)
                                     <option value="{{ $role->id }}"
