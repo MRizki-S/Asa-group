@@ -43,6 +43,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('kpi_review_requests', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('kpi_user_id')->constrained('kpi_user')->onDelete('cascade');
+            $table->timestamp('direspon_pada')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('kpi_user_komponen', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kpi_user_id')->constrained('kpi_user')->onDelete('cascade');
@@ -55,6 +62,7 @@ return new class extends Migration
             $table->decimal('skor', 8, 2)->nullable();
             $table->decimal('nilai_akhir', 8, 2)->nullable();
             $table->text('catatan_tambahan')->nullable();
+            $table->boolean('nilai_tetap')->default(false);
             $table->timestamps();
         });
 
@@ -79,6 +87,7 @@ return new class extends Migration
         Schema::dropIfExists('kpi_komponen');
         Schema::dropIfExists('kpi_task');
         Schema::dropIfExists('kpi_user');
+        Schema::dropIfExists('kpi_review_requests');
         Schema::dropIfExists('kpi_user_komponen');
         Schema::dropIfExists('kpi_user_task');
     }

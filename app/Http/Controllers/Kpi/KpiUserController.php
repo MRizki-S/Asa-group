@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Kpi;
 
-use App\Exports\KpiUserExport;
 use App\Http\Controllers\Controller;
 use App\Models\KpiIndicator;
 use App\Models\KpiKomponen;
@@ -13,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
+
+
 
 use function Symfony\Component\Clock\now;
 
@@ -221,17 +222,28 @@ class KpiUserController extends Controller
      */
     public function edit($id)
     {
-        $kpiUser = KpiUser::with(['user', 'details.tasks'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['user', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
+
+        $bolehRequest = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() === 0
+            && $kpiUser->details->whereNotNull('kepatuhan_percent')
+            ->where('kepatuhan_percent', '<', 90)
+            ->where('nilai_tetap', false)
+            ->count() > 0
+            && $kpiUser->details->count() > 0;
+
+        $prosesReview = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() > 0;
 
         return view('kpi.user-kpi.edit', [
             'kpiUser' => $kpiUser,
             'indicators' => $indicators,
             'modeMapping' => $modeMapping,
+            'bolehRequest' =>  $bolehRequest,
+            'prosesReview' => $prosesReview,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Input Nilai: ' . $kpiUser->user->name, 'url' => '#']
+                ['label' => 'Input Nilai: ' . $kpiUser->user->nama_lengkap, 'url' => '#']
             ],
         ]);
     }
@@ -259,11 +271,12 @@ class KpiUserController extends Controller
                 $totalNilaiDariSelect = 0;
 
                 $userKomponen = $kpiUser->details()->where('id', $komponenId)->first();
+                if ($userKomponen && $userKomponen->nilai_tetap) {
+                    continue;
+                }
                 $tipePerhitungan = $userKomponen->komponen->tipe_perhitungan;
                 $currentMode = $modeMapping[$tipePerhitungan] ?? 'range';
                 $taskCount = count($tasks);
-
-                $skorLama = $userKomponen->skor;
 
                 foreach ($tasks as $taskId => $values) {
                     // dd($values);
@@ -313,11 +326,6 @@ class KpiUserController extends Controller
                     $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
                 }
 
-
-                if ($skorLama == 70 && $skor == 0) {
-                    $skor = 70;
-                }
-
                 $userKomponen->update([
                     'total_target' => $totalTargetKomponen,
                     'total_tercapai' => $totalTercapaiKomponen,
@@ -360,13 +368,5 @@ class KpiUserController extends Controller
         $user->delete();
 
         return redirect()->route('kpi.user.index')->with('success', 'User kpi berhasil dihapus.');
-    }
-
-    public function exportExcel($id)
-    {
-        $kpi = KpiUser::with('user')->findOrFail($id);
-        $fileName = 'KPI_' . str_replace(' ', '_', $kpi->user->nama_lengkap) . '_' . $kpi->bulan . '_' . $kpi->tahun . '.xlsx';
-
-        return Excel::download(new KpiUserExport($id), $fileName);
     }
 }

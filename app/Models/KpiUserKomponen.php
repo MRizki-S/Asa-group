@@ -18,6 +18,7 @@ class KpiUserKomponen extends Model
         'kepatuhan_percent',
         'skor',
         'nilai_akhir',
+        'nilai_tetap',
         'catatan_tambahan'
     ];
 

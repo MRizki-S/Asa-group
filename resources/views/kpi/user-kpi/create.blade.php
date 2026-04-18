@@ -33,7 +33,7 @@
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Pilih
                                 Role</label>
-                            <select name="role_id" x-model="selectedRole" @change="fetchData()"
+                            <select name="role_id" x-model="selectedRole" @change="fetchData()" required
                                 class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-3 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach ($roles as $role)
