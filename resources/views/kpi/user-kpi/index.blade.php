@@ -28,14 +28,18 @@
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Daftar Penilaian Periode
                         {{ $bulanFilter }}/{{ $tahunFilter }}</h3>
                     <div class="flex items-center gap-2">
-                        <button type="button" id="btnExportModal"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition shadow-sm">
-                            Export Excel
-                        </button>
-                        <a href="{{ route('kpi.user.create') }}"
-                            class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                            + Penilaian Baru
-                        </a>
+                        @can('kpi.kpi-user.export')
+                            <button type="button" id="btnExportModal"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition shadow-sm">
+                                Export Excel
+                            </button>
+                        @endcan
+                        @can('kpi.kpi-user.create')
+                            <a href="{{ route('kpi.user.create') }}"
+                                class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                                + Penilaian Baru
+                            </a>
+                        @endcan
                     </div>
                 </div>
 
@@ -112,8 +116,11 @@
                                     Nilai</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">
                                     Status</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
-                                </th>
+
+                                @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail'])
+                                    <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
+                                    </th>
+                                @endcanany
                             </tr>
                         </thead>
                         <tbody>
@@ -137,23 +144,32 @@
                                             {{ $item->status }}
                                         </span>
                                     </td>
-                                    <td class="py-4 px-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            @if ($item->status == 'draft')
-                                                <a href="{{ route('kpi.user.edit', $item->id) }}"
-                                                    class="px-2.5 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-md hover:bg-yellow-200 transition">Edit</a>
-                                            @else
-                                                <a href="{{ route('kpi.user.show', $item->id) }}"
-                                                    class="px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition">Detail</a>
-                                            @endif
-                                            <form action="{{ route('kpi.user.destroy', $item->id) }}" method="POST"
-                                                class="delete-form inline">
-                                                @csrf @method('DELETE')
-                                                <button type="button"
-                                                    class="delete-btn px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700 transition">Hapus</button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                    @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail'])
+                                        <td class="py-4 px-4 text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                @if ($item->status == 'draft')
+                                                    @can('kpi.kpi-user.update')
+                                                        <a href="{{ route('kpi.user.edit', $item->id) }}"
+                                                            class="px-2.5 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-md hover:bg-yellow-200 transition">Edit</a>
+                                                    @endcan
+                                                @else
+                                                    @can('kpi.kpi-user.detail')
+                                                        <a href="{{ route('kpi.user.show', $item->id) }}"
+                                                            class="px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition">Detail</a>
+                                                    @endcan
+                                                @endif
+
+                                                @can('kpi.kpi-user.delete')
+                                                    <form action="{{ route('kpi.user.destroy', $item->id) }}" method="POST"
+                                                        class="delete-form inline">
+                                                        @csrf @method('DELETE')
+                                                        <button type="button"
+                                                            class="delete-btn px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700 transition">Hapus</button>
+                                                    </form>
+                                                @endcan
+                                            </div>
+                                        </td>
+                                    @endcanany
                                 </tr>
                             @endforeach
                         </tbody>

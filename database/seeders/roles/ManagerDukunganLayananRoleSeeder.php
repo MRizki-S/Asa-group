@@ -88,7 +88,7 @@ class ManagerDukunganLayananRoleSeeder extends Seeder
             if ($missingPermissions->isNotEmpty()) {
                 throw new Exception(
                     'Seeder Manager Dukungan & Layanan GAGAL. Permission belum terdaftar: ' .
-                    $missingPermissions->implode(', ')
+                        $missingPermissions->implode(', ')
                 );
             }
 

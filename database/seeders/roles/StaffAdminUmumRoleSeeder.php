@@ -65,7 +65,7 @@ class StaffAdminUmumRoleSeeder extends Seeder
             if ($missing->isNotEmpty()) {
                 throw new Exception(
                     'Seeder Staff Admin Umum GAGAL. Permission belum terdaftar: ' .
-                    $missing->implode(', ')
+                        $missing->implode(', ')
                 );
             }
 

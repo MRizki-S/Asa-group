@@ -70,12 +70,14 @@
                                 <div class="text-right border-l pl-6 border-gray-200 dark:border-gray-700">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Skor</span>
                                     @if ($isBermasalah)
-                                        <select name="skor_custom[{{ $komponen->id }}]"
-                                            class="mt-1 block w-24 rounded-lg border-red-300 text-sm font-black text-red-600 focus:ring-red-500 focus:border-red-500 py-1">
-                                            <option value="0" {{ $komponen->skor == 0 ? 'selected' : '' }}>0</option>
-                                            <option value="70" {{ $komponen->skor == 70 ? 'selected' : '' }}>70
-                                            </option>
-                                        </select>
+                                        @can('kpi.kpi-riview.simpan-hasil-riview')
+                                            <select name="skor_custom[{{ $komponen->id }}]"
+                                                class="mt-1 block w-24 rounded-lg border-red-300 text-sm font-black text-red-600 focus:ring-red-500 focus:border-red-500 py-1">
+                                                <option value="0" {{ $komponen->skor == 0 ? 'selected' : '' }}>0</option>
+                                                <option value="70" {{ $komponen->skor == 70 ? 'selected' : '' }}>70
+                                                </option>
+                                            </select>
+                                        @endcan
                                     @else
                                         <span
                                             class="text-base font-black text-green-600">{{ (float) $komponen->skor }}</span>
@@ -165,21 +167,25 @@
             <div
                 class="mt-8 flex flex-col w-full md:flex-row justify-between items-center gap-4 bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-200 dark:border-gray-800 mb-10">
                 <div class="flex flex-col w-full md:flex-row justify-start items-center gap-3">
-                    <label class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase">Simpan sebagai:</label>
-                    <select name="status" class="rounded-lg py-2 border-gray-300 text-sm font-bold focus:ring-blue-500">
-                        <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
-                        <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}>FINAL</option>
-                    </select>
+                    @can('kpi.kpi-riview.simpan-hasil-riview')
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase">Simpan sebagai:</label>
+                        <select name="status" class="rounded-lg py-2 border-gray-300 text-sm font-bold focus:ring-blue-500">
+                            <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
+                            <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}>FINAL</option>
+                        </select>
+                    @endcan
                 </div>
                 <div class="flex w-full flex-col-reverse md:flex-row justify-end gap-3">
                     <a href="{{ route('kpi.review.index') }}"
                         class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
                         Kembali
                     </a>
-                    <button type="submit"
-                        class="px-6 py-2 w-full md:w-fit text-sm text-center font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md">
-                        Simpan Hasil Review
-                    </button>
+                    @can('kpi.kpi-riview.simpan-hasil-riview')
+                        <button type="submit"
+                            class="px-6 py-2 w-full md:w-fit text-sm text-center font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md">
+                            Simpan Hasil Review
+                        </button>
+                    @endcan
                 </div>
             </div>
         </form>

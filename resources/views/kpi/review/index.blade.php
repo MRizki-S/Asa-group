@@ -45,8 +45,10 @@
                                     Bermasalah</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">
                                     Status Request</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
-                                </th>
+                                @can('kpi.kpi-riview.riview-skor')
+                                    <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
+                                    </th>
+                                @endcan
                             </tr>
                         </thead>
                         <tbody>
@@ -80,12 +82,14 @@
                                         <p class="text-[9px] text-gray-400 mt-1 italic">Dikirim:
                                             {{ $latestReq->created_at->diffForHumans() }}</p>
                                     </td>
-                                    <td class="py-4 px-4 text-center align-middle">
-                                        <a href="{{ route('kpi.review.edit', $kpi->id) }}"
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm uppercase tracking-tighter">
-                                            Review Skor
-                                        </a>
-                                    </td>
+                                    @can('kpi.kpi-riview.riview-skor')
+                                        <td class="py-4 px-4 text-center align-middle">
+                                            <a href="{{ route('kpi.review.edit', $kpi->id) }}"
+                                                class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm uppercase tracking-tighter">
+                                                Review Skor
+                                            </a>
+                                        </td>
+                                    @endcan
                                 </tr>
                             @empty
                                 <tr>

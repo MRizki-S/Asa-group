@@ -250,16 +250,18 @@
                 class="mt-4 flex flex-col w-full md:flex-row justify-between items-center gap-4 bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-200 dark:border-gray-800 mb-10">
                 <div class="flex flex-col w-full md:flex-row justify-start items-center gap-3">
                     @if ($kpiUser->status != 'final')
-                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Simpan
-                            sebagai:</label>
-                        <select name="status"
-                            class="rounded-lg py-2 border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800 text-gray-700 dark:text-white text-sm font-bold focus:ring-blue-500">
-                            <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
-                            <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}
-                                x-bind:disabled="hasProblem()">
-                                FINAL
-                            </option>
-                        </select>
+                        @can('kpi.kpi-user.update-simpan-nilai')
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Simpan
+                                sebagai:</label>
+                            <select name="status"
+                                class="rounded-lg py-2 border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800 text-gray-700 dark:text-white text-sm font-bold focus:ring-blue-500">
+                                <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
+                                <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}
+                                    x-bind:disabled="hasProblem()">
+                                    FINAL
+                                </option>
+                            </select>
+                        @endcan
                     @else
                         <p class="text-sm font-bold text-green-600 uppercase italic">Penilaian ini telah difinalisasi.</p>
                     @endif
@@ -268,23 +270,29 @@
                     <a href="{{ route('kpi.user.index') }}"
                         class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition">Kembali</a>
                     @if ($kpiUser->status != 'final')
-                        <a href="{{ route('kpi.request.review', $kpiUser->id) }}" x-show="hasProblem()"
-                            @if (!$bolehRequest) onclick="return false;" @endif
-                            class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium rounded-lg transition
-            {{ $bolehRequest
-                ? 'text-white bg-orange-500 hover:bg-orange-600 cursor-pointer'
-                : 'text-gray-400 bg-gray-100 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700' }}">
-                            Minta Review
-                        </a>
-                        <button type="submit"
-                            class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            Simpan Nilai
-                        </button>
+                        @can('kpi.kpi-user.minta-riview')
+                            <a href="{{ route('kpi.request.review', $kpiUser->id) }}" x-show="hasProblem()"
+                                @if (!$bolehRequest) onclick="return false;" @endif
+                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium rounded-lg transition
+                {{ $bolehRequest
+                    ? 'text-white bg-orange-500 hover:bg-orange-600 cursor-pointer'
+                    : 'text-gray-400 bg-gray-100 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700' }}">
+                                Minta Review
+                            </a>
+                        @endcan
+                        @can('kpi.kpi-user.update-simpan-nilai')
+                            <button type="submit"
+                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                Simpan Nilai
+                            </button>
+                        @endcan
                     @else
-                        <a href="{{ route('kpi.user.exportExcel', $kpiUser->id) }}"
-                            class="px-3 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition">
-                            Export Excel
-                        </a>
+                        @can('kpi.kpi-user.export')
+                            <a href="{{ route('kpi.user.exportExcel', $kpiUser->id) }}"
+                                class="px-3 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition">
+                                Export Excel
+                            </a>
+                        @endcan
                     @endif
                 </div>
             </div>
