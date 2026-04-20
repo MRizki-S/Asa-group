@@ -1459,7 +1459,7 @@
                         <!-- Menu Item Akun Karyawan -->
                     </ul>
                 </div>
-            @endrole
+            @endcanany
         </nav>
         <!-- Sidebar Menu -->
     </div>
