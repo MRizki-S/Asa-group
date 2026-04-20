@@ -26,16 +26,18 @@
                 class="rounded-2xl border border-gray-200 px-4 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
 
                 {{-- Header: Title + Tambah Button --}}
-                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 class="text-base font-medium text-gray-800 dark:text-white/90">List Master Komponen KPI</h3>
-                    <a href="{{ route('kpi.komponen.create') }}"
-                        class="inline-flex items-center justify-center gap-1 w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Tambah Komponen
-                    </a>
-                </div>
+                @can('kpi.master-kpi.create')
+                    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">List Master Komponen KPI</h3>
+                        <a href="{{ route('kpi.komponen.create') }}"
+                            class="inline-flex items-center justify-center gap-1 w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Tambah Komponen
+                        </a>
+                    </div>
+                @endcan
 
                 {{-- Filter Section --}}
                 <form method="GET" action="{{ route('kpi.komponen.index') }}"
@@ -80,8 +82,11 @@
                                     Task</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">
                                     Status</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
-                                </th>
+
+                                @canany(['kpi.master-kpi.update', 'kpi.master-kpi.delete'])
+                                    <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
+                                    </th>
+                                @endcanany
                             </tr>
                         </thead>
                         <tbody>
@@ -119,20 +124,26 @@
                                                 class="text-red-600 font-bold text-xs uppercase tracking-wider">Non-Aktif</span>
                                         @endif
                                     </td>
-                                    <td class="py-4 px-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <a href="{{ route('kpi.komponen.edit', $item->id) }}"
-                                                class="px-2.5 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-md hover:bg-yellow-200 transition">Edit</a>
-                                            <form action="{{ route('kpi.komponen.destroy', $item->id) }}" method="POST"
-                                                class="delete-form inline">
-                                                @csrf @method('DELETE')
-                                                <button type="button"
-                                                    class="delete-btn px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700 transition">
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                    @canany(['kpi.master-kpi.update', 'kpi.master-kpi.delete'])
+                                        <td class="py-4 px-4 text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                @can('kpi.master-kpi.update')
+                                                    <a href="{{ route('kpi.komponen.edit', $item->id) }}"
+                                                        class="px-2.5 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-md hover:bg-yellow-200 transition">Edit</a>
+                                                @endcan
+                                                @can('kpi.master-kpi.delete')
+                                                    <form action="{{ route('kpi.komponen.destroy', $item->id) }}" method="POST"
+                                                        class="delete-form inline">
+                                                        @csrf @method('DELETE')
+                                                        <button type="button"
+                                                            class="delete-btn px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700 transition">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </div>
+                                        </td>
+                                    @endcanany
                                 </tr>
                             @endforeach
                         </tbody>

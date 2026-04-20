@@ -2,22 +2,133 @@
 
 namespace App\Http\Controllers\Kpi;
 
-use App\Exports\KpiUserExport;
 use App\Http\Controllers\Controller;
 use App\Models\KpiUser;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class KpiExportController extends Controller
 {
-
     public function exportById($id)
     {
-        $kpi = KpiUser::with('user')->findOrFail($id);
-        $fileName = 'KPI_' . str_replace(' ', '_', $kpi->user->nama_lengkap) . '_' . $kpi->bulan . '_' . $kpi->tahun . '.xlsx';
+        $kpi = KpiUser::with(['details', 'user'])->findOrFail($id);
 
-        return Excel::download(new KpiUserExport($id), $fileName);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('KPI ' . substr($kpi->user->nama_lengkap, 0, 20));
+
+        $row = 1;
+
+        $headerData = [
+            ['NAMA',    ': ' . $kpi->user->nama_lengkap],
+            ['JABATAN', ': ' . ($kpi->user->getRoleNames()->implode(', ') ?: '-')],
+            ['DIVISI',  ': -'],
+            ['BULAN',   ': ' . date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun))],
+        ];
+
+        foreach ($headerData as [$label, $value]) {
+            $sheet->setCellValue("A{$row}", $label);
+            $sheet->mergeCells("B{$row}:E{$row}");
+            $sheet->setCellValue("B{$row}", $value);
+
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+            $sheet->getStyle("A{$row}:E{$row}")->getFont()->setName('Arial')->setSize(10);
+            $sheet->getRowDimension($row)->setRowHeight(18);
+            $row++;
+        }
+
+        $row++;
+
+        $headers = ['NO', 'KOMPONEN KPI', 'BOBOT (%)', 'SKOR', 'NILAI AKHIR'];
+        $cols = ['A', 'B', 'C', 'D', 'E'];
+
+        foreach ($headers as $i => $headerText) {
+            $sheet->setCellValue($cols[$i] . $row, $headerText);
+        }
+
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'name' => 'Arial', 'size' => 10],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FFF3F3F3'],
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => Border::BORDER_THIN],
+            ],
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(20);
+        $row++;
+
+        $totalAkhir = 0;
+        foreach ($kpi->details as $index => $detail) {
+            $nilaiAkhir = (float) $detail->nilai_akhir;
+            $totalAkhir += $nilaiAkhir;
+
+            $sheet->setCellValue("A{$row}", $index + 1);
+            $sheet->setCellValue("B{$row}", $detail->nama_komponen);
+            $sheet->setCellValue("C{$row}", $detail->bobot);
+            $sheet->setCellValue("D{$row}", $detail->skor);
+            $sheet->setCellValue("E{$row}", $nilaiAkhir);
+
+            $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('0.00');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray([
+                'font'      => ['name' => 'Arial', 'size' => 10],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+                'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            ]);
+
+            foreach (['A', 'C', 'D', 'E'] as $centerCol) {
+                $sheet->getStyle("{$centerCol}{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            }
+            $row++;
+        }
+
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("A{$row}", 'TOTAL NILAI KPI');
+        $sheet->setCellValue("C{$row}", 100);
+        $sheet->setCellValue("D{$row}", '');
+        $sheet->setCellValue("E{$row}", $totalAkhir);
+
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('0.00');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'name' => 'Arial', 'size' => 10],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical'   => Alignment::VERTICAL_CENTER,
+            ],
+            'fill' => [
+                'fillType'   => Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FFD9EAF7'],
+            ],
+            'borders' => [
+                'allBorders' => ['borderStyle' => Border::BORDER_THIN],
+            ],
+        ]);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        foreach (range('A', 'E') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $fileName = 'KPI_' . str_replace(' ', '_', $kpi->user->nama_lengkap) . '_' . $kpi->bulan . '_' . $kpi->tahun . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $fileName, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Cache-Control'       => 'max-age=0',
+        ]);
     }
 
     public function export(Request $request)
@@ -29,7 +140,7 @@ class KpiExportController extends Controller
             'tahun'     => 'nullable',
         ]);
 
-        $kpiList = \App\Models\KpiUser::with(['details', 'user'])
+        $kpiList = KpiUser::with(['details', 'user'])
             ->whereIn('id', $request->kpi_ids)
             ->get();
 
@@ -144,6 +255,10 @@ class KpiExportController extends Controller
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             $row += 3;
+        }
+
+        foreach (range('A', 'E') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
         $bulan   = (int)$request->bulan ?? date('n');

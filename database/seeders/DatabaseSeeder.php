@@ -24,6 +24,9 @@ use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
 use Database\Seeders\Permissions\SuperadminMenuPermissionSeeder;
 use Database\Seeders\Master\PerumahaanSeeder as MasterPerumahaanSeeder;
 use Database\Seeders\Master\UbsSeeder as MasterUbsSeeder;
+use Database\Seeders\Permissions\KpiPermissionSeeder;
+use Database\Seeders\Roles\KpiRoleSeeder;
+use Database\Seeders\Users\UsersKpiSystemSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -41,7 +44,10 @@ class DatabaseSeeder extends Seeder
             SuperadminMenuPermissionSeeder::class,
 
             // Keuangan Sistem
-            KeuanganPermissionPart1::class
+            KeuanganPermissionPart1::class,
+
+            // Kpi
+            KpiPermissionSeeder::class
         ]);
 
         // Role >> Assign permission (Saat ini masih selesai di marketing sistem)
@@ -57,7 +63,10 @@ class DatabaseSeeder extends Seeder
             MarketingRoleSeeder::class,
 
             // Keuangan
-            StaffAkuntansiRoleSeeder::class
+            StaffAkuntansiRoleSeeder::class,
+
+            // Kpi
+            KpiRoleSeeder::class
         ]);
 
         // 3. Master Data
@@ -80,7 +89,10 @@ class DatabaseSeeder extends Seeder
             UsersMarketingSystemSeeder::class,
 
             // User Keuangan Sistem
-            UsersKeuanganSystemSeeder::class
+            UsersKeuanganSystemSeeder::class,
+
+            // User Kpi Sistem
+            UsersKpiSystemSeeder::class,
         ]);
 
         //  5. KPI Indicator
