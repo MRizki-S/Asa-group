@@ -73,7 +73,7 @@ class PemesananUnitController extends Controller
             ->whereDoesntHave('user.pemesananSebagaiCustomer');
 
         // 🔐 Role restriction
-        if (! $user->hasRole(['Super Admin', 'Project Manager', 'Admin KPR'])) {
+        if ($user->hasRole(['Marketing'])) {
             $query->where('sales_id', $user->id);
         }
 
@@ -418,7 +418,7 @@ class PemesananUnitController extends Controller
 
             // Kirim notifikasi ke group sesuai perumahan
             if ($groupId) {
-                // $this->notificationGroup->send($groupId, $messageGroup);
+                $this->notificationGroup->send($groupId, $messageGroup);
             }
 
             return redirect()->back()->with('success', 'Pemesanan unit berhasil dibuat. Silakan hubungi bagian KPR untuk proses persetujuan (ACC) pemesanan unit.');

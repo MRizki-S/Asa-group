@@ -20,10 +20,10 @@ class UsersKeuanganSystemSeeder extends Seeder
             [
                 'role' => 'Staff Akuntansi',
                 'data' => [
-                    'username' => 'rindang-keu',
+                    'username' => 'rindang.sak',
                     'nama_lengkap' => 'RINDANG SARI RAHMAWATI',
                     'no_hp' => '6285238617670',
-                    'password' => 'rin#akuntan26a',
+                    'password' => 'rin#sak42',
                     'type' => 'karyawan',
                     'perumahaan_id' => null,
                     'is_global' => true,

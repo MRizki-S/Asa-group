@@ -69,7 +69,7 @@ class PengajuanPembatalanController extends Controller
             // ✅ Commit transaksi
             DB::commit();
 
-            return redirect()->back()->with('success', 'Pengajuan pembatalan berhasil dikirim ke Project Manager.');
+            return redirect()->back()->with('success', 'Pengajuan pembatalan berhasil dikirim ke Proyek Manager.');
         } catch (\Throwable $e) {
             // ❌ Jika gagal, rollback database
             DB::rollBack();
@@ -172,7 +172,7 @@ class PengajuanPembatalanController extends Controller
         ]);
     }
 
-    // update keputusan dari Project Manager
+    // update keputusan dari Proyek Manager
     public function keputusanProjectManager(Request $request, $id)
     {
         $request->validate([
@@ -182,8 +182,8 @@ class PengajuanPembatalanController extends Controller
 
         $pengajuan = PengajuanPembatalanPemesananUnit::findOrFail($id);
 
-        // Pastikan hanya Project Manager yang bisa akses
-        if (! Auth::user()->hasRole('Project Manager')) {
+        // Pastikan hanya Proyek Manager yang bisa akses
+        if (! Auth::user()->hasRole('Proyek Manager')) {
             abort(403, 'Anda tidak memiliki izin untuk melakukan tindakan ini.');
         }
 
@@ -197,7 +197,7 @@ class PengajuanPembatalanController extends Controller
 
         return redirect()
             ->route('marketing.pengajuan-pembatalan.show', $id)
-            ->with('success', 'Keputusan Project Manager berhasil disimpan.');
+            ->with('success', 'Keputusan Proyek Manager berhasil disimpan.');
     }
 
     // 🔹 Keputusan Manager Keuangan
