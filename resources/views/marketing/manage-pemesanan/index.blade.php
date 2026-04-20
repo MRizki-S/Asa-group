@@ -40,7 +40,7 @@
 
             if ($namaPerumahaanAktif === 'Asa Dreamland') {
                 // Khusus ADL → ROLE
-                $bolehPrintPPJB = $user->hasRole(['Project Manager', 'Marketing', 'Superadmin', 'Staff KPR']);
+                $bolehPrintPPJB = $user->hasRole(['Proyek Manager', 'Marketing', 'Superadmin', 'Staff KPR']);
             } else {
                 // Selain ADL → PERMISSION
                 $bolehPrintPPJB = $user->can('marketing.kelola-pemesanan.print-ppjb');

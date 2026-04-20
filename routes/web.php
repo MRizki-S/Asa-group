@@ -219,7 +219,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         ->name('marketing.pengajuan-pembatalan.listPengajuan');
     Route::get('/pengajuan-pembatalan/{id}', [PengajuanPembatalanController::class, 'show'])
         ->name('marketing.pengajuan-pembatalan.show');
-    // 🔹 Route Keputusan Project Manager
+    // 🔹 Route Keputusan Proyek Manager
     Route::patch('/pengajuan-pembatalan/{id}/keputusan-pemasaran', [PengajuanPembatalanController::class, 'keputusanProjectManager'])
         ->name('marketing.pengajuan-pembatalan.keputusan-pemasaran');
     // 🔹 Route Keputusan Manager Keuangan (nanti kita isi belakangan)
