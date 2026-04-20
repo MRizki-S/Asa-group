@@ -202,17 +202,28 @@ class KpiUserController extends Controller
      */
     public function show($id)
     {
-        $kpiUser = KpiUser::with(['user', 'details.tasks'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['user', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
+
+        $bolehRequest = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() === 0
+            && $kpiUser->details->whereNotNull('kepatuhan_percent')
+            ->where('kepatuhan_percent', '<', 90)
+            ->where('nilai_tetap', false)
+            ->count() > 0
+            && $kpiUser->details->count() > 0;
+
+        $prosesReview = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() > 0;
 
         return view('kpi.user-kpi.edit', [
             'kpiUser' => $kpiUser,
             'indicators' => $indicators,
             'modeMapping' => $modeMapping,
+            'bolehRequest' =>  $bolehRequest,
+            'prosesReview' => $prosesReview,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Input Nilai: ' . $kpiUser->user->name, 'url' => '#']
+                ['label' => 'Input Nilai: ' . $kpiUser->user->nama_lengkap, 'url' => '#']
             ],
         ]);
     }
