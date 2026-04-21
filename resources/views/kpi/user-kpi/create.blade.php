@@ -33,7 +33,7 @@
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Pilih
                                 Role</label>
-                            <select name="role_id" x-model="selectedRole" @change="fetchData()" required
+                            <select id="role-select" name="role_id" x-model="selectedRole" @change="fetchData()" required
                                 class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-3 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach ($roles as $role)
@@ -41,6 +41,29 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <script>
+                            $(document).ready(function() {
+                                $('#role-select').select2({
+                                    placeholder: "-- Pilih Role --",
+                                    allowClear: true,
+                                    theme: 'bootstrap4',
+                                    width: '100%'
+                                }).on('change', function(e) {
+                                    // Sinkronisasi ke Alpine.js
+                                    const el = document.getElementById('role-select');
+                                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                                });
+
+                                // Fokus otomatis ke kolom pencarian saat dropdown dibuka
+                                $('#role-select').on('select2:open', function(e) {
+                                    window.setTimeout(function() {
+                                        document.querySelector('.select2-search__field').focus();
+                                    }, 0);
+                                });
+                            });
+                        </script>
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Bulan</label>
                             <select name="bulan"

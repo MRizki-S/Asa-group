@@ -177,8 +177,15 @@
             $('#select-role').select2({
                 placeholder: "-- Pilih Jabatan --",
                 allowClear: true,
-                theme: 'bootstrap4', 
+                theme: 'bootstrap4',
                 width: '100%'
+            });
+
+            // Fokus otomatis ke kolom pencarian saat dropdown dibuka
+            $('#select-role').on('select2:open', function(e) {
+                window.setTimeout(function() {
+                    document.querySelector('.select2-search__field').focus();
+                }, 0);
             });
         });
     </script>
