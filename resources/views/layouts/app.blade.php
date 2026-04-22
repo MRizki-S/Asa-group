@@ -7,7 +7,7 @@
     {{-- csrf token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Asa Group' }}</title>
+    <title>{{ $title ?? 'ABM Group' }}</title>
     @vite(['resources/css/app.css', 'resources/css/custom.css', 'resources/js/app.js'])
 
 
@@ -41,6 +41,7 @@
 }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
 $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))" @sidebar-minimize.window="sidebarToggle = true"
     :class="{ 'dark bg-gray-900': darkMode === true }">
+
     <!-- Preloader -->
     {{-- @include('partials.preloader') --}}
 

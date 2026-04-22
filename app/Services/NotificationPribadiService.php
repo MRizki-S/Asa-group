@@ -30,7 +30,7 @@ class NotificationPribadiService
         if (empty($this->apiKey) || empty($this->sendUrl)) {
             Log::error('API Key atau URL kosong, pesan tidak terkirim.');
             return false;
-        }   
+        }
 
         try {
             $response = Http::withHeaders([

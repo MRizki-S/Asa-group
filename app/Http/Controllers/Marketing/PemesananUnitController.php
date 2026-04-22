@@ -73,7 +73,7 @@ class PemesananUnitController extends Controller
             ->whereDoesntHave('user.pemesananSebagaiCustomer');
 
         // 🔐 Role restriction
-        if (! $user->hasRole(['Super Admin', 'Project Manager', 'Admin KPR'])) {
+        if ($user->hasRole(['Marketing'])) {
             $query->where('sales_id', $user->id);
         }
 

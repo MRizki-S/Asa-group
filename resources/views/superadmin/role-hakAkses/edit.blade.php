@@ -34,14 +34,15 @@
             </div>
         @endif
 
-        <form action="{{ route('superadmin.roleHakAkses.store') }}" method="POST">
+        <form action="{{ route('superadmin.roleHakAkses.update', $role->id) }}" method="POST">
             @csrf
+            @method('PUT')
 
             {{-- Penamaan Role --}}
-            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6 shadow-sm">
                 <div class="px-5 py-4 sm:px-6 sm:py-5">
                     <h3
-                        class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 border-b border-gray-100 dark:border-gray-800">
+                        class="text-base font-semibold text-gray-800 dark:text-white/90 mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
                         Informasi Role
                     </h3>
 
@@ -52,7 +53,7 @@
                                 Nama Role <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="role_name" name="role_name" required
-                                value="{{ old('role_name') }}" placeholder="Contoh: Manager, Staff, Admin"
+                                value="{{ old('role_name', $role->name) }}" placeholder="Contoh: Manager, Staff, Admin"
                                 class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                                dark:bg-gray-700 dark:text-white
                                @error('role_name') border-red-500 @else border-gray-300 @enderror">
@@ -65,14 +66,13 @@
             </div>
 
             {{-- Hak Akses --}}
-
             <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6 shadow-sm">
                 <div class="px-5 py-4 sm:px-6 sm:py-5">
                     <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 mb-6 flex items-center gap-2">
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
-                        Hak Akses (Permissions)
+                        Edit Hak Akses (Permissions)
                     </h3>
 
                     <div class="space-y-8">
@@ -124,6 +124,7 @@
                                                                 <label class="inline-flex items-center group cursor-pointer">
                                                                     <div class="relative flex items-center">
                                                                         <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
+                                                                            {{ in_array($perm->id, $rolePermissions) ? 'checked' : '' }}
                                                                             class="perm-checkbox form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded border-gray-300 focus:ring-blue-500">
                                                                     </div>
                                                                     <span class="ml-2.5 text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
@@ -148,16 +149,18 @@
 
             <!-- Tombol Aksi -->
             <div class="flex justify-end gap-2">
-                <button type="button" onclick="history.back()"
+                <a href="{{ route('superadmin.roleHakAkses.index') }}"
                     class="px-8 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
                        dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
-                    Kembali
-                </button>
+                    Batal
+                </a>
+                @can('superadmin.role.update')
                 <button type="submit"
                     class="px-8 py-2.5 text-sm font-medium text-white rounded-lg bg-blue-600 hover:bg-blue-700
-                       focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
-                    Simpan
+                       focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 shadow-md">
+                    Update Role
                 </button>
+                @endcan
             </div>
         </form>
     </div>

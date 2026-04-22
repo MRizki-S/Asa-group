@@ -157,7 +157,7 @@
             </div>
         </div>
 
-        {{-- 🔹 hasil keputusan Project Manager --}}
+        {{-- 🔹 hasil keputusan Proyek Manager --}}
         <div x-data="{ open: false }"
             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6 overflow-hidden">
             <!-- Header Accordion -->
@@ -169,7 +169,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
                     </svg>
-                    Keputusan Project Manager
+                    Keputusan Proyek Manager
                 </h3>
 
 
@@ -261,10 +261,10 @@
                 @endif
             </div>
         </div>
-        {{-- 🔹 Tombol Aksi Project Manager --}}
+        {{-- 🔹 Tombol Aksi Proyek Manager --}}
         <div x-data="{ openModal: false, actionType: '' }">
-            {{-- Tombol aksi hanya untuk Project Manager dan status masih pending --}}
-            @role('Project Manager')
+            {{-- Tombol aksi hanya untuk Proyek Manager dan status masih pending --}}
+            @role('Proyek Manager')
                 @if ($pengajuanPembatalan->status_mgr_pemasaran === 'pending')
                     <div class="flex justify-end gap-3 mt-6">
                         <button @click="actionType = 'tolak'; openModal = true" type="button"
@@ -294,7 +294,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
                         </svg>
-                        Keputusan Project Manager
+                        Keputusan Proyek Manager
                     </h2>
 
                     <form method="POST"
