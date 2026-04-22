@@ -242,7 +242,7 @@
             <div class="space-y-6">
                 <div class="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
 
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-start gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
                                 Neraca Saldo - {{ $ubsName }}
@@ -267,6 +267,24 @@
                             </p>
                             @endif
                         </div>
+
+                        {{-- INFO CARD --}}
+                        <div class="md:max-w-md bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 p-4 rounded-xl flex gap-3 shadow-sm">
+                            <div class="shrink-0 text-blue-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider">Informasi Laporan</p>
+                                <p class="text-[11px] leading-relaxed text-blue-700 dark:text-blue-400">
+                                    • Tampilan <span class="font-semibold text-blue-900 dark:text-white underline">Web & PDF</span> hanya menyajikan hasil akhir saldo (akumulasi Mutasi Jurnal Umum + Jurnal Penyesuaian).
+                                </p>
+                                <p class="text-[11px] leading-relaxed text-blue-700 dark:text-blue-400">
+                                    • Detail rincian (NS Awal, Penyesuaian, NS Akhir) tersedia lengkap pada <span class="font-semibold text-blue-900 dark:text-white underline">Export Excel</span> dalam format Neraca Lajur.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -274,165 +292,115 @@
 
                 {{-- TABLE --}}
                 <div class="relative overflow-auto border border-gray-200 dark:border-gray-700 rounded-xl
-                    bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200"
-                    style="max-height: 650px;">
+                    bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 shadow-xl"
+                    style="max-height: 700px;">
                     <table class="w-full text-sm text-left border-collapse">
                         {{-- HEADER --}}
-                        <thead class="sticky top-0 z-10 bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        <thead class="sticky top-0 z-20 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                             {{-- Header Row 1 --}}
                             <tr>
-                                <th rowspan="2" class="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                                <th rowspan="2" class="px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold text-gray-800 dark:text-white">
                                     Kode Akun
                                 </th>
-
-                                <th rowspan="2" class="px-4 py-3 border border-gray-300 dark:border-gray-600">
+                                <th rowspan="2" class="px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 font-bold text-gray-800 dark:text-white">
                                     Nama Akun
                                 </th>
-
-                                <th colspan="2"
-                                    class="px-4 py-3 text-center border border-gray-300 dark:border-gray-600">
+                                <th colspan="2" class="px-4 py-3 text-center bg-slate-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-gray-700 font-bold uppercase tracking-widest text-[10px]">
                                     Saldo Awal
                                 </th>
-
-                                <th colspan="2"
-                                    class="px-4 py-3 text-center border border-gray-300 dark:border-gray-600">
-                                    Mutasi
+                                <th colspan="2" class="px-4 py-3 text-center bg-slate-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-gray-700 font-bold uppercase tracking-widest text-[10px]">
+                                    Mutasi (JU + JP)
                                 </th>
-
-                                <th colspan="2"
-                                    class="px-4 py-3 text-center border border-gray-300 dark:border-gray-600">
+                                <th colspan="2" class="px-4 py-3 text-center bg-blue-50 dark:bg-blue-900/10 border-b-2 border-blue-200 dark:border-blue-800 font-bold uppercase tracking-widest text-[10px] text-blue-700 dark:text-blue-400">
                                     Saldo Akhir
                                 </th>
                             </tr>
-
                             {{-- Header Row 2 --}}
-                            <tr>
-                                <th class="px-4 py-2 text-center border border-gray-300 dark:border-gray-600">
-                                    Debit
-                                </th>
-                                <th class="px-4 py-2 text-center border border-gray-300 dark:border-gray-600">
-                                    Kredit
-                                </th>
-
-                                <th class="px-4 py-2 text-center border border-gray-300 dark:border-gray-600">
-                                    Debit
-                                </th>
-                                <th class="px-4 py-2 text-center border border-gray-300 dark:border-gray-600">
-                                    Kredit
-                                </th>
-
-                                <th class="px-4 py-2 text-center border border-gray-300 dark:border-gray-600">
-                                    Debit
-                                </th>
-                                <th class="px-4 py-2 text-center border border-gray-300 dark:border-gray-600">
-                                    Kredit
-                                </th>
+                            <tr class="text-center text-xs font-semibold">
+                                <th class="px-4 py-2 border-b dark:border-gray-700 bg-slate-50/50 dark:bg-slate-800/30">Debit</th>
+                                <th class="px-4 py-2 border-b dark:border-gray-700 bg-slate-50/50 dark:bg-slate-800/30">Kredit</th>
+                                <th class="px-4 py-2 border-b dark:border-gray-700 bg-slate-50/50 dark:bg-slate-800/30">Debit</th>
+                                <th class="px-4 py-2 border-b dark:border-gray-700 bg-slate-50/50 dark:bg-slate-800/30">Kredit</th>
+                                <th class="px-4 py-2 border-b-2 dark:border-gray-700 bg-blue-50/20 dark:bg-blue-900/5 text-blue-600 dark:text-blue-400">Debit</th>
+                                <th class="px-4 py-2 border-b-2 dark:border-gray-700 bg-blue-50/20 dark:bg-blue-900/5 text-blue-600 dark:text-blue-400">Kredit</th>
                             </tr>
                         </thead>
 
-
-                        <tbody class="bg-white dark:bg-gray-900">
+                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
                             @php
-                            $totalSaldoAwalDebit = 0;
-                            $totalSaldoAwalKredit = 0;
-                            $totalMutasiDebit = 0;
-                            $totalMutasiKredit = 0;
-                            $totalSaldoAkhirDebit = 0;
-                            $totalSaldoAkhirKredit = 0;
+                                $tSADebit = 0; $tSAKredit = 0;
+                                $tMutDebit = 0; $tMutKredit = 0;
+                                $tSakDebit = 0; $tSakKredit = 0;
                             @endphp
 
                             @forelse ($rows as $row)
-                            @php
-                                // Saldo Awal
-                                $saDebit = $row->sa_debit;
-                                $saKredit = $row->sa_kredit;
+                                @php
+                                    $tSADebit += $row->sa_debit;
+                                    $tSAKredit += $row->sa_kredit;
+                                    $tMutDebit += $row->mutasi_debit;
+                                    $tMutKredit += $row->mutasi_kredit;
+                                    $tSakDebit += $row->sak_debit;
+                                    $tSakKredit += $row->sak_kredit;
+                                @endphp
 
-                                // Mutasi
-                                $mutDebit = $row->mutasi_debit;
-                                $mutKredit = $row->mutasi_kredit;
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors divide-x divide-gray-50 dark:divide-gray-800">
+                                    <td class="px-6 py-4 font-mono text-gray-500 text-xs">{{ $row->kode_akun }}</td>
+                                    <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">{{ $row->nama_akun }}</td>
 
-                                // Saldo Akhir
-                                $sakDebit = $row->sak_debit;
-                                $sakKredit = $row->sak_kredit;
+                                    {{-- Saldo Awal --}}
+                                    <td class="px-4 py-4 text-right text-sm">
+                                        {{ $row->sa_debit > 0 ? number_format($row->sa_debit, 0, ',', '.') : '-' }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right text-sm">
+                                        {{ $row->sa_kredit > 0 ? number_format($row->sa_kredit, 0, ',', '.') : '-' }}
+                                    </td>
 
-                                // Totals
-                                $totalSaldoAwalDebit += $saDebit;
-                                $totalSaldoAwalKredit += $saKredit;
-                                $totalMutasiDebit += $mutDebit;
-                                $totalMutasiKredit += $mutKredit;
-                                $totalSaldoAkhirDebit += $sakDebit;
-                                $totalSaldoAkhirKredit += $sakKredit;
-                            @endphp
+                                    {{-- Mutasi --}}
+                                    <td class="px-4 py-4 text-right text-sm">
+                                        {{ $row->mutasi_debit > 0 ? number_format($row->mutasi_debit, 0, ',', '.') : '-' }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right text-sm">
+                                        {{ $row->mutasi_kredit > 0 ? number_format($row->mutasi_kredit, 0, ',', '.') : '-' }}
+                                    </td>
 
-                                    <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">
-                                        <td class="px-4 py-3 border">{{ $row->kode_akun }}</td>
-                                        <td class="px-4 py-3 border">{{ $row->nama_akun }}</td>
-
-                                        {{-- Saldo Awal --}}
-                                        <td class="px-4 py-3 text-right border">
-                                            {{ $saDebit > 0 ? number_format($saDebit, 0, ',', '.') : '-' }}
-                                        </td>
-                                        <td class="px-4 py-3 text-right border">
-                                            {{ $saKredit > 0 ? number_format($saKredit, 0, ',', '.') : '-' }}
-                                        </td>
-
-                                        {{-- Mutasi --}}
-                                        <td class="px-4 py-3 text-right border">
-                                            {{ $mutDebit > 0 ? number_format($mutDebit, 0, ',', '.') : '-' }}
-                                        </td>
-                                        <td class="px-4 py-3 text-right border">
-                                            {{ $mutKredit > 0 ? number_format($mutKredit, 0, ',', '.') : '-' }}
-                                        </td>
-
-                                        {{-- Saldo Akhir --}}
-                                        <td class="px-4 py-3 text-right border">
-                                            {{ $sakDebit > 0 ? number_format($sakDebit, 0, ',', '.') : '-' }}
-                                        </td>
-                                        <td class="px-4 py-3 text-right border">
-                                            {{ $sakKredit > 0 ? number_format($sakKredit, 0, ',', '.') : '-' }}
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="8" class="text-center py-5 italic text-gray-500">
-                                            Silahkan pilih Periode atau Tahun untuk menampilkan data.
-                                        </td>
-                                    </tr>
-                                    @endforelse
+                                    {{-- Saldo Akhir --}}
+                                    <td class="px-4 py-4 text-right text-sm font-bold bg-blue-50/20 dark:bg-blue-900/5 text-gray-900 dark:text-white">
+                                        {{ $row->sak_debit > 0 ? number_format($row->sak_debit, 0, ',', '.') : '-' }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right text-sm font-bold bg-blue-50/20 dark:bg-blue-900/5 text-gray-900 dark:text-white">
+                                        {{ $row->sak_kredit > 0 ? number_format($row->sak_kredit, 0, ',', '.') : '-' }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center py-24">
+                                        <div class="flex flex-col items-center text-gray-400">
+                                            <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <p class="text-base font-medium italic">Data tidak tersedia untuk periode ini.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
 
                         {{-- FOOTER TOTAL --}}
                         @if(count($rows) > 0)
-                        <tfoot
-                            class="sticky bottom-0 z-10 bg-gray-100 dark:bg-gray-800 font-semibold border-t-2 dark:border-gray-600">
-                            <tr class="font-semibold bg-gray-100 dark:bg-gray-800">
-                                <td colspan="2" class="px-4 py-3 text-right border">
-                                    TOTAL
-                                </td>
-
-                                <td class="px-4 py-3 text-right border">
-                                    {{ number_format($totalSaldoAwalDebit, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-right border">
-                                    {{ number_format($totalSaldoAwalKredit, 0, ',', '.') }}
-                                </td>
-
-                                <td class="px-4 py-3 text-right border">
-                                    {{ number_format($totalMutasiDebit, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-right border">
-                                    {{ number_format($totalMutasiKredit, 0, ',', '.') }}
-                                </td>
-
-                                <td class="px-4 py-3 text-right border">
-                                    {{ number_format($totalSaldoAkhirDebit, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-right border">
-                                    {{ number_format($totalSaldoAkhirKredit, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                        </tfoot>
+                            <tfoot class="sticky bottom-0 z-10 bg-gray-100 dark:bg-gray-800 font-bold border-t-2 border-gray-300 dark:border-gray-600 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                                <tr class="divide-x divide-gray-200 dark:divide-gray-700">
+                                    <td colspan="2" class="px-6 py-4 text-right text-gray-900 dark:text-white">TOTAL KESELURUHAN</td>
+                                    <td class="px-4 py-4 text-right">{{ number_format($tSADebit, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-4 text-right">{{ number_format($tSAKredit, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-4 text-right">{{ number_format($tMutDebit, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-4 text-right">{{ number_format($tMutKredit, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-4 text-right bg-blue-100/50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">{{ number_format($tSakDebit, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-4 text-right bg-blue-100/50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">{{ number_format($tSakKredit, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
                         @endif
+                    </table>
+                </div>
 
                     </table>
 

@@ -302,56 +302,122 @@
                                         </td>
                                     </tr>
 
-                                    {{-- Loop Transaksi --}}
-                                    @foreach ($rows as $row)
-                                        <tr
-                                            class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5">
-                                            <td class="px-4 py-3">
-                                                {{ \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y') }}
-                                                @if ($isHub)
-                                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold">
-                                                        / {{ $row->ubs_abbr }}
-                                                    </span>
-                                                @endif
+                                    {{-- Group 1: Transaksi Rutin (Umum) --}}
+                                    @forelse ($rowsUmum as $row)
+                                        <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                             <td class="px-4 py-3.5">
+                                                 <div class="text-gray-900 dark:text-white font-medium">
+                                                     {{ \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y') }}
+                                                 </div>
+                                                 @if ($isHub)
+                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 mt-1">
+                                                         {{ $row->ubs_abbr }}
+                                                     </span>
+                                                 @endif
+                                             </td>
+                                             <td class="px-4 py-3.5">
+                                                 <div class="text-sm font-medium text-gray-800 dark:text-gray-200 leading-tight">
+                                                     {{ $row->keterangan }}
+                                                 </div>
+                                                 <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 font-mono">
+                                                     {{ $row->nomor_jurnal }}
+                                                 </div>
+                                             </td>
+                                             <td class="px-4 py-3.5 text-right font-medium text-gray-600 dark:text-gray-400">
+                                                 {{ $row->debit > 0 ? 'Rp ' . number_format($row->debit, 0, ',', '.') : '-' }}
+                                             </td>
+                                             <td class="px-4 py-3.5 text-right font-medium text-gray-600 dark:text-gray-400">
+                                                 {{ $row->kredit > 0 ? 'Rp ' . number_format($row->kredit, 0, ',', '.') : '-' }}
+                                             </td>
+                                             <td class="px-4 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
+                                                 {{ $row->saldo < 0 ? '-Rp ' . number_format(abs($row->saldo), 0, ',', '.') : 'Rp ' . number_format($row->saldo, 0, ',', '.') }}
+                                             </td>
+                                        </tr>
+                                    @empty
+                                        <tr class="border-b border-gray-100 dark:border-gray-800 italic text-gray-400">
+                                            <td colspan="5" class="px-4 py-4 text-center text-xs">Tidak ada transaksi rutin pada periode ini</td>
+                                        </tr>
+                                    @endforelse
+
+                                    {{-- Sub-Total: Saldo Sebelum Penyesuaian --}}
+                                    <tr class="bg-gray-50 dark:bg-gray-800/50 border-y border-gray-200 dark:border-gray-700">
+                                        <td colspan="4" class="px-4 py-3 text-right">
+                                            <span class="text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                                                Saldo Sebelum Penyesuaian
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right font-bold text-gray-900 dark:text-white text-base">
+                                            {{ $saldoAkhirUmum < 0 ? '-Rp ' . number_format(abs($saldoAkhirUmum), 0, ',', '.') : 'Rp ' . number_format($saldoAkhirUmum, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+
+                                    {{-- Section Header: PENYESUAIAN (Calm Grey Style) --}}
+                                    <tr class="bg-gray-200 dark:bg-gray-700 border-y border-gray-300 dark:border-gray-600">
+                                        <td colspan="5" class="px-4 py-2 text-center">
+                                            <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">
+                                                DATA JURNAL PENYESUAIAN
+                                            </span>
+                                        </td>
+                                    </tr>
+
+                                    {{-- Group 2: Transaksi Penyesuaian --}}
+                                    @forelse ($rowsPenyesuaian as $row)
+                                        <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                            <td class="px-4 py-3.5">
+                                                <div class="text-gray-900 dark:text-white font-medium">
+                                                    {{ \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y') }}
+                                                </div>
                                             </td>
-                                            <td class="px-4 py-3">
-                                                <div class="font-medium text-gray-900 dark:text-white">
+                                            <td class="px-4 py-3.5">
+                                                <div class="text-sm font-medium text-gray-800 dark:text-gray-200">
                                                     {{ $row->keterangan }}
                                                 </div>
-                                                <div class="text-xs text-gray-500">
+                                                <div class="text-[11px] text-gray-400 dark:text-gray-500 font-mono mt-0.5">
                                                     {{ $row->nomor_jurnal }}
                                                 </div>
                                             </td>
-                                            <td class="px-4 py-3 text-right">
+                                            <td class="px-4 py-3.5 text-right font-medium text-gray-500">
                                                 {{ $row->debit > 0 ? 'Rp ' . number_format($row->debit, 0, ',', '.') : '-' }}
                                             </td>
-                                            <td class="px-4 py-3 text-right">
+                                            <td class="px-4 py-3.5 text-right font-medium text-gray-500">
                                                 {{ $row->kredit > 0 ? 'Rp ' . number_format($row->kredit, 0, ',', '.') : '-' }}
                                             </td>
-                                            <td class="px-4 py-3 text-right font-medium">
+                                            <td class="px-4 py-3.5 text-right font-semibold text-gray-900 dark:text-white">
                                                 {{ $row->saldo < 0 ? '-Rp ' . number_format(abs($row->saldo), 0, ',', '.') : 'Rp ' . number_format($row->saldo, 0, ',', '.') }}
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr class="border-b border-gray-100 dark:border-gray-800 italic text-gray-300 dark:text-gray-600">
+                                            <td colspan="5" class="px-4 py-6 text-center text-xs">
+                                                -- Tidak ada data jurnal penyesuaian pada periode ini --
+                                            </td>
+                                        </tr>
+                                    @endforelse
+
                                 @else
                                     <tr>
-                                        <td colspan="5" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                                            Silakan pilih Akun dan Periode untuk menampilkan data.
+                                        <td colspan="5" class="px-4 py-12 text-center">
+                                            <div class="flex flex-col items-center justify-center text-gray-400">
+                                                <svg class="w-12 h-12 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                </svg>
+                                                <p class="text-sm font-medium">Silakan pilih Akun dan Periode untuk memuat data laporan</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endif
                             </tbody>
 
-                            {{-- FOOTER --}}
+                            {{-- FOOTER FINAL (Calm Grey) --}}
                             @if ($periodeAktif)
-                                <tfoot
-                                    class="sticky bottom-0 z-10 bg-gray-100 dark:bg-gray-800 font-semibold border-t-2 dark:border-gray-600">
-                                    <tr class="font-semibold text-gray-900 dark:text-white">
-                                        <td colspan="4" class="px-4 py-3 text-right uppercase tracking-wider text-xs">
-                                            Saldo Akhir
+                                <tfoot class="sticky bottom-0 z-10 bg-gray-100 dark:bg-gray-800 border-t-2 border-gray-300 dark:border-gray-600 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-4"></td>
+                                        <td class="px-4 py-4 text-right uppercase tracking-[.15em] text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                                            Saldo Akhir Jurnal (Final)
                                         </td>
-                                        <td class="px-4 py-3 text-right text-base text-blue-600 dark:text-blue-400">
-                                            {{ $saldoAkhir < 0 ? '-Rp ' . number_format(abs($saldoAkhir), 0, ',', '.') : 'Rp ' . number_format($saldoAkhir, 0, ',', '.') }}
+                                        <td class="px-4 py-4 text-right text-base font-black text-gray-900 dark:text-white">
+                                            {{ $saldoAkhirTotal < 0 ? '-Rp ' . number_format(abs($saldoAkhirTotal), 0, ',', '.') : 'Rp ' . number_format($saldoAkhirTotal, 0, ',', '.') }}
                                         </td>
                                     </tr>
                                 </tfoot>

@@ -36,7 +36,7 @@ class LaporanJurnalController extends Controller
         }
 
         $jurnals = Jurnal::posted()
-            ->where('jenis_jurnal', 'umum')
+            ->whereIn('jenis_jurnal', ['umum', 'penyesuaian'])
             // Gunakan periode_id hanya jika tidak sedang searching range tanggal
             ->when(!$tanggalStart && !$tanggalEnd && $periodeAktif, function ($q) use ($periodeAktif) {
                 $q->where('periode_id', $periodeAktif->id);
@@ -73,6 +73,7 @@ class LaporanJurnalController extends Controller
                 $rows->push((object) [
                     'jurnal_id' => $jurnal->id,
                     'nomor_jurnal' => $jurnal->nomor_jurnal,
+                    'jenis_jurnal' => $jurnal->jenis_jurnal,
                     'tanggal' => $jurnal->tanggal,
                     'ubs_abbr' => $jurnal->ubs ? $jurnal->ubs->kode_ubs : 'HUB',
                     'kode_akun' => $detail->akun->kode_akun,

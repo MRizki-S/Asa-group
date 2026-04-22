@@ -234,8 +234,15 @@
                                             <div class="font-medium text-gray-900 dark:text-gray-100">
                                                 {{ $row->tanggal->format('d-m-Y') }}
                                             </div>
-                                            <div class="text-[11px] font-mono text-gray-500 mt-0.5" title="Nomor Jurnal">
-                                                {{ $row->nomor_jurnal }}
+                                            <div class="flex items-center gap-1.5 mt-0.5">
+                                                @if ($row->jenis_jurnal == 'umum')
+                                                    <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded border border-blue-200 dark:border-blue-800 uppercase">JU</span>
+                                                @elseif($row->jenis_jurnal == 'penyesuaian')
+                                                    <span class="px-1.5 py-0.5 text-[9px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded border border-purple-200 dark:border-purple-800 uppercase">JP</span>
+                                                @endif
+                                                <div class="text-[11px] font-mono text-gray-500" title="Nomor Jurnal">
+                                                    {{ $row->nomor_jurnal }}
+                                                </div>
                                             </div>
                                             @if ($isHub)
                                                 <div class="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">
