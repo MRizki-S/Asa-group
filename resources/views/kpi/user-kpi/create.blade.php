@@ -33,7 +33,18 @@
                         <div>
                             <label class="mb-2.5 block text-sm font-medium text-gray-800 dark:text-white/90">Pilih
                                 Role</label>
-                            <select name="role_id" x-model="selectedRole" @change="fetchData()" required
+                            <select name="role_id" id="role_select" x-model="selectedRole" x-init="$nextTick(() => {
+                                $('#role_select').select2({
+                                    placeholder: '-- Pilih Role --',
+                                    allowClear: true,
+                                    width: '100%'
+                                }).on('change', function(e) {
+                                    // Update state Alpine secara manual
+                                    selectedRole = $(this).val();
+                                    // Panggil fungsi fetchData milik Alpine
+                                    fetchData();
+                                });
+                            });" required
                                 class="w-full rounded-lg border border-gray-300 bg-white dark:bg-gray-900 py-3 px-5 outline-none focus:border-blue-600 dark:border-gray-700 text-gray-700 dark:text-white/80 transition">
                                 <option value="">-- Pilih Role --</option>
                                 @foreach ($roles as $role)
@@ -265,6 +276,31 @@
 
         input[type=number] {
             -moz-appearance: textfield;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 46px !important;
+            padding: 8px 12px;
+            border-radius: 0.5rem;
+            border-color: #D1D5DB;
+            background-color: transparent;
+        }
+
+        .dark .select2-container--default .select2-selection--single {
+            border-color: #374151;
+            background-color: #111827;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 44px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #374151;
+        }
+
+        .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: rgba(255, 255, 255, 0.8);
         }
     </style>
 @endsection
