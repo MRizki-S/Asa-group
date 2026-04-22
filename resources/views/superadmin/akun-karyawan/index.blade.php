@@ -97,7 +97,7 @@
                                     </svg>
                                 </span>
                             </th>
-                            @canany(['superadmin.akun-karyawan.edit', 'superadmin.akun-karyawan.delete'])
+                            @canany(['superadmin.akun-karyawan.update', 'superadmin.akun-karyawan.delete'])
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Aksi
                             </th>

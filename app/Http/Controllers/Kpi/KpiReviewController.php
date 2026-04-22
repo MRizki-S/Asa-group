@@ -122,18 +122,19 @@ class KpiReviewController extends Controller
 
         $komponenNol = $kpiUser->details->where('skor', 0)->pluck('nama_komponen')->implode(', ');
 
-        $message = "⚠️ *REQUEST REVIEW MATERIALITAS KPI*\n\n" .
-            "Halo Bapak/Ibu Manajer, terdapat penilaian KPI karyawan yang membutuhkan review materialitas (Skor 0).\n\n" .
+        $message = "⚠️ *REQUEST REVIEW KPI*\n\n" .
+            "Halo Manager Strategi & Kepatuhan, terdapat penilaian KPI karyawan yang membutuhkan review (Skor 0).\n\n" .
             "```\n" .
             "👤 Karyawan  : {$namaKaryawan}\n" .
             "📅 Periode   : {$periode}\n" .
             "📊 Komponen  : {$komponenNol}\n" .
             "```\n\n" .
-            "Mohon segera melakukan pengecekan dan penyesuaian skor melalui dashboard sistem KPI. Terima Kasih. 🙏✨";
+            "Mohon segera melakukan pengecekan dan penyesuaian skor melalui dashboard sistem KPI. Terima kasih. 🙏";
+
 
         try {
             // $this->notificationPribadi->sendWhatsApp($manager->no_hp, $message);
-            $this->notificationPribadi->sendWhatsApp("083143952277", $message);
+            $this->notificationPribadi->sendWhatsApp("089685813512", $message);
             return back()->with('success', 'Permintaan dikirim');
         } catch (\Exception $e) {
         }
