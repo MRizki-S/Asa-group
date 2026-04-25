@@ -25,7 +25,6 @@ use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
-use App\Http\Controllers\Kpi\KpiUserController;
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AkunUserController;
