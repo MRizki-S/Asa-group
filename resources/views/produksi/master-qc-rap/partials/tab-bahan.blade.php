@@ -10,7 +10,8 @@
                 </svg>
                 <p class="text-gray-500 dark:text-gray-400 font-medium text-center">
                     Belum ada langkah QC yang ditambahkan.<br>
-                    <span class="text-xs">Silahkan tambahkan langkah QC terlebih dahulu pada tab Langkah QC.</span>
+                    <span class="text-xs">Silahkan tambahkan langkah QC terlebih dahulu pada tab
+                        Langkah QC.</span>
                 </p>
             </div>
         </template>
@@ -33,7 +34,9 @@
                         <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
                             :class="openAccordions[qIndex] ? 'rotate-180' : ''" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
+
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+
                         </svg>
                     </div>
                 </div>
@@ -44,8 +47,10 @@
                             <button type="button" @click="addBahan(qIndex)"
                                 class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 shadow-sm transition flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
+
                                 </svg>
                                 Tambah Bahan
                             </button>
@@ -68,12 +73,18 @@
                                                 :value="qIndex">
                                             <td class="px-2 py-3 w-[30%]">
                                                 <select :name="`bahan[${bIndex}][barang_id]`" x-model="bahan.barang_id"
+                                                    @change="updateBarang(bIndex, $event.target.value)"
                                                     x-select2="bahan.barang_id"
                                                     class="w-full p-2 bg-white dark:bg-gray-700 ...">
                                                     <option value="0">-- Pilih Barang --</option>
                                                     @foreach ($allBarang as $item)
-                                                        <option value="{{ $item->id }}">{{ $item->kode_barang }} -
-                                                            {{ $item->nama_barang }}
+                                                        <option value="{{ $item->id }}"
+                                                            :disabled="bahanGroups.some(b => b.urutan_idx == qIndex && b
+                                                                .barang_id == '{{ $item->id }}' && b !== bahan)"
+                                                            :class="bahanGroups.some(b => b.urutan_idx == qIndex && b
+                                                                .barang_id == '{{ $item->id }}' && b !== bahan
+                                                            ) ? 'text-gray-400' : ''">
+                                                            {{ $item->kode_barang }} - {{ $item->nama_barang }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -91,7 +102,8 @@
                                                     <template x-for="s in getAvailableSatuan(bahan.barang_id)"
                                                         :key="s.id">
                                                         <option :value="s.id" x-text="s.nama"
-                                                            :selected="s.id == bahan.satuan_id"></option>
+                                                            :selected="s.is_default || s.id == bahan.satuan_id">
+                                                            ></option>
                                                     </template>
                                                 </select>
                                             </td>
@@ -100,8 +112,10 @@
                                                     class="text-red-500 hover:text-red-700 transition">
                                                     <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
+
                                                         <path
                                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+
                                                     </svg>
                                                 </button>
                                             </td>
@@ -116,6 +130,7 @@
         </template>
     </div>
 </div>
+
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.directive('select2', (el, {
@@ -126,28 +141,44 @@
         }) => {
             const setValue = evaluateLater(expression);
 
-            $(el).select2({
-                placeholder: "-- Pilih --",
-                theme: 'bootstrap4',
-                allowClear: true,
-                width: '100%'
-            }).on('change', function() {
-                let value = $(this).val();
-                Alpine.evaluate(el, `${expression} = '${value}'`);
+            const initS2 = () => {
+                $(el).select2({
+                    placeholder: "-- Pilih --",
+                    theme: 'bootstrap4',
+                    allowClear: true,
+                    width: '100%',
+                    templateResult: function(data) {
+                        if (!data.id || data.id === '0') return data.text;
+
+                        if (data.element && data.element.disabled) {
+                            return $(
+                                '<span style="color: #a1a1aa; text-decoration: line-through; cursor: not-allowed;">' +
+                                data.text + ' (Terpilih)</span>');
+                        }
+                        return data.text;
+                    }
+                }).on('change', function() {
+                    Alpine.evaluate(el, `${expression} = '${$(this).val()}'`);
+                });
+            };
+
+            initS2();
+
+            $(el).on('select2:opening', function() {
+                const valSebelumnya = $(el).val();
+                $(el).select2('destroy');
+                initS2();
+                $(el).val(valSebelumnya).trigger('change.select2');
             });
 
-            const observer = new MutationObserver(() => {
-                $(el).trigger('change.select2');
-            });
-            observer.observe(el, {
-                childList: true
-            });
-
-            const watcher = Alpine.watch(() => el._x_model ? el._x_model.get() : null, (val) => {
-                $(el).val(val).trigger('change.select2');
+            Alpine.watch(() => el._x_model ? el._x_model.get() : null, (val) => {
+                if ($(el).val() !== val) {
+                    $(el).val(val).trigger('change.select2');
+                }
             });
 
             cleanup(() => {
+                $(el).off('select2:opening');
                 $(el).select2('destroy');
             });
         });

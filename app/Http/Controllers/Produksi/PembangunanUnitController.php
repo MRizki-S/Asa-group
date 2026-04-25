@@ -225,7 +225,8 @@ class PembangunanUnitController extends Controller
                         return [
                             'id' => $konv->satuan_id,
                             'nama' => $konv->satuan->nama,
-                            'faktor' => $konv->konversi_ke_base
+                            'faktor' => $konv->konversi_ke_base,
+                            'is_default' => (bool) $konv->is_default
                         ];
                     })
                 ];

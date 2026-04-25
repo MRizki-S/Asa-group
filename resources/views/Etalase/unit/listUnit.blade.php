@@ -196,7 +196,7 @@
                                     </svg>
                                 </span>
                             </th>
-                               @can('etalase.unit.detail')
+                            @can('etalase.unit.detail')
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Pembangunan
                                 </th>
@@ -232,8 +232,10 @@
                                             $item->status_unit === 'booked',
                                         'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-100' =>
                                             $item->status_unit === 'sold',
+                                        'bg-blue-100 text-blue-700 dark:bg-blue-600 dark:text-blue-100' =>
+                                            $item->status_unit === 'under_construction',
                                     ])>
-                                        {{ ucfirst($item->status_unit) }}
+                                        {{ str_replace('_', ' ', ucwords($item->status_unit)) }}
                                     </span>
                                 </td>
 
@@ -241,19 +243,23 @@
                                     Rp {{ number_format($item->harga_final, 0, ',', '.') }}
                                 </td>
                                 @can('etalase.unit.detail')
-                                <td>
-                                    <button type="button"
-                                        class="btn-ajukan-pembangunan w-full inline-flex justify-center items-center gap-1
-                                        text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200
-                                        dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700
-                                        px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95"
-                                        data-unit-id="{{ $item->id }}"
-                                        data-perumahaan-id="{{ $perumahaan->id }}"
-                                        data-tahap-id="{{ $item->tahap_id }}"
-                                        data-nama-unit="{{ $item->nama_unit }}">
-                                        Ajukan
-                                    </button>
-                                </td>
+                                    <td>
+                                        @if ($item->status_unit != 'under_construction')
+                                            <button type="button"
+                                                class="btn-ajukan-pembangunan w-full inline-flex justify-center items-center gap-1
+                                            text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200
+                                            dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700
+                                            px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95"
+                                                data-unit-id="{{ $item->id }}"
+                                                data-perumahaan-id="{{ $perumahaan->id }}"
+                                                data-tahap-id="{{ $item->tahap_id }}"
+                                                data-nama-unit="{{ $item->nama_unit }}">
+                                                Ajukan
+                                            </button>
+                                        @else
+                                            Diajukan
+                                        @endif
+                                    </td>
                                 @endcan
                                 <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                     @can('etalase.unit.detail')
@@ -308,7 +314,8 @@
     </div>
 
     {{-- Form pengajuan pembangunan --}}
-    <form id="form-pengajuan-pembangunan" action="{{ route('produksi.pengajuanPembangunanUnit.store') }}" method="POST" style="display: none;">
+    <form id="form-pengajuan-pembangunan" action="{{ route('produksi.pengajuanPembangunanUnit.store') }}" method="POST"
+        style="display: none;">
         @csrf
         <input type="hidden" name="unit_id" id="input-unit-id">
         <input type="hidden" name="perumahaan_id" id="input-perumahaan-id">

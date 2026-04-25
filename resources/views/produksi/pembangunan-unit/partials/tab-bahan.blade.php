@@ -133,20 +133,32 @@
                                                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                                                             @foreach ($order->details as $det)
                                                                 @php
-                                                                    $isOver =
-                                                                        $det->jumlah_input >
-                                                                        ($det->rapBahan->jumlah_standar ?? 0);
+                                                                    // 1. Ambil jumlah base dari pengajuan (sudah hasil kali jumlah_input * faktor)
+                                                                    $baseOrder = (float) $det->jumlah_base;
+
+                                                                    // 2. Hitung jumlah base dari RAP asli (jumlah_standar * faktor_konversi RAP)
+                                                                    $standarRap =
+                                                                        (float) ($det->rapBahan->jumlah_standar ?? 0);
+                                                                    $faktorRap =
+                                                                        (float) ($det->rapBahan->faktor_konversi ?? 1);
+                                                                    $baseRap = $standarRap * $faktorRap;
+
+                                                                    // 3. Bandingkan base vs base (misal: 112 Pcs vs 112 Pcs)
+                                                                    // Kita beri toleransi sedikit (epsilon) untuk menghindari isu floating point
+                                                                    $isOver = $baseOrder - $baseRap > 0.001;
+
                                                                     $isRap = (bool) $det->rapBahan;
                                                                     $isReturned = $det->jumlah_return > 0;
                                                                 @endphp
+
                                                                 <tr
                                                                     class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                                                                     <td class="px-3 py-3">
                                                                         <p
                                                                             class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
-                                                                            {{ $det->nama_barang ?? '-' }}</p>
-
-                                                                        {{-- Informasi Retur per Item --}}
+                                                                            {{ $det->nama_barang ?? '-' }}
+                                                                        </p>
+                                                                        {{-- Badge Retur & Alasan --}}
                                                                         @if ($isReturned)
                                                                             <div
                                                                                 class="mt-2 p-2 bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 rounded-lg">
@@ -158,15 +170,8 @@
                                                                                     {{ (float) $det->jumlah_return }}
                                                                                     {{ $det->satuan }}
                                                                                 </p>
-                                                                                @if ($det->keterangan_return)
-                                                                                    <p
-                                                                                        class="text-[9px] text-gray-500 dark:text-gray-400 italic mt-1 font-medium">
-                                                                                        "{{ $det->keterangan_return }}"
-                                                                                    </p>
-                                                                                @endif
                                                                             </div>
                                                                         @endif
-
                                                                         @if ($det->alasan_permintaan_tidak_sesuai_rap)
                                                                             <p
                                                                                 class="text-[9px] text-red-500 italic mt-1">
@@ -182,6 +187,7 @@
                                                                                 {{ (float) $det->jumlah_input }} <span
                                                                                     class="text-[9px] font-medium text-gray-400">{{ $det->satuan }}</span>
                                                                             </p>
+
                                                                             <div
                                                                                 class="flex flex-wrap justify-end gap-1 mt-1">
                                                                                 @if ($isOver && $det->rap_bahan_id != null)

@@ -3,7 +3,7 @@
     x-transition:enter-end="opacity-100">
 
     <div @click.away="openRequest = false"
-        class="relative w-full transition-all duration-300 p-4 flex flex-col max-h-[95vh]"
+        class="relative w-full transition-all duration-300 p-4 flex flex-col h-[95vh] max-h-[95vh]"
         :class="showAdditional ? 'max-w-4xl' : 'max-w-xl'">
 
         <div
@@ -39,7 +39,7 @@
                     <div class="grid grid-cols-1 gap-6 transition-all duration-300"
                         :class="showAdditional ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
 
-                        <div class="space-y-3" :class="showAdditional ? 'border-r pr-4' : ''">
+                        <div class="md:space-y-3" :class="showAdditional ? 'md:border-r md:pr-4' : ''">
                             <div
                                 class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl">
                                 <label class="flex items-center gap-2 cursor-pointer group">
@@ -72,16 +72,42 @@
                                                     <span class="text-[10px] font-bold text-blue-600 font-mono"
                                                         x-text="'RAP: ' + Number(item.jumlah_standar).toLocaleString('id-ID') + ' ' + item.satuan"></span>
                                                 </div>
-                                                <div x-show="item.checked" x-collapse>
-                                                    <label
-                                                        class="block text-[9px] font-black text-gray-400 uppercase mb-1">Jumlah
-                                                        Request</label>
-                                                    <input type="number" step="0.001"
-                                                        x-model.number="item.jumlah_input"
-                                                        class="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500/20 outline-none">
-                                                    <textarea x-model="item.alasan" x-show="parseFloat(item.jumlah_input) > parseFloat(item.jumlah_standar)"
-                                                        placeholder="Alasan melebihi RAP..."
-                                                        class="w-full mt-2 p-2 text-[11px] border border-red-200 rounded-lg bg-red-50/50 outline-none"></textarea>
+                                                <div x-show="item.checked" x-collapse class="mt-3 space-y-3">
+                                                    <div class="grid grid-cols-2 gap-3">
+                                                        <div>
+                                                            <label
+                                                                class="block text-[9px] font-black text-gray-400 uppercase mb-1">Jumlah
+                                                                Order</label>
+                                                            <input type="number" step="0.001"
+                                                                x-model.number="item.jumlah_input"
+                                                                class="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-[9px] font-black text-gray-400 uppercase mb-1">Satuan</label>
+                                                            <select :value="item.satuan_id"
+                                                                @change="changeSatuanOrder(item, $event.target.value)"
+                                                                class="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none">
+                                                                <template
+                                                                    x-for="s in getAvailableSatuan(item.barang_id)"
+                                                                    :key="item.barang_id + '-' + s.id">
+                                                                    <option :value="s.id" x-text="s.nama"
+                                                                        :selected="s.id == item.satuan_id"></option>
+                                                                </template>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <template
+                                                        x-if="parseFloat(item.jumlah_input) > parseFloat(item.jumlah_standar)">
+                                                        <div class="animate-in fade-in slide-in-from-top-1">
+                                                            <label
+                                                                class="block text-[9px] font-black text-red-500 uppercase mb-1">Alasan
+                                                                Melebihi RAP</label>
+                                                            <textarea x-model="item.alasan" placeholder="Wajib diisi karena order melebihi jatah RAP..."
+                                                                class="w-full p-2 text-[11px] border border-red-200 rounded-lg bg-red-50/50 outline-none focus:ring-1 focus:ring-red-300"></textarea>
+                                                        </div>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>
@@ -94,41 +120,58 @@
                             <div
                                 class="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-xl">
                                 <span class="text-[11px] font-black text-blue-600 uppercase tracking-widest">Barang
-                                    Tambahan</span>
-                                <button type="button" @click="addAdditionalItem()"
-                                    class="text-[10px] font-bold px-3 py-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow-sm">+
-                                    TAMBAH BARIS</button>
+                                    Tambahan (Luar RAP)</span>
+                                <button type="button"
+                                    @click="addAdditionalItem(); $nextTick(() => initSelect2(itemsAdditional.length - 1))"
+                                    class="text-[10px] font-bold px-3 py-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow-sm">
+                                    + TAMBAH BARIS
+                                </button>
                             </div>
 
                             <div class="space-y-3">
                                 <template x-for="(extra, eIdx) in itemsAdditional" :key="eIdx">
                                     <div class="p-4 border border-blue-100 bg-white rounded-xl relative shadow-sm">
                                         <button type="button" @click="removeAdditionalItem(eIdx)"
-                                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+                                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10">×</button>
+
                                         <div class="space-y-3">
-                                            <select x-model="extra.barang_id" @change="updateBarangDetail(eIdx)"
-                                                class="w-full text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
-                                                <option value="0">-- Pilih Barang --</option>
-                                                <template
-                                                    x-for="b in allBarang.filter(item => filterType === 'stock' ? item.is_stock : !item.is_stock)"
-                                                    :key="b.id">
-                                                    <option :value="b.id"
-                                                        x-text="b.kode_barang + ' - ' + b.nama_barang"></option>
-                                                </template>
-                                            </select>
+                                            <div class="space-y-1">
+                                                <label class="block text-[9px] font-black text-gray-400 uppercase">Cari
+                                                    Barang</label>
+                                                <div wire:ignore class="relative">
+                                                    <select :id="'barang-select-' + eIdx" x-init="initSelect2(eIdx)"
+                                                        class="w-full">
+                                                        <option value="0">-- Pilih Barang --</option>
+                                                        <template x-for="b in getFilteredBarang(eIdx)"
+                                                            :key="b.id">
+                                                            <option :value="b.id"
+                                                                x-text="b.kode_barang + ' - ' + b.nama_barang"></option>
+                                                        </template>
+                                                    </select>
+                                                </div>
+                                            </div>
+
                                             <div class="grid grid-cols-2 gap-2">
-                                                <input type="number" step="0.001" x-model.number="extra.jumlah_input"
-                                                    placeholder="Jumlah"
-                                                    class="text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
-                                                <select x-model="extra.satuan_id"
-                                                    @change="const s = getAvailableSatuan(extra.barang_id).find(opt => opt.id == $el.value); extra.satuan = s ? s.nama : ''; extra.faktor_konversi = s ? s.faktor : 1"
-                                                    class="text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
-                                                    <option value="">Satuan</option>
-                                                    <template x-for="s in getAvailableSatuan(extra.barang_id)"
-                                                        :key="extra.barang_id + '-' + s.id">
-                                                        <option :value="s.id" x-text="s.nama"></option>
-                                                    </template>
-                                                </select>
+                                                <div>
+                                                    <label
+                                                        class="block text-[9px] font-black text-gray-400 uppercase mb-1">Jumlah</label>
+                                                    <input type="number" step="0.001"
+                                                        x-model.number="extra.jumlah_input"
+                                                        class="w-full text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-[9px] font-black text-gray-400 uppercase mb-1">Satuan</label>
+                                                    <select x-model="extra.satuan_id"
+                                                        @change="const s = getAvailableSatuan(extra.barang_id).find(opt => opt.id == $el.value); extra.satuan = s ? s.nama : ''; extra.faktor_konversi = s ? s.faktor : 1"
+                                                        class="w-full text-xs p-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
+                                                        <template x-for="s in getAvailableSatuan(extra.barang_id)"
+                                                            :key="extra.barang_id + '-' + s.id">
+                                                            <option :value="s.id" x-text="s.nama"
+                                                                :selected="s.id == extra.satuan_id"></option>
+                                                        </template>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -179,3 +222,13 @@
         </div>
     </div>
 </div>
+
+<style>
+    .select2-container--default .select2-selection--single {
+        border-color: #e5e7eb !important;
+        border-radius: 0.5rem !important;
+        height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+</style>

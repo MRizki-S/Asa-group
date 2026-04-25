@@ -160,7 +160,7 @@ class UsersMarketingSystemSeeder extends Seeder
                     'tanggal_expired' => null,
                 ],
             ],
-            
+
 
             // ================= PERUMAHAAAN LHR (ID:2) =================
             [

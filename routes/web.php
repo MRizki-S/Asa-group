@@ -532,3 +532,8 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 });
 
 Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
+
+Route::middleware('auth')->prefix('superadmin')->group(function () {
+    Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
+    Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
+});
