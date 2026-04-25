@@ -17,6 +17,7 @@ use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\StockBarangController;
+
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Keuangan\BukuBesarController;
 use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
@@ -229,7 +230,7 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         ->name('marketing.pengajuan-pembatalan.listPengajuan');
     Route::get('/pengajuan-pembatalan/{id}', [PengajuanPembatalanController::class, 'show'])
         ->name('marketing.pengajuan-pembatalan.show');
-    // 🔹 Route Keputusan Project Manager
+    // 🔹 Route Keputusan Proyek Manager
     Route::patch('/pengajuan-pembatalan/{id}/keputusan-pemasaran', [PengajuanPembatalanController::class, 'keputusanProjectManager'])
         ->name('marketing.pengajuan-pembatalan.keputusan-pemasaran');
     // 🔹 Route Keputusan Manager Keuangan (nanti kita isi belakangan)
@@ -501,16 +502,6 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
 });
 
 
-// Superadmin Menu
-Route::middleware('auth')->prefix('superadmin')->group(function () {
-    // role dan hak akses
-    Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
-
-    // akun karyawan
-    Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
-});
-
-
 // Produksi
 Route::middleware('auth')->prefix('produksi')->group(function () {
     Route::resource('master-qc-rap', MasterQcRapController::class)->names('produksi.masterQcRap');
@@ -540,3 +531,8 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 });
 
 Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
+
+Route::middleware('auth')->prefix('superadmin')->group(function () {
+    Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
+    Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
+});

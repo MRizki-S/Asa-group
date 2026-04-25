@@ -68,10 +68,15 @@
                                             <td class="px-2 py-3 w-[40%]">
                                                 <select :name="`upah[${uIndex}][master_upah_id]`"
                                                     x-model="upah.master_upah_id" x-select2="upah.master_upah_id"
-                                                    class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg">
+                                                    class="w-full p-2 bg-white dark:bg-gray-700 ...">
                                                     <option value="">-- Pilih --</option>
                                                     @foreach ($allUpah ?? [] as $u)
-                                                        <option value="{{ $u->id }}">{{ $u->nama_upah }}</option>
+                                                        <option value="{{ $u->id }}" {{-- Logic: Jika ID upah ini sudah ada di upahGroups (tapi bukan baris ini sendiri), maka disable --}}
+                                                            :disabled="upahGroups.some(up => up.urutan_idx == qIndex && String(up
+                                                                    .master_upah_id) === '{{ $u->id }}' &&
+                                                                up !== upah)">
+                                                            {{ $u->nama_upah }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </td>
@@ -105,7 +110,6 @@
         </template>
     </div>
 </div>
-
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.directive('select2', (el, {
@@ -114,23 +118,36 @@
             evaluateLater,
             cleanup
         }) => {
-            const setValue = evaluateLater(expression);
 
             $(el).select2({
                 placeholder: "-- Pilih --",
                 theme: 'bootstrap4',
                 allowClear: true,
-                width: '100%'
+                width: '100%',
+                templateResult: function(data) {
+                    if (data.element && data.element.disabled) {
+                        return $(
+                            '<span style="color: #a1a1aa; text-decoration: line-through;">' +
+                            data.text + ' (Terpilih)</span>');
+                    }
+                    return data.text;
+                }
             }).on('change', function() {
-                let value = $(this).val();
-                Alpine.evaluate(el, `${expression} = '${value}'`);
+                Alpine.evaluate(el, `${expression} = '${$(this).val()}'`);
+            });
+
+            $(el).on('select2:opening', function() {
+                $(el).trigger('change.select2');
             });
 
             const watcher = Alpine.watch(() => el._x_model ? el._x_model.get() : null, (val) => {
-                $(el).val(val).trigger('change.select2');
+                if ($(el).val() !== val) {
+                    $(el).val(val).trigger('change.select2');
+                }
             });
 
             cleanup(() => {
+                $(el).off('select2:opening');
                 $(el).select2('destroy');
             });
         });

@@ -20,16 +20,15 @@ return new class extends Migration
             $table->string('nama_unit');
             $table->string('slug')->unique();
             $table->enum('kualifikasi_dasar', ['standar', 'kelebihan_tanah'])
-                            ->default('standar');
+                ->default('standar');
             $table->string('luas_kelebihan', 50)->nullable();
             $table->decimal('nominal_kelebihan', 15, 2)->nullable();
             $table->foreignId('tahap_kualifikasi_id')->nullable()->constrained('tahap_kualifikasi')->onDelete('set null');
-            $table->enum('status_unit', ['available', 'booked', 'sold'])->default('available');
+            $table->enum('status_unit', ['available', 'booked', 'sold', 'under_construction'])->default('available');
             $table->decimal('harga_final', 15, 2);
             $table->decimal('harga_jual', 15, 2)->nullable();
             $table->timestamps();
         });
-
     }
 
     /**

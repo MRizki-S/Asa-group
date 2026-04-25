@@ -31,7 +31,7 @@
             </div>
         @endif
 
-        <form action="{{ route('produksi.masterQcRap.store') }}" method="POST">
+        <form action="{{ route('produksi.masterQcRap.store') }}" method="POST" @submit="isSubmitting = true">
             @csrf
 
             {{-- Card Informasi Utama --}}
@@ -128,9 +128,22 @@
                         class="px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm">
                         Batal
                     </button>
-                    <button type="submit"
-                        class="px-10 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg">
-                        Simpan Master QC & RAP
+                    <button type="submit" :disabled="isSubmitting"
+                        :class="isSubmitting ? 'opacity-70 cursor-not-allowed bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'"
+                        class="px-10 py-2.5 text-sm font-medium text-white rounded-lg shadow-lg flex items-center gap-2 transition-all">
+
+                        <template x-if="isSubmitting">
+                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </template>
+
+                        <span x-text="isSubmitting ? 'Sedang Menyimpan...' : 'Simpan Master QC & RAP'"></span>
                     </button>
                 </div>
             </div>
@@ -147,6 +160,7 @@
                 upahGroups: [],
                 openAccordions: {},
                 allBarang: @json($allBarang),
+                isSubmitting: false,
 
                 getAvailableSatuan(barangId) {
                     if (!barangId || barangId == 0) return [];
@@ -155,7 +169,8 @@
                     if (barang && barang.satuan_konversi) {
                         return barang.satuan_konversi.map(k => ({
                             id: k.satuan_id,
-                            nama: k.satuan ? k.satuan.nama : 'N/A'
+                            nama: k.satuan ? k.satuan.nama : 'N/A',
+                            is_default: k.is_default
                         }));
                     }
                     return [];
@@ -163,10 +178,18 @@
 
                 updateBarang(bIndex, newBarangId) {
                     this.bahanGroups[bIndex].barang_id = newBarangId;
-                    this.bahanGroups[bIndex].satuan_id = 0;
+
+                    const availableSatuans = this.getAvailableSatuan(newBarangId);
+                    const defaultSatuan = availableSatuans.find(s => s.is_default == true || s.is_default == 1);
+
+                    if (defaultSatuan) {
+                        this.bahanGroups[bIndex].satuan_id = defaultSatuan.id;
+                    } else {
+                        this.bahanGroups[bIndex].satuan_id = '';
+                    }
+
                     this.$nextTick(() => {
-                        const selectSatuan = $(`select[name="bahan[${bIndex}][satuan_id]"]`);
-                        selectSatuan.val(0).trigger('change');
+                        $(`select[name="bahan[${bIndex}][satuan_id]"]`).trigger('change.select2');
                     });
                 },
 
@@ -259,9 +282,9 @@
                 addBahan(indexQC) {
                     this.bahanGroups.push({
                         urutan_idx: indexQC,
-                        barang_id: '',
+                        barang_id: '0',
                         jumlah_kebutuhan_standar: 0,
-                        satuan_id: ''
+                        satuan_id: '0'
                     });
                     this.openAccordions[indexQC] = true;
                 },
@@ -282,7 +305,7 @@
                 addUpah(indexQC) {
                     this.upahGroups.push({
                         urutan_idx: indexQC,
-                        master_upah_id: '',
+                        master_upah_id: '0',
                         nominal_standar: 0
                     });
                     this.openAccordions[indexQC] = true;
@@ -290,7 +313,7 @@
 
                 removeUpah(index) {
                     this.upahGroups.splice(index, 1);
-                }
+                },
             }
         }
     </script>

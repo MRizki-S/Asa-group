@@ -20,6 +20,7 @@ use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 class TestingSeeder extends Seeder
@@ -114,16 +115,69 @@ class TestingSeeder extends Seeder
             'tugas' => 'keterangan tugas'
         ]);
 
-        MasterSatuan::create([
-            'nama' => 'pcs'
-        ]);
+        $satuan = [
+            ['nama' => 'pcs'],
+            ['nama' => 'sak'],
+            ['nama' => 'm3'],
+            ['nama' => 'batang'],
+            ['nama' => 'kg'],
+            ['nama' => 'roll'],
+            ['nama' => 'dus'],
+        ];
 
-        MasterBarang::create([
-            'kode_barang' => 'BRG-001',
-            'nama_barang' => 'Keramik',
-            'base_unit_id' => 1,
-            'is_stock' => true
-        ]);
+        foreach ($satuan as $s) {
+            DB::table('master_satuan')->insert(array_merge($s, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
+        }
+
+        $materials = [
+            ['kode' => 'MTR-001', 'nama' => 'Semen Gresik 40kg', 'unit' => 'sak', 'is_stock' => 1],
+            ['kode' => 'MTR-002', 'nama' => 'Pasir Pasang', 'unit' => 'm3', 'is_stock' => 1],
+            ['kode' => 'MTR-003', 'nama' => 'Batu Bata Merah', 'unit' => 'pcs', 'is_stock' => 1],
+            ['kode' => 'MTR-004', 'nama' => 'Besi Beton 10mm', 'unit' => 'batang', 'is_stock' => 1],
+            ['kode' => 'MTR-005', 'nama' => 'Keramik Lantai 40x40', 'unit' => 'dus', 'is_stock' => 1],
+            ['kode' => 'MTR-006', 'nama' => 'Cat Tembok Putih 5kg', 'unit' => 'pcs', 'is_stock' => 1],
+            ['kode' => 'MTR-007', 'nama' => 'Kabel Listrik Nym 2x1.5', 'unit' => 'roll', 'is_stock' => 1],
+            ['kode' => 'MTR-008', 'nama' => 'Paku Kayu 5cm', 'unit' => 'kg', 'is_stock' => 1],
+        ];
+
+        foreach ($materials as $m) {
+            // 1. Ambil ID Satuan berdasarkan nama
+            $satuanId = DB::table('master_satuan')->where('nama', $m['unit'])->value('id');
+
+            // 2. Insert ke master_barang
+            $barangId = DB::table('master_barang')->insertGetId([
+                'kode_barang' => $m['kode'],
+                'nama_barang' => $m['nama'],
+                'base_unit_id' => $satuanId,
+                'is_stock' => $m['is_stock'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // 3. Insert ke barang_satuan_konversi (Set sebagai Default)
+            DB::table('barang_satuan_konversi')->insert([
+                'barang_id' => $barangId,
+                'satuan_id' => $satuanId,
+                'konversi_ke_base' => 1.000,
+                'is_default' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // 4. Insert ke stock_gudang (Inisialisasi stok 0)
+            DB::table('stock_gudang')->insert([
+                'barang_id' => $barangId,
+                'stock_type' => 'UBS', // Mengikuti contoh data kamu
+                'ubs_id' => 1,
+                'jumlah_stock' => 0.00,
+                'minimal_stock' => 10.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         MasterRapBahan::create([
             'type_id' => 1,

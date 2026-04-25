@@ -175,7 +175,8 @@
                     if (barang && barang.satuan_konversi) {
                         return barang.satuan_konversi.map(k => ({
                             id: k.satuan_id,
-                            nama: k.satuan ? k.satuan.nama : 'N/A'
+                            nama: k.satuan ? k.satuan.nama : 'N/A',
+                            is_default: k.is_default
                         }));
                     }
                     return [];
@@ -183,10 +184,18 @@
 
                 updateBarang(bIndex, newBarangId) {
                     this.bahanGroups[bIndex].barang_id = newBarangId;
-                    this.bahanGroups[bIndex].satuan_id = 0;
+
+                    const availableSatuans = this.getAvailableSatuan(newBarangId);
+                    const defaultSatuan = availableSatuans.find(s => s.is_default == true || s.is_default == 1);
+
+                    if (defaultSatuan) {
+                        this.bahanGroups[bIndex].satuan_id = defaultSatuan.id;
+                    } else {
+                        this.bahanGroups[bIndex].satuan_id = '';
+                    }
+
                     this.$nextTick(() => {
-                        const selectSatuan = $(`select[name="bahan[${bIndex}][satuan_id]"]`);
-                        selectSatuan.val(0).trigger('change');
+                        $(`select[name="bahan[${bIndex}][satuan_id]"]`).trigger('change.select2');
                     });
                 },
 
@@ -241,9 +250,9 @@
                 addBahan(indexQC) {
                     this.bahanGroups.push({
                         urutan_idx: indexQC,
-                        barang_id: '',
+                        barang_id: '0',
                         jumlah_kebutuhan_standar: 0,
-                        satuan_id: ''
+                        satuan_id: '0'
                     });
                     this.openAccordions[indexQC] = true;
                 },
@@ -264,7 +273,7 @@
                 addUpah(indexQC) {
                     this.upahGroups.push({
                         urutan_idx: indexQC,
-                        master_upah_id: '',
+                        master_upah_id: '0',
                         nominal_standar: 0
                     });
                     this.openAccordions[indexQC] = true;

@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -24,6 +25,7 @@ use Database\Seeders\users\UsersKeuanganSystemSeeder;
 use Database\Seeders\users\UsersMarketingSystemSeeder;
 use Illuminate\Database\Seeder;
 
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -40,7 +42,8 @@ class DatabaseSeeder extends Seeder
             SuperadminMenuPermissionSeeder::class,
 
             // Keuangan Sistem
-            KeuanganPermissionPart1::class
+            KeuanganPermissionPart1::class,
+
         ]);
 
         // Role >> Assign permission (Saat ini masih selesai di marketing sistem)
@@ -56,7 +59,8 @@ class DatabaseSeeder extends Seeder
             MarketingRoleSeeder::class,
 
             // Keuangan
-            StaffAkuntansiRoleSeeder::class
+            StaffAkuntansiRoleSeeder::class,
+
         ]);
 
         // 3. Master Data
@@ -67,7 +71,7 @@ class DatabaseSeeder extends Seeder
             MasterPerumahaanSeeder::class,
             MasterBankSeeder::class,
             MasterKprDokumenSeeder::class,
-            
+
             // Master Data Keuangan
             KategoriAkunKeuanganSeeder::class,
             AkunKeuanganSeeder::class,
@@ -79,7 +83,8 @@ class DatabaseSeeder extends Seeder
             UsersMarketingSystemSeeder::class,
 
             // User Keuangan Sistem
-            UsersKeuanganSystemSeeder::class
+            UsersKeuanganSystemSeeder::class,
+
         ]);
 
         $this->call([

@@ -7,6 +7,7 @@ use App\Models\MasterQcContainer;
 use App\Models\PembangunanUnit;
 use App\Models\PengajuanPembangunanUnit;
 use App\Models\Perumahaan;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
@@ -125,11 +126,16 @@ class PengajuanPembangunanUnitController extends Controller
                 'tanggal_diajukan' => now(),
             ]);
 
+            $unit = Unit::find($validated['unit_id']);
+            $unit->update([
+                'status_unit' => 'under_construction'
+            ]);
+
             DB::commit();
 
             $this->sendGroupMessage($pembangunan);
 
-            return redirect()->route('produksi.pengajuanPembangunanUnit.index')->with('success', 'Data Pengajuan Pembangunan Unit berhasil ditambahkan!');
+            return redirect()->back()->with('success', 'Data Pengajuan Pembangunan Unit berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()

@@ -16,7 +16,7 @@ class ProjectManagerRoleSeeder extends Seeder
 
             // Role
             $role = Role::firstOrCreate([
-                'name' => 'Project Manager',
+                'name' => 'Proyek Manager',
                 'guard_name' => 'web',
             ]);
 
@@ -108,7 +108,7 @@ class ProjectManagerRoleSeeder extends Seeder
 
             if ($missing->isNotEmpty()) {
                 throw new Exception(
-                    'Seeder Project Manager GAGAL. Permission belum terdaftar: ' .
+                    'Seeder Proyek Manager GAGAL. Permission belum terdaftar: ' .
                     $missing->implode(', ')
                 );
             }
