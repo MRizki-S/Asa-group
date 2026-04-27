@@ -133,7 +133,7 @@ class PengajuanPembangunanUnitController extends Controller
 
             DB::commit();
 
-            $this->sendGroupMessage($pembangunan);
+            // $this->sendGroupMessage($pembangunan);
 
             return redirect()->back()->with('success', 'Data Pengajuan Pembangunan Unit berhasil ditambahkan!');
         } catch (\Exception $e) {

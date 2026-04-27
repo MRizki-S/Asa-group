@@ -195,7 +195,7 @@ class PembangunanUnitController extends Controller
 
             DB::commit();
 
-            $this->sendAcceptNotification($pembangunan);
+            // $this->sendAcceptNotification($pembangunan);
 
             return redirect()->route('produksi.pembangunanUnit.index')->with('success', 'Data Pengajuan Pembangunan Unit berhasil diassign!');
         } catch (\Exception $e) {
