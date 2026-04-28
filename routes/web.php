@@ -18,6 +18,8 @@ use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\StockBarangController;
 
+use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
+use App\Http\Controllers\Gudang\TransferStockBarangController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Keuangan\BukuBesarController;
 use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
@@ -438,8 +440,21 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
 Route::middleware('auth')->prefix('gudang')->group(function () {
 
     // Stock Barang
-    Route::get('/stock-barang', [StockBarangController::class, 'stockIndex'])
+    Route::get('/stok-barang', [StockBarangController::class, 'stockIndex'])
         ->name('gudang.stockBarang.index');
+    Route::get('/stok-barang/export-pdf', [StockBarangController::class, 'exportPdf'])->name('gudang.stockBarang.exportPdf');
+    Route::get('/stok-barang/export-excel', [StockBarangController::class, 'exportExcel'])->name('gudang.stockBarang.exportExcel');
+    // Transfer Stock Barang
+    Route::get('/transfer-stock-barang', [TransferStockBarangController::class, 'create'])->name('gudang.transferStockBarang.create');
+    Route::post('/transfer-stock-barang/store', [TransferStockBarangController::class, 'store'])->name('gudang.transferStockBarang.store');
+    Route::get('/transfer-stock-barang/satuan-dan-stok/{barangId}', [TransferStockBarangController::class, 'getSatuanDanStok']);
+    // Riwayat Transfer stock gudang
+    Route::get('/riwayat-transfer-stock', [TransferStockBarangController::class, 'riwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock');
+    Route::get('/riwayat-transfer-stock/{nomorTransfer}', [TransferStockBarangController::class, 'showRiwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock.show');
+    // Tranfer penyesuain stok ubs 
+    Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');
+    Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
+    Route::get('/transfer-stock-penyesuain/stok/{barangId}/{ubsId}', [TransferPenyesuainStockController::class, 'getStokBarangUbsHub']);
 
     // Master satuan barang controller
     Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');

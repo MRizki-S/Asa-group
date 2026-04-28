@@ -19,6 +19,7 @@ class NotaBarangMasukDetail extends Model
         'satuan_id',
         'jumlah_base',
         'harga_satuan',
+        'harga_satuan_base',
         'harga_total',
         'jumlah_sisa'
     ];
