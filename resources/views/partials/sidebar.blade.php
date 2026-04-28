@@ -1334,7 +1334,7 @@
             <!-- Gudang -  Group -->
 
 
-            @can('akses-produksi')
+            {{-- @can('akses-produksi') --}}
             <!-- Master Produksi RAP -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
@@ -1485,7 +1485,7 @@
                     <!-- Menu Item Pembangunan Unit-->
                 </ul>
             </div>
-            @endcan
+            {{-- @endcan --}}
 
             <!-- Superadmin -  Group -->
             @canany(['superadmin.role.read', 'superadmin.akun-karyawan.read'])

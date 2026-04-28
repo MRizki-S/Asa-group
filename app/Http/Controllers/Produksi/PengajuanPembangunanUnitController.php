@@ -42,7 +42,7 @@ class PengajuanPembangunanUnitController extends Controller
             ->latest()
             ->get();
 
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Proyek')->orderBy('nama_lengkap', 'asc')->get();
+        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
 
         $allQcContainer = MasterQcContainer::all();
 
@@ -161,7 +161,7 @@ class PengajuanPembangunanUnitController extends Controller
         $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
 
         $allPerumahaan = Perumahaan::select('id', 'nama_perumahaan', 'slug')->get();
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Proyek')->orderBy('nama_lengkap', 'asc')->get();
+        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
         $allQcContainer = MasterQcContainer::select('id', 'nama_container')->get();
 
         return view('Produksi.pengajuan-pembangunan.edit', [

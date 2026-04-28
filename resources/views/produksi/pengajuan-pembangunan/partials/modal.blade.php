@@ -6,7 +6,7 @@
     <div class="relative w-full max-w-md p-4">
         <div class="bg-white rounded-xl shadow-2xl dark:bg-gray-800">
             <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Assign Pengawas Proyek</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Assign Pengawas Unit</h3>
                 <button type="button" @click="closeModal()" class="text-gray-400 hover:text-gray-900">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -27,7 +27,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Pengawas Proyek</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Pengawas Unit</label>
                         <select name="pengawas_id" required id="selectPengawas"
                             class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-all">
                             <option value="">-- Pilih Pengawas --</option>

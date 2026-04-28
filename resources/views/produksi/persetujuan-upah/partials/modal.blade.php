@@ -28,7 +28,7 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Pengawas Proyek</label>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Pengawas Unit</label>
                         <p class="text-sm font-semibold text-gray-700 dark:text-gray-200"
                             x-text="selectedItem?.pengawas"></p>
                     </div>
