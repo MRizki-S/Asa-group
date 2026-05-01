@@ -61,29 +61,20 @@ class PermintaanDibangunController extends Controller
 
     public function sendGroupMessage($pembangunan)
     {
-        // Eager load relasi jika belum ada
         $pembangunan->load(['unit.tahap.perumahaan']);
 
         $unit = $pembangunan->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
 
-        // Mapping group berdasarkan perumahan
-        $groupMap = [
-            'Asa Dreamland' => env('FONNTE_ID_GROUP_MARKETING_ADL'),
-            'Lembah Hijau Residence' => env('FONNTE_ID_GROUP_MARKETING_LHR'),
-        ];
-
-        $groupId = $groupMap[$namaPerumahan] ?? null;
+        $groupId = "ID group proyek manager - manager produksi - dan anak Teknik";
 
         $namaTahap = $unit->tahap->nama_tahap ?? '-';
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        // Pesan dengan konteks Permintaan Pembangunan oleh Project Manager
         $messageGroup = "🏗️ *PENGAJUAN PEMBANGUNAN UNIT*\n\n" . "Dear *Manager Produksi*, terdapat pengajuan pembangunan unit baru dari *Project Manager* yang perlu ditindaklanjuti.\n\n" . "```\n" . "📍 Perumahan : {$namaPerumahan}\n" . "🏠 Tahap     : {$namaTahap}\n" . "🔑 Unit      : {$namaUnit}\n" . "👤 Diajukan  : {$pengaju}\n" . '📅 Tanggal   : ' . now()->format('d/m/Y H:i') . " WIB\n" . "```\n\n" . 'Mohon untuk segera dicek pada sistem untuk proses persetujuan. Terima kasih! 🙏';
 
         if ($groupId) {
-            // Gunakan try-catch agar jika wa gagal kirim, database tidak ikut rollback (opsional)
             try {
                 $this->notificationGroup->send($groupId, $messageGroup);
             } catch (\Exception $e) {

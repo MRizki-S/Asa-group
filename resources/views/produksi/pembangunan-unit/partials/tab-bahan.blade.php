@@ -17,17 +17,24 @@
             </span>
         </div>
 
-        @if ($qc->pembangunanUnitRapBahan->count() > 0)
-            <button @click="prepareOrder({{ json_encode($qc->pembangunanUnitRapBahan) }}, {{ $qc->id }})"
-                class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                Order Barang
-            </button>
-        @endif
+        <div class="flex flex-row gap-2 items-center">
+            <a href="{{ route('produksi.pembangunanUnit.laporanBahan', ['id' => $data->id, 'qcId' => $qc->master_qc_urutan_id]) }}"
+                class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all uppercase flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-blue-500"></i>
+                Lihat Laporan
+            </a>
+            @if ($qc->pembangunanUnitRapBahan->count() > 0)
+                <button @click="prepareOrder({{ json_encode($qc->pembangunanUnitRapBahan) }}, {{ $qc->id }})"
+                    class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Order Barang
+                </button>
+            @endif
+        </div>
     </div>
 
     {{-- Tabel Order Bahan --}}
@@ -38,7 +45,8 @@
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                         <th class="w-10 px-4 py-3"></th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">ID Request
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">ID
+                            Request
                         </th>
                         <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">
                             Item</th>
@@ -184,7 +192,8 @@
                                                                         <div class="flex flex-col items-end">
                                                                             <p
                                                                                 class="text-[11px] font-black {{ $isOver ? 'text-red-600' : 'text-gray-800 dark:text-white' }}">
-                                                                                {{ (float) $det->jumlah_input }} <span
+                                                                                {{ (float) $det->jumlah_input }}
+                                                                                <span
                                                                                     class="text-[9px] font-medium text-gray-400">{{ $det->satuan }}</span>
                                                                             </p>
 
@@ -221,7 +230,8 @@
                                                     class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm min-h-[60px]">
                                                     <p
                                                         class="text-xs text-gray-600 dark:text-gray-400 italic leading-relaxed">
-                                                        "{{ $order->catatan ?? 'Tidak ada catatan permintaan.' }}"</p>
+                                                        "{{ $order->catatan ?? 'Tidak ada catatan permintaan.' }}"
+                                                    </p>
                                                 </div>
                                             </div>
 

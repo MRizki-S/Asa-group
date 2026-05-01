@@ -135,7 +135,7 @@
         @include('produksi.penamaan-upah.partials.modal')
 
         <template x-for="upah in allData" :key="'form-' + upah.id">
-            <form :class="'delete-form-' + upah.id" :action="'/produksi/master-upah/' + upah.id" method="POST"
+            <form :class="'delete-form-' + upah.id" :action="'/produksi/penamaan-upah/' + upah.id" method="POST"
                 style="display:none;">
                 @csrf @method('DELETE')
             </form>
@@ -180,7 +180,7 @@
                             id: data.id,
                             nama: data.nama_upah
                         };
-                        this.modalAction = `/produksi/master-upah/${data.id}`;
+                        this.modalAction = `/produksi/penamaan-upah/${data.id}`;
                     } else {
                         this.formData = {
                             id: '',

@@ -552,8 +552,14 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     Route::get('persetujuan-upah', [PersetujuanUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
     Route::patch('persetujuan-upah/{id}/update-status', [PersetujuanUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
 
-    Route::get('pembangunan-unit/{id}/laporan-upah', [TerminController::class, 'laporanUpah'])
+
+    // Laporan
+    Route::get('/pembangunan-unit/{id}/laporan-upah/{qcId?}', [TerminController::class, 'laporanUpah'])
         ->name('produksi.pembangunanUnit.laporanUpah');
+    Route::get('/pembangunan-unit/{id}/laporan-bahan/{qcId?}', [TerminController::class, 'laporanBahan'])
+        ->name('produksi.pembangunanUnit.laporanBahan');
+    Route::get('/pembangunan-unit/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTermin'])
+        ->name('produksi.pembangunanUnit.laporanTermin.export');
 });
 
 Route::get('keuangan/persetujuan-upah', [PersetujuanUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
