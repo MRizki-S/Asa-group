@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PengajuanPembangunanUnitController extends Controller
+class PermintaanDibangunController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -46,11 +46,11 @@ class PengajuanPembangunanUnitController extends Controller
 
         $allQcContainer = MasterQcContainer::all();
 
-        return view('produksi.pengajuan-pembangunan.index', [
+        return view('produksi.permintaan-dibangun.index', [
             'allPengajuan' => $allPengajuan,
             'allQcContainer' => $allQcContainer,
             'allPengawas' => $allPengawas,
-            'breadcrumbs' => [['label' => 'Pengajuan Pembangunan', 'url' => route('produksi.pengajuanPembangunanUnit.index')]],
+            'breadcrumbs' => [['label' => 'Permintaan Dibangun', 'url' => route('produksi.pengajuanPembangunanUnit.index')]],
         ]);
     }
 
@@ -164,12 +164,12 @@ class PengajuanPembangunanUnitController extends Controller
         $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
         $allQcContainer = MasterQcContainer::select('id', 'nama_container')->get();
 
-        return view('Produksi.pengajuan-pembangunan.edit', [
+        return view('Produksi.permintaan-dibangun.edit', [
             'pembangunan' => $pembangunan,
             'allPerumahaan' => $allPerumahaan,
             'allPengawas' => $allPengawas,
             'allQcContainer' => $allQcContainer,
-            'breadcrumbs' => [['label' => 'Pengajuan Pembangunan Unit', 'url' => route('produksi.pengajuanPembangunanUnit.index')], ['label' => 'Edit Pengajuan', 'url' => '#']],
+            'breadcrumbs' => [['label' => 'Permintaan Dibangun', 'url' => route('produksi.pengajuanPembangunanUnit.index')], ['label' => 'Edit Pengajuan', 'url' => '#']],
         ]);
     }
 
@@ -209,5 +209,28 @@ class PengajuanPembangunanUnitController extends Controller
         $pengajuanPembangunanUnit->pembangunanUnit->delete();
 
         return redirect()->route('produksi.pengajuanPembangunanUnit.index')->with('success', 'Pengajuan Pembangunan unit berhasil dihapus.');
+    }
+
+    public function getUnitsByTahap(string $tahapId)
+    {
+        try {
+            $currentUnitId = request()->query('current_unit_id');
+
+            $units = Unit::where('tahap_id', $tahapId)
+                ->where(function ($query) use ($currentUnitId) {
+                    $query->where('status_unit', 'under_construction');
+                    if ($currentUnitId) {
+                        $query->orWhere('id', $currentUnitId);
+                    }
+                })
+                ->select('id', 'nama_unit')
+                ->get();
+
+            return response()->json($units);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
