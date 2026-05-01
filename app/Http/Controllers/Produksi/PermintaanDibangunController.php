@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PengajuanPembangunanUnitController extends Controller
+class PermintaanDibangunController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -42,15 +42,15 @@ class PengajuanPembangunanUnitController extends Controller
             ->latest()
             ->get();
 
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Proyek')->orderBy('nama_lengkap', 'asc')->get();
+        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
 
         $allQcContainer = MasterQcContainer::all();
 
-        return view('produksi.pengajuan-pembangunan.index', [
+        return view('produksi.permintaan-dibangun.index', [
             'allPengajuan' => $allPengajuan,
             'allQcContainer' => $allQcContainer,
             'allPengawas' => $allPengawas,
-            'breadcrumbs' => [['label' => 'Pengajuan Pembangunan', 'url' => route('produksi.pengajuanPembangunanUnit.index')]],
+            'breadcrumbs' => [['label' => 'Permintaan Dibangun', 'url' => route('produksi.pengajuanPembangunanUnit.index')]],
         ]);
     }
 
@@ -61,29 +61,20 @@ class PengajuanPembangunanUnitController extends Controller
 
     public function sendGroupMessage($pembangunan)
     {
-        // Eager load relasi jika belum ada
         $pembangunan->load(['unit.tahap.perumahaan']);
 
         $unit = $pembangunan->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
 
-        // Mapping group berdasarkan perumahan
-        $groupMap = [
-            'Asa Dreamland' => env('FONNTE_ID_GROUP_MARKETING_ADL'),
-            'Lembah Hijau Residence' => env('FONNTE_ID_GROUP_MARKETING_LHR'),
-        ];
-
-        $groupId = $groupMap[$namaPerumahan] ?? null;
+        $groupId = "ID group proyek manager - manager produksi - dan anak Teknik";
 
         $namaTahap = $unit->tahap->nama_tahap ?? '-';
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        // Pesan dengan konteks Permintaan Pembangunan oleh Project Manager
         $messageGroup = "🏗️ *PENGAJUAN PEMBANGUNAN UNIT*\n\n" . "Dear *Manager Produksi*, terdapat pengajuan pembangunan unit baru dari *Project Manager* yang perlu ditindaklanjuti.\n\n" . "```\n" . "📍 Perumahan : {$namaPerumahan}\n" . "🏠 Tahap     : {$namaTahap}\n" . "🔑 Unit      : {$namaUnit}\n" . "👤 Diajukan  : {$pengaju}\n" . '📅 Tanggal   : ' . now()->format('d/m/Y H:i') . " WIB\n" . "```\n\n" . 'Mohon untuk segera dicek pada sistem untuk proses persetujuan. Terima kasih! 🙏';
 
         if ($groupId) {
-            // Gunakan try-catch agar jika wa gagal kirim, database tidak ikut rollback (opsional)
             try {
                 $this->notificationGroup->send($groupId, $messageGroup);
             } catch (\Exception $e) {
@@ -161,15 +152,15 @@ class PengajuanPembangunanUnitController extends Controller
         $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
 
         $allPerumahaan = Perumahaan::select('id', 'nama_perumahaan', 'slug')->get();
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Proyek')->orderBy('nama_lengkap', 'asc')->get();
+        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
         $allQcContainer = MasterQcContainer::select('id', 'nama_container')->get();
 
-        return view('Produksi.pengajuan-pembangunan.edit', [
+        return view('Produksi.permintaan-dibangun.edit', [
             'pembangunan' => $pembangunan,
             'allPerumahaan' => $allPerumahaan,
             'allPengawas' => $allPengawas,
             'allQcContainer' => $allQcContainer,
-            'breadcrumbs' => [['label' => 'Pengajuan Pembangunan Unit', 'url' => route('produksi.pengajuanPembangunanUnit.index')], ['label' => 'Edit Pengajuan', 'url' => '#']],
+            'breadcrumbs' => [['label' => 'Permintaan Dibangun', 'url' => route('produksi.pengajuanPembangunanUnit.index')], ['label' => 'Edit Pengajuan', 'url' => '#']],
         ]);
     }
 
@@ -209,5 +200,28 @@ class PengajuanPembangunanUnitController extends Controller
         $pengajuanPembangunanUnit->pembangunanUnit->delete();
 
         return redirect()->route('produksi.pengajuanPembangunanUnit.index')->with('success', 'Pengajuan Pembangunan unit berhasil dihapus.');
+    }
+
+    public function getUnitsByTahap(string $tahapId)
+    {
+        try {
+            $currentUnitId = request()->query('current_unit_id');
+
+            $units = Unit::where('tahap_id', $tahapId)
+                ->where(function ($query) use ($currentUnitId) {
+                    $query->where('status_unit', 'under_construction');
+                    if ($currentUnitId) {
+                        $query->orWhere('id', $currentUnitId);
+                    }
+                })
+                ->select('id', 'nama_unit')
+                ->get();
+
+            return response()->json($units);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

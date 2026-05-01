@@ -32,6 +32,13 @@ class MasterBarang extends Model
         return $this->hasMany(StockGudang::class, 'barang_id');
     }
 
+    public function stockHub()
+    {
+        return $this->hasOne(StockGudang::class, 'barang_id')
+            ->where('stock_type', 'HUB')
+            ->whereNull('ubs_id');
+    }
+
     public function notaDetails()
     {
         return $this->hasMany(NotaBarangMasukDetail::class, 'barang_id');

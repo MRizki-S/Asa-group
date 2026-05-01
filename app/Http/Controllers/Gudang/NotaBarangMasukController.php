@@ -106,6 +106,7 @@ class NotaBarangMasukController extends Controller
 
                     // Hitung jumlah dalam base_unit (pcs, m, dll)
                     $jumlahBase = $item['jumlah_masuk'] * $konversi->konversi_ke_base;
+                    $hargaSatuanBase = $item['harga_satuan'] / $konversi->konversi_ke_base;
 
                     // A. Insert ke detail nota
                     NotaBarangMasukDetail::create([
@@ -116,6 +117,7 @@ class NotaBarangMasukController extends Controller
                         'satuan_id' => $item['satuan_id'],
                         'jumlah_base' => $jumlahBase,
                         'harga_satuan' => $item['harga_satuan'],
+                        'harga_satuan_base' => $hargaSatuanBase,
                         'harga_total' => $item['harga_total'],
                         'jumlah_sisa' => $jumlahBase, // Awalnya sisa = base
                     ]);

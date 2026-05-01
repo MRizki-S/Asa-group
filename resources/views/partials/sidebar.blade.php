@@ -11,7 +11,7 @@
             <!-- Tulisan di samping logo -->
             <span class="text-xl font-bold" :class="sidebarToggle ? 'hidden' : ''">
                 <span class="text-blue-500">Asa</span>
-                <span class="text-black dark:text-white">Group</span>
+                <span class="text-black xc dark:text-white">Group</span>
             </span>
         </a>
     </div>
@@ -987,6 +987,36 @@
                 </h3>
 
                 <ul class="flex flex-col gap-2 mb-6">
+                    <!-- menu stock barang dan transfer stok -->
+                    <li>
+                        <a href="{{ route('gudang.stockBarang.index') }}"
+                            @click="selected = (selected === 'StokBarangGudang' ? '' : 'StokBarangGudang')"
+                            class="menu-item group"
+                            :class="(selected === 'StokBarangGudang') && (page === 'StokBarangGudang') ?
+                            'menu-item-active' :
+                            'menu-item-inactive'">
+
+                            <svg :class="(selected === 'Packages') && (page === 'Packages') ? 'menu-item-icon-active' : ''"
+                                width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
+
+                                <title>packages</title>
+
+                                <g fill="none" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-width="2">
+                                    <path d="m7 16.5l-5-3l5-3l5 3V19l-5 3z" />
+                                    <path
+                                        d="M2 13.5V19l5 3m0-5.455l5-3.03m5 2.985l-5-3l5-3l5 3V19l-5 3zM12 19l5 3m0-5.5l5-3m-10 0V8L7 5l5-3l5 3v5.5M7 5.03v5.455M12 8l5-3" />
+                                </g>
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Stok Barang
+                            </span>
+                        </a>
+                    </li>
+                    <!-- menu stock barang dan transfer stok -->
+
                     <!-- Menu Group Item Master Gudang  -->
                     <li>
                         <a href="#"
@@ -1294,8 +1324,9 @@
             </div>
             <!-- Gudang -  Group -->
 
+
             {{-- @can('akses-produksi') --}}
-            <!-- Produksi -->
+            <!-- Master Produksi RAP -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1445,13 +1476,11 @@
                     <!-- Menu Item Pembangunan Unit-->
                 </ul>
             </div>
-
-            <!-- Produksi -->
             {{-- @endcan --}}
 
-           
             <!-- Superadmin -  Group -->
-            @role('Superadmin')
+            @canany(['superadmin.role.read', 'superadmin.akun-karyawan.read'])
+                <!-- Superadmin - Group -->
                 <div>
                     <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
                         <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1528,7 +1557,7 @@
                         <!-- Menu Item Akun Karyawan -->
                     </ul>
                 </div>
-            @endrole
+            @endcanany
         </nav>
         <!-- Sidebar Menu -->
     </div>

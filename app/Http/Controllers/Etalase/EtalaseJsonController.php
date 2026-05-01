@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Etalase;
 
 use App\Http\Controllers\Controller;
@@ -64,5 +65,4 @@ class EtalaseJsonController extends Controller
         $unit = Unit::select('id', 'nama_unit', 'harga_final')->findOrFail($id);
         return response()->json($unit);
     }
-
 }

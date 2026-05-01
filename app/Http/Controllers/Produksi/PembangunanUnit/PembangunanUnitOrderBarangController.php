@@ -1,17 +1,66 @@
 <?php
 
-namespace App\Http\Controllers\Produksi;
+namespace App\Http\Controllers\Produksi\PembangunanUnit;
 
 use App\Http\Controllers\Controller;
 use App\Models\PembangunanUnit;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\PembangunanUnitBarangOrderDetail;
+use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-class PembangunanUnitOrderController extends Controller
+class PembangunanUnitOrderBarangController extends Controller
 {
+    protected NotificationGroupService $notificationGroup;
+
+    public function __construct(NotificationGroupService $notificationGroup)
+    {
+        $this->notificationGroup = $notificationGroup;
+    }
+
+    public function sendGroupNotificationOrder($pembangunanUnit, $order, $jenis = 'permintaan')
+    {
+        $pembangunanUnit->loadMissing(['unit.tahap.perumahaan', 'pembangunanUnitQc']);
+
+        $unit = $pembangunanUnit->unit;
+        $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
+        $namaTahap = $unit->tahap->nama_tahap ?? '-';
+        $namaUnit = $unit->nama_unit ?? '-';
+        $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
+
+        $groupId = "ID GRUP GUDANG";
+
+        if (!$groupId) return;
+
+        if ($jenis === 'permintaan') {
+            $header = "📦 *PENGAJUAN PERMINTAAN BAHAN*";
+            $body = "Dear *Tim Logistik/Gudang*, terdapat pengajuan permintaan bahan material baru dari lapangan.";
+        } else {
+            $header = "🔄 *PENGAJUAN RETUR BAHAN*";
+            $body = "Dear *Tim Logistik/Gudang*, terdapat pengajuan pengembalian (retur) bahan material dari lapangan.";
+        }
+
+        $messageGroup = "{$header}\n\n"
+            . "{$body}\n\n"
+            . "```\n"
+            . "📍 Perumahan : {$namaPerumahan}\n"
+            . "🏠 Tahap     : {$namaTahap}\n"
+            . "🔑 Unit      : {$namaUnit}\n"
+            . "👤 Diajukan  : {$pengaju}\n"
+            . "📅 Tanggal   : " . now()->format('d/m/Y H:i') . " WIB\n"
+            . "```\n\n"
+            . "Mohon segera dicek pada sistem. Terima kasih! 🙏";
+
+        try {
+            $this->notificationGroup->send($groupId, $messageGroup);
+        } catch (\Exception $e) {
+            Log::error('WA Error: ' . $e->getMessage());
+        }
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -56,6 +105,8 @@ class PembangunanUnitOrderController extends Controller
                     'alasan_permintaan_tidak_sesuai_rap' => $item['alasan'] ?? null,
                 ]);
             }
+
+            $this->sendGroupNotificationOrder($pembangunanUnit, $order, 'permintaan');
 
             DB::commit();
             return response()->json(['message' => 'Permintaan barang berhasil dikirim.']);
@@ -105,6 +156,12 @@ class PembangunanUnitOrderController extends Controller
                     'status_order' => 'pengembalian',
                     'updated_at' => now()
                 ]);
+            }
+
+            $pembangunanUnit = PembangunanUnit::find($order->pembangunan_unit_id);
+
+            if ($pembangunanUnit) {
+                $this->sendGroupNotificationOrder($pembangunanUnit, $order, 'retur');
             }
 
             DB::commit();

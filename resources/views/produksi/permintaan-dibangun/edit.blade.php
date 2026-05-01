@@ -21,7 +21,7 @@
                     units: [],
                     selectedTahap: '{{ $pembangunan->tahap_id }}',
                     selectedUnit: '{{ $pembangunan->unit_id }}',
-
+                
                     async fetchTahap(perumahaanSlug) {
                         if (!perumahaanSlug) return;
                         const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/tahap-json`);
@@ -29,7 +29,7 @@
                     },
                     async fetchUnit(tahapId) {
                         if (!tahapId) return;
-                        const res = await fetch(`/etalase/tahap/${tahapId}/unit-json`);
+                        const res = await fetch(`/produksi/tahap/${tahapId}/unit-json`);
                         this.units = await res.json();
                     }
                 }" x-init="await fetchTahap('{{ $pembangunan->perumahaan->slug }}');
@@ -80,7 +80,7 @@
 
                         <div>
                             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Unit</label>
-                            <select name="unit_id" required x-model="selectedUnit" id="selectUnit"
+                            <select name="unit_id" required x-model="selectedUnit" id="selectUnit" disabled
                                 class="w-full text-gray-800 bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white">
                                 <template x-for="u in units" :key="u.id">
                                     <option :value="u.id" x-text="u.nama_unit" :selected="u.id == selectedUnit">

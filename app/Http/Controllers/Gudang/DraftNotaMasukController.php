@@ -128,6 +128,7 @@ class DraftNotaMasukController extends Controller
                     ->value('konversi_ke_base') ?? 1;
 
                 $jumlahBase = $item['jumlah_masuk'] * $konversi;
+                $hargaSatuanBase = $item['harga_satuan'] / $konversi;
 
                 $nota->details()->create([
                     'barang_id' => $item['barang_id'],
@@ -137,6 +138,7 @@ class DraftNotaMasukController extends Controller
                     'jumlah_base' => $jumlahBase,
                     'jumlah_sisa' => $jumlahBase,
                     'harga_satuan' => $item['harga_satuan'],
+                    'harga_satuan_base' => $hargaSatuanBase,
                     'harga_total' => $item['harga_total'],
                 ]);
             }
@@ -195,6 +197,7 @@ class DraftNotaMasukController extends Controller
                     ->value('konversi_ke_base') ?? 1;
 
                 $jumlahBase = $item['jumlah_masuk'] * $konversi;
+                $hargaSatuanBase = $item['harga_satuan'] / $konversi;
 
                 // Simpan Detail
                 $detail = $nota->details()->create([
@@ -205,6 +208,7 @@ class DraftNotaMasukController extends Controller
                     'jumlah_base' => $jumlahBase,
                     'jumlah_sisa' => $jumlahBase,
                     'harga_satuan' => $item['harga_satuan'],
+                    'harga_satuan_base' => $hargaSatuanBase,
                     'harga_total' => $item['harga_total'],
                 ]);
 
@@ -231,7 +235,7 @@ class DraftNotaMasukController extends Controller
                     'ref_id' => $nota->id,
                     'qty_masuk' => $jumlahBase,
                     'qty_keluar' => 0,
-                    'harga_satuan' => $item['harga_satuan'],
+                    'harga_satuan' => $hargaSatuanBase,
                     'created_by' => Auth::id(),
                 ]);
             }
