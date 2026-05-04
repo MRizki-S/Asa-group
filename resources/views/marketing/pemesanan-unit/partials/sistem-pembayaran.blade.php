@@ -131,9 +131,12 @@
             sbumPemerintah: 4000000,
             dpRumahInduk: '',
             nominalKelebihan: 0,
-            hargaTotal: 0,
+            hargaTotal: '',
 
             // Getter angka bersih
+            get hargaTotalNumber() {
+                return parseInt(this.hargaTotal.replace(/\D/g, '')) || 0;
+            },
             get dpRumahIndukNumber() {
                 return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
             },
@@ -151,7 +154,7 @@
 
             // harga_kpr = harga_total - total_dp
             get hargaKprNumber() {
-                const total = this.hargaTotal - this.totalDpNumber;
+                const total = this.hargaTotalNumber - this.totalDpNumber;
                 return total > 0 ? total : 0;
             },
 
@@ -165,24 +168,27 @@
             get hargaKpr() {
                 return formatRupiah(this.hargaKprNumber.toString());
             },
-            get hargaTotalFormatted() {
-                return formatRupiah(this.hargaTotal.toString());
-            },
 
             // Event input
             updateDpRumahInduk(e) {
                 let raw = e.target.value.replace(/\D/g, '');
                 this.dpRumahInduk = formatRupiah(raw);
             },
+            updateHargaTotal(e) {
+                let raw = e.target.value.replace(/\D/g, '');
+                this.hargaTotal = formatRupiah(raw);
+            },
         }" x-init="$watch('selectedCustomer', value => {
             if (value?.booking) {
-                hargaTotal = parseInt((value.booking.harga_final || 0).toString().split('.')[0]);
+                let finalVal = parseInt((value.booking.harga_final || 0).toString().split('.')[0]);
+                hargaTotal = formatRupiah(finalVal.toString());
                 nominalKelebihan = parseInt((value.booking.nominal_kelebihan || 0).toString().split('.')[0]);
             }
         });
 
         if (selectedCustomer?.booking) {
-            hargaTotal = parseInt((selectedCustomer.booking.harga_final || 0).toString().split('.')[0]);
+            let finalVal = parseInt((selectedCustomer.booking.harga_final || 0).toString().split('.')[0]);
+            hargaTotal = formatRupiah(finalVal.toString());
             nominalKelebihan = parseInt((selectedCustomer.booking.nominal_kelebihan || 0).toString().split('.')[0]);
         }" class="space-y-5">
 
@@ -280,14 +286,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
                     <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                        Harga Total Rumah
+                        Harga Total Rumah <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" readonly :value="hargaTotalFormatted"
-                        class="w-full bg-indigo-50 border border-indigo-300 text-indigo-700 text-sm font-semibold rounded-lg p-2.5
-                    dark:bg-indigo-900/30 dark:border-indigo-700 cursor-not-allowed"
+                    <input type="text" x-model="hargaTotal" @input="updateHargaTotal"
+                        class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                    dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Rp 0">
 
-                    <input type="hidden" name="kpr_harga_total" :value="hargaTotal">
+                    <input type="hidden" name="kpr_harga_total" :value="hargaTotalNumber">
                 </div>
 
                 <div>
@@ -308,7 +314,7 @@
 
     <!-- 💸 Bonus Cash (muncul kalau cash dipilih) -->
     <div x-show="caraBayar === 'cash'" x-transition
-        class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
+        class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 bordepr-t border-gray-100 dark:border-gray-800">
         <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus Cash</h3>
 
         <template x-for="(bonus, index) in bonusCashList" :key="index">

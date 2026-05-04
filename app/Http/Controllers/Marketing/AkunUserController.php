@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerBooking;
+use App\Models\PemesananUnit;
 use App\Models\Perumahaan;
 use App\Models\Unit;
 use App\Models\User;
@@ -261,21 +262,32 @@ class AkunUserController extends Controller
                     Unit::where('id', $booking->unit_id)->update([
                         'status_unit' => 'available',
                     ]);
-                }
+                } 
 
                 // 4️⃣ Hapus booking
                 $booking->delete();
             }
 
-            // 5️⃣ Hapus user
+            // 5️⃣ Ambil pemesanan unit terkait user (jika ada)
+            $pemesanans = PemesananUnit::where('customer_id', $user->id)->get();
+            foreach ($pemesanans as $pemesanan) {
+                if ($pemesanan->unit_id) {
+                    Unit::where('id', $pemesanan->unit_id)->update([
+                        'status_unit' => 'available',
+                    ]);
+                }
+                $pemesanan->delete();
+            }
+
+            // 6️⃣ Hapus user
             $user->delete();
 
             DB::commit();
 
-            // 6️⃣ Redirect kembali ke index dengan pesan sukses
+            // 7️⃣ Redirect kembali ke index dengan pesan sukses
             return redirect()
                 ->route('marketing.akunUser.index')
-                ->with('success', 'Akun user dan booking berhasil dihapus!');
+                ->with('success', 'Akun user, booking, dan pemesanan berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollBack();
 

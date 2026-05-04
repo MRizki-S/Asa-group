@@ -7,6 +7,7 @@ use App\Models\PpjbPembatalan;
 use App\Models\PpjbPromoBatch;
 use App\Models\PpjbKeterlambatan;
 use App\Models\PpjbBonusCashBatch;
+use App\Models\PpjbBonusKprBatch;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,6 +48,12 @@ class SettingPpjbController extends Controller
             ->where('status_aktif', 1)
             ->first();
 
+        // Ambil Bonus Kpr aktif
+        $bonusKpr = PpjbBonusKprBatch::with('items')
+            ->where('perumahaan_id', $currentPerumahaanId)
+            ->where('status_aktif', 1)
+            ->first();
+
         // Ambil Cara Bayar aktif
         $caraBayarKpr = PpjbCaraBayar::with(['pengaju', 'approver'])
             ->where('perumahaan_id', $currentPerumahaanId)
@@ -78,6 +85,7 @@ class SettingPpjbController extends Controller
             'promoKpr'          => $promoKpr,
             'mutu'              => $mutu,
             'bonusCash'         => $bonusCash,
+            'bonusKpr'          => $bonusKpr,
             'caraBayarCash'     => $caraBayarCash,
             'caraBayarKpr'      => $caraBayarKpr,
             'keterlambatanPPJB' => $keterlambatanPPJB,
