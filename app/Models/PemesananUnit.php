@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\Unit;
@@ -26,10 +27,26 @@ class PemesananUnit extends Model
     protected $table = 'pemesanan_unit';
 
     protected $fillable = [
-        'perumahaan_id', 'no_pemesanan', 'tahap_id', 'unit_id', 'customer_id', 'sales_id',
-        'tanggal_pemesanan', 'cara_bayar', 'status_pengajuan', 'status_pemesanan',
-        'harga_normal', 'harga_cash', 'total_tagihan', 'sisa_tagihan',
+        'perumahaan_id',
+        'no_pemesanan',
+        'tahap_id',
+        'unit_id',
+        'customer_id',
+        'sales_id',
+
+        'agent_id',
+        'source',
+
+        'tanggal_pemesanan',
+        'cara_bayar',
+        'status_pengajuan',
+        'status_pemesanan',
+        'harga_normal',
+        'harga_cash',
+        'total_tagihan',
+        'sisa_tagihan',
     ];
+
 
     protected $casts = [
         'tanggal_pemesanan' => 'date',
@@ -58,37 +75,63 @@ class PemesananUnit extends Model
 
     // 🔗 Relasi
     public function dataDiri()
-    {return $this->hasOne(PemesananUnitDataDiri::class);}
+    {
+        return $this->hasOne(PemesananUnitDataDiri::class);
+    }
     public function cash()
-    {return $this->hasOne(PemesananUnitCash::class);}
+    {
+        return $this->hasOne(PemesananUnitCash::class);
+    }
     public function kpr()
-    {return $this->hasOne(PemesananUnitKpr::class);}
+    {
+        return $this->hasOne(PemesananUnitKpr::class);
+    }
     public function promo()
-    {return $this->hasMany(PemesananUnitPromo::class);}
+    {
+        return $this->hasMany(PemesananUnitPromo::class);
+    }
     public function mutu()
-    {return $this->hasMany(PemesananUnitMutu::class);}
+    {
+        return $this->hasMany(PemesananUnitMutu::class);
+    }
     public function caraBayar()
-    {return $this->hasOne(PemesananUnitCaraBayar::class);}
+    {
+        return $this->hasOne(PemesananUnitCaraBayar::class);
+    }
     public function keterlambatan()
-    {return $this->hasOne(PemesananUnitKeterlambatan::class);}
+    {
+        return $this->hasOne(PemesananUnitKeterlambatan::class);
+    }
     public function pembatalan()
-    {return $this->hasOne(PemesananUnitPembatalan::class);}
+    {
+        return $this->hasOne(PemesananUnitPembatalan::class);
+    }
 
     // relasi ke master
     public function perumahaan()
-    {return $this->belongsTo(Perumahaan::class);}
+    {
+        return $this->belongsTo(Perumahaan::class);
+    }
 
     public function tahap()
-    {return $this->belongsTo(Tahap::class);}
+    {
+        return $this->belongsTo(Tahap::class);
+    }
 
     public function unit()
-    {return $this->belongsTo(Unit::class);}
+    {
+        return $this->belongsTo(Unit::class);
+    }
 
     public function customer()
-    {return $this->belongsTo(User::class, 'customer_id');}
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
 
     public function sales()
-    {return $this->belongsTo(User::class, 'sales_id');}
+    {
+        return $this->belongsTo(User::class, 'sales_id');
+    }
     public function cicilan()
     {
         return $this->hasMany(PemesananUnitCicilan::class);
@@ -107,5 +150,16 @@ class PemesananUnit extends Model
     public function bonusKpr()
     {
         return $this->hasMany(PemesananUnitBonusKpr::class);
+    }
+
+    // relasi ke agent dan fee
+    public function agent()
+    {
+        return $this->belongsTo(MasterAgent::class, 'agent_id');
+    }
+
+    public function feeAgent()
+    {
+        return $this->hasMany(PemesananUnitFeeAgent::class, 'pemesanan_unit_id');
     }
 }

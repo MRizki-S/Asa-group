@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ class CustomerBooking extends Model
         'user_id',
         'perumahaan_id',
         'sales_id',
+        'agent_id',
+        'source',
         'tahap_id',
         'unit_id',
         'slug',
@@ -74,4 +77,9 @@ class CustomerBooking extends Model
         return $this->belongsTo(User::class, 'sales_id');
     }
 
+    // tambahaan relasi ke agent 
+    public function agent()
+    {
+        return $this->belongsTo(MasterAgent::class, 'agent_id');
+    }
 }
