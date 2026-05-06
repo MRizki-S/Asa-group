@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerBooking;
+use App\Models\MasterAgent;
 use App\Models\PemesananUnit;
 use App\Models\Perumahaan;
 use App\Models\Unit;
@@ -27,31 +29,37 @@ class AkunUserController extends Controller
             : $user->perumahaan_id;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         // 🔹 Ambil ID perumahaan aktif dari session / user
         $currentPerumahaanId = $this->currentPerumahaanId();
 
         $query = User::where('type', 'customer')
             ->where('perumahaan_id', $currentPerumahaanId)
+            // 🔹 Saring: Hanya tampilkan customer_booking yang masih aktif
+            ->whereHas('booking', function ($q) {
+                $q->where('status', 'active');
+            })
             ->with([
                 'booking.unit.perumahaan',
                 'booking.unit.tahap',
                 'booking.unit.blok',
                 'booking.sales', // biar tau siapa sales-nya
+                'booking.agent', // biar tau siapa agent-nya
             ])
             ->latest();
 
         // 🔸 Filter tambahan jika login adalah Marketing
         if (Auth::user()->hasAnyRole(['Marketing'])) {
             $query->whereHas('booking', function ($q) {
-                $q->where('sales_id', Auth::id());
+                $q->where('sales_id', Auth::id())
+                    ->where('source', 'internal');
             });
         }
 
         $akunUser = $query->get();
 
-        // 🔹 Ambil nama perumahaan untuk ditampilkan di breadcrumb
+        // 🔹 Ambil nama per    umahaan untuk ditampilkan di breadcrumb
         $perumahaanName = null;
         if ($currentPerumahaanId) {
             $perumahaan = Perumahaan::find($currentPerumahaanId);
@@ -69,6 +77,50 @@ class AkunUserController extends Controller
         ]);
     }
 
+    public function expired()
+    {
+        $currentPerumahaanId = $this->currentPerumahaanId();
+
+        $query = User::where('type', 'customer')
+            ->where('perumahaan_id', $currentPerumahaanId)
+            ->whereHas('booking', function ($q) {
+                $q->where('status', 'expired');
+            })
+            ->with([
+                'booking.unit.perumahaan',
+                'booking.unit.tahap',
+                'booking.unit.blok',
+                'booking.sales',
+                'booking.agent',
+            ])
+            ->latest();
+
+        if (Auth::user()->hasAnyRole(['Marketing'])) {
+            $query->whereHas('booking', function ($q) {
+                $q->where('sales_id', Auth::id())
+                    ->where('source', 'internal');
+            });
+        }
+
+        $akunUser = $query->get();
+
+        $perumahaanName = null;
+        if ($currentPerumahaanId) {
+            $perumahaan = Perumahaan::find($currentPerumahaanId);
+            $perumahaanName = $perumahaan?->nama_perumahaan;
+        }
+
+        return view('marketing.akun-user.expired', [
+            'akunUser' => $akunUser,
+            'breadcrumbs' => [
+                [
+                    'label' => 'User Booking Expired' . ($perumahaanName ? ' - ' . $perumahaanName : ''),
+                    'url' => route('marketing.akunUser.expired'),
+                ],
+            ],
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -80,12 +132,22 @@ class AkunUserController extends Controller
             ? Perumahaan::all()
             : Perumahaan::where('id', $user->perumahaan_id)->get();
 
+        // Cek apakah login sebagai SPV Pembiayaan KPR
+        $isSPVKPR = $user->hasRole('SPV Pembiayaan KPR');
+
+        // Ambil semua agen aktif untuk select option (hanya jika SPV KPR)
+        $masterAgen = $isSPVKPR
+            ? MasterAgent::where('status', true)->orderBy('nama_agent')->get()
+            : collect();
+
         return view('marketing.akun-user.create', [
-            'allPerumahaan' => $allPerumahaan,
+            'allPerumahaan'    => $allPerumahaan,
             'defaultPerumahaan' => $user->perumahaan_id,
-            'defaultSlug' => optional($user->perumahaan)->slug,
-            'isGlobal' => $user->hasGlobalAccess(),
-            'breadcrumbs' => [
+            'defaultSlug'      => optional($user->perumahaan)->slug,
+            'isGlobal'         => $user->hasGlobalAccess(),
+            'isSPVKPR'         => $isSPVKPR,
+            'masterAgen'       => $masterAgen,
+            'breadcrumbs'      => [
                 ['label' => 'Akun User', 'url' => route('marketing.akunUser.index')],
                 ['label' => 'Tambah Akun User & Booking Unit', 'url' => ''],
             ],
@@ -97,23 +159,44 @@ class AkunUserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama_lengkap' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username',
-            'password' => 'required|string|min:8   ',
-            'no_hp' => ['required', 'regex:/^62\d{9,13}$/'],
+        $isSPVKPR = Auth::user()->hasRole('SPV Pembiayaan KPR');
+
+        $rules = [
+            'nama_lengkap'  => 'required|string|max:255',
+            'username'      => 'required|string|max:255|unique:users,username',
+            'password'      => 'required|string|min:8',
+            'no_hp'         => ['required', 'regex:/^62\d{9,13}$/'],
             'perumahaan_id' => 'required|exists:perumahaan,id',
-            'tahap_id' => 'required|exists:tahap,id',
-            'unit_id' => 'required|exists:unit,id',
-        ], [
-            // === Pesan custom ===
+            'tahap_id'      => 'required|exists:tahap,id',
+            'unit_id'       => 'required|exists:unit,id',
+        ];
+
+        if ($isSPVKPR) {
+            $rules['agent_id'] = 'nullable|exists:master_agent,id';
+        }
+
+        $request->validate($rules, [
             'no_hp.regex' => 'Nomor HP harus diawali dengan 62 dan berisi 9-13 digit setelahnya.',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // 1. Buat akun user (customer)
+            // 1. Update unit jadi booked
+            $unit = Unit::where('id', $request->unit_id)
+                ->where('status_unit', 'available')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$unit) {
+                throw new \Exception('Unit sudah tidak tersedia / sudah dibooking.');
+            }
+
+            $unit->update([
+                'status_unit' => 'booked'
+            ]);
+
+            // 2. Buat akun user (customer)
             $user = User::create([
                 'nama_lengkap' => $request->nama_lengkap,
                 'username' => $request->username,
@@ -124,23 +207,30 @@ class AkunUserController extends Controller
                 'perumahaan_id' => $request->perumahaan_id,
             ]);
 
-            // 2. Buat booking
-            CustomerBooking::create([
-                'user_id' => $user->id,
-                'perumahaan_id' => $request->perumahaan_id,
-                'sales_id' => Auth::id(), // otomatis ambil sales yang login
-                'tahap_id' => $request->tahap_id,
-                'unit_id' => $request->unit_id,
-                'slug' => Str::slug($request->username . '-' . uniqid()),
+            // 3. Buat booking
+            $bookingData = [
+                'user_id'         => $user->id,
+                'perumahaan_id'   => $request->perumahaan_id,
+                'tahap_id'        => $request->tahap_id,
+                'unit_id'         => $request->unit_id,
+                'slug'            => Str::slug($request->username . '-' . uniqid()),
                 'tanggal_booking' => now(),
-                'tanggal_expired' => now()->addDays(2), // booking expired 2 hari
-                'status' => 'active',
-            ]);
+                'tanggal_expired' => now()->addDays(7), //booking expired dalam 7 hari
+                'status'          => 'active',
+            ];
 
-            // 3. Update unit jadi booked
-            Unit::where('id', $request->unit_id)->update([
-                'status_unit' => 'booked',
-            ]);
+            if ($isSPVKPR && $request->filled('agent_id')) {
+                $bookingData['source']   = 'agent';
+                $bookingData['agent_id'] = $request->agent_id;
+                $bookingData['sales_id'] = null;
+            } else {
+                $bookingData['source']   = 'internal';
+                $bookingData['agent_id'] = null;
+                $bookingData['sales_id'] = Auth::id();
+            }
+
+            CustomerBooking::create($bookingData);
+
 
             DB::commit();
 
@@ -170,7 +260,11 @@ class AkunUserController extends Controller
             'booking.tahap',
             'booking.unit',
         ])->findOrFail($id);
-        // dd($user);
+
+        if ($user->booking && $user->booking->status === 'forwarded') {
+            return redirect()->route('marketing.akunUser.index')
+                ->with('error', 'Booking sudah diproses menjadi pemesanan unit, tidak bisa diedit.');
+        }
 
         $dataPerumahaan = Perumahaan::all();
 
@@ -204,6 +298,11 @@ class AkunUserController extends Controller
             // 1️⃣ Ambil user & booking terkait user ini
             $user = User::findOrFail($id);
             $booking = CustomerBooking::where('user_id', $user->id)->firstOrFail();
+
+            if ($booking->status === 'forwarded') {
+                throw new \Exception('Booking sudah diproses menjadi pemesanan unit, tidak bisa diedit.');
+            }
+
             $oldUnitId = $booking->unit_id;
 
             // 2️⃣ Update data user
@@ -214,10 +313,9 @@ class AkunUserController extends Controller
                 'password' => $request->filled('password') ? Hash::make($request->password) : $user->password,
             ]);
 
-            // 3️⃣ Update data booking
+            // 3️⃣ Update data booking (Hapus sales_id agar tidak menimpa agen/sales lama)
             $booking->update([
                 'perumahaan_id' => $request->perumahaan_id,
-                'sales_id' => Auth::id(),
                 'tahap_id' => $request->tahap_id,
                 'unit_id' => $request->unit_id,
             ]);
@@ -256,13 +354,17 @@ class AkunUserController extends Controller
             // 2️⃣ Ambil booking terkait user (jika ada)
             $booking = CustomerBooking::where('user_id', $user->id)->first();
 
+            if ($booking && $booking->status === 'forwarded') {
+                throw new \Exception('Booking sudah diproses menjadi pemesanan unit, tidak bisa dihapus.');
+            }
+
             if ($booking) {
                 // 3️⃣ Update unit yang dibooking agar kembali available
                 if ($booking->unit_id) {
                     Unit::where('id', $booking->unit_id)->update([
                         'status_unit' => 'available',
                     ]);
-                } 
+                }
 
                 // 4️⃣ Hapus booking
                 $booking->delete();
@@ -296,5 +398,4 @@ class AkunUserController extends Controller
             ]);
         }
     }
-
 }

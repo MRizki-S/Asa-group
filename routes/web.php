@@ -1,47 +1,49 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Etalase\BlokController;
+use App\Http\Controllers\Etalase\EtalaseJsonController;
+use App\Http\Controllers\Etalase\KualifikasiBlokController;
+use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
+use App\Http\Controllers\Etalase\PerumahaanController;
+use App\Http\Controllers\Etalase\TahapController;
+use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
-use App\Http\Controllers\Etalase\TahapController;
-use App\Http\Controllers\PerumahaanSelectController;
-use App\Http\Controllers\Etalase\TahapTypeController;
-use App\Http\Controllers\Marketing\AdendumController;
-use App\Http\Controllers\Etalase\PerumahaanController;
-use App\Http\Controllers\Marketing\AkunUserController;
-use App\Http\Controllers\Etalase\EtalaseJsonController;
-use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\FeeAgenController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
-use App\Http\Controllers\Marketing\AdendumListController;
-use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Keuangan\BukuBesarController;
+use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
 use App\Http\Controllers\Keuangan\LaporanJurnalController;
-use App\Http\Controllers\Etalase\KualifikasiBlokController;
-use App\Http\Controllers\Marketing\PemesananUnitController;
-use App\Http\Controllers\Superadmin\AkunKaryawanController;
-use App\Http\Controllers\Superadmin\RoleHakAksesController;
-use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
-use App\Http\Controllers\Marketing\ManagePemesananController;
-use App\Http\Controllers\Marketing\SettingBonusKprController;
-use App\Http\Controllers\Marketing\SettingMutuPpjbController;
-use App\Http\Controllers\Marketing\SettingPpjbJsonController;
-use App\Http\Controllers\Marketing\SettingBonusCashController;
-use App\Http\Controllers\Marketing\SettingCaraBayarController;
-use App\Http\Controllers\Marketing\SettingPromoPpjbController;
-use App\Http\Controllers\Marketing\SettingPembatalanController;
-use App\Http\Controllers\Marketing\PengajuanPemesananController;
-use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
-use App\Http\Controllers\Marketing\PengajuanPembatalanController;
-use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
-use App\Http\Controllers\Marketing\SettingKeterlambatanController;
-use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
-use App\Http\Controllers\Keuangan\BukuBesarController;
-use App\Http\Controllers\Keuangan\NeracaSaldoController;
+use App\Http\Controllers\Marketing\AdendumController;
+use App\Http\Controllers\Marketing\AdendumListController;
+use App\Http\Controllers\Marketing\AgenController;
+use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
+use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
+use App\Http\Controllers\Marketing\ManagePemesananController;
+use App\Http\Controllers\Marketing\PemesananUnitController;
+use App\Http\Controllers\Marketing\PengajuanPembatalanController;
+use App\Http\Controllers\Marketing\PengajuanPemesananController;
+use App\Http\Controllers\Marketing\PindahUnitController;
+use App\Http\Controllers\Marketing\SettingBonusCashController;
+use App\Http\Controllers\Marketing\SettingBonusKprController;
+use App\Http\Controllers\Marketing\SettingCaraBayarController;
+use App\Http\Controllers\Marketing\SettingKeterlambatanController;
+use App\Http\Controllers\Marketing\SettingMutuPpjbController;
+use App\Http\Controllers\Marketing\SettingPembatalanController;
+use App\Http\Controllers\Marketing\SettingPpjbController;
+use App\Http\Controllers\Marketing\SettingPpjbJsonController;
+use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Superadmin\AkunKaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 
 // API Wilayah Proxy
 Route::prefix('api/wilayah')->group(function () {
@@ -162,6 +164,7 @@ Route::middleware('auth')->prefix('etalase')->group(function () {
 // Marketing Group
 Route::middleware('auth')->prefix('marketing')->group(function () {
 
+    Route::get('/akun-user/expired', [AkunUserController::class, 'expired'])->name('marketing.akunUser.expired');
     Route::resource('/akun-user', AkunUserController::class)->names('marketing.akunUser');
 
     Route::resource('/pemesanan-unit', PemesananUnitController::class)->names('marketing.pemesananUnit');
@@ -413,6 +416,21 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
                 ->name('settingPPJB.pembatalan.reject');
         });
     });
+
+    // Route untuk master agen
+    Route::prefix('master-agen')->group(function () {
+        // agen crud controller
+        Route::resource('/agen', AgenController::class)->names('marketing.agen');
+
+        // Fee Agen routes
+        Route::get('/fee-agen', [FeeAgenController::class, 'index'])->name('marketing.feeAgen.index');
+        Route::post('/fee-agen', [FeeAgenController::class, 'store'])->name('marketing.feeAgen.store');
+        Route::patch('/fee-agen/{feeAgen}/approve', [FeeAgenController::class, 'approve'])->name('marketing.feeAgen.approve');
+        Route::delete('/fee-agen/{feeAgen}/reject', [FeeAgenController::class, 'reject'])->name('marketing.feeAgen.reject');
+        Route::delete('/fee-agen/{feeAgen}/cancel', [FeeAgenController::class, 'cancel'])->name('marketing.feeAgen.cancel');
+        Route::patch('/fee-agen/{feeAgen}/non-aktif', [FeeAgenController::class, 'nonAktif'])->name('marketing.feeAgen.nonAktif');
+    });
+
 
     Route::prefix('api')->group(function () {
         Route::get('/setting-cara-bayar/{perumahaanId}', [SettingPpjbJsonController::class, 'showByPerumahaan'])

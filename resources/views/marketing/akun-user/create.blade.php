@@ -175,6 +175,46 @@
                         Booking Unit
                     </h3>
 
+                    {{-- Select Agen: hanya tampil jika login sebagai SPV Pembiayaan KPR --}}
+                    @if($isSPVKPR)
+                    <div class="mb-4">
+                        <label for="agent_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Agen Referral
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 19c0-3 3-5 6-5s6 2 6 5"/>
+                                    <circle cx="5" cy="10" r="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2 19c0-2 2-3.5 4-4"/>
+                                    <circle cx="19" cy="10" r="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M22 19c0-2-2-3.5-4-4"/>
+                                </svg>
+                            </div>
+                            <select id="agent_id" name="agent_id"
+                                class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                                       dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                                       focus:ring-blue-500 focus:border-blue-500
+                                       @error('agent_id') border-red-500 @enderror">
+                                <option value="">-- Tidak ada agen (langsung dari marketing) --</option>
+                                @foreach($masterAgen as $agen)
+                                    <option value="{{ $agen->id }}" {{ old('agent_id') == $agen->id ? 'selected' : '' }}>
+                                        {{ $agen->nama_agent }}
+                                        @if($agen->no_hp) — {{ $agen->no_hp }} @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('agent_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            Pilih agen jika unit ini berasal dari referral agen. Source booking akan otomatis tercatat sebagai <strong>Agent</strong>.
+                        </p>
+                    </div>
+                    @endif
+
                     <div x-data="{
                         tahap: [],
                         unit: [],

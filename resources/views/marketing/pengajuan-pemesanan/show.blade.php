@@ -173,6 +173,37 @@
                 </div>
             </div>
 
+            {{-- 🤝 Agent Referral (Jika ada) --}}
+            @if ($pengajuan->source === 'agent')
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6 p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6 border-b pb-1">
+                        Informasi Agen Referral
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Nama Agen
+                            </label>
+                            <input type="text" readonly value="{{ $pengajuan->agent->nama_agent ?? '-' }}"
+                                class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-2.5 cursor-not-allowed">
+                        </div>
+
+                        @if ($pengajuan->feeAgent->isNotEmpty())
+                            @foreach ($pengajuan->feeAgent as $fee)
+                                <div>
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Fee Agen
+                                    </label>
+                                    <input type="text" readonly
+                                        value="{{ $fee->masterAgentFee->judul_fee ?? 'Fee' }} — (Rp {{ number_format($fee->nominal_snapshot, 0, ',', '.') }})"
+                                        class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-2.5 cursor-not-allowed">
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             {{-- 🧍‍♂️ Data Diri User --}}
             <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
                 <div class="px-5 py-4 sm:px-6 sm:py-5">

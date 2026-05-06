@@ -16,17 +16,12 @@ class PemesananUnitFeeAgent extends Model
 
     protected $fillable = [
         'pemesanan_unit_id',
-        'agent_id',
-        'agent_fee_id',
-        'nama_fee_snapshot',
-        'jenis_fee_snapshot',
-        'nilai_fee_snapshot',
-        'nominal_fee',
+        'master_agent_fee_id',
+        'nominal_snapshot',
     ];
 
     protected $casts = [
-        'nilai_fee_snapshot' => 'decimal:2',
-        'nominal_fee' => 'decimal:2',
+        'nominal_snapshot' => 'decimal:2',
     ];
 
     // 🔗 Relasi
@@ -35,13 +30,8 @@ class PemesananUnitFeeAgent extends Model
         return $this->belongsTo(PemesananUnit::class, 'pemesanan_unit_id');
     }
 
-    public function agent()
+    public function masterAgentFee()
     {
-        return $this->belongsTo(MasterAgent::class, 'agent_id');
-    }
-
-    public function fee()
-    {
-        return $this->belongsTo(MasterAgentFee::class, 'agent_fee_id');
+        return $this->belongsTo(MasterAgentFee::class, 'master_agent_fee_id');
     }
 }

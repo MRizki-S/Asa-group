@@ -60,45 +60,24 @@
 
                 {{-- Filter Unit --}}
                 <form method="GET" action="{{ route('unit.index', $perumahaan->slug) }}"
-                    class="mb-4 flex items-center gap-3" x-data="{
+                    class="mb-4 flex flex-wrap items-center gap-3" x-data="{
                         selectedTahap: '{{ request('tahapFil') ?? '' }}',
-                        selectedBlok: '{{ request('blokFil') ?? '' }}',
-                        selectedType: '{{ request('typeFil') ?? '' }}',
+                        selectedStatus: '{{ request('statusFil') ?? '' }}',
                         tahap: [],
-                        blok: [],
-                        type: [],
                         async fetchTahap(perumahaanSlug) {
                             if (!perumahaanSlug) { this.tahap = []; return }
                             const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/tahap-json`);
                             if (!res.ok) { console.error('Gagal fetch tahap'); return }
                             this.tahap = await res.json();
-                        },
-                        async fetchBlok(perumahaanSlug, tahapSlug) {
-                            if (!perumahaanSlug || !tahapSlug) { this.blok = []; return }
-                            const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/blok-json?tahap=${tahapSlug}`);
-                            if (!res.ok) { console.error('Gagal fetch blok'); return }
-                            this.blok = await res.json();
-                        },
-                        async fetchType(perumahaanSlug, tahapSlug) {
-                            if (!perumahaanSlug || !tahapSlug) { this.type = []; return }
-                            const res = await fetch(`/etalase/perumahaan/${perumahaanSlug}/type-json?tahap=${tahapSlug}`);
-                            if (!res.ok) { console.error('Gagal fetch type'); return }
-                            this.type = await res.json();
-                        },
-                        updateBlokType() {
-                            this.fetchBlok('{{ $perumahaan->slug }}', this.selectedTahap);
-                            this.fetchType('{{ $perumahaan->slug }}', this.selectedTahap);
                         }
-                    }" x-init="fetchTahap('{{ $perumahaan->slug }}').then(() => {
-                        if (selectedTahap) updateBlokType();
-                    })">
-                    <h3 class="text-sm text-gray-500 dark:text-white/90">Filter tag -</h3>
+                    }" x-init="fetchTahap('{{ $perumahaan->slug }}')">
+                    <h3 class="text-sm text-gray-500 dark:text-white/90">Filter -</h3>
 
                     <!-- Select Tahap -->
                     <div>
-                        <select name="tahapFil" x-model="selectedTahap" @change="updateBlokType()"
-                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white border-gray-300">
-                            <option value="">Pilih Tahap</option>
+                        <select name="tahapFil" x-model="selectedTahap"
+                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg py-2.5 px-6 dark:bg-gray-600 dark:text-white border-gray-300">
+                            <option value="">Semua Tahap</option>
                             <template x-for="t in tahap" :key="t.id">
                                 <option :value="t.slug" x-text="t.nama_tahap" :selected="t.slug === selectedTahap">
                                 </option>
@@ -106,36 +85,26 @@
                         </select>
                     </div>
 
-                    <!-- Select Blok -->
-                    {{-- <select name="blokFil" x-model="selectedBlok"
-                        class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white border-gray-300">
-                        <option value="">Pilih Blok</option>
-                        <template x-for="b in blok" :key="b.id">
-                            <option :value="b.slug" x-text="b.nama_blok" :selected="b.slug === selectedBlok">
-                            </option>
-                        </template>
-                    </select> --}}
-
-                    <!-- Select Type -->
-                    {{-- <select name="typeFil" x-model="selectedType"
-                        class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white border-gray-300">
-                        <option value="">Pilih Tipe</option>
-                        <template x-for="ty in type" :key="ty.id">
-                            <option :value="ty.id"
-                                x-text="`${ty.nama_type} — Rp${Number(ty.harga_dasar).toLocaleString('id-ID')}`"
-                                :selected="ty.id == selectedType"></option>
-                        </template>
-                    </select> --}}
+                    <!-- Select Status Unit -->
+                    <div>
+                        <select name="statusFil" x-model="selectedStatus"
+                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg py-2.5 px-6 dark:bg-gray-600 dark:text-white border-gray-300">
+                            <option value="">Semua Status</option>
+                            <option value="available">Available</option>
+                            <option value="booked">Booked</option>
+                            <option value="sold">Sold</option>
+                        </select>
+                    </div>
 
                     <button type="submit"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        class="inline-block px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
                         Terapkan
                     </button>
 
                     <!-- Tombol Reset -->
                     <a href="{{ route('unit.index', $perumahaan->slug) }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
-                         dark:bg-gray-500 dark:text-white dark:hover:bg-gray-600">
+                        class="inline-block px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300
+                         dark:bg-gray-500 dark:text-white dark:hover:bg-gray-600 transition">
                         Reset
                     </a>
                 </form>

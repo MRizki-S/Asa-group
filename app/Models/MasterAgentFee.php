@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,20 +13,25 @@ class MasterAgentFee extends Model
     protected $table = 'master_agent_fee';
 
     protected $fillable = [
-        'nama_fee',
-        'jenis_fee', // fix / persen
-        'nilai_fee',
-        'is_active',
+        'judul_fee',
+        'nominal',
+        'status_pengajuan',
+        'diajukan_oleh',
+        'disetujui_oleh',
     ];
 
     protected $casts = [
-        'nilai_fee' => 'decimal:2',
-        'is_active' => 'boolean',
+        'nominal' => 'decimal:2',
     ];
 
     // 🔗 Relasi
-    public function pemesananFees()
+    public function pengaju()
     {
-        return $this->hasMany(PemesananUnitFeeAgent::class, 'agent_fee_id');
+        return $this->belongsTo(User::class, 'diajukan_oleh');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'disetujui_oleh');
     }
 }

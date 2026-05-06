@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerBooking;
 use App\Models\PemesananUnit;
 use App\Models\Perumahaan;
 use App\Services\NotificationPribadiService;
@@ -62,7 +64,7 @@ class PengajuanPemesananController extends Controller
             'breadcrumbs'        => [
                 [
                     'label' => 'Pengajuan Pemesanan Unit' .
-                    ($user->is_global ? ' (Global)' : ' - ' . $namaPerumahaan),
+                        ($user->is_global ? ' (Global)' : ' - ' . $namaPerumahaan),
                     'url'   => route('marketing.pengajuanPemesanan.index'),
                 ],
             ],
@@ -91,6 +93,8 @@ class PengajuanPemesananController extends Controller
             'pembatalan',    // snapshot pembatalan
             'bonusCash',
             'bonusKpr',
+            'feeAgent.masterAgentFee',
+            'agent',
         ])->findOrFail($id);
         // dd($pengajuan);
         return view('marketing.pengajuan-pemesanan.show', [
@@ -115,7 +119,18 @@ class PengajuanPemesananController extends Controller
                 'status_pengajuan' => 'acc',
             ]);
 
-            // 💡 Update harga_jual di tabel unit
+            // ✅ Cek Status Booking
+            $booking = CustomerBooking::where('user_id', $pemesanan->customer_id)
+                ->where('unit_id', $pemesanan->unit_id)
+                ->whereIn('status', ['active', 'forwarded'])
+                ->lockForUpdate()
+                ->first();
+
+            if ($booking) {
+                $booking->update(['status' => 'forwarded']);
+            }
+
+            // 💡 Update harga_jual di tabel unit dan set status jadi sold
             $unit = $pemesanan->unit;
 
             if ($pemesanan->cara_bayar === 'cash') {
@@ -123,7 +138,7 @@ class PengajuanPemesananController extends Controller
                 if ($cash) {
                     $unit->update([
                         'harga_jual'  => $cash->harga_jadi,
-                        'status_unit' => 'sold', // 🚀 Ubah status jadi sold
+                        'status_unit' => 'sold',
                     ]);
                 }
             } elseif ($pemesanan->cara_bayar === 'kpr') {
@@ -131,7 +146,7 @@ class PengajuanPemesananController extends Controller
                 if ($kpr) {
                     $unit->update([
                         'harga_jual'  => $kpr->harga_total,
-                        'status_unit' => 'sold', // 🚀 Ubah status jadi sold
+                        'status_unit' => 'sold',
                     ]);
                 }
             } else {
@@ -151,8 +166,8 @@ class PengajuanPemesananController extends Controller
             $cicilanText = '';
             foreach ($pemesanan->cicilan as $c) {
                 $cicilanText .= "- Pembayaran ke-{$c->pembayaran_ke}: Rp "
-                . number_format($c->nominal, 0, ',', '.')
-                . " (Jatuh tempo: " . $c->tanggal_jatuh_tempo->format('d/m/Y') . ")\n";
+                    . number_format($c->nominal, 0, ',', '.')
+                    . " (Jatuh tempo: " . $c->tanggal_jatuh_tempo->format('d/m/Y') . ")\n";
             }
             if (! $cicilanText) {
                 $cicilanText = "- Tidak ada cicilan.\n";
@@ -175,7 +190,7 @@ class PengajuanPemesananController extends Controller
                 "Terima kasih atas kepercayaannya 🙏. ";
 
             // Kirim WA
-            if ($pemesanan->sales->no_hp) {
+            if ($pemesanan->source == 'internal' && $pemesanan->sales->no_hp) {
                 $this->notification->sendWhatsApp($pemesanan->sales->no_hp, $messageSales);
             }
 
@@ -203,12 +218,29 @@ class PengajuanPemesananController extends Controller
             $unit->update(['status_unit' => 'booked']);
         }
 
-        // 2️⃣ Hapus pemesanan unit
+        // 2️⃣ Cek dan kembalikan status customer booking
+        $booking = CustomerBooking::where('user_id', $pemesanan->customer_id)
+            ->where('unit_id', $pemesanan->unit_id)
+            ->whereIn('status', ['active', 'forwarded'])
+            ->first();
+
+        if ($booking) {
+            $now = \Carbon\Carbon::now()->startOfDay();
+            $expiredDate = \Carbon\Carbon::parse($booking->tanggal_expired)->startOfDay();
+
+            if ($now->lte($expiredDate)) {
+                $booking->update(['status' => 'active']);
+            } else {
+                $booking->update(['status' => 'expired']);
+            }
+        }
+
+        // 3️⃣ Hapus pemesanan unit
         $pemesanan->delete();
 
         // 3️⃣ Buat pesan WA fleksibel
         $message = "Halo {$sales->username},\n\n" .
-            "Pengajuan pemesanan unit *{$unitName}* atas nama *{$customerName}* telah ditolak oleh Admin KPR.\n" .
+            "Pengajuan pemesanan unit *{$unitName}* atas nama *{$customerName}* ditolak oleh Starf KPR.\n" .
             "Data pemesanan tersebut telah dihapus secara otomatis dari sistem.\n\n" .
             "Silakan hubungi Admin terkait untuk mengetahui alasan penolakan.";
 
@@ -221,5 +253,5 @@ class PengajuanPemesananController extends Controller
             ->route('marketing.pengajuanPemesanan.index')
             ->with('success', 'Pengajuan ditolak, data dihapus, unit kembali ke booked, dan notifikasi WA dikirim.');
     }
-
+    
 }

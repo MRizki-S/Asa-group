@@ -33,8 +33,8 @@ class PemesananUnit extends Model
         'unit_id',
         'customer_id',
         'sales_id',
-
         'agent_id',
+        'input_by',
         'source',
 
         'tanggal_pemesanan',

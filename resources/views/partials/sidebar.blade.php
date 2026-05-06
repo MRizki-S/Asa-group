@@ -451,7 +451,7 @@
 
 
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                        Akun User - Booking
+                                        User Booking
                                     </span>
                                 </a>
                             </li>
@@ -694,6 +694,97 @@
                             </li>
                         @endcan
                         <!-- Menu Item Setting PPJB -->
+
+                        <!-- Menu Item Master Agent -->
+                        @canany(['master-agen.agen.read', 'master-agen.fee-agen.read'])
+                            <li>
+                                <a href="#" @click.prevent="selected = (selected === 'MasterAgen' ? '':'MasterAgen')"
+                                    class="menu-item group"
+                                    :class="(selected === 'MasterAgen') || (page === 'Agen' ||
+                                        page === 'FeeAgen') ? 'menu-item-active' : 'menu-item-inactive'">
+                                  <svg :class="(selected === 'MasterAgen') || (page === 'Agen' || page === 'FeeAgen') ?
+                                        'menu-item-icon-active' :
+                                        'menu-item-icon'"
+                                    class="w-5 h-5 flex-shrink-0"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    aria-hidden="true"
+                                    role="img">
+                                    <!-- kepala tengah -->
+                                    <circle cx="12" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- badan tengah -->
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6 19c0-3 3-5 6-5s6 2 6 5" />
+                                    <!-- kepala kiri -->
+                                    <circle cx="5" cy="10" r="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- kepala kanan -->
+                                    <circle cx="19" cy="10" r="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- badan kiri -->
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2 19c0-2 2-3.5 4-4" />
+                                    <!-- badan kanan -->
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M22 19c0-2-2-3.5-4-4" />
+                                </svg>
+
+
+
+                                    <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                        Master Agen
+                                    </span>
+
+                                    <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                        :class="[(selected === 'MasterAgen') || (page === 'Agen' ||
+                                                page === 'FeeAgen') ? 'menu-item-arrow-active' :
+                                            'menu-item-arrow-inactive',
+                                            sidebarToggle ? 'lg:hidden' : ''
+                                        ]"
+                                        width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </a>
+
+                                <!-- Dropdown Menu Start -->
+                                <div class="overflow-hidden transform translate"
+                                    :class="(selected === 'MasterAgen') || (page === 'Agen' || page === 'FeeAgen') ?
+                                    'block' : 'hidden'"warehouse-1>
+                                    <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                        class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+
+                                        {{-- Agent --}}
+                                        @can('master-agen.agen.read')
+                                            <li>
+                                                <a href="{{ route('marketing.agen.index') }}"
+                                                    class="menu-dropdown-item group"
+                                                    :class="page === 'Agen' ? 'menu-dropdown-item-active' :
+                                                        'menu-dropdown-item-inactive'">
+                                                    Agen
+                                                </a>
+                                            </li>
+                                        @endcan
+
+                                        {{-- Fee Agent --}}
+                                        @can('master-agen.fee-agen.read')
+                                            <li>
+                                            <a href="{{ route('marketing.feeAgen.index') }}"
+                                                    class="menu-dropdown-item group"
+                                                    :class="page === 'FeeAgen' ? 'menu-dropdown-item-active' :
+                                                        'menu-dropdown-item-inactive'">
+                                                    Fee Agen
+                                                </a>
+                                            </li>
+                                        @endcan
+                                    </ul>
+                                </div>
+                                <!-- Dropdown Menu End -->
+                            </li>
+                        @endcanany
+                        <!-- Menu Item Master Agent -->
                     </ul>
                 </div>
             @endif

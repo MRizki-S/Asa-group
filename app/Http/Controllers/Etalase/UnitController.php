@@ -44,25 +44,22 @@ class UnitController extends Controller
             $slugTahap = $request->input('tahapFil');
             $query->whereHas('tahap', fn($q) => $q->where('slug', $slugTahap));
         }
-        if ($request->filled('blokFil')) {
-            $slugBlok = $request->input('blokFil');
-            $query->whereHas('blok', fn($q) => $q->where('slug', $slugBlok));
-        }
         if ($request->filled('typeFil')) {
             $query->where('type_id', $request->input('typeFil'));
+        }
+        if ($request->filled('statusFil')) {
+            $query->where('status_unit', $request->input('statusFil'));
         }
 
         $units = $query->get();
 
         $tahapAll = Tahap::where('perumahaan_id', $perumahaan->id)->get();
-        $blokAll  = Blok::where('perumahaan_id', $perumahaan->id)->get();
         $typeAll  = Type::all();
 
         return view('Etalase.unit.listUnit', compact(
-            'perumahaan', 'units', 'tahapAll', 'blokAll', 'typeAll'
+            'perumahaan', 'units', 'tahapAll', 'typeAll'
         ))->with([
             'tahapSlug'   => $request->query('tahapFil'),
-            'blokSlug'    => $request->query('blokFil'),
             'typeId'      => $request->query('typeFil'),
             'breadcrumbs' => [
                 ['label' => $perumahaan->nama_perumahaan, 'url' => route('unit.indexGlobal')],

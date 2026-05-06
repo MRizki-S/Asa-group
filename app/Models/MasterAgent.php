@@ -16,11 +16,11 @@ class MasterAgent extends Model
         'nama_agent',
         'no_hp',
         'alamat',
-        'is_active',
+        'status',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'status' => 'boolean',
     ];
 
     // 🔗 Relasi

@@ -38,25 +38,14 @@
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Akun User
+                        User Booking Expired
                     </h3>
 
-                    <div class="flex gap-2">
-                        <a href="{{ route('marketing.akunUser.expired') }}"
-                            class="inline-block px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/50 transition-colors">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Lihat Booking Expired
-                            </span>
-                        </a>
-
-                        @can('marketing.customer.create')
-                            <a href="{{ route('marketing.akunUser.create') }}"
-                                class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                + Tambah Akun User - Booking
-                            </a>
-                        @endcan
-                    </div>
+                    <a href="{{ route('marketing.akunUser.index') }}"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Kembali
+                    </a>
                 </div>
 
 
@@ -126,11 +115,7 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                                 Status
                             </th>
-                            @canany(['marketing.customer.update', 'marketing.customer.delete'])
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Aksi
-                                </th>
-                            @endcanany
+
                         </tr>
                     </thead>
                     <tbody>
@@ -202,33 +187,7 @@
                                         {{ ucfirst($status) }}
                                     </span>
                                 </td>
-                                @canany(['marketing.customer.update', 'marketing.customer.delete'])
-                                    <td class="px-6 py-4 flex flex-wrap gap-2 justfy-ceniter">
-                                        @can('marketing.customer.update')
-                                            <a href="{{ route('marketing.akunUser.edit', $item->id) }}"
-                                                class="btn-edit inline-flex items-center gap-1
-                                            text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
-                                            dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
-                                            px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                            focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
-                                            active:scale-95">
-                                                Edit
-                                            </a>
-                                        @endcan
 
-                                        @can('marketing.customer.delete')
-                                            <form action="{{ route('marketing.akunUser.destroy', $item->id) }}" method="POST"
-                                                class="delete-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button"
-                                                    class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        @endcan
-                                    </td>
-                                @endcanany
                             </tr>
                         @endforeach
                     </tbody>
@@ -239,30 +198,8 @@
 
     </div>
     <!-- ===== Main Content End ===== -->
-
-    {{-- sweatalert 2 for delete data --}}
+     
     <script>
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.delete-btn')) {
-                const btn = e.target.closest('.delete-btn');
-                const form = btn.closest('.delete-form');
-
-                Swal.fire({
-                    title: 'Yakin hapus data ini?',
-                    text: "Apakah anda yakin menghapus Akun User & Booking Unit ini?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            }
-        });
 
         if (document.getElementById("table-akunUser") && typeof simpleDatatables.DataTable !== 'undefined') {
             const dataTable = new simpleDatatables.DataTable("#table-akunUser", {
