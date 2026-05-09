@@ -18,6 +18,7 @@ use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
+use App\Http\Controllers\Kpi\KpiDashboardController;
 use App\Http\Controllers\Kpi\KpiExportController;
 use App\Http\Controllers\Kpi\KpiKomponenController;
 use App\Http\Controllers\Kpi\KpiReviewController;
@@ -469,11 +470,13 @@ Route::middleware('auth')->prefix('kpi')->group(function () {
     Route::get('/request-review/{id}', [KpiReviewController::class, 'sendNotif'])->name('kpi.request.review');
     Route::put('/kpi-review/{id}', [KpiReviewController::class, 'update'])->name('kpi.review.update');
     Route::get('/kpi-review/{id}/edit', [KpiReviewController::class, 'edit'])->name('kpi.review.edit');
+    Route::get('/dashboard', [KpiDashboardController::class, 'index'])->name('kpi.dashboard.index');
 });
 
 Route::get('/kpi-user/get-role-data/{roleId}', [KpiUserController::class, 'getRoleData'])->name('kpi.user.getRoleData');
 Route::get('/kpi-user/{id}/export-excel', [KpiExportController::class, 'exportById'])->name('kpi.user.exportExcel');
 Route::post('kpi/user/export', [KpiExportController::class, 'export'])->name('kpi.user.export');
+Route::get('/kpi/dashboard/export', [KpiDashboardController::class, 'exportExcel'])->name('kpi.dashboard.export');
 
 Route::middleware('auth')->prefix('superadmin')->group(function () {
     Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
