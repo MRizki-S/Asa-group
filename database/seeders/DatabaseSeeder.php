@@ -14,6 +14,7 @@ use Database\Seeders\Permissions\KeuanganPermissionPart1;
 use Database\Seeders\Permissions\MarketingPermissionSeeder;
 use Database\Seeders\permissions\MasterAgenPermissionSeeder;
 use Database\Seeders\Permissions\SuperadminMenuPermissionSeeder;
+use Database\Seeders\permissions\TargetMarketingPermissionSeeder;
 use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
 use Database\Seeders\Roles\MarketingRoleSeeder;
 use Database\Seeders\Roles\ProjectManagerRoleSeeder;
@@ -40,6 +41,7 @@ class DatabaseSeeder extends Seeder
             MarketingPermissionSeeder::class,
             SuperadminMenuPermissionSeeder::class,
             MasterAgenPermissionSeeder::class,
+            TargetMarketingPermissionSeeder::class,
 
             // Keuangan Sistem
             KeuanganPermissionPart1::class

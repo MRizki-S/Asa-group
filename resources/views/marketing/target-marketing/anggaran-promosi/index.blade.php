@@ -80,6 +80,7 @@
                                         <span class="text-sm font-bold text-gray-400">Rp</span>
                                     </div>
                                     <input type="text" x-model="display" @input="onInput($event); targetAnggaran = value"
+                                        @if(!auth()->user()->can('target-marketing.anggaran-promosi.update') && !auth()->user()->can('target-marketing.anggaran-promsi.update')) readonly @endif
                                         class="block w-full rounded-lg border border-gray-200 bg-gray-50 p-3 pl-10 text-lg font-bold text-gray-800 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                         placeholder="0">
                                 </div>
@@ -93,6 +94,7 @@
                                         <span class="text-sm font-bold text-gray-400">Rp</span>
                                     </div>
                                     <input type="text" x-model="display" @input="onInput($event); realisasiAnggaran = value"
+                                        @if(!auth()->user()->can('target-marketing.anggaran-promosi.update') && !auth()->user()->can('target-marketing.anggaran-promsi.update')) readonly @endif
                                         :class="parseInt(realisasiAnggaran) > parseInt(targetAnggaran) ? 'bg-red-100 border-red-400 dark:bg-red-900/20 dark:border-red-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700'"
                                         class="block w-full rounded-lg border p-3 pl-10 text-lg font-bold text-gray-800 focus:border-blue-500 focus:ring-blue-500 dark:text-white"
                                         placeholder="0">
@@ -104,6 +106,7 @@
                         <div>
                             <label class="mb-2 block text-xs font-bold text-gray-500 uppercase">Catatan</label>
                             <textarea x-model="catatan" rows="4"
+                                @if(!auth()->user()->can('target-marketing.anggaran-promosi.update') && !auth()->user()->can('target-marketing.anggaran-promsi.update')) readonly @endif
                                 class="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm font-medium focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                 placeholder="Masukkan catatan atau keterangan anggaran..."></textarea>
                         </div>
@@ -122,6 +125,7 @@
                                     </div>
                                 </template>
                             </div>
+                            @canany(['target-marketing.anggaran-promosi.update', 'target-marketing.anggaran-promsi.update'])
                             <button type="submit" :disabled="loading"
                                 class="min-w-[200px] rounded-lg bg-blue-600 py-3 px-6 text-sm font-bold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                                 <span x-show="!loading">Simpan Anggaran</span>
@@ -133,6 +137,7 @@
                                     </svg>
                                 </template>
                             </button>
+                            @endcanany
                         </div>
                     </form>
                 </div>

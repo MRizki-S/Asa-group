@@ -787,7 +787,7 @@
                         <!-- Menu Item Master Agent -->
 
                         <!-- Menu Item Target Marketing -->
-                        {{-- @canany(['targer-marketing.targer-penjualan.read', 'target-marketing.anggaran-promosi.read']) --}}
+                        @canany(['target-marketing.target-penjualan.read', 'target-marketing.anggaran-promosi.read'])
                             <li>
                                 <a href="#" @click.prevent="selected = (selected === 'TargetMarketing' ? '':'TargetMarketing')"
                                     class="menu-item group"
@@ -819,9 +819,7 @@
                                     <!-- badan kanan -->
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M22 19c0-2-2-3.5-4-4" />
-                                </svg>
-
-
+                                  </svg>
 
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                         Target Marketing
@@ -830,7 +828,7 @@
                                     <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
                                         :class="[(selected === 'TargetMarketing') || (page === 'TargetPenjualan' ||
                                                 page === 'AnggaranPromosi') ? 'menu-item-arrow-active' :
-                                            'menu-item-arrow-inactive',
+                                             'menu-item-arrow-inactive',
                                             sidebarToggle ? 'lg:hidden' : ''
                                         ]"
                                         width="20" height="20" viewBox="0 0 20 20" fill="none"
@@ -848,7 +846,7 @@
                                         class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
 
                                         {{-- Target Penjualan --}}
-                                        {{-- @can('targer-marketing.targer-penjualan.read') --}}
+                                        @can('target-marketing.target-penjualan.read')
                                             <li>
                                                 <a href="{{ route('marketing.target-penjualan.index') }}"
                                                     class="menu-dropdown-item group"
@@ -857,10 +855,10 @@
                                                     Target Penjualan
                                                 </a>
                                             </li>
-                                        {{-- @endcan --}}
+                                        @endcan
 
                                         {{-- Anggaran Promosi --}}
-                                        {{-- @can('target-marketing.anggaran-promosi.read') --}}
+                                        @can('target-marketing.anggaran-promosi.read')
                                             <li>
                                                 <a href="{{ route('marketing.anggaran-promosi.index') }}"
                                                         class="menu-dropdown-item group"
@@ -869,12 +867,12 @@
                                                     Anggaran Promosi
                                                 </a>
                                             </li>
-                                        {{-- @endcan --}}
+                                        @endcan
                                     </ul>
                                 </div>
                                 <!-- Dropdown Menu End -->
                             </li>
-                        {{-- @endcanany --}}
+                        @endcanany
                         <!-- Menu Item Target Marketing -->
 <!--  -->
                     </ul>

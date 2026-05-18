@@ -75,6 +75,7 @@
                             <label class="mb-2 block text-xs font-bold text-gray-500 uppercase">Total Target (Unit)</label>
                             <div class="relative">
                                 <input type="number" x-model="quarterTarget" @input="autoDistribute()"
+                                    @cannot('target-marketing.target-penjualan.update') readonly @endcannot
                                     class="block w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-lg font-bold text-gray-800 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     placeholder="0">
                                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -83,11 +84,13 @@
                             </div>
                         </div>
 
+                        @can('target-marketing.target-penjualan.update')
                         <button type="submit" :disabled="loading"
                             class="w-full rounded-lg bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-700 transition-colors disabled:opacity-50">
                             <span x-show="!loading">Simpan Target</span>
                             <span x-show="loading">Menyimpan...</span>
                         </button>
+                        @endcan
                     </form>
                 </div>
             </div>
@@ -130,6 +133,7 @@
                                 </div>
                                 <div class="relative flex-1">
                                     <input type="number" x-model.number="month.target" @input="updateFromMonthly()"
+                                        @cannot('target-marketing.target-penjualan.update') readonly @endcannot
                                         class="w-full rounded-lg border border-gray-200 bg-white p-2.5 text-sm font-bold text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
                                         placeholder="0">
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
