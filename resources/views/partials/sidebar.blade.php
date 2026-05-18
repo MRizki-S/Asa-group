@@ -30,7 +30,7 @@
                             {{-- dahboard title --}}
                             <a href="/#" @click.prevent="selected = (selected === 'Dashboard' ? '':'Dashboard')"
                                 class="menu-item group"
-                                :class="(selected === 'Dashboard') || (page === 'Marketing' ||
+                                :class="(selected === 'Dashboard') || (page === 'Dashboard-Marketing' ||
                                     page === 'marketing' || page === 'Keuangan' || page === 'Produksi' ||
                                     page === 'Gudang') ?
                                 'menu-item-active' : 'menu-item-inactive'">
@@ -69,10 +69,10 @@
                                     {{-- Link menu Dashboard - Marketing --}}
                                     @can('dashboard.marketing.read')
                                         <li>
-                                            <a href="{{ route('under-development') }}" class="menu-dropdown-item group"
+                                            <a href="{{ route('dashboard.marketing.index') }}" class="menu-dropdown-item group"
                                                 :class="page === 'Dashboard-Marketing' ? 'menu-dropdown-item-active' :
                                                     'menu-dropdown-item-inactive'">
-                                                Marketing
+                                                Marketing Properti
                                             </a>
                                         </li>
                                     @endcan
@@ -785,6 +785,98 @@
                             </li>
                         @endcanany
                         <!-- Menu Item Master Agent -->
+
+                        <!-- Menu Item Target Marketing -->
+                        {{-- @canany(['targer-marketing.targer-penjualan.read', 'target-marketing.anggaran-promosi.read']) --}}
+                            <li>
+                                <a href="#" @click.prevent="selected = (selected === 'TargetMarketing' ? '':'TargetMarketing')"
+                                    class="menu-item group"
+                                    :class="(selected === 'TargetMarketing') || (page === 'TargetPenjualan' ||
+                                        page === 'AnggaranPromosi') ? 'menu-item-active' : 'menu-item-inactive'">
+                                  <svg :class="(selected === 'TargetMarketing') || (page === 'TargetPenjualan' || page === 'AnggaranPromosi') ?
+                                        'menu-item-icon-active' :
+                                        'menu-item-icon'"
+                                    class="w-5 h-5 flex-shrink-0"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    aria-hidden="true"
+                                    role="img">
+                                    <!-- kepala tengah -->
+                                    <circle cx="12" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- badan tengah -->
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6 19c0-3 3-5 6-5s6 2 6 5" />
+                                    <!-- kepala kiri -->
+                                    <circle cx="5" cy="10" r="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- kepala kanan -->
+                                    <circle cx="19" cy="10" r="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <!-- badan kiri -->
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2 19c0-2 2-3.5 4-4" />
+                                    <!-- badan kanan -->
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M22 19c0-2-2-3.5-4-4" />
+                                </svg>
+
+
+
+                                    <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                        Target Marketing
+                                    </span>
+
+                                    <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                        :class="[(selected === 'TargetMarketing') || (page === 'TargetPenjualan' ||
+                                                page === 'AnggaranPromosi') ? 'menu-item-arrow-active' :
+                                            'menu-item-arrow-inactive',
+                                            sidebarToggle ? 'lg:hidden' : ''
+                                        ]"
+                                        width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </a>
+
+                                <!-- Dropdown Menu Start -->
+                                <div class="overflow-hidden transform translate"
+                                    :class="(selected === 'TargetMarketing') || (page === 'TargetPenjualan' || page === 'AnggaranPromosi') ?
+                                    'block' : 'hidden'"warehouse-1>
+                                    <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                        class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+
+                                        {{-- Target Penjualan --}}
+                                        {{-- @can('targer-marketing.targer-penjualan.read') --}}
+                                            <li>
+                                                <a href="{{ route('marketing.target-penjualan.index') }}"
+                                                    class="menu-dropdown-item group"
+                                                    :class="page === 'TargetPenjualan' ? 'menu-dropdown-item-active' :
+                                                        'menu-dropdown-item-inactive'">
+                                                    Target Penjualan
+                                                </a>
+                                            </li>
+                                        {{-- @endcan --}}
+
+                                        {{-- Anggaran Promosi --}}
+                                        {{-- @can('target-marketing.anggaran-promosi.read') --}}
+                                            <li>
+                                                <a href="{{ route('marketing.anggaran-promosi.index') }}"
+                                                        class="menu-dropdown-item group"
+                                                        :class="page === 'AnggaranPromosi' ? 'menu-dropdown-item-active' :
+                                                            'menu-dropdown-item-inactive'">
+                                                    Anggaran Promosi
+                                                </a>
+                                            </li>
+                                        {{-- @endcan --}}
+                                    </ul>
+                                </div>
+                                <!-- Dropdown Menu End -->
+                            </li>
+                        {{-- @endcanany --}}
+                        <!-- Menu Item Target Marketing -->
+<!--  -->
                     </ul>
                 </div>
             @endif

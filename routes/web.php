@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Dashboard\MarketingDashboardController;
 use App\Http\Controllers\Etalase\BlokController;
 use App\Http\Controllers\Etalase\EtalaseJsonController;
 use App\Http\Controllers\Etalase\KualifikasiBlokController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AgenController;
 use App\Http\Controllers\Marketing\AkunUserController;
+use App\Http\Controllers\Marketing\AnggaranPromosiController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
 use App\Http\Controllers\Marketing\ManagePemesananController;
@@ -39,6 +41,7 @@ use App\Http\Controllers\Marketing\SettingPembatalanController;
 use App\Http\Controllers\Marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\Marketing\SettingPromoPpjbController;
+use App\Http\Controllers\Marketing\TargetPenjualanController;
 use App\Http\Controllers\PerumahaanSelectController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
@@ -88,6 +91,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/pilih-perumahaan', [PerumahaanSelectController::class, 'store'])
         ->name('perumahaanSession.store');
+});
+
+// Route Dashboard Dashboard
+Route::middleware('auth')->prefix('/dashboard')->group(function () {
+    Route::get('/marketing', [MarketingDashboardController::class, 'index'])
+        ->name('dashboard.marketing.index');
 });
 
 // Etalase Group
@@ -429,6 +438,15 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         Route::delete('/fee-agen/{feeAgen}/reject', [FeeAgenController::class, 'reject'])->name('marketing.feeAgen.reject');
         Route::delete('/fee-agen/{feeAgen}/cancel', [FeeAgenController::class, 'cancel'])->name('marketing.feeAgen.cancel');
         Route::patch('/fee-agen/{feeAgen}/non-aktif', [FeeAgenController::class, 'nonAktif'])->name('marketing.feeAgen.nonAktif');
+    });
+
+    // Route untuk target marketing
+    Route::prefix('target-marketing')->group(function () {
+        Route::get('/target-penjualan', [TargetPenjualanController::class, 'index'])->name('marketing.target-penjualan.index');
+        Route::post('/target-penjualan', [TargetPenjualanController::class, 'store'])->name('marketing.target-penjualan.store');
+
+        Route::get('/anggaran-promosi', [AnggaranPromosiController::class, 'index'])->name('marketing.anggaran-promosi.index');
+        Route::post('/anggaran-promosi', [AnggaranPromosiController::class, 'store'])->name('marketing.anggaran-promosi.store');
     });
 
 
