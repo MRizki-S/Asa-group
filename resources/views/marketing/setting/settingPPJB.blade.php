@@ -290,7 +290,7 @@
                             <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200">
                                 Bonus KPR
                             </h4>
-                            @if ($bonusCash && $bonusCash->status_aktif)
+                            @if ($bonusKpr && $bonusKpr->status_aktif)
                                 <span
                                     class="px-2.5 py-0.5 text-xs font-semibold rounded-full
                             bg-green-100 text-green-700 dark:bg-green-500 dark:text-white">
@@ -300,15 +300,15 @@
                                 <span
                                     class="px-2.5 py-0.5 text-xs font-semibold rounded-full
                             bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                    Tidak ada Bonus Cash aktif
+                                    Tidak ada Bonus KPR aktif
                                 </span>
                             @endif
                         </div>
 
                         <!-- Detail item -->
                         <ul class="space-y-3 mb-4">
-                            @if ($bonusCash && $bonusCash->items->count())
-                                @foreach ($bonusCash->items as $item)
+                            @if ($bonusKpr && $bonusKpr->items->count())
+                                @foreach ($bonusKpr->items as $item)
                                     <li class="flex items-center">
                                         <span class="text-gray-800 dark:text-gray-200">{{ $item->nama_bonus }}</span>
                                         <div
@@ -317,7 +317,7 @@
                                     </li>
                                 @endforeach
                             @else
-                                <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus Cash aktif.</li>
+                                <li class="text-gray-500 dark:text-gray-400 italic">Belum ada Bonus KPR aktif.</li>
                             @endif
                         </ul>
 

@@ -30,6 +30,8 @@ use App\Models\PemesananUnitCaraBayar;
 use App\Models\PemesananUnitPembatalan;
 use App\Models\PemesananUnitCashDokumen;
 use App\Models\PemesananUnitKeterlambatan;
+use App\Models\MasterAgentFee; // 🔹 Import model Fee Agen
+use App\Models\PemesananUnitFeeAgent; // 🔹 Import model Fee Agen Pemesanan
 use App\Services\NotificationGroupService;
 
 class PemesananUnitController extends Controller
@@ -69,7 +71,7 @@ class PemesananUnitController extends Controller
         // ===== Customer Booking (SUDAH DIFILTER PERUMAHAAAN) =====
         $query = CustomerBooking::with(['user', 'perumahaan', 'tahap', 'unit'])
             ->where('perumahaan_id', $perumahaanId) // 🔥 FILTER UTAMA
-            ->where('status', operator: 'active')
+            ->where('status', 'active')
             ->whereDoesntHave('user.pemesananSebagaiCustomer');
 
         // 🔐 Role restriction
@@ -97,6 +99,7 @@ class PemesananUnitController extends Controller
                     'harga_final'       => $b->unit->harga_final ?? 0,
                     'luas_kelebihan'    => $b->unit->luas_kelebihan,    // biarkan null
                     'nominal_kelebihan' => $b->unit->nominal_kelebihan, // biarkan null
+                    'source'            => $b->source,
                 ],
             ];
         });
@@ -144,6 +147,15 @@ class PemesananUnitController extends Controller
             ->latest('id')
             ->first();
 
+        // ===== 5️⃣ Fee Agen Aktif (Hanya SPV KPR) =====
+        $isSPVKPR = $user->hasRole('SPV Pembiayaan KPR');
+        $feeAgens = collect();
+        if ($isSPVKPR) {
+            $feeAgens = MasterAgentFee::where('status_pengajuan', 'acc')
+                ->latest()
+                ->get();
+        }
+
         // dd($bonusKpr);
         return view('marketing.pemesanan-unit.create', [
             'customersData' => $customersData,
@@ -153,6 +165,8 @@ class PemesananUnitController extends Controller
             'promoKpr'      => $promoKpr,
             'bonusCash'     => $bonusCash,
             'bonusKpr'      => $bonusKpr,
+            'feeAgens'      => $feeAgens, // 🔹 Pass data fee agen
+            'isSPVKPR'      => $isSPVKPR, // 🔹 Pass status SPV KPR
             'breadcrumbs'   => [
                 ['label' => 'Pemesanan Unit', 'url' => route('marketing.pemesananUnit.index')],
             ],
@@ -172,9 +186,10 @@ class PemesananUnitController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        $isSPVKPR = Auth::user()->hasRole('SPV Pembiayaan KPR');
+
         // 🧩 VALIDASI SEBELUM TRANSAKSI
-        $request->validate([
+        $rules = [
             // === FIELD UMUM ===
             'user_id'                   => 'required|exists:users,id',
             'tanggal_pemesanan'         => 'required|date',
@@ -232,8 +247,13 @@ class PemesananUnitController extends Controller
             'pembayaran_ke.*'           => 'required|integer|min:1',
             'tanggal_angsuran.*'        => 'required|date',
             'nominal_angsuran.*'        => 'required|numeric|min:0',
-        ], [
+        ];
 
+        if ($isSPVKPR) {
+            $rules['master_agent_fee_id'] = 'nullable|exists:master_agent_fee,id';
+        }
+
+        $request->validate($rules, [
             'required_if' => 'Field :attribute wajib diisi jika cara bayar adalah :value.',
         ]);
 
@@ -241,12 +261,34 @@ class PemesananUnitController extends Controller
         DB::beginTransaction();
 
         try {
-            // Ambil user (sales) yang login
-            $sales = Auth::user();
+            $inputBy = Auth::id();
 
-            // Ambil data unit yang dipesan
-            $unit         = Unit::findOrFail($request->unit_id);
+            // 1️⃣ Ambil data booking untuk mendapatkan source dan agent_id (BUG 3 - dengan Lock)
+            $booking = CustomerBooking::where('user_id', $request->user_id)
+                ->where('unit_id', $request->unit_id)
+                ->where('status', 'active')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$booking) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Booking tidak ditemukan atau sudah tidak aktif.');
+            }
+
+            // 2️⃣ Ambil data unit yang dipesan (BUG 2 - dengan Lock & Cek Status)
+            $unit = Unit::where('id', $request->unit_id)
+                ->where('status_unit', 'booked') // Harus sudah dibooking
+                ->lockForUpdate()
+                ->first();
+
+            if (!$unit) {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Unit tidak valid atau belum dibooking.');
+            }
+
             $harga_normal = $unit->harga_final;
+            $source       = $booking->source;
+            $agent_id     = $booking->agent_id;
 
             // Tentukan total_tagihan dan sisa_tagihan sesuai cara bayar
             if ($request->cara_bayar === 'cash') {
@@ -258,13 +300,16 @@ class PemesananUnitController extends Controller
 
             $sisa_tagihan = $total_tagihan;
 
-            // 1️⃣ Simpan data utama ke pemesanan_unit
+            // 3️⃣ Simpan data utama ke pemesanan_unit (Requirement 1)
             $pemesanan = PemesananUnit::create([
                 'perumahaan_id'     => $request->perumahaan_id,
                 'tahap_id'          => $request->tahap_id,
                 'unit_id'           => $request->unit_id,
                 'customer_id'       => $request->user_id,
-                'sales_id'          => $sales->id,
+                'sales_id'          => $source === 'internal' ? $inputBy : null, // Sales hanya jika internal
+                'agent_id'          => $source === 'agent' ? $agent_id : null,   // Agent jika source agent
+                'input_by'          => $inputBy,
+                'source'            => $source,
                 'tanggal_pemesanan' => $request->tanggal_pemesanan,
                 'cara_bayar'        => $request->cara_bayar,
                 'status_pengajuan'  => 'pending',
@@ -383,11 +428,28 @@ class PemesananUnitController extends Controller
                 }
             }
 
+            // 6️⃣ Simpan Fee Agent (Hanya jika SPV KPR dan ada fee yang dipilih)
+            if ($isSPVKPR && $request->filled('master_agent_fee_id') && $agent_id) {
+                $feeMaster = MasterAgentFee::find($request->master_agent_fee_id);
+                if ($feeMaster) {
+                    PemesananUnitFeeAgent::create([
+                        'pemesanan_unit_id'   => $pemesanan->id,
+                        'master_agent_fee_id' => $feeMaster->id,
+                        'nominal_snapshot'    => $feeMaster->nominal,
+                    ]);
+                }
+            }
+
+            // 7️⃣ Ubah status customer booking menjadi forwarded
+            if ($booking) {
+                $booking->update(['status' => 'forwarded']);
+            }
+
             // ✅ Commit transaksi
             DB::commit();
 
             // Ambil nama perumahan
-            $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
+            $namaPerumahan = $unit->perumahaan->nama_perumahaan ?? '-';
 
             // Mapping group berdasarkan perumahan
             $groupMap = [
@@ -399,6 +461,7 @@ class PemesananUnitController extends Controller
             $groupId = $groupMap[$namaPerumahan] ?? null;
 
             // Data lainnya
+            $namaSales = Auth::user()->nama_lengkap;
             $namaTahap = $unit->tahap->nama_tahap ?? '-';
             $namaUnit  = $unit->nama_unit ?? '-';
 
@@ -406,7 +469,7 @@ class PemesananUnitController extends Controller
             $messageGroup =
                 "🛎️ *Pengajuan Pemesanan Unit Baru*\n\n" .
                 "```\n" .
-                "Sales       : {$sales->nama_lengkap}\n" .
+                "Input By    : {$namaSales}\n" .
                 "Customer    : {$request->nama_pribadi}\n" .
                 "Perumahan   : {$namaPerumahan}\n" .
                 "Tahap       : {$namaTahap}\n" .

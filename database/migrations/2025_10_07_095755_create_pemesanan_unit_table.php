@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->foreignId('tahap_id')->constrained('tahap');
             $table->foreignId('unit_id')->constrained('unit');
             $table->foreignId('customer_id')->constrained('users');
-            $table->foreignId('sales_id')->constrained('users');
+            $table->foreignId('sales_id')->constrained('users')->nullable();
             $table->date('tanggal_pemesanan');
             $table->enum('cara_bayar', ['cash', 'kpr']);
             $table->enum('status_pengajuan', ['pending', 'acc', 'tolak'])->default('pending');

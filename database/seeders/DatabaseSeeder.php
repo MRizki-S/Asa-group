@@ -4,29 +4,31 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-use Illuminate\Database\Seeder;
-use Database\Seeders\master\MasterBankSeeder;
-use Database\Seeders\Roles\StaffKprRoleSeeder;
 use Database\Seeders\Master\AkunKeuanganSeeder;
-use Database\Seeders\Roles\MarketingRoleSeeder;
-use Database\Seeders\Roles\SuperadminRoleSeeder;
-use Database\Seeders\master\MasterKprDokumenSeeder;
-use Database\Seeders\Roles\ProjectManagerRoleSeeder;
-use Database\Seeders\Roles\StaffAdminUmumRoleSeeder;
-use Database\Seeders\Roles\StaffAkuntansiRoleSeeder;
-use Database\Seeders\users\UsersKeuanganSystemSeeder;
-use Database\Seeders\users\UsersMarketingSystemSeeder;
 use Database\Seeders\Master\KategoriAkunKeuanganSeeder;
+use Database\Seeders\master\MasterBankSeeder;
+use Database\Seeders\master\MasterKprDokumenSeeder;
+use Database\Seeders\Master\PerumahaanSeeder as MasterPerumahaanSeeder;
+use Database\Seeders\Master\UbsSeeder as MasterUbsSeeder;
 use Database\Seeders\Permissions\EtalasePermissionSeeder;
 use Database\Seeders\Permissions\KeuanganPermissionPart1;
 use Database\Seeders\Permissions\MarketingPermissionSeeder;
-use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
+use Database\Seeders\permissions\MasterAgenPermissionSeeder;
 use Database\Seeders\Permissions\SuperadminMenuPermissionSeeder;
-use Database\Seeders\Master\PerumahaanSeeder as MasterPerumahaanSeeder;
-use Database\Seeders\Master\UbsSeeder as MasterUbsSeeder;
 use Database\Seeders\Permissions\KpiPermissionSeeder;
+use Database\Seeders\permissions\TargetMarketingPermissionSeeder;
+use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
+use Database\Seeders\Roles\MarketingRoleSeeder;
+use Database\Seeders\Roles\ProjectManagerRoleSeeder;
+use Database\Seeders\Roles\StaffAdminUmumRoleSeeder;
+use Database\Seeders\Roles\StaffAkuntansiRoleSeeder;
+use Database\Seeders\Roles\StaffKprRoleSeeder;
+use Database\Seeders\Roles\SuperadminRoleSeeder;
+use Database\Seeders\users\UsersKeuanganSystemSeeder;
+use Database\Seeders\users\UsersMarketingSystemSeeder;
 use Database\Seeders\Roles\KpiRoleSeeder;
 use Database\Seeders\Users\UsersKpiSystemSeeder;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -42,6 +44,8 @@ class DatabaseSeeder extends Seeder
             EtalasePermissionSeeder::class,
             MarketingPermissionSeeder::class,
             SuperadminMenuPermissionSeeder::class,
+            MasterAgenPermissionSeeder::class,
+            TargetMarketingPermissionSeeder::class,
 
             // Keuangan Sistem
             KeuanganPermissionPart1::class,
