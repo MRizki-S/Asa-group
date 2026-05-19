@@ -13,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class KpiDashboardController extends Controller
 {
- public function index(Request $request)
+    public function index(Request $request)
     {
         $tahunAktif = date('Y');
         $pilihanTahun = [$tahunAktif - 1, $tahunAktif, $tahunAktif + 1];
@@ -21,26 +21,45 @@ class KpiDashboardController extends Controller
         $tahun = $request->input('tahun', $tahunAktif);
         $jabatanId = $request->input('jabatan');
 
-        $rawData = DB::table('kpi_user')
-            ->join('users', 'kpi_user.user_id', '=', 'users.id')
-            ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
-            ->join('kpi_komponen', 'kpi_user_komponen.komponen_id', '=', 'kpi_komponen.id')
-            ->join('roles', 'kpi_komponen.role_id', '=', 'roles.id')
-            ->where('kpi_user.tahun', $tahun)
+        // 1. Fetch all users of type 'karyawan' (with optional role/jabatan filter, excluding Superadmin)
+        $usersRaw = DB::table('users')
+            ->where('users.type', 'karyawan')
+            ->leftJoin('ubs', 'users.perumahaan_id', '=', 'ubs.id')
+            ->leftJoin('model_has_roles', function ($join) {
+                $join->on('users.id', '=', 'model_has_roles.model_id')
+                    ->where('model_has_roles.model_type', '=', 'App\Models\User');
+            })
+            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where(function ($query) {
+                $query->where('roles.name', '!=', 'Superadmin')
+                      ->orWhereNull('roles.name');
+            })
             ->when($jabatanId, function ($query, $jabatanId) {
                 return $query->where('roles.id', $jabatanId);
             })
             ->select(
-                'users.nama_lengkap as nama_karyawan',
-                'roles.name as jabatan',
-                'kpi_user.bulan',
-                'kpi_user_komponen.nilai_akhir'
+                'users.id as user_id',
+                'users.nama_lengkap',
+                'users.is_global',
+                'users.perumahaan_id',
+                'ubs.nama_ubs',
+                'roles.name as role_name'
             )
+            ->orderBy('users.nama_lengkap', 'asc')
             ->get();
 
-        $roles = DB::table('roles')->select('id', 'name')->orderBy('name', 'asc')->get();
+        // 2. Fetch all KPI component sums for the selected year
+        $kpiScores = DB::table('kpi_user')
+            ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
+            ->where('kpi_user.tahun', $tahun)
+            ->select(
+                'kpi_user.user_id',
+                'kpi_user.bulan',
+                DB::raw('SUM(kpi_user_komponen.nilai_akhir) as total_nilai')
+            )
+            ->groupBy('kpi_user.user_id', 'kpi_user.bulan')
+            ->get();
 
-        $dashboardData = [];
         $monthMap = [
             '1' => 'januari', '01' => 'januari', 'januari' => 'januari',
             '2' => 'februari', '02' => 'februari', 'februari' => 'februari', 'febuari' => 'februari',
@@ -56,33 +75,49 @@ class KpiDashboardController extends Controller
             '12' => 'desember', 'desember' => 'desember',
         ];
 
-        foreach ($rawData as $row) {
-            $jabatan = $row->jabatan;
-            $nama = $row->nama_karyawan;
-
-            $rawBulan = strtolower(trim($row->bulan));
-            $bulan = $monthMap[$rawBulan] ?? null;
-
-            if (!$bulan) continue;
-
-            if (!isset($dashboardData[$jabatan])) {
-                $dashboardData[$jabatan] = [];
+        // Map KPI scores: [user_id => [bulan_baku => total_nilai]]
+        $scoresMap = [];
+        foreach ($kpiScores as $score) {
+            $rawBulan = strtolower(trim($score->bulan));
+            $bulanBaku = $monthMap[$rawBulan] ?? null;
+            if ($bulanBaku) {
+                $scoresMap[$score->user_id][$bulanBaku] = (float) $score->total_nilai;
             }
-
-            if (!isset($dashboardData[$jabatan][$nama])) {
-                $dashboardData[$jabatan][$nama] = [
-                    'nama' => $nama,
-                    'jabatan' => $jabatan,
-                    'bulan' => array_fill_keys(array_values(array_unique($monthMap)), null)
-                ];
-            }
-
-            if (is_null($dashboardData[$jabatan][$nama]['bulan'][$bulan])) {
-                $dashboardData[$jabatan][$nama]['bulan'][$bulan] = 0;
-            }
-            $dashboardData[$jabatan][$nama]['bulan'][$bulan] += $row->nilai_akhir;
         }
 
+        $roles = DB::table('roles')->select('id', 'name')->orderBy('name', 'asc')->get();
+
+        $dashboardData = [];
+
+        // 3. Build dashboard structure grouped by Jabatan/Role
+        foreach ($usersRaw as $userRow) {
+            // Determine Jabatan/Role name group
+            $jabatanName = $userRow->role_name ?? 'LAINNYA';
+
+            $nama = $userRow->nama_lengkap;
+
+            // Initialize month scores with null
+            $userBulanScores = array_fill_keys(array_values(array_unique($monthMap)), null);
+
+            // Populate from scoresMap if exists
+            if (isset($scoresMap[$userRow->user_id])) {
+                foreach ($scoresMap[$userRow->user_id] as $bulanBaku => $scoreVal) {
+                    $userBulanScores[$bulanBaku] = $scoreVal;
+                }
+            }
+
+            if (!isset($dashboardData[$jabatanName])) {
+                $dashboardData[$jabatanName] = [];
+            }
+
+            $dashboardData[$jabatanName][] = [
+                'nama' => $nama,
+                'jabatan' => $jabatanName,
+                'bulan' => $userBulanScores
+            ];
+        }
+
+        // 4. Calculate Quarter averages
         $quarters = [
             'q1' => ['januari', 'februari', 'maret'],
             'q2' => ['april', 'mei', 'juni'],
@@ -90,8 +125,8 @@ class KpiDashboardController extends Controller
             'q4' => ['oktober', 'november', 'desember'],
         ];
 
-        foreach ($dashboardData as $jabatan => &$users) {
-            foreach ($users as $nama => &$data) {
+        foreach ($dashboardData as $jabatanName => &$users) {
+            foreach ($users as &$data) {
                 foreach ($quarters as $q => $months) {
                     $scores = [];
                     foreach ($months as $month) {
@@ -120,24 +155,45 @@ class KpiDashboardController extends Controller
         $tahun = $request->input('tahun', date('Y'));
         $jabatanId = $request->input('jabatan');
 
-        $rawData = DB::table('kpi_user')
-            ->join('users', 'kpi_user.user_id', '=', 'users.id')
-            ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
-            ->join('kpi_komponen', 'kpi_user_komponen.komponen_id', '=', 'kpi_komponen.id')
-            ->join('roles', 'kpi_komponen.role_id', '=', 'roles.id')
-            ->where('kpi_user.tahun', $tahun)
+        // 1. Fetch all users of type 'karyawan' (with optional role/jabatan filter, excluding Superadmin)
+        $usersRaw = DB::table('users')
+            ->where('users.type', 'karyawan')
+            ->leftJoin('ubs', 'users.perumahaan_id', '=', 'ubs.id')
+            ->leftJoin('model_has_roles', function ($join) {
+                $join->on('users.id', '=', 'model_has_roles.model_id')
+                    ->where('model_has_roles.model_type', '=', 'App\Models\User');
+            })
+            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where(function ($query) {
+                $query->where('roles.name', '!=', 'Superadmin')
+                      ->orWhereNull('roles.name');
+            })
             ->when($jabatanId, function ($query, $jabatanId) {
                 return $query->where('roles.id', $jabatanId);
             })
             ->select(
-                'users.nama_lengkap as nama_karyawan',
-                'roles.name as jabatan',
-                'kpi_user.bulan',
-                'kpi_user_komponen.nilai_akhir'
+                'users.id as user_id',
+                'users.nama_lengkap',
+                'users.is_global',
+                'users.perumahaan_id',
+                'ubs.nama_ubs',
+                'roles.name as role_name'
             )
+            ->orderBy('users.nama_lengkap', 'asc')
             ->get();
 
-        $dashboardData = [];
+        // 2. Fetch all KPI component sums for the selected year
+        $kpiScores = DB::table('kpi_user')
+            ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
+            ->where('kpi_user.tahun', $tahun)
+            ->select(
+                'kpi_user.user_id',
+                'kpi_user.bulan',
+                DB::raw('SUM(kpi_user_komponen.nilai_akhir) as total_nilai')
+            )
+            ->groupBy('kpi_user.user_id', 'kpi_user.bulan')
+            ->get();
+
         $monthMap = [
             '1' => 'januari', '01' => 'januari', 'januari' => 'januari',
             '2' => 'februari', '02' => 'februari', 'februari' => 'februari', 'febuari' => 'februari',
@@ -153,28 +209,44 @@ class KpiDashboardController extends Controller
             '12' => 'desember', 'desember' => 'desember',
         ];
 
-        foreach ($rawData as $row) {
-            $jabatan = $row->jabatan;
-            $nama = $row->nama_karyawan;
-            $bulan = $monthMap[strtolower(trim($row->bulan))] ?? null;
-
-            if (!$bulan) continue;
-
-            if (!isset($dashboardData[$jabatan])) $dashboardData[$jabatan] = [];
-            if (!isset($dashboardData[$jabatan][$nama])) {
-                $dashboardData[$jabatan][$nama] = [
-                    'nama' => $nama,
-                    'jabatan' => $jabatan,
-                    'bulan' => array_fill_keys(array_values(array_unique($monthMap)), null)
-                ];
+        // Map KPI scores: [user_id => [bulan_baku => total_nilai]]
+        $scoresMap = [];
+        foreach ($kpiScores as $score) {
+            $rawBulan = strtolower(trim($score->bulan));
+            $bulanBaku = $monthMap[$rawBulan] ?? null;
+            if ($bulanBaku) {
+                $scoresMap[$score->user_id][$bulanBaku] = (float) $score->total_nilai;
             }
-
-            if (is_null($dashboardData[$jabatan][$nama]['bulan'][$bulan])) {
-                $dashboardData[$jabatan][$nama]['bulan'][$bulan] = 0;
-            }
-            $dashboardData[$jabatan][$nama]['bulan'][$bulan] += (float) $row->nilai_akhir;
         }
 
+        $dashboardData = [];
+
+        // 3. Build dashboard data grouped by Jabatan/Role
+        foreach ($usersRaw as $userRow) {
+            $jabatanName = $userRow->role_name ?? 'LAINNYA';
+
+            $nama = $userRow->nama_lengkap;
+
+            $userBulanScores = array_fill_keys(array_values(array_unique($monthMap)), null);
+
+            if (isset($scoresMap[$userRow->user_id])) {
+                foreach ($scoresMap[$userRow->user_id] as $bulanBaku => $scoreVal) {
+                    $userBulanScores[$bulanBaku] = $scoreVal;
+                }
+            }
+
+            if (!isset($dashboardData[$jabatanName])) {
+                $dashboardData[$jabatanName] = [];
+            }
+
+            $dashboardData[$jabatanName][] = [
+                'nama' => $nama,
+                'jabatan' => $jabatanName,
+                'bulan' => $userBulanScores
+            ];
+        }
+
+        // 4. Calculate Quarter averages
         $quarters = [
             'q1' => ['januari', 'februari', 'maret'],
             'q2' => ['april', 'mei', 'juni'],
@@ -182,8 +254,8 @@ class KpiDashboardController extends Controller
             'q4' => ['oktober', 'november', 'desember'],
         ];
 
-        foreach ($dashboardData as $jabatan => &$users) {
-            foreach ($users as $nama => &$data) {
+        foreach ($dashboardData as $jabatanName => &$users) {
+            foreach ($users as &$data) {
                 foreach ($quarters as $q => $months) {
                     $scores = [];
                     foreach ($months as $month) {
@@ -251,7 +323,24 @@ class KpiDashboardController extends Controller
         $sheet->getStyle('A4:R4')->applyFromArray($borderStyle);
 
         $rowNum = 5;
-        foreach ($dashboardData as $jabatan => $users) {
+        foreach ($dashboardData as $jabatanName => $users) {
+            // Add Jabatan group subheader in Excel
+            $sheet->mergeCells("A{$rowNum}:R{$rowNum}");
+            $sheet->setCellValue("A{$rowNum}", strtoupper($jabatanName));
+            $sheet->getStyle("A{$rowNum}:R{$rowNum}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 11],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_LEFT,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFEAEAEA']
+                ]
+            ]);
+            $sheet->getStyle("A{$rowNum}:R{$rowNum}")->applyFromArray($borderStyle);
+            $rowNum++;
+
             foreach ($users as $user) {
                 $sheet->setCellValue('A' . $rowNum, $user['nama']);
                 $sheet->setCellValue('B' . $rowNum, $user['jabatan']);
