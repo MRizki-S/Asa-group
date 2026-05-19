@@ -85,7 +85,13 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($dashboardData as $jabatan => $users)
+                @forelse($dashboardData as $jabatanName => $users)
+                    {{-- Subheader Group Jabatan --}}
+                    <tr class="bg-gray-100 font-bold border-b border-gray-200">
+                        <td colspan="18" class="px-3 py-2 text-left bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-wider border-r border-gray-300">
+                            💼 {{ $jabatanName }}
+                        </td>
+                    </tr>
                     @foreach($users as $user)
                         <tr class="hover:bg-gray-50 border-b border-gray-200">
                             <td class="px-2 py-1.5 border-r border-gray-300 font-medium text-gray-900" title="{{ $user['nama'] }}">{{ $user['nama'] }}</td>
