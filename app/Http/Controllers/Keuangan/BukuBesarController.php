@@ -20,14 +20,30 @@ class BukuBesarController extends Controller
     private function getBukuBesarData(Request $request)
     {
         if (!$request->filled('akun_id') || !$request->filled('periode_id')) {
-            return [collect(), 0, null, null, 'debit'];
+            return [
+                'rowsUmum' => collect(),
+                'rowsPenyesuaian' => collect(),
+                'saldoAwal' => 0,
+                'periode' => null,
+                'saldoAkhirUmum' => 0,
+                'saldoAkhirTotal' => 0,
+                'normalBalance' => 'debit'
+            ];
         }
 
         $akunId = $request->akun_id;
         $periode = PeriodeKeuangan::find($request->periode_id);
 
         if (!$periode) {
-            return [collect(), 0, null, null, 'debit'];
+            return [
+                'rowsUmum' => collect(),
+                'rowsPenyesuaian' => collect(),
+                'saldoAwal' => 0,
+                'periode' => null,
+                'saldoAkhirUmum' => 0,
+                'saldoAkhirTotal' => 0,
+                'normalBalance' => 'debit'
+            ];
         }
 
         $tanggalMulai = Carbon::parse($periode->tanggal_mulai)->startOfDay();
@@ -67,18 +83,18 @@ class BukuBesarController extends Controller
             )
             ->get();
 
-        $rows = collect();
+        $rowsUmum = collect();
+        $rowsPenyesuaian = collect();
         $runningSaldo = $saldoAwal;
 
         foreach ($details as $detail) {
-
             if ($normalBalance === 'kredit') {
                 $runningSaldo += ($detail->kredit - $detail->debit);
             } else {
                 $runningSaldo += ($detail->debit - $detail->kredit);
             }
 
-            $rows->push((object) [
+            $rowObj = (object) [
                 'tanggal' => $detail->jurnal->tanggal,
                 'nomor_jurnal' => $detail->jurnal->nomor_jurnal,
                 'ubs_abbr' => $detail->jurnal->ubs ? $detail->jurnal->ubs->kode_ubs : 'HUB',
@@ -86,10 +102,27 @@ class BukuBesarController extends Controller
                 'debit' => $detail->debit,
                 'kredit' => $detail->kredit,
                 'saldo' => $runningSaldo,
-            ]);
+                'jenis_jurnal' => $detail->jurnal->jenis_jurnal,
+            ];
+
+            if ($detail->jurnal->jenis_jurnal === 'penyesuaian') {
+                $rowsPenyesuaian->push($rowObj);
+            } else {
+                $rowsUmum->push($rowObj);
+            }
         }
 
-        return [$rows, $saldoAwal, $periode, $runningSaldo, $normalBalance];
+        $saldoAkhirUmum = $rowsUmum->isNotEmpty() ? $rowsUmum->last()->saldo : $saldoAwal;
+
+        return [
+            'rowsUmum' => $rowsUmum,
+            'rowsPenyesuaian' => $rowsPenyesuaian,
+            'saldoAwal' => $saldoAwal,
+            'periode' => $periode,
+            'saldoAkhirUmum' => $saldoAkhirUmum,
+            'saldoAkhirTotal' => $runningSaldo,
+            'normalBalance' => $normalBalance
+        ];
     }
 
     public function index(Request $request)
@@ -108,7 +141,14 @@ class BukuBesarController extends Controller
                     : 'Lainnya';
             });
 
-        [$rows, $saldoAwal, $periodeAktif, $saldoAkhir, $normalBalance] = $this->getBukuBesarData($request);
+        $data = $this->getBukuBesarData($request);
+        $rowsUmum = $data['rowsUmum'];
+        $rowsPenyesuaian = $data['rowsPenyesuaian'];
+        $saldoAwal = $data['saldoAwal'];
+        $periodeAktif = $data['periode'];
+        $saldoAkhirUmum = $data['saldoAkhirUmum'];
+        $saldoAkhirTotal = $data['saldoAkhirTotal'];
+        $normalBalance = $data['normalBalance'];
 
         $ubsName = 'HUB (Pusat)';
         $isHub = true;
@@ -126,9 +166,11 @@ class BukuBesarController extends Controller
             ],
             'periodes' => $periodes,
             'akunKeuangan' => $akunKeuangan,
-            'rows' => $rows,
+            'rowsUmum' => $rowsUmum,
+            'rowsPenyesuaian' => $rowsPenyesuaian,
             'saldoAwal' => $saldoAwal,
-            'saldoAkhir' => $saldoAkhir,
+            'saldoAkhirUmum' => $saldoAkhirUmum,
+            'saldoAkhirTotal' => $saldoAkhirTotal,
             'periodeAktif' => $periodeAktif,
             'ubsData' => $ubsData,
             'ubsName' => $ubsName,
@@ -139,7 +181,7 @@ class BukuBesarController extends Controller
 
     public function exportExcel(Request $request)
     {
-        [$rows, $saldoAwal, $periodeAktif, $saldoAkhir, $normalBalance] = $this->getBukuBesarData($request);
+        $data = $this->getBukuBesarData($request);
         $akun = AkunKeuangan::find($request->akun_id);
 
         $ubsName = 'HUB (Pusat)';
@@ -154,24 +196,33 @@ class BukuBesarController extends Controller
         }
 
         // Penamaan file lebih informatif
-        $namaPeriode = $periodeAktif ? $periodeAktif->nama_periode : '-';
+        $namaPeriode = $data['periode'] ? $data['periode']->nama_periode : '-';
         $akunFileName = str_replace(' ', '_', ($akun->nama_akun ?? 'Semua'));
         $filename = 'BukuBesar_' . $ubsFileName . '_' . $akunFileName . '_' . $namaPeriode . '.xlsx';
 
         return Excel::download(
-            new BukuBesarExport($rows, $saldoAwal, $periodeAktif, $saldoAkhir, $akun, $ubsName, $normalBalance),
+            new BukuBesarExport(
+                $data['rowsUmum'],
+                $data['rowsPenyesuaian'],
+                $data['saldoAwal'],
+                $data['periode'],
+                $data['saldoAkhirUmum'],
+                $data['saldoAkhirTotal'],
+                $akun,
+                $ubsName,
+                $data['normalBalance']
+            ),
             $filename
         );
     }
 
     public function exportPdf(Request $request)
     {
-        [$rows, $saldoAwal, $periodeAktif, $saldoAkhir, $normalBalance] = $this->getBukuBesarData($request);
-
+        $data = $this->getBukuBesarData($request);
         $akun = AkunKeuangan::find($request->akun_id);
 
-        $totalDebit = $rows->sum('debit');
-        $totalKredit = $rows->sum('kredit');
+        $totalDebit = $data['rowsUmum']->sum('debit') + $data['rowsPenyesuaian']->sum('debit');
+        $totalKredit = $data['rowsUmum']->sum('kredit') + $data['rowsPenyesuaian']->sum('kredit');
 
         $ubsName = 'HUB (Pusat)';
         $isHub = true;
@@ -187,23 +238,25 @@ class BukuBesarController extends Controller
         }
 
         // Penamaan file lebih informatif
-        $namaPeriode = $periodeAktif ? $periodeAktif->nama_periode : '-';
+        $namaPeriode = $data['periode'] ? $data['periode']->nama_periode : '-';
         $akunFileName = str_replace(' ', '_', ($akun->nama_akun ?? 'Semua'));
         $filename = 'BukuBesar_' . $ubsFileName . '_' . $akunFileName . '_' . $namaPeriode . '.pdf';
 
         $pdf = Pdf::loadView('keuangan.buku-besar.export.pdf', [
-            'rows' => $rows,
-            'saldoAwal' => $saldoAwal,
+            'rowsUmum' => $data['rowsUmum'],
+            'rowsPenyesuaian' => $data['rowsPenyesuaian'],
+            'saldoAwal' => $data['saldoAwal'],
             'totalDebit' => $totalDebit,
             'totalKredit' => $totalKredit,
-            'saldoAkhir' => $saldoAkhir,
+            'saldoAkhirUmum' => $data['saldoAkhirUmum'],
+            'saldoAkhirTotal' => $data['saldoAkhirTotal'],
             'periodeAktif' => $namaPeriode,
-            'tanggalStart' => $periodeAktif->tanggal_mulai ?? null,
-            'tanggalEnd' => $periodeAktif->tanggal_selesai ?? null,
+            'tanggalStart' => $data['periode']->tanggal_mulai ?? null,
+            'tanggalEnd' => $data['periode']->tanggal_selesai ?? null,
             'akun' => $akun,
             'ubsName' => $ubsName,
             'isHub' => $isHub,
-            'normalBalance' => $normalBalance ?? 'debit',
+            'normalBalance' => $data['normalBalance'] ?? 'debit',
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download($filename);

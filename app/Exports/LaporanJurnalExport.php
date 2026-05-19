@@ -33,7 +33,7 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
 
     public function headings(): array
     {
-        return ['Tanggal', 'Kode Akun', 'Nama Akun', 'Debit', 'Kredit', 'Keterangan'];
+        return ['Tanggal', 'No. Jurnal', 'Tipe', 'Kode Akun', 'Nama Akun', 'Debit', 'Kredit', 'Keterangan'];
     }
 
     public function array(): array
@@ -44,15 +44,22 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
 
         foreach ($this->rows as $row) {
             $tanggalVal = '';
+            $noJurnalVal = '';
+            $jenisVal = '';
             if ($row->jurnal_id !== $lastJurnalId) {
                 $tanggalVal = $row->tanggal->format('d-m-Y');
                 if ($isHub) {
                     $tanggalVal .= "\n/ " . $row->ubs_abbr;
                 }
+                
+                $noJurnalVal = $row->nomor_jurnal;
+                $jenisVal = ucfirst($row->jenis_jurnal);
             }
 
             $data[] = [
                 $tanggalVal,
+                $noJurnalVal,
+                $jenisVal,
                 $row->kode_akun,
                 $row->nama_akun,
                 $row->debit > 0 ? $row->debit : 0,
@@ -62,18 +69,18 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
             $lastJurnalId = $row->jurnal_id;
         }
 
-        $data[] = ['', '', 'TOTAL', $this->totalDebit, $this->totalKredit, $this->totalDebit == $this->totalKredit ? 'SEIMBANG' : 'TIDAK SEIMBANG'];
+        $data[] = ['', '', '', '', 'TOTAL', $this->totalDebit, $this->totalKredit, $this->totalDebit == $this->totalKredit ? 'SEIMBANG' : 'TIDAK SEIMBANG'];
         return $data;
     }
 
     public function styles(Worksheet $sheet)
     {
         // 1. Tambahkan Judul Laporan
-        $sheet->mergeCells('A1:F1');
-        $sheet->setCellValue('A1', 'LAPORAN JURNAL UMUM (' . $this->ubsName . ')');
+        $sheet->mergeCells('A1:H1');
+        $sheet->setCellValue('A1', 'LAPORAN JURNAL (' . $this->ubsName . ')');
 
         // 2. Tambahkan Info Periode/Filter
-        $sheet->mergeCells('A2:F2');
+        $sheet->mergeCells('A2:H2');
         $subTitle = "Periode: " . ($this->periode->nama_periode ?? '-');
         if (!empty($this->filters['tanggalStart'])) {
             $subTitle = "Tanggal: " . $this->filters['tanggalStart'] . " s/d " . ($this->filters['tanggalEnd'] ?? 'Sekarang');
@@ -87,18 +94,18 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
         $sheet->getStyle('A1:A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         // Styling Header Tabel (Baris 4)
-        $sheet->getStyle('A4:F4')->applyFromArray([
+        $sheet->getStyle('A4:H4')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F81BD']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
         ]);
 
         // Format Angka & Border untuk isi tabel
-        $sheet->getStyle('A4:F' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet->getStyle('D5:E' . $lastRow)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('A4:H' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('F5:G' . $lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
         // Styling Baris Total
-        $sheet->getStyle('A' . $lastRow . ':F' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A' . $lastRow . ':H' . $lastRow)->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E9ECEF']]
         ]);
@@ -110,10 +117,12 @@ class LaporanJurnalExport implements FromArray, WithHeadings, WithStyles, Should
             $sheet->getStyle('A4:A' . $lastRow)->getAlignment()->setWrapText(true);
         }
 
-        // Mengatur kolom B dari baris 4 sampai baris terakhir agar rata kiri
-        $sheet->getStyle('B4:B' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        // Mengatur kolom D dari baris 4 sampai baris terakhir agar rata kiri (Kode Akun)
+        $sheet->getStyle('D4:D' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('D5:D' . $lastRow)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
 
-        $sheet->getStyle('B5:B' . $lastRow)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+        // No Jurnal & Tipe rata tengah
+        $sheet->getStyle('B4:C' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         return [];
     }

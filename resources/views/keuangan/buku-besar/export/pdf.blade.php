@@ -20,23 +20,11 @@
             padding-bottom: 10px;
         }
 
-        .company-name {
-            font-size: 16pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 0;
-            color: #2f5597;
-        }
-
         .report-title {
             font-size: 13pt;
             margin: 5px 0;
             font-weight: bold;
-        }
-
-        .info-sub {
-            font-size: 9pt;
-            color: #555;
+            color: #2f5597;
         }
 
         /* Informasi Akun & Periode */
@@ -79,9 +67,25 @@
             font-weight: bold;
         }
 
-        .row-footer {
-            background-color: #e9ecef;
+        .row-subtotal {
+            background-color: #eef2f7;
             font-weight: bold;
+            border-top: 1px solid #2f5597;
+            border-bottom: 1px solid #2f5597;
+        }
+
+        .row-header-adj {
+            background-color: #555555;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        .row-footer {
+            background-color: #d1d9e6;
+            font-weight: bold;
+            border-top: 2px solid #2f5597;
         }
 
         /* Utility */
@@ -95,7 +99,7 @@
 
         .currency-symbol {
             float: left;
-            color: #999;
+            color: #aaa;
             font-size: 7.5pt;
         }
 
@@ -105,7 +109,6 @@
             font-size: 8pt;
         }
 
-        /* Page numbering */
         .footer {
             position: fixed;
             bottom: -20px;
@@ -178,10 +181,8 @@
                 </td>
             </tr>
 
-            @php $currentSaldo = $saldoAwal; @endphp
-
-            @forelse($rows as $row)
-                @php $currentSaldo += ($row->debit - $row->kredit); @endphp
+            {{-- TRANSAKSI UMUM --}}
+            @foreach($rowsUmum as $row)
                 <tr>
                     <td class="text-center">
                         {{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}
@@ -191,8 +192,8 @@
                     </td>
                     <td>
                         {{ $row->keterangan }}
-                        @if(isset($row->jurnal_id))
-                            <br><span class="italic">Ref: #TRX-{{ $row->jurnal_id }}</span>
+                        @if(isset($row->nomor_jurnal))
+                            <br><span class="italic">Ref: {{ $row->nomor_jurnal }}</span>
                         @endif
                     </td>
                     <td class="text-right">
@@ -210,15 +211,59 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        <span class="currency-symbol">Rp</span> {{ number_format($currentSaldo, 0, ',', '.') }}
+                        <span class="currency-symbol">Rp</span> {{ number_format($row->saldo, 0, ',', '.') }}
                     </td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="text-center italic" style="padding: 20px;">Tidak ada transaksi pada periode ini.
-                    </td>
+            @endforeach
+
+            {{-- SALDO SEBELUM PENYESUAIAN --}}
+            <tr class="row-subtotal">
+                <td colspan="4" class="text-right" style="font-size: 8pt; text-transform: uppercase; color: #666;">Saldo Sebelum Penyesuaian</td>
+                <td class="text-right">
+                    <span class="currency-symbol">Rp</span> {{ number_format($saldoAkhirUmum, 0, ',', '.') }}
+                </td>
+            </tr>
+
+            {{-- SECTION: PENYESUAIAN --}}
+            @if($rowsPenyesuaian->count() > 0)
+                <tr class="row-header-adj">
+                    <td colspan="5">DATA JURNAL PENYESUAIAN</td>
                 </tr>
-            @endforelse
+                @foreach($rowsPenyesuaian as $row)
+                    <tr>
+                        <td class="text-center">
+                            {{ \Carbon\Carbon::parse($row->tanggal)->format('d/m/Y') }}
+                        </td>
+                        <td>
+                            {{ $row->keterangan }}
+                            @if(isset($row->nomor_jurnal))
+                                <br><span class="italic">Ref: {{ $row->nomor_jurnal }}</span>
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if($row->debit > 0)
+                                <span class="currency-symbol">Rp</span> {{ number_format($row->debit, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if($row->kredit > 0)
+                                <span class="currency-symbol">Rp</span> {{ number_format($row->kredit, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            <span class="currency-symbol">Rp</span> {{ number_format($row->saldo, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endforeach
+            @else
+                <tr class="italic">
+                    <td colspan="5" class="text-center" style="padding: 15px; color: #999;">-- Tidak ada data jurnal penyesuaian --</td>
+                </tr>
+            @endif
         </tbody>
         <tfoot>
             <tr class="row-footer">
@@ -229,8 +274,8 @@
                 <td class="text-right">
                     <span class="currency-symbol">Rp</span> {{ number_format($totalKredit, 0, ',', '.') }}
                 </td>
-                <td class="text-right" style="background-color: #d1d9e6;">
-                    <span class="currency-symbol">Rp</span> {{ number_format($saldoAkhir, 0, ',', '.') }}
+                <td class="text-right">
+                    <span class="currency-symbol">Rp</span> {{ number_format($saldoAkhirTotal, 0, ',', '.') }}
                 </td>
             </tr>
         </tfoot>

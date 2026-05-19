@@ -122,7 +122,7 @@
 <body>
 
     <div class="header-container">
-        <h2 class="report-title">LAPORAN JURNAL UMUM ({{ $ubsName }})</h2>
+        <h2 class="report-title">LAPORAN JURNAL ({{ $ubsName }})</h2>
         <div class="period-info">
             @if($tanggalStart || $tanggalEnd)
                 Rentang Tanggal: {{ $tanggalStart ?? '...' }} s/d {{ $tanggalEnd ?? '...' }}
@@ -135,11 +135,12 @@
     <table>
         <thead>
             <tr>
-                <th width="12%">Tanggal</th>
-                <th width="15%">Kode Akun</th>
-                <th width="30%">Akun / Keterangan</th>
-                <th width="15%">Debit</th>
-                <th width="15%">Kredit</th>
+                <th width="10%">Tanggal</th>
+                <th width="12%">No. Jurnal</th>
+                <th width="12%">Kode Akun</th>
+                <th width="31%">Akun / Keterangan</th>
+                <th width="17.5%">Debit</th>
+                <th width="17.5%">Kredit</th>
             </tr>
         </thead>
         <tbody>
@@ -155,6 +156,13 @@
                                     / {{ $row->ubs_abbr }}
                                 </div>
                             @endif
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if($row->jurnal_id !== $lastJurnalId)
+                            <span style="font-weight: bold; color: #444;">
+                                {{  $row->nomor_jurnal }}
+                            </span>
                         @endif
                     </td>
                     <td class="text-center">{{ $row->kode_akun }}</td>
@@ -188,7 +196,7 @@
         </tbody>
         <tfoot>
             <tr class="total-row">
-                <td colspan="3" class="text-right">TOTAL AKHIR</td>
+                <td colspan="4" class="text-right">TOTAL AKHIR</td>
                 <td class="text-right">
                     <span class="currency-prefix">Rp</span> {{ number_format($totalDebit, 0, ',', '.') }}
                 </td>
@@ -197,7 +205,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right" style="border:none; padding-top: 5px;">
+                <td colspan="6" class="text-right" style="border:none; padding-top: 5px;">
                     <span class="status-badge {{ $totalDebit == $totalKredit ? 'balanced' : 'unbalanced' }}">
                         Status: {{ $totalDebit == $totalKredit ? 'SEIMBANG (BALANCED)' : 'TIDAK SEIMBANG' }}
                     </span>

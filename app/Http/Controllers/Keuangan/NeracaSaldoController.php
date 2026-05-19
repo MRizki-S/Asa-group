@@ -52,9 +52,10 @@ class NeracaSaldoController extends Controller
         $ubsId = $request->ubs_id;
 
         foreach ($akuns as $akun) {
+            $normalBalance = $akun->kategori->normal_balance ?? 'D';
 
-            // saldo awal
-            $saldoAwal = JurnalDetail::where('akun_id', $akun->id)
+            // 1. Saldo Awal (Carry Over dari periode sebelumnya)
+            $saldoAwalQuery = JurnalDetail::where('akun_id', $akun->id)
                 ->whereHas('jurnal', function ($q) use ($tanggalMulai, $ubsId) {
                     $q->where('status', 'posted')
                         ->whereDate('tanggal', '<', $tanggalMulai);
@@ -65,63 +66,129 @@ class NeracaSaldoController extends Controller
                 ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(kredit),0) as total_kredit')
                 ->first();
 
-            $saDebit = $saldoAwal->total_debit ?? 0;
-            $saKredit = $saldoAwal->total_kredit ?? 0;
-
-            $normalBalance = $akun->kategori->normal_balance ?? 'D';
+            $saRawDebit = $saldoAwalQuery->total_debit ?? 0;
+            $saRawKredit = $saldoAwalQuery->total_kredit ?? 0;
 
             if ($normalBalance === 'D') {
-                $saNet = $saDebit - $saKredit;
+                $saNet = $saRawDebit - $saRawKredit;
                 $saTampilDebit = $saNet > 0 ? $saNet : 0;
                 $saTampilKredit = $saNet < 0 ? abs($saNet) : 0;
-            } else { // K
-                $saNet = $saKredit - $saDebit;
+            } else {
+                $saNet = $saRawKredit - $saRawDebit;
                 $saTampilKredit = $saNet > 0 ? $saNet : 0;
                 $saTampilDebit = $saNet < 0 ? abs($saNet) : 0;
             }
 
-            // total mutasi per akun
-            $mutasi = JurnalDetail::where('akun_id', $akun->id)
+            // 2. Mutasi Umum (Jurnal Umum)
+            $mutasiUmum = JurnalDetail::where('akun_id', $akun->id)
                 ->whereHas('jurnal', function ($q) use ($tanggalMulai, $tanggalSelesai, $ubsId) {
                     $q->where('status', 'posted')
+                        ->where('jenis_jurnal', 'umum')
                         ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
                     if ($ubsId && $ubsId !== 'all') {
                         $q->where('ubs_id', $ubsId);
                     }
                 })
-                ->selectRaw('
-                COALESCE(SUM(debit),0) as total_debit,
-                COALESCE(SUM(kredit),0) as total_kredit
-            ')
+                ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(kredit),0) as total_kredit')
                 ->first();
 
-            $mutDebit = $mutasi->total_debit ?? 0;
-            $mutKredit = $mutasi->total_kredit ?? 0;
+            $mutUmumDebit = $mutasiUmum->total_debit ?? 0;
+            $mutUmumKredit = $mutasiUmum->total_kredit ?? 0;
 
-            // saldo akhir
-            $sakDebitCalc = $saTampilDebit + $mutDebit;
-            $sakKreditCalc = $saTampilKredit + $mutKredit;
+            // Saldo Akhir Umum (Dibutuhkan untuk NS Penyesuaian)
+            $sakUmumDCalc = $saTampilDebit + $mutUmumDebit;
+            $sakUmumKCalc = $saTampilKredit + $mutUmumKredit;
 
             if ($normalBalance === 'D') {
-                $sakNet = $sakDebitCalc - $sakKreditCalc;
-                $sakTampilDebit = $sakNet > 0 ? $sakNet : 0;
-                $sakTampilKredit = $sakNet < 0 ? abs($sakNet) : 0;
+                $sakUmumNet = $sakUmumDCalc - $sakUmumKCalc;
+                $sakUmumTampilDebit = $sakUmumNet > 0 ? $sakUmumNet : 0;
+                $sakUmumTampilKredit = $sakUmumNet < 0 ? abs($sakUmumNet) : 0;
             } else {
-                $sakNet = $sakKreditCalc - $sakDebitCalc;
-                $sakTampilKredit = $sakNet > 0 ? $sakNet : 0;
-                $sakTampilDebit = $sakNet < 0 ? abs($sakNet) : 0;
+                $sakUmumNet = $sakUmumKCalc - $sakUmumDCalc;
+                $sakUmumTampilKredit = $sakUmumNet > 0 ? $sakUmumNet : 0;
+                $sakUmumTampilDebit = $sakUmumNet < 0 ? abs($sakUmumNet) : 0;
+            }
+
+            // 3. Mutasi Penyesuaian
+            $mutasiAdj = JurnalDetail::where('akun_id', $akun->id)
+                ->whereHas('jurnal', function ($q) use ($tanggalMulai, $tanggalSelesai, $ubsId) {
+                    $q->where('status', 'posted')
+                        ->where('jenis_jurnal', 'penyesuaian')
+                        ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+                    if ($ubsId && $ubsId !== 'all') {
+                        $q->where('ubs_id', $ubsId);
+                    }
+                })
+                ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(kredit),0) as total_kredit')
+                ->first();
+
+            $mutAdjDebit = $mutasiAdj->total_debit ?? 0;
+            $mutAdjKredit = $mutasiAdj->total_kredit ?? 0;
+
+            // Saldo Akhir Adj
+            $sakAdjDCalc = $sakUmumTampilDebit + $mutAdjDebit;
+            $sakAdjKCalc = $sakUmumTampilKredit + $mutAdjKredit;
+
+            if ($normalBalance === 'D') {
+                $sakAdjNet = $sakAdjDCalc - $sakAdjKCalc;
+                $sakAdjTampilDebit = $sakAdjNet > 0 ? $sakAdjNet : 0;
+                $sakAdjTampilKredit = $sakAdjNet < 0 ? abs($sakAdjNet) : 0;
+            } else {
+                $sakAdjNet = $sakAdjKCalc - $sakAdjDCalc;
+                $sakAdjTampilKredit = $sakAdjNet > 0 ? $sakAdjNet : 0;
+                $sakAdjTampilDebit = $sakAdjNet < 0 ? abs($sakAdjNet) : 0;
+            }
+
+            // 4. Saldo Akhir Final (Total Mutasi)
+            $mutTotalDebit = $mutUmumDebit + $mutAdjDebit;
+            $mutTotalKredit = $mutUmumKredit + $mutAdjKredit;
+
+            $sakFinalDCalc = $saTampilDebit + $mutTotalDebit;
+            $sakFinalKCalc = $saTampilKredit + $mutTotalKredit;
+
+            if ($normalBalance === 'D') {
+                $sakFinalNet = $sakFinalDCalc - $sakFinalKCalc;
+                $sakFinalTampilDebit = $sakFinalNet > 0 ? $sakFinalNet : 0;
+                $sakFinalTampilKredit = $sakFinalNet < 0 ? abs($sakFinalNet) : 0;
+            } else {
+                $sakFinalNet = $sakFinalKCalc - $sakFinalDCalc;
+                $sakFinalTampilKredit = $sakFinalNet > 0 ? $sakFinalNet : 0;
+                $sakFinalTampilDebit = $sakFinalNet < 0 ? abs($sakFinalNet) : 0;
             }
 
             $data->push((object) [
                 'kode_akun' => $akun->kode_akun,
                 'nama_akun' => $akun->nama_akun,
 
+                // Sesuai permintaan View (Final Only)
                 'sa_debit' => $saTampilDebit,
                 'sa_kredit' => $saTampilKredit,
-                'mutasi_debit' => $mutDebit,
-                'mutasi_kredit' => $mutKredit,
-                'sak_debit' => $sakTampilDebit,
-                'sak_kredit' => $sakTampilKredit,
+                'mutasi_debit' => $mutTotalDebit,
+                'mutasi_kredit' => $mutTotalKredit,
+                'sak_debit' => $sakFinalTampilDebit,
+                'sak_kredit' => $sakFinalTampilKredit,
+
+                // Detail untuk Excel (18 kolom)
+                'ns_awal_sa_debit' => $saTampilDebit,
+                'ns_awal_sa_kredit' => $saTampilKredit,
+                'ns_awal_mut_debit' => $mutUmumDebit,
+                'ns_awal_mut_kredit' => $mutUmumKredit,
+                'ns_awal_sak_debit' => $sakUmumTampilDebit,
+                'ns_awal_sak_kredit' => $sakUmumTampilKredit,
+
+                'ns_adj_sa_debit' => $sakUmumTampilDebit,
+                'ns_adj_sa_kredit' => $sakUmumTampilKredit,
+                'ns_adj_mut_debit' => $mutAdjDebit,
+                'ns_adj_mut_kredit' => $mutAdjKredit,
+                'ns_adj_sak_debit' => $sakAdjTampilDebit,
+                'ns_adj_sak_kredit' => $sakAdjTampilKredit,
+
+                'ns_akhir_sa_debit' => $saTampilDebit,
+                'ns_akhir_sa_kredit' => $saTampilKredit,
+                'ns_akhir_mut_debit' => $mutTotalDebit,
+                'ns_akhir_mut_kredit' => $mutTotalKredit,
+                'ns_akhir_sak_debit' => $sakFinalTampilDebit,
+                'ns_akhir_sak_kredit' => $sakFinalTampilKredit,
             ]);
         }
 

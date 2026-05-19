@@ -27,55 +27,38 @@ class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCu
 
     public function startCell(): string
     {
-        return 'A6'; // Tabel dimulai dari baris 6 (karena baris 6 & 7 dipakai header bertingkat)
+        return 'A6';
     }
 
     public function array(): array
     {
         $data = [];
-        $totalSA_D = 0;
-        $totalSA_K = 0;
-        $totalM_D = 0;
-        $totalM_K = 0;
-        $totalSK_D = 0;
-        $totalSK_K = 0;
+        $totals = array_fill(0, 18, 0);
 
         foreach ($this->rows as $row) {
-            $saD = $row->sa_debit;
-            $saK = $row->sa_kredit;
-            $skD = $row->sak_debit;
-            $skK = $row->sak_kredit;
+            $rowValues = [
+                $row->ns_awal_sa_debit,   $row->ns_awal_sa_kredit,
+                $row->ns_awal_mut_debit,  $row->ns_awal_mut_kredit,
+                $row->ns_awal_sak_debit,  $row->ns_awal_sak_kredit,
 
-            $data[] = [
-                $row->kode_akun,
-                $row->nama_akun,
-                $saD,
-                $saK,
-                $row->mutasi_debit,
-                $row->mutasi_kredit,
-                $skD,
-                $skK
+                $row->ns_adj_sa_debit,    $row->ns_adj_sa_kredit,
+                $row->ns_adj_mut_debit,   $row->ns_adj_mut_kredit,
+                $row->ns_adj_sak_debit,   $row->ns_adj_sak_kredit,
+
+                $row->ns_akhir_sa_debit,  $row->ns_akhir_sa_kredit,
+                $row->ns_akhir_mut_debit, $row->ns_akhir_mut_kredit,
+                $row->ns_akhir_sak_debit, $row->ns_akhir_sak_kredit
             ];
 
-            $totalSA_D += $saD;
-            $totalSA_K += $saK;
-            $totalM_D += $row->mutasi_debit;
-            $totalM_K += $row->mutasi_kredit;
-            $totalSK_D += $skD;
-            $totalSK_K += $skK;
+            $data[] = array_merge([$row->kode_akun, $row->nama_akun], $rowValues);
+
+            foreach ($rowValues as $idx => $val) {
+                $totals[$idx] += $val;
+            }
         }
 
         // Row Total
-        $data[] = [
-            '',
-            'TOTAL AKHIR',
-            $totalSA_D,
-            $totalSA_K,
-            $totalM_D,
-            $totalM_K,
-            $totalSK_D,
-            $totalSK_K
-        ];
+        $data[] = array_merge(['', 'TOTAL KESELURUHAN'], $totals);
 
         return $data;
     }
@@ -84,12 +67,12 @@ class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCu
     {
         $lastRow = $sheet->getHighestRow();
 
-        // 1. JUDUL & PERIODE (Header Atas)
-        $sheet->mergeCells('A1:H1');
-        $sheet->mergeCells('A2:H2');
-        $sheet->mergeCells('A3:H3');
+        // 1. JUDUL
+        $sheet->mergeCells('A1:T1');
+        $sheet->mergeCells('A2:T2');
+        $sheet->mergeCells('A3:T3');
 
-        $sheet->setCellValue('A1', 'NERACA SALDO - ' . strtoupper($this->ubsName));
+        $sheet->setCellValue('A1', 'NERACA SALDO (DETAIL PENYESUAIAN) - ' . strtoupper($this->ubsName));
         $sheet->setCellValue('A2', 'Periode: ' . ($this->labelPeriode ?? '-'));
         $sheet->setCellValue('A3', \Carbon\Carbon::parse($this->tanggalMulai)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($this->tanggalSelesai)->format('d M Y'));
 
@@ -97,60 +80,75 @@ class NeracaSaldoExport implements FromArray, WithStyles, ShouldAutoSize, WithCu
         $sheet->getStyle('A1')->getFont()->setSize(16)->setBold(true)->setColor(new Color('2F5597'));
         $sheet->getStyle('A2:A3')->getFont()->setItalic(true);
 
-        // 2. NESTED HEADER (Baris 6 & 7)
-        // Header Row 1
-        $sheet->setCellValue('A6', 'KODE AKUN')->mergeCells('A6:A7');
+        // 2. NESTED HEADERS (Row 5, 6, 7)
+        // Row 5: Main Sections
+        $sheet->setCellValue('C5', 'NERACA SALDO (SEBELUM PENYESUAIAN)')->mergeCells('C5:H5');
+        $sheet->setCellValue('I5', 'PROSES PENYESUAIAN (JURNAL JP)')->mergeCells('I5:N5');
+        $sheet->setCellValue('O5', 'NERACA SALDO AKHIR (FINAL)')->mergeCells('O5:T5');
+
+        $sheet->getStyle('C5:T5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C5:H5')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F2F2F2');
+        $sheet->getStyle('I5:N5')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E7E6E6');
+        $sheet->getStyle('O5:T5')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('DDEBF7');
+
+        // Row 6: Sub Concepts
+        $sheet->setCellValue('A6', 'KODE')->mergeCells('A6:A7');
         $sheet->setCellValue('B6', 'NAMA AKUN')->mergeCells('B6:B7');
-        $sheet->setCellValue('C6', 'SALDO AWAL')->mergeCells('C6:D6');
-        $sheet->setCellValue('E6', 'MUTASI')->mergeCells('E6:F6');
-        $sheet->setCellValue('G6', 'SALDO AKHIR')->mergeCells('G6:H6');
 
-        // Header Row 2
-        $sheet->setCellValue('C7', 'DEBIT');
-        $sheet->setCellValue('D7', 'KREDIT');
-        $sheet->setCellValue('E7', 'DEBIT');
-        $sheet->setCellValue('F7', 'KREDIT');
-        $sheet->setCellValue('G7', 'DEBIT');
-        $sheet->setCellValue('H7', 'KREDIT');
-
-        // Styling Header (Warna & Alignment)
-        $sheet->getStyle('A6:H7')->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2F5597']],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER
-            ],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'FFFFFF']]]
-        ]);
-
-        // 3. FORMAT DATA
-        // Zebra Striping
-        for ($i = 8; $i < $lastRow; $i++) {
-            if ($i % 2 == 0) {
-                $sheet->getStyle("A$i:H$i")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F9F9F9');
+        $concepts = ['Saldo Awal', 'Mutasi', 'Saldo Akhir'];
+        $cols = ['C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S'];
+        $idx = 0;
+        foreach (['C', 'I', 'O'] as $startCol) {
+            foreach ($concepts as $concept) {
+                $c = $cols[$idx++];
+                $nextC = chr(ord($c) + 1);
+                $sheet->setCellValue($c . '6', $concept)->mergeCells($c . '6:' . $nextC . '6');
             }
         }
 
-        // Format Accounting (Kolom C sampai H)
-        $accFormat = '"Rp" #,##0;-"Rp" #,##0;"";@';
+        // Row 7: D/K
+        for ($i = ord('C'); $i <= ord('T'); $i++) {
+            $col = chr($i);
+            $sheet->setCellValue($col . '7', ($i % 2 !== 0) ? 'DEBIT' : 'KREDIT');
+        }
 
-        $sheet->getStyle('C8:H' . $lastRow)->getNumberFormat()->setFormatCode($accFormat);
+        // Styling full header range
+        $sheet->getStyle('A5:T7')->applyFromArray([
+            'font' => ['bold' => true],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+        ]);
+        $sheet->getStyle('A6:B7')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('2F5597');
+        $sheet->getStyle('A6:B7')->getFont()->setColor(new Color('FFFFFF'));
 
-        // Kode Akun sebagai Text
-        $sheet->getStyle('A8:A' . $lastRow)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+        // 3. DATA STYLING
+        $accFormat = '#,##0;[Red]-#,##0;""';
+        $sheet->getStyle('C8:T' . $lastRow)->getNumberFormat()->setFormatCode($accFormat);
+
+        // Zebra Striping & Alignment
+        for ($i = 8; $i <= $lastRow; $i++) {
+            if ($i % 2 == 0 && $i < $lastRow) {
+                $sheet->getStyle("A$i:T$i")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F9F9F9');
+            }
+        }
+        $sheet->getStyle('A8:B' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('C8:T' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        // Highlight Final Result columns (O-T)
+        $sheet->getStyle('O8:T' . ($lastRow - 1))->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F2F9FF');
 
         // 4. BORDER & TOTAL
-        $sheet->getStyle('A6:H' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('D9D9D9');
+        // Full Table Border
+        $sheet->getStyle('A5:T' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('BFBFBF');
 
-        $sheet->getStyle('A' . $lastRow . ':H' . $lastRow)->applyFromArray([
+        // Total Row Styling
+        $sheet->getStyle('A' . $lastRow . ':T' . $lastRow)->applyFromArray([
             'font' => ['bold' => true],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'DDEBF7']],
-            'borders' => ['top' => ['borderStyle' => Border::BORDER_DOUBLE]]
         ]);
+        $sheet->getStyle('A' . $lastRow . ':T' . $lastRow)->getBorders()->getTop()->setBorderStyle(Border::BORDER_DOUBLE);
 
-        // 5. FREEZE PANES (Header tetap terlihat)
-        $sheet->freezePane('A8');
+        $sheet->freezePane('C8');
 
         return [];
     }
