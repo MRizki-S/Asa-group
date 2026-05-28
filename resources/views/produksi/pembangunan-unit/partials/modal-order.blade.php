@@ -213,7 +213,7 @@
                             <button type="submit"
                                 :disabled="loadingRequest || (!itemsToOrder.some(i => i.checked) && itemsAdditional.length === 0)"
                                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-50">
-                                Kirim Order
+                                <span x-text="loadingRequest ? 'Loading...' : 'Kirim Order'"></span>
                             </button>
                         </div>
                     </div>
