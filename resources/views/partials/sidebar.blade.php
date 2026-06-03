@@ -1271,7 +1271,7 @@
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
                                 <li>
-                                    <a href="{{ route('gudang.notaBarangMasuk.create') }}"
+                                    <a href="{{ route('gudang.permintaanBarang.index') }}"
                                         class="menu-dropdown-item group flex items-center"
                                         :class="page === 'PermintaanBarang' ? 'menu-dropdown-item-active' :
                                             'menu-dropdown-item-inactive'">

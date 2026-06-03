@@ -16,6 +16,7 @@ use App\Http\Controllers\Gudang\DraftNotaMasukController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
+use App\Http\Controllers\Gudang\PermintaanBarangController;
 use App\Http\Controllers\Gudang\StockBarangController;
 
 use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
@@ -478,6 +479,12 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
     Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
+    // Permintaan Barang Proyek
+    Route::get('/permintaan-barang', [PermintaanBarangController::class, 'index'])->name('gudang.permintaanBarang.index');
+    Route::get('/permintaan-barang/riwayat', [PermintaanBarangController::class, 'history'])->name('gudang.permintaanBarang.history');
+    Route::patch('/permintaan-barang/{id}/acc', [PermintaanBarangController::class, 'acc'])->name('gudang.permintaanBarang.acc');
+    Route::get('/permintaan-barang/{id}', [PermintaanBarangController::class, 'show'])->name('gudang.permintaanBarang.show');
 });
 
 // keuangan Group
