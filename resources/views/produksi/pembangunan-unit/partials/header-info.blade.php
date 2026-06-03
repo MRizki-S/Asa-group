@@ -118,11 +118,19 @@
                 </div>
             </div>
 
-            {{-- Tombol Laporan --}}
             <div class="flex gap-2">
-                <a href="#"
+                <a href="{{ route('produksi.pembangunanUnit.laporanBahan', ['id' => $data->id]) }}"
                     class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-                    <i class="fa-solid fa-file-invoice text-blue-500"></i>
+                    Laporan Bahan
+                </a>
+
+                <a href="{{ route('produksi.pembangunanUnit.laporanUpah', ['id' => $data->id]) }}"
+                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+                    Laporan Upah
+                </a>
+
+                <a href="{{ route('produksi.pembangunanUnit.laporanTermin.export', $data->id) }}"
+                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
                     Laporan Termin
                 </a>
             </div>

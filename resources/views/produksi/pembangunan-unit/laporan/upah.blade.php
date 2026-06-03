@@ -10,10 +10,6 @@
                         class="font-bold text-blue-600 uppercase">{{ $unit->unit->nama_unit }}</span></p>
             </div>
             <div class="flex gap-2">
-                <button onclick="window.print()"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200 transition uppercase">
-                    <i class="fa-solid fa-print me-2"></i>Cetak Laporan
-                </button>
                 <a href="{{ url()->previous() }}"
                     class="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-50 transition uppercase">
                     Kembali </a>
@@ -37,7 +33,7 @@
             </div>
             @php $selisihTotal = $laporan->sum('total_rap') - $laporan->sum('total_real'); @endphp
             <div
-                class="p-4 {{ $selisihTotal < 0 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100' }} rounded-2xl border">
+                class="p-4 {{ $selisihTotal < 0 ? 'bg-red-50 border-red-100' : 'bg-white border-gray-100' }} rounded-2xl border">
                 <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Sisa / Over Budget</p>
                 <p class="text-xl font-bold {{ $selisihTotal < 0 ? 'text-red-600' : 'text-gray-800' }}">
                     Rp {{ number_format($selisihTotal, 0, ',', '.') }}
