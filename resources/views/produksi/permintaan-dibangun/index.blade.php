@@ -84,7 +84,7 @@
                                     x-text="item.status"></span>
 
                                 <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a :href="'/produksi/pengajuan-pembangunan/' + item.id + '/edit'"
+                                    <a :href="'/produksi/permintaan-dibangun/' + item.id + '/edit'"
                                         class="p-2 text-gray-400 hover:text-blue-600 transition-colors">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -209,10 +209,10 @@
             </div>
         </div>
 
-        @include('produksi.pengajuan-pembangunan.partials.modal')
+        @include('produksi.permintaan-dibangun.partials.modal')
 
         <template x-for="item in allData" :key="'form-' + item.id">
-            <form :class="'delete-form-' + item.id" :action="'/produksi/pengajuan-pembangunan/' + item.id" method="POST"
+            <form :class="'delete-form-' + item.id" :action="'/produksi/permintaan-dibangun/' + item.id" method="POST"
                 style="display:none;">
                 @csrf @method('DELETE')
             </form>

@@ -15,7 +15,7 @@
                 </button>
             </div>
 
-            <form :action="'{{ route('produksi.pembangunanUnit.store') }}'" method="POST" class="p-4 space-y-4">
+            <form :action="'{{ route('produksi.konfirmasiPembangunan') }}'" method="POST" class="p-4 space-y-4">
                 @csrf
                 <input type="hidden" name="pengajuan_id" :value="selectedItem?.id">
 

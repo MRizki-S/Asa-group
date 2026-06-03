@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Produksi;
+namespace App\Http\Controllers\Produksi\PembangunanUnit;
 
 use App\Http\Controllers\Controller;
 use App\Models\PembangunanUnit;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class PembangunanUnitOrderController extends Controller
+class PembangunanUnitOrderBarangController extends Controller
 {
     public function store(Request $request)
     {

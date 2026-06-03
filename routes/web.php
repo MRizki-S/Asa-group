@@ -46,17 +46,18 @@ use App\Http\Controllers\Marketing\SettingPembatalanController;
 use App\Http\Controllers\Marketing\SettingPpjbController;
 use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\Marketing\SettingPromoPpjbController;
-use App\Http\Controllers\masterQcRap;
 use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Produksi\KonfirmasiPembangunanController;
 use App\Http\Controllers\Produksi\MasterQcRapController;
-use App\Http\Controllers\Produksi\MasterUpahController;
-use App\Http\Controllers\Produksi\PembangunanUnitController;
-use App\Http\Controllers\Produksi\PembangunanUnitOrderController;
-use App\Http\Controllers\Produksi\PembangunanUnitUpahController;
-use App\Http\Controllers\Produksi\PengajuanPembangunanUnitController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitOrderBarangController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitPengajuanUpahController;
+use App\Http\Controllers\Produksi\PenamaanUpahController;
+use App\Http\Controllers\Produksi\PermintaanDibangunController;
+use App\Http\Controllers\Produksi\PersetujuanUpahController;
+use App\Http\Controllers\Produksi\TerminController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
-use App\Models\MasterSatuan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -451,7 +452,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Riwayat Transfer stock gudang
     Route::get('/riwayat-transfer-stock', [TransferStockBarangController::class, 'riwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock');
     Route::get('/riwayat-transfer-stock/{nomorTransfer}', [TransferStockBarangController::class, 'showRiwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock.show');
-    // Tranfer penyesuain stok ubs 
+    // Tranfer penyesuain stok ubs
     Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');
     Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
     Route::get('/transfer-stock-penyesuain/stok/{barangId}/{ubsId}', [TransferPenyesuainStockController::class, 'getStokBarangUbsHub']);
@@ -519,33 +520,43 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
 
 // Produksi
 Route::middleware('auth')->prefix('produksi')->group(function () {
+    // Master QC RAP
     Route::resource('master-qc-rap', MasterQcRapController::class)->names('produksi.masterQcRap');
-    Route::resource('master-upah', MasterUpahController::class)->names('produksi.masterUpah');
-    Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
-    Route::resource('pengajuan-pembangunan', PengajuanPembangunanUnitController::class)->names('produksi.pengajuanPembangunanUnit');
 
-    Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderController::class, 'store'])
-        ->name('produksi.pembangunanUnit.orderStore');
-    Route::post('pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
-        ->name('produksi.pembangunanUnit.updateTask');
+    // Penamaan Upah
+    Route::resource('penamaan-upah', PenamaanUpahController::class)->names('produksi.masterUpah');
+
+    // Permintaan Dibangun
+    Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->names('produksi.pengajuanPembangunanUnit');
+    Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
+    Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
+
+    // Pembangunan Unit
+    Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
     Route::post('pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
         ->name('produksi.pembangunanUnit.updateSerahTerima');
-    Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitUpahController::class, 'store'])
-        ->name('produksi.pembangunanUnit.upahStore');
+    Route::post('pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
+        ->name('produksi.pembangunanUnit.updateTask');
     Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
         ->name('produksi.pembangunanUnit.updateTaskNote');
 
-    Route::get('persetujuan-upah', [PembangunanUnitUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
-    Route::patch('persetujuan-upah/{id}/update-status', [PembangunanUnitUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
-
-    Route::post('order/{order}/return', [PembangunanUnitOrderController::class, 'storeReturn'])
+    Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
+        ->name('produksi.pembangunanUnit.orderStore');
+    Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
         ->name('produksi.order.storeReturn');
 
-    Route::get('pembangunan-unit/{id}/laporan-upah', [PembangunanUnitController::class, 'laporanUpah'])
+    Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
+        ->name('produksi.pembangunanUnit.upahStore');
+
+    // Persetujuan Upah
+    Route::get('persetujuan-upah', [PersetujuanUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
+    Route::patch('persetujuan-upah/{id}/update-status', [PersetujuanUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
+
+    Route::get('pembangunan-unit/{id}/laporan-upah', [TerminController::class, 'laporanUpah'])
         ->name('produksi.pembangunanUnit.laporanUpah');
 });
 
-Route::get('keuangan/persetujuan-upah', [PembangunanUnitUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
+Route::get('keuangan/persetujuan-upah', [PersetujuanUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
 
 Route::middleware('auth')->prefix('superadmin')->group(function () {
     Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');

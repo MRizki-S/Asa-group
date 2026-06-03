@@ -83,7 +83,7 @@ class TestingSeeder extends Seeder
         ]);
 
         Role::create([
-            'name' => 'Pengawas Proyek'
+            'name' => 'Pengawas Unit'
         ]);
 
         $pengawas1 =  User::create([
@@ -97,7 +97,7 @@ class TestingSeeder extends Seeder
             'tanggal_expired' => null,
         ]);
 
-        $pengawas1->assignRole('Pengawas Proyek');
+        $pengawas1->assignRole('Pengawas Unit');
 
         MasterQcContainer::create([
             'nama_container' => 'Pembangunan Type1',
