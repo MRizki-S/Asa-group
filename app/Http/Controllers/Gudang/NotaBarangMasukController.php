@@ -46,7 +46,7 @@ class NotaBarangMasukController extends Controller
             $nowNomorNota = 'NOTA-0001';
         }
         // Ambil master barang
-        $masterBarangs = MasterBarang::select('id', 'kode_barang', 'nama_barang')
+        $masterBarangs = MasterBarang::where('is_stock', 1)->select('id', 'kode_barang', 'nama_barang')
             ->get();
 
         return view('gudang.nota-barang-masuk.create', [

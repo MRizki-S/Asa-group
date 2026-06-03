@@ -43,44 +43,67 @@
                     Daftar Nota Barang Masuk
                 </h3>
 
-                {{-- Filter Tanggal --}}
+                {{-- Filter --}}
                 <form method="GET" action="{{ route('gudang.daftarNotaMasuk.index') }}"
-                    class="flex items-center gap-2">
+                    class="flex flex-wrap items-end gap-3 mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                    
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bulan</label>
+                        <select name="bulan" class="rounded-lg border-gray-300 bg-white text-gray-800 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 min-w-[140px]">
+                            @foreach(range(1, 12) as $m)
+                                <option value="{{ $m }}" {{ (int)$bulan === $m ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                    <div class="relative" x-data="{ tanggal: '{{ request('tanggal', now()->toDateString()) }}' }">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tahun</label>
+                        <select name="tahun" class="rounded-lg border-gray-300 bg-white text-gray-800 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 min-w-[100px]">
+                            @php $currentYear = now()->year; @endphp
+                            @foreach(range($currentYear - 3, $currentYear + 1) as $y)
+                                <option value="{{ $y }}" {{ (int)$tahun === $y ? 'selected' : '' }}>
+                                    {{ $y }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <!-- Icon Kalender -->
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"> <svg
-                                class="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-                            </svg>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Per Hari (Opsional)</label>
+                        <div class="relative" x-data="{ tanggal: '{{ request('tanggal') }}' }">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                                </svg>
+                            </div>
+                            <input type="text" name="tanggal" x-ref="tanggal" x-init="flatpickr($refs.tanggal, {
+                                    defaultDate: tanggal,
+                                    dateFormat: 'Y-m-d',
+                                    altInput: true,
+                                    altFormat: 'd-m-Y',
+                                    allowInput: true
+                                })"
+                                placeholder="Pilih Tanggal"
+                                class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-900 dark:border-gray-700 dark:text-white min-w-[150px]">
                         </div>
-
-                        <!-- INPUT (Flatpickr handle format) -->
-                        <input type="text" name="tanggal" x-ref="tanggal" x-init="flatpickr($refs.tanggal, {
-                                defaultDate: tanggal,
-                                dateFormat: 'Y-m-d', // format untuk backend
-                                altInput: true,
-                                altFormat: 'd-m-Y', // format tampil UI
-                            })"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-            focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5
-            dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
 
                     <button type="submit"
-                        class="inline-flex items-center gap-1
-        rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white
-        hover:bg-blue-700 transition">
-                        Terapkan
+                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition focus:ring-4 focus:ring-blue-300 active:scale-95 shadow-sm">
+                        Tampilkan
                     </button>
 
-                    <div class="h-6 w-[1px] bg-gray-300 dark:bg-gray-700 mx-1"></div>
+                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}"
+                        class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                        Reset
+                    </a>
+
+                    <div class="h-10 w-[1px] bg-gray-300 dark:bg-gray-700 mx-1 hidden sm:block"></div>
 
                     <a href="{{route('gudang.draftNotaMasuk.index') }}"
-                        class="inline-flex items-center gap-1 rounded-md bg-yellow-400 px-3 py-1.5 text-sm font-medium text-yellow-900 hover:bg-yellow-500 transition">
+                        class="inline-flex items-center gap-2 rounded-lg bg-yellow-400 px-4 py-2 text-sm font-bold text-yellow-900 hover:bg-yellow-500 transition shadow-sm">
                         Draft Nota
                     </a>
                 </form>

@@ -44,7 +44,7 @@ class DraftNotaMasukController extends Controller
             ->where('status', 'Draft')
             ->firstOrFail();
 
-        $masterBarangs = MasterBarang::select('id', 'kode_barang', 'nama_barang')->get();
+        $masterBarangs = MasterBarang::where('is_stock', 1)->select('id', 'kode_barang', 'nama_barang')->get();
 
         // Siapkan data item untuk Alpine.js
         $existingItems = $nota->details->map(function ($detail) {

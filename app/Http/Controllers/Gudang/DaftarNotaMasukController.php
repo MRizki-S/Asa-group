@@ -15,23 +15,31 @@ class DaftarNotaMasukController extends Controller
     // daftar nota barang masuk
     public function index(Request $request)
     {
+        $bulan = $request->get('bulan', now()->month);
+        $tahun = $request->get('tahun', now()->year);
+        $tanggal = $request->get('tanggal');
+
         $query = NotaBarangMasuk::with('details.barang')
             ->where('status', 'posted')
             ->orderBy('created_at', 'desc');
 
-        // Jika ada request tanggal → pakai filter
+        // Jika ada request tanggal → pakai filter hari (override bulan/tahun)
         if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal_nota', $request->tanggal);
+            $query->whereDate('tanggal_nota', $tanggal);
         }
-        // Jika tidak ada request → default hari ini
+        // Jika tidak ada request tanggal → filter by bulan & tahun
         else {
-            $query->whereDate('tanggal_nota', now()->toDateString());
+            $query->whereMonth('tanggal_nota', $bulan)
+                  ->whereYear('tanggal_nota', $tahun);
         }
 
         $notas = $query->get();
 
         return view('gudang.daftar-nota-masuk.index', [
             'notas' => $notas,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+            'tanggal' => $tanggal,
             'breadcrumbs' => [
                 [
                     'label' => 'Daftar Nota Barang Masuk',
