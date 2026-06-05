@@ -9,10 +9,15 @@ class Ubs extends Model
 {
     protected $table = 'ubs';
 
-    protected $fillable = ['nama_ubs', 'alamat'];
+    protected $fillable = ['nama_ubs', 'alamat', 'kode_ubs'];
 
     public function jurnal()
     {
         return $this->hasMany(Jurnal::class);
+    }
+
+    public function stock()
+    {
+        return $this->hasMany(StockGudang::class, 'ubs_id');
     }
 }

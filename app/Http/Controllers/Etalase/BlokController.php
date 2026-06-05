@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Etalase;
 
 use App\Http\Controllers\Controller;
@@ -77,7 +78,9 @@ class BlokController extends Controller
             'perumahaan_id' => ['required', 'exists:perumahaan,id'],
             'tahap_id'      => ['required', 'exists:tahap,id'],
             'nama_blok'     => [
-                'required', 'string', 'max:100',
+                'required',
+                'string',
+                'max:100',
                 Rule::unique('blok', 'nama_blok')->where(function ($query) use ($request) {
                     return $query->where('perumahaan_id', $request->perumahaan_id)
                         ->where('tahap_id', $request->tahap_id);
@@ -117,7 +120,9 @@ class BlokController extends Controller
             'perumahaan_id' => ['required', 'exists:perumahaan,id'],
             'tahap_id'      => ['required', 'exists:tahap,id'],
             'nama_blok'     => [
-                'required', 'string', 'max:100',
+                'required',
+                'string',
+                'max:100',
                 Rule::unique('blok', 'nama_blok')->where(function ($query) use ($request) {
                     return $query->where('perumahaan_id', $request->perumahaan_id)
                         ->where('tahap_id', $request->tahap_id);
@@ -143,5 +148,4 @@ class BlokController extends Controller
             ->route('blok.index')
             ->with('success', 'Blok berhasil dihapus.');
     }
-
 }

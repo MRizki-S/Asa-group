@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\master;
+namespace Database\Seeders\Master;
 
 use App\Models\MasterBank;
 use Illuminate\Database\Seeder;
@@ -134,7 +134,6 @@ class MasterKprDokumenSeeder extends Seeder
                     'wajib'        => true,
                 ]);
             }
-
         }
 
         // Tambahkan SLF untuk bank BRI dengan id 3

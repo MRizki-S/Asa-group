@@ -51,7 +51,8 @@ class DatabaseSeeder extends Seeder
             KeuanganPermissionPart1::class,
 
             // Kpi
-            KpiPermissionSeeder::class
+            KpiPermissionSeeder::class,
+
         ]);
 
         // Role >> Assign permission (Saat ini masih selesai di marketing sistem)
@@ -70,7 +71,8 @@ class DatabaseSeeder extends Seeder
             StaffAkuntansiRoleSeeder::class,
 
             // Kpi
-            KpiRoleSeeder::class
+            KpiRoleSeeder::class,
+
         ]);
 
         // 3. Master Data
@@ -97,11 +99,16 @@ class DatabaseSeeder extends Seeder
 
             // User Kpi Sistem
             UsersKpiSystemSeeder::class,
+
         ]);
 
-        //  5. KPI Indicator
+        // 5. KPI Indicator
         $this->call([
-            KpiIndicatorSeeder::class
+            KpiIndicatorSeeder::class,
+        ]);
+
+        $this->call([
+            TestingSeeder::class
         ]);
     }
 }

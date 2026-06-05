@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\permissions;
+namespace Database\Seeders\Permissions;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -12,7 +12,7 @@ class KeuanganPermissionPart1 extends Seeder
     /**
      * Run the database seeds.
      */
-     public function run(): void
+    public function run(): void
     {
         // Reset cache permission
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

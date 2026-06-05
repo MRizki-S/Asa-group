@@ -67,4 +67,13 @@ class Unit extends Model
     {
         return $this->hasOne(CustomerBooking::class);
     }
+
+    // Produksi
+    public function pengajuanPembangunanUnit(){
+        return $this->hasMany(PengajuanPembangunanUnit::class);
+    }
+
+    public function pembangunanUnit(){
+        return $this->hasMany(PembangunanUnit::class);
+    }
 }

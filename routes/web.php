@@ -13,6 +13,16 @@ use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
 use App\Http\Controllers\FeeAgenController;
+use App\Http\Controllers\Gudang\DaftarNotaMasukController;
+use App\Http\Controllers\Gudang\DraftNotaMasukController;
+use App\Http\Controllers\Gudang\MasterBarangController;
+use App\Http\Controllers\Gudang\MasterSatuanBarangController;
+use App\Http\Controllers\Gudang\NotaBarangMasukController;
+use App\Http\Controllers\Gudang\PermintaanBarangController;
+use App\Http\Controllers\Gudang\StockBarangController;
+
+use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
+use App\Http\Controllers\Gudang\TransferStockBarangController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Keuangan\BukuBesarController;
 use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
@@ -48,6 +58,15 @@ use App\Http\Controllers\Marketing\SettingPpjbJsonController;
 use App\Http\Controllers\Marketing\SettingPromoPpjbController;
 use App\Http\Controllers\Marketing\TargetPenjualanController;
 use App\Http\Controllers\PerumahaanSelectController;
+use App\Http\Controllers\Produksi\KonfirmasiPembangunanController;
+use App\Http\Controllers\Produksi\MasterQcRapController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitOrderBarangController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitPengajuanUpahController;
+use App\Http\Controllers\Produksi\PenamaanUpahController;
+use App\Http\Controllers\Produksi\PermintaanDibangunController;
+use App\Http\Controllers\Produksi\PersetujuanUpahController;
+use App\Http\Controllers\Produksi\TerminController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use Illuminate\Support\Facades\Http;
@@ -261,7 +280,6 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             ->name('marketing.adendum.reject');
     });
 
-
     // route setting ppjb
     Route::prefix('/setting')->group(function () {
         // halaman utama setting
@@ -461,6 +479,54 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     });
 });
 
+// Gudang
+Route::middleware('auth')->prefix('gudang')->group(function () {
+
+    // Stock Barang
+    Route::get('/stok-barang', [StockBarangController::class, 'stockIndex'])
+        ->name('gudang.stockBarang.index');
+    Route::get('/stok-barang/export-pdf', [StockBarangController::class, 'exportPdf'])->name('gudang.stockBarang.exportPdf');
+    Route::get('/stok-barang/export-excel', [StockBarangController::class, 'exportExcel'])->name('gudang.stockBarang.exportExcel');
+    // Transfer Stock Barang
+    Route::get('/transfer-stock-barang', [TransferStockBarangController::class, 'create'])->name('gudang.transferStockBarang.create');
+    Route::post('/transfer-stock-barang/store', [TransferStockBarangController::class, 'store'])->name('gudang.transferStockBarang.store');
+    Route::get('/transfer-stock-barang/satuan-dan-stok/{barangId}', [TransferStockBarangController::class, 'getSatuanDanStok']);
+    // Riwayat Transfer stock gudang
+    Route::get('/riwayat-transfer-stock', [TransferStockBarangController::class, 'riwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock');
+    Route::get('/riwayat-transfer-stock/{nomorTransfer}', [TransferStockBarangController::class, 'showRiwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock.show');
+    // Tranfer penyesuain stok ubs
+    Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');
+    Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
+    Route::get('/transfer-stock-penyesuain/stok/{barangId}/{ubsId}', [TransferPenyesuainStockController::class, 'getStokBarangUbsHub']);
+
+    // Master satuan barang controller
+    Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');
+
+    // Master Barang
+    Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
+
+    // Tambah Nota Masuk
+    Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
+    Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+    Route::get('/barang/{id}/satuan', [NotaBarangMasukController::class, 'getSatuan']);
+    // List Draft nota masuk
+    Route::get('/draft-nota-masuk', [DraftNotaMasukController::class, 'index'])->name('gudang.draftNotaMasuk.index');
+    Route::get('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'edit'])->name('gudang.draftNotaMasuk.edit');
+    Route::patch('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'update'])->name('gudang.draftNotaMasuk.update'); /// update change draft nota masuk
+    Route::patch('/draft-nota-masuk/{nomorNota}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit'); /// submit draft nota masuk menjadi posting
+    Route::delete('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
+
+    // Daftar Nota Masuk
+    Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
+    Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
+    Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
+    // Permintaan Barang Proyek
+    Route::get('/permintaan-barang', [PermintaanBarangController::class, 'index'])->name('gudang.permintaanBarang.index');
+    Route::get('/permintaan-barang/riwayat', [PermintaanBarangController::class, 'history'])->name('gudang.permintaanBarang.history');
+    Route::patch('/permintaan-barang/{id}/acc', [PermintaanBarangController::class, 'acc'])->name('gudang.permintaanBarang.acc');
+    Route::get('/permintaan-barang/{id}', [PermintaanBarangController::class, 'show'])->name('gudang.permintaanBarang.show');
+});
 
 // keuangan Group
 Route::middleware('auth')->prefix('keuangan')->group(function () {
@@ -500,6 +566,52 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
         Route::get('/neraca-saldo/export-pdf', [NeracaSaldoController::class, 'exportPdf'])->name('keuangan.neracaSaldo.exportPdf');
     });
 });
+
+// Produksi
+Route::middleware('auth')->prefix('produksi')->group(function () {
+    // Master QC RAP
+    Route::resource('master-qc-rap', MasterQcRapController::class)->names('produksi.masterQcRap');
+
+    // Penamaan Upah
+    Route::resource('penamaan-upah', PenamaanUpahController::class)->names('produksi.masterUpah');
+
+    // Permintaan Dibangun
+    Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->names('produksi.pengajuanPembangunanUnit');
+    Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
+    Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
+
+    // Pembangunan Unit
+    Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
+    Route::post('pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
+        ->name('produksi.pembangunanUnit.updateSerahTerima');
+    Route::post('pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
+        ->name('produksi.pembangunanUnit.updateTask');
+    Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
+        ->name('produksi.pembangunanUnit.updateTaskNote');
+
+    Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
+        ->name('produksi.pembangunanUnit.orderStore');
+    Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
+        ->name('produksi.order.storeReturn');
+
+    Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
+        ->name('produksi.pembangunanUnit.upahStore');
+
+    // Persetujuan Upah
+    Route::get('persetujuan-upah', [PersetujuanUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
+    Route::patch('persetujuan-upah/{id}/update-status', [PersetujuanUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
+
+
+    // Laporan
+    Route::get('/pembangunan-unit/{id}/laporan-upah/{qcId?}', [TerminController::class, 'laporanUpah'])
+        ->name('produksi.pembangunanUnit.laporanUpah');
+    Route::get('/pembangunan-unit/{id}/laporan-bahan/{qcId?}', [TerminController::class, 'laporanBahan'])
+        ->name('produksi.pembangunanUnit.laporanBahan');
+    Route::get('/pembangunan-unit/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTermin'])
+        ->name('produksi.pembangunanUnit.laporanTermin.export');
+});
+
+Route::get('keuangan/persetujuan-upah', [PersetujuanUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
 
 Route::middleware('auth')->prefix('kpi')->group(function () {
     Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');

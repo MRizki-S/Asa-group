@@ -212,3 +212,21 @@
     color: #6b7280 !important;
     background-color: #1f2937 !important;
 }
+
+    .select2-results__option[aria-disabled=true] {
+        display: none !important; /* ATAU gunakan style di bawah jika ingin tetap tampil tapi abu-abu */
+    }
+
+    .select2-results__option[aria-disabled=true] {
+        display: block !important;
+        color: #9ca3af !important;
+        background-color: #f3f4f6 !important;
+        text-decoration: line-through !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }
+
+    .dark .select2-results__option[aria-disabled=true] {
+        background-color: #374151 !important;
+        color: #6b7280 !important;
+    }

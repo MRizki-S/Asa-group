@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Models\User;
@@ -52,5 +53,22 @@ class Type extends Model
     public function disetujuiOleh()
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
+    }
+
+    // produksi
+
+    public function qcContainer()
+    {
+        return $this->hasMany(MasterQcContainer::class);
+    }
+
+    public function rapBahan()
+    {
+        return $this->hasMany(MasterRapBahan::class);
+    }
+
+    public function rapUpah()
+    {
+        return $this->hasMany(MasterRapUpah::class);
     }
 }

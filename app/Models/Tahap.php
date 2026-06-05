@@ -72,4 +72,13 @@ class Tahap extends Model
     {
         return $this->hasMany(Unit::class);
     }
+
+    // Produksi
+    public function pengajuanPembangunanUnit(){
+        return $this->hasMany(PengajuanPembangunanUnit::class);
+    }
+
+    public function pembangunanUnit(){
+        return $this->hasMany(PembangunanUnit::class);
+    }
 }
