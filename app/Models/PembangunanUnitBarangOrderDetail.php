@@ -18,13 +18,13 @@ class PembangunanUnitBarangOrderDetail extends Model
         'nama_barang',
         'satuan',
         'jumlah_base',
+        'jumlah_final',
+        'nota_detail_id',
         'konfirmasi',
         'rap_bahan_id',
         'alasan_permintaan_tidak_sesuai_rap',
-        'jumlah_return',
-        'keterangan_return',
         'harga_satuan_snapshot',
-        'harga_total_snapshot'
+        'harga_total_snapshot',
     ];
 
     public function order(): BelongsTo
@@ -40,5 +40,10 @@ class PembangunanUnitBarangOrderDetail extends Model
     public function rapBahan(): BelongsTo
     {
         return $this->belongsTo(PembangunanUnitRapBahan::class, 'rap_bahan_id');
+    }
+
+    public function notaDetail(): BelongsTo
+    {
+        return $this->belongsTo(NotaBarangMasukDetail::class, 'nota_detail_id');
     }
 }

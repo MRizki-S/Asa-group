@@ -21,7 +21,7 @@ class PembangunanUnitOrderBarangController extends Controller
         $this->notificationGroup = $notificationGroup;
     }
 
-    public function sendGroupNotificationOrder($pembangunanUnit, $order, $jenis = 'permintaan')
+    public function sendGroupNotificationOrder(PembangunanUnit $pembangunanUnit)
     {
         $pembangunanUnit->loadMissing(['unit.tahap.perumahaan', 'pembangunanUnitQc']);
 
@@ -35,13 +35,9 @@ class PembangunanUnitOrderBarangController extends Controller
 
         if (!$groupId) return;
 
-        if ($jenis === 'permintaan') {
-            $header = "📦 *PENGAJUAN PERMINTAAN BAHAN*";
-            $body = "Dear *Tim Logistik/Gudang*, terdapat pengajuan permintaan bahan material baru dari lapangan.";
-        } else {
-            $header = "🔄 *PENGAJUAN RETUR BAHAN*";
-            $body = "Dear *Tim Logistik/Gudang*, terdapat pengajuan pengembalian (retur) bahan material dari lapangan.";
-        }
+        $header = "📦 *PENGAJUAN PERMINTAAN BAHAN*";
+        $body = "Dear *Tim Logistik/Gudang*, terdapat pengajuan permintaan bahan material baru dari lapangan.";
+
 
         $messageGroup = "{$header}\n\n"
             . "{$body}\n\n"
@@ -106,7 +102,7 @@ class PembangunanUnitOrderBarangController extends Controller
                 ]);
             }
 
-            $this->sendGroupNotificationOrder($pembangunanUnit, $order, 'permintaan');
+            $this->sendGroupNotificationOrder($pembangunanUnit);
 
             DB::commit();
             return response()->json(['message' => 'Permintaan barang berhasil dikirim.']);
@@ -117,58 +113,4 @@ class PembangunanUnitOrderBarangController extends Controller
     }
 
     public function update(Request $request) {}
-
-    public function storeReturn(Request $request, $orderId)
-    {
-        $request->validate([
-            'items' => 'required|array',
-            'items.*.detail_id' => 'required|exists:pembangunan_unit_barang_order_detail,id',
-            'items.*.jumlah_return' => 'required|numeric|min:0',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            $order = PembangunanUnitBarangOrder::findOrFail($orderId);
-            $hasReturn = false;
-
-            foreach ($request->items as $item) {
-                if ($item['jumlah_return'] > 0) {
-                    $detail = PembangunanUnitBarangOrderDetail::where('id', $item['detail_id'])
-                        ->where('order_id', $orderId)
-                        ->firstOrFail();
-
-                    if ($item['jumlah_return'] > $detail->jumlah_input) {
-                        return back()->with('error', "Jumlah retur {$detail->nama_barang} melebihi jumlah order.");
-                    }
-
-                    $detail->update([
-                        'jumlah_return' => $item['jumlah_return'],
-                        'keterangan_return' => $item['keterangan_return']
-                    ]);
-
-                    $hasReturn = true;
-                }
-            }
-
-            if ($hasReturn) {
-                $order->update([
-                    'status_order' => 'pengembalian',
-                    'updated_at' => now()
-                ]);
-            }
-
-            $pembangunanUnit = PembangunanUnit::find($order->pembangunan_unit_id);
-
-            if ($pembangunanUnit) {
-                $this->sendGroupNotificationOrder($pembangunanUnit, $order, 'retur');
-            }
-
-            DB::commit();
-            return back()->with('success', 'Data retur barang berhasil disimpan.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
-    }
 }

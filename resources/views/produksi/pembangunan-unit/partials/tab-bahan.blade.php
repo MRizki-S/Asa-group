@@ -2,7 +2,10 @@
 
     {{-- Tabel Order Bahan --}}
     @php
-        $orders = \App\Models\PembangunanUnitBarangOrder::with('details.barang')
+        $orders = \App\Models\PembangunanUnitBarangOrder::with([
+            'details.rapBahan',
+            'returnRequest.details.orderDetail',
+        ])
             ->where('pembangunan_unit_qc_id', $qc->id)
             ->latest()
             ->get();
@@ -76,8 +79,8 @@
                                 <div class="flex items-center gap-2">
                                     <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
                                         REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</p>
-                                    {{-- Badge jika ada retur di salah satu item --}}
-                                    @if ($order->details->where('jumlah_return', '>', 0)->count() > 0)
+                                    {{-- Badge jika ada retur dari sistem baru --}}
+                                    @if ($order->returnRequest->count() > 0)
                                         <span
                                             class="bg-orange-100 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Ada
                                             Retur</span>
@@ -97,10 +100,11 @@
                             <td class="px-4 py-4 text-center">
                                 @php
                                     $statusMap = [
-                                        'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                        'selesai' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                        'ditolak' => 'bg-red-50 text-red-600 border-red-100',
-                                        'return_pending' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                        'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
+                                        'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                        'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
+                                        'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
+                                        'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
                                     ];
                                     $style =
                                         $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
@@ -117,9 +121,9 @@
                             <td colspan="4" class="p-0 border-none bg-gray-50/50 dark:bg-gray-900/40">
                                 <div x-show="open" x-collapse
                                     class="px-10 py-6 border-t border-gray-100 dark:border-gray-800">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                                         {{-- Daftar Barang --}}
-                                        <div class="space-y-4">
+                                        <div class="space-y-4 md:col-span-2">
                                             <h5
                                                 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
                                                 Detail Item Barang</h5>
@@ -141,73 +145,57 @@
                                                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                                                             @foreach ($order->details as $det)
                                                                 @php
-                                                                    // 1. Ambil jumlah base dari pengajuan (sudah hasil kali jumlah_input * faktor)
                                                                     $baseOrder = (float) $det->jumlah_base;
+                                                                    $standarRap = (float) ($det->rapBahan->jumlah_standar ?? 0);
+                                                                    $faktorRap  = (float) ($det->rapBahan->faktor_konversi ?? 1);
+                                                                    $baseRap    = $standarRap * $faktorRap;
+                                                                    $isOver     = $baseOrder - $baseRap > 0.001;
+                                                                    $isRap      = (bool) $det->rapBahan;
 
-                                                                    // 2. Hitung jumlah base dari RAP asli (jumlah_standar * faktor_konversi RAP)
-                                                                    $standarRap =
-                                                                        (float) ($det->rapBahan->jumlah_standar ?? 0);
-                                                                    $faktorRap =
-                                                                        (float) ($det->rapBahan->faktor_konversi ?? 1);
-                                                                    $baseRap = $standarRap * $faktorRap;
-
-                                                                    // 3. Bandingkan base vs base (misal: 112 Pcs vs 112 Pcs)
-                                                                    // Kita beri toleransi sedikit (epsilon) untuk menghindari isu floating point
-                                                                    $isOver = $baseOrder - $baseRap > 0.001;
-
-                                                                    $isRap = (bool) $det->rapBahan;
-                                                                    $isReturned = $det->jumlah_return > 0;
+                                                                    // Ambil data retur untuk detail ini dari sistem baru
+                                                                    $returnDetail = $order->returnRequest
+                                                                        ->flatMap(fn($r) => $r->details)
+                                                                        ->where('order_detail_id', $det->id)
+                                                                        ->last();
                                                                 @endphp
 
-                                                                <tr
-                                                                    class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                                                                     <td class="px-3 py-3">
-                                                                        <p
-                                                                            class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
+                                                                        <p class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
                                                                             {{ $det->nama_barang ?? '-' }}
                                                                         </p>
-                                                                        {{-- Badge Retur & Alasan --}}
-                                                                        @if ($isReturned)
-                                                                            <div
-                                                                                class="mt-2 p-2 bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 rounded-lg">
-                                                                                <p
-                                                                                    class="text-[10px] text-orange-700 dark:text-orange-400 font-bold flex items-center gap-1">
-                                                                                    <i
-                                                                                        class="fa-solid fa-triangle-exclamation"></i>
-                                                                                    Retur:
-                                                                                    {{ (float) $det->jumlah_return }}
-                                                                                    {{ $det->satuan }}
+                                                                        {{-- Badge Retur dari sistem baru --}}
+                                                                        @if ($returnDetail && $returnDetail->jumlah_return > 0)
+                                                                            <div class="mt-2 p-2 bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 rounded-lg space-y-1">
+                                                                                <p class="text-[10px] text-orange-700 dark:text-orange-400 font-bold flex items-center gap-1">
+                                                                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                                                                    Retur: {{ (float) $returnDetail->jumlah_return }} {{ $det->satuan }}
                                                                                 </p>
+                                                                                @if ($returnDetail->keterangan_return)
+                                                                                    <p class="text-[9px] text-orange-600 dark:text-orange-400 italic">
+                                                                                        {{ $returnDetail->keterangan_return }}
+                                                                                    </p>
+                                                                                @endif
                                                                             </div>
                                                                         @endif
                                                                         @if ($det->alasan_permintaan_tidak_sesuai_rap)
-                                                                            <p
-                                                                                class="text-[9px] text-red-500 italic mt-1">
-                                                                                Ket:
-                                                                                {{ $det->alasan_permintaan_tidak_sesuai_rap }}
+                                                                            <p class="text-[9px] text-red-500 italic mt-1">
+                                                                                Ket: {{ $det->alasan_permintaan_tidak_sesuai_rap }}
                                                                             </p>
                                                                         @endif
                                                                     </td>
                                                                     <td class="px-3 py-3 text-right align-top">
                                                                         <div class="flex flex-col items-end">
-                                                                            <p
-                                                                                class="text-[11px] font-black {{ $isOver ? 'text-red-600' : 'text-gray-800 dark:text-white' }}">
+                                                                            <p class="text-[11px] font-black {{ $isOver ? 'text-red-600' : 'text-gray-800 dark:text-white' }}">
                                                                                 {{ (float) $det->jumlah_input }}
-                                                                                <span
-                                                                                    class="text-[9px] font-medium text-gray-400">{{ $det->satuan }}</span>
+                                                                                <span class="text-[9px] font-medium text-gray-400">{{ $det->satuan }}</span>
                                                                             </p>
-
-                                                                            <div
-                                                                                class="flex flex-wrap justify-end gap-1 mt-1">
+                                                                            <div class="flex flex-wrap justify-end gap-1 mt-1">
                                                                                 @if ($isOver && $det->rap_bahan_id != null)
-                                                                                    <span
-                                                                                        class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded border border-red-100">Melebihi
-                                                                                        RAP</span>
+                                                                                    <span class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded border border-red-100">Melebihi RAP</span>
                                                                                 @endif
                                                                                 @if (!$isRap)
-                                                                                    <span
-                                                                                        class="text-[7px] font-black text-amber-500 uppercase bg-amber-50 px-1 rounded border border-amber-100">Luar
-                                                                                        RAP</span>
+                                                                                    <span class="text-[7px] font-black text-amber-500 uppercase bg-amber-50 px-1 rounded border border-amber-100">Luar RAP</span>
                                                                                 @endif
                                                                             </div>
                                                                         </div>
@@ -221,7 +209,7 @@
                                         </div>
 
                                         {{-- Catatan & Aksi --}}
-                                        <div class="space-y-4">
+                                        <div class="space-y-4 md:col-span-1">
                                             <div>
                                                 <h5
                                                     class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
@@ -235,13 +223,30 @@
                                                 </div>
                                             </div>
 
-                                            @if ($order->status_order == 'selesai' || $order->status_order == 'return_pending')
+                                            @if ($order->status_order == 'selesai' || $order->status_order == 'pengembalian')
+                                                @php
+                                                    // Kirim data detail untuk prefill dari retur terakhir (jika ada)
+                                                    $lastReturn = $order->returnRequest->last();
+                                                    $returnItemsForModal = $order->details->map(function ($d) use ($lastReturn) {
+                                                        $rd = $lastReturn
+                                                            ? $lastReturn->details->where('order_detail_id', $d->id)->first()
+                                                            : null;
+                                                        return [
+                                                            'id'         => $d->id,
+                                                            'nama'       => $d->nama_barang,
+                                                            'jumlah'     => $d->jumlah_input,
+                                                            'satuan'     => $d->satuan,
+                                                            'retur'      => $rd ? (float) $rd->jumlah_return : 0,
+                                                            'keterangan' => $rd ? $rd->keterangan_return : '',
+                                                        ];
+                                                    });
+                                                @endphp
                                                 <div class="pt-2">
                                                     <button type="button"
-                                                        @click="prepareReturn({{ $order->id }}, {{ $order->details->map(fn($d) => ['id' => $d->id, 'nama' => $d->nama_barang, 'jumlah' => $d->jumlah_input, 'satuan' => $d->satuan, 'retur' => (float) $d->jumlah_return, 'keterangan' => $d->keterangan_return])->toJson() }})"
+                                                        @click="prepareReturn({{ $order->id }}, {{ $returnItemsForModal->toJson() }})"
                                                         class="w-full py-2.5 text-[10px] font-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl uppercase border border-gray-200 dark:border-gray-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
                                                         <i class="fa-solid fa-rotate-left"></i>
-                                                        {{ $order->status_order == 'return_pending' ? 'Perbarui Data Retur' : 'Ajukan Pengembalian' }}
+                                                        {{ $order->status_order == 'pengembalian' ? 'Tambah / Perbarui Retur' : 'Ajukan Pengembalian' }}
                                                     </button>
                                                 </div>
                                             @endif

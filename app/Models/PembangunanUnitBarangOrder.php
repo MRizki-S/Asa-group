@@ -45,4 +45,8 @@ class PembangunanUnitBarangOrder extends Model
     {
         return $this->belongsTo(PembangunanUnitQc::class, 'pembangunan_unit_qc_id');
     }
+
+    public function returnRequest(){
+        return $this->hasMany(PembangunanUnitBarangReturn::class, 'order_id');
+    }
 }
