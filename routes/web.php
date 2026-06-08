@@ -60,7 +60,6 @@ use App\Http\Controllers\Marketing\TargetPenjualanController;
 use App\Http\Controllers\PerumahaanSelectController;
 use App\Http\Controllers\Produksi\KonfirmasiPembangunanController;
 use App\Http\Controllers\Produksi\MasterQcRapController;
-use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitBarangReturnController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitOrderBarangController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitPengajuanUpahController;
@@ -592,7 +591,7 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
         ->name('produksi.pembangunanUnit.orderStore');
-    Route::post('order/{order}/return', [PembangunanUnitBarangReturnController::class, 'store'])
+    Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
         ->name('produksi.order.storeReturn');
 
     Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
