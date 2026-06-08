@@ -31,7 +31,7 @@ class KonfirmasiPembangunanController extends Controller
 
         $groupId = "Ada Grup sendiri";
 
-        $messageGroup = "✅ *PEMBANGUNAN UNIT DIMULAI*\n\n" . "Kabar baik! Pengajuan pembangunan unit berikut telah disetujui dan statusnya kini *Dalam Proses Pembangunan*.\n\n" . "```\n" . "📍 Perumahan : {$namaPerumahan}\n" . '🏠 Tahap     : ' . ($unit->tahap->nama_tahap ?? '-') . "\n" . '🔑 Unit      : ' . ($unit->nama_unit ?? '-') . "\n" . '👷 Pengawas  : ' . ($pembangunan->pengawas->nama_lengkap ?? '-') . "\n" . '📅 Estimasi  : ' . \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d/m/Y') . "\n" . "```\n\n" . 'Instruksi kerja telah diteruskan ke Pengawas terkait. Semangat untuk tim lapangan! 🏗️✨';
+        $messageGroup = "✅ *PEMBANGUNAN UNIT DIMULAI*\n\n" . "Pengajuan pembangunan unit berikut telah disetujui dan statusnya kini *Dalam Proses Pembangunan*.\n\n" . "```\n" . "📍 Perumahan : {$namaPerumahan}\n" . '🏠 Tahap     : ' . ($unit->tahap->nama_tahap ?? '-') . "\n" . '🔑 Unit      : ' . ($unit->nama_unit ?? '-') . "\n" . '👷 Pengawas  : ' . ($pembangunan->pengawas->nama_lengkap ?? '-') . "\n" . '📅 Estimasi  : ' . \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d/m/Y') . "\n" . "```\n\n" . 'Instruksi kerja telah diteruskan ke Pengawas terkait. Semangat untuk tim lapangan! 🏗️✨';
 
         if ($groupId) {
             try {

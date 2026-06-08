@@ -31,7 +31,9 @@
     };
 @endphp
 
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-init="$dispatch('sidebar-minimize')">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
+    x-data="{ openAccModal: false, accSubmitting: false }"
+    x-init="$dispatch('sidebar-minimize')">
 
     <div x-data="{ pageName: 'Detail Permintaan Barang' }">
         @include('partials.breadcrumb')
@@ -145,7 +147,6 @@
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Jumlah Base</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Konfirmasi</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Retur</th>
-                            <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">Harga Satuan</th>
                             <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">Harga Total</th>
                         </tr>
                     </thead>
@@ -192,31 +193,26 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="border border-gray-300 px-3 py-2 text-right text-sm text-gray-800 dark:text-white">
-                                    {{ $detail->harga_satuan_snapshot ? 'Rp ' . number_format((float) $detail->harga_satuan_snapshot, 0, ',', '.') : '-' }}
-                                </td>
                                 <td class="border border-gray-300 px-3 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                    {{ $detail->harga_total_snapshot ? 'Rp ' . number_format((float) $detail->harga_total_snapshot, 0, ',', '.') : '-' }}
+                                    @if ($order->jenis_order === 'direct' && $order->status_order === 'diproses' && ! $detail->konfirmasi)
+                                        <input type="number" form="acc-form"
+                                            name="harga_total[{{ $detail->id }}]" min="0" step="0.01"
+                                            value="{{ old('harga_total.' . $detail->id, $detail->harga_total_snapshot) }}"
+                                            placeholder="0" required
+                                            class="w-36 rounded-lg border border-gray-300 bg-white px-3 py-2 text-right text-sm font-semibold text-gray-900 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                    @else
+                                        {{ ! is_null($detail->harga_total_snapshot) ? 'Rp ' . number_format((float) $detail->harga_total_snapshot, 0, ',', '.') : '-' }}
+                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="border border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
+                                <td colspan="6" class="border border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
                                     Belum ada detail barang.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
-                    <tfoot class="bg-gray-50 dark:bg-gray-800/50">
-                        <tr>
-                            <td colspan="6" class="border border-gray-300 px-3 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                TOTAL NILAI SNAPSHOT
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2 text-right text-sm font-extrabold text-blue-600 dark:text-blue-400">
-                                Rp {{ number_format((float) $order->details->sum('harga_total_snapshot'), 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
@@ -232,17 +228,96 @@
         </a>
 
         @if ($order->status_order === 'diproses')
-            <form method="POST" action="{{ route('gudang.permintaanBarang.acc', $order->id) }}"
-                onsubmit="return confirm('ACC permintaan barang ini? Status akan berubah menjadi selesai.');">
+            <form id="acc-form" x-ref="accForm" method="POST" action="{{ route('gudang.permintaanBarang.acc', $order->id) }}"
+                @submit="accSubmitting = true">
                 @csrf
                 @method('PATCH')
-                <button type="submit"
+                <button type="button" @click="openAccModal = true"
                     class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
                     ACC
                 </button>
             </form>
         @endif
     </div>
+
+    @if ($order->status_order === 'diproses')
+        <div x-show="openAccModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div @click.away="openAccModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                                Konfirmasi ACC Permintaan
+                            </h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openAccModal = false"
+                            class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-5 space-y-4">
+                    <div class="rounded-xl border border-green-100 bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800">
+                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">
+                            @if ($order->jenis_order === 'direct')
+                                ACC akan memakai harga total manual yang diinput pada tabel detail.
+                            @else
+                                ACC akan mengurangi stock UBS dan sisa nota barang masuk secara FIFO.
+                            @endif
+                        </p>
+                        <p class="mt-1 text-xs text-green-700/80 dark:text-green-300/80">
+                            Data realisasi bahan proyek akan langsung ditambahkan setelah proses berhasil.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Total Item</p>
+                            <p class="mt-1 text-lg font-bold text-gray-900 dark:text-white">
+                                {{ $order->details->count() }}
+                            </p>
+                        </div>
+                        <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Jenis Order</p>
+                            <p class="mt-1 text-lg font-bold uppercase text-gray-900 dark:text-white">
+                                {{ $order->jenis_order }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Unit</p>
+                        <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            {{ $pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-' }} /
+                            {{ $pembangunan?->tahap?->nama_tahap ?? '-' }} /
+                            {{ $unit->nama_unit ?? '-' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                    <button type="button" @click="openAccModal = false"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">
+                        Batal
+                    </button>
+                    <button type="button" :disabled="accSubmitting"
+                        @click="if ($refs.accForm.reportValidity()) { accSubmitting = true; $refs.accForm.requestSubmit() }"
+                        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition disabled:opacity-60">
+                        <span x-text="accSubmitting ? 'Memproses...' : 'Ya, ACC'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @endsection
