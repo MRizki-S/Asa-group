@@ -44,6 +44,7 @@ class PermintaanBarangController extends Controller
             : $options;
     }
 
+    // view daftar permintaan barang yang masih diproses (status menunggu)
     public function index(Request $request)
     {
         $status = $request->get('status', 'diproses');
@@ -77,6 +78,7 @@ class PermintaanBarangController extends Controller
         ]);
     }
 
+    // view history dari permintaan barang
     public function history(Request $request)
     {
         $status = $request->get('status', 'all');
@@ -117,6 +119,7 @@ class PermintaanBarangController extends Controller
         ]);
     }
 
+    // function untuk melihat detail order barang sebelum dilakukan acc oleh gudang
     public function show($id)
     {
         $order = PembangunanUnitBarangOrder::with([
@@ -281,14 +284,15 @@ class PermintaanBarangController extends Controller
         $hargaTotal = 0.0;
 
         // Ambil layer nota barang masuk yang sudah posted dan masih punya sisa.
-        // Urutan id dipakai sebagai FIFO: data nota paling lama dikonsumsi lebih dulu.
+        // FIFO mengikuti tanggal nota masuk, lalu id detail sebagai tie-breaker untuk nota di tanggal yang sama.
         $layers = NotaBarangMasukDetail::query()
-            ->where('barang_id', $barangId)
-            ->where('jumlah_sisa', '>', 0)
-            ->whereHas('nota', function ($query) {
-                $query->where('status', 'posted');
-            })
-            ->orderBy('id')
+            ->select('nota_barang_masuk_detail.*')
+            ->join('nota_barang_masuk', 'nota_barang_masuk.id', '=', 'nota_barang_masuk_detail.nota_id')
+            ->where('nota_barang_masuk_detail.barang_id', $barangId)
+            ->where('nota_barang_masuk_detail.jumlah_sisa', '>', 0)
+            ->where('nota_barang_masuk.status', 'posted')
+            ->orderBy('nota_barang_masuk.tanggal_nota')
+            ->orderBy('nota_barang_masuk_detail.id')
             ->lockForUpdate()
             ->get();
 
