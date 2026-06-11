@@ -15,6 +15,7 @@ use App\Http\Controllers\Etalase\UnitController;
 use App\Http\Controllers\FeeAgenController;
 use App\Http\Controllers\Gudang\DaftarNotaMasukController;
 use App\Http\Controllers\Gudang\DraftNotaMasukController;
+use App\Http\Controllers\Gudang\BarangRusakController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
@@ -520,6 +521,14 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
     Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
+    // Barang Rusak
+    Route::get('/barang-rusak', [BarangRusakController::class, 'index'])->name('gudang.barangRusak.index');
+    Route::get('/barang-rusak/create', [BarangRusakController::class, 'create'])->name('gudang.barangRusak.create');
+    Route::post('/barang-rusak', [BarangRusakController::class, 'store'])->name('gudang.barangRusak.store');
+    Route::get('/barang-rusak/satuan-dan-stok/{barangId}', [BarangRusakController::class, 'getSatuanDanStok'])->name('gudang.barangRusak.satuanStok');
+    Route::patch('/barang-rusak/{nomorBarangRusak}/cancel', [BarangRusakController::class, 'cancel'])->name('gudang.barangRusak.cancel');
+    Route::get('/barang-rusak/{nomorBarangRusak}', [BarangRusakController::class, 'show'])->name('gudang.barangRusak.show');
 
     // Permintaan Barang Proyek
     Route::get('/permintaan-barang', [PermintaanBarangController::class, 'index'])->name('gudang.permintaanBarang.index');

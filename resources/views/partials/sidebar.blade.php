@@ -1198,6 +1198,28 @@
                     </li>
                     <!-- menu stock barang dan transfer stok -->
 
+                    <!-- Menu Barang Rusak -->
+                    <li>
+                        <a href="{{ route('gudang.barangRusak.index') }}"
+                            @click="selected = (selected === 'DaftarBarangRusak' ? '' : 'DaftarBarangRusak')"
+                            class="menu-item group"
+                            :class="(selected === 'DaftarBarangRusak') && (page === 'DaftarBarangRusak') ?
+                            'menu-item-active' :
+                            'menu-item-inactive'">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'DaftarBarangRusak') && (page === 'DaftarBarangRusak') ? 'menu-item-icon-active' : ''"
+                                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m6 4.125 2.25 2.25m0 0 2.25 2.25m-2.25-2.25 2.25-2.25m-2.25 2.25-2.25 2.25M3.75 7.5l.625-10.632A2.25 2.25 0 0 1 6.622 3h10.756a2.25 2.25 0 0 1 2.247 2.118L20.25 7.5m-16.5 0h16.5" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Barang Rusak
+                            </span>
+                        </a>
+                    </li>
+                    <!-- Menu Barang Rusak -->
+
                     <!-- Menu Group Item Master Gudang  -->
                     <li>
                         <a href="#"
