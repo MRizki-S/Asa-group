@@ -68,6 +68,13 @@ use App\Http\Controllers\Produksi\PenamaanUpahController;
 use App\Http\Controllers\Produksi\PermintaanDibangunController;
 use App\Http\Controllers\Produksi\PersetujuanUpahController;
 use App\Http\Controllers\Produksi\TerminController;
+use App\Http\Controllers\Produksi\ProjectBaruController;
+use App\Http\Controllers\Produksi\PembangunanProyekController;
+use App\Http\Controllers\Produksi\BuatPembangunanKawasanController;
+use App\Http\Controllers\Produksi\PembangunanKawasanController;
+use App\Http\Controllers\Produksi\PersetujuanUpahPropertiController;
+use App\Http\Controllers\Produksi\PersetujuanUpahKontraktorController;
+use App\Http\Controllers\Produksi\PersetujuanUpahKawasanController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use Illuminate\Support\Facades\Http;
@@ -610,10 +617,53 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
         ->name('produksi.pembangunanUnit.laporanBahan');
     Route::get('/pembangunan-unit/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTermin'])
         ->name('produksi.pembangunanUnit.laporanTermin.export');
+
+    Route::get('/pembangunan-proyek/{id}/laporan-upah', [TerminController::class, 'laporanUpahProyek'])
+        ->name('produksi.pembangunanProyek.laporanUpah');
+    Route::get('/pembangunan-proyek/{id}/laporan-bahan', [TerminController::class, 'laporanBahanProyek'])
+        ->name('produksi.pembangunanProyek.laporanBahan');
+    Route::get('/pembangunan-proyek/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTerminProyek'])
+        ->name('produksi.pembangunanProyek.laporanTermin.export');
+
+    Route::get('/pembangunan-kawasan/{id}/laporan-upah', [TerminController::class, 'laporanUpahKawasan'])
+        ->name('produksi.pembangunanKawasan.laporanUpah');
+    Route::get('/pembangunan-kawasan/{id}/laporan-bahan', [TerminController::class, 'laporanBahanKawasan'])
+        ->name('produksi.pembangunanKawasan.laporanBahan');
+    Route::get('/pembangunan-kawasan/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTerminKawasan'])
+        ->name('produksi.pembangunanKawasan.laporanTermin.export');
+    // Kontraktor (Pembangunan Proyek)
+    Route::resource('project-baru', ProjectBaruController::class)->names('produksi.projectBaru');
+    Route::post('project-baru/{id}/proses', [ProjectBaruController::class, 'proses'])->name('produksi.projectBaru.proses');
+    Route::resource('pembangunan-proyek', PembangunanProyekController::class)->names('produksi.pembangunanProyek');
+    Route::post('pembangunan-proyek/order-barang', [PembangunanProyekController::class, 'orderStore'])->name('produksi.pembangunanProyek.orderStore');
+    Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
+    Route::post('pembangunan-proyek/upah-pengajuan', [PembangunanProyekController::class, 'upahStore'])->name('produksi.pembangunanProyek.upahStore');
+
+    // Kawasan (Pembangunan Kawasan)
+    Route::resource('buat-pembangunan', BuatPembangunanKawasanController::class)->names('produksi.buatPembangunanKawasan');
+    Route::post('buat-pembangunan/{id}/proses', [BuatPembangunanKawasanController::class, 'proses'])->name('produksi.buatPembangunanKawasan.proses');
+    Route::resource('pembangunan-kawasan', PembangunanKawasanController::class)->names('produksi.pembangunanKawasan');
+    Route::post('pembangunan-kawasan/order-barang', [PembangunanKawasanController::class, 'orderStore'])->name('produksi.pembangunanKawasan.orderStore');
+    Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
+    Route::post('pembangunan-kawasan/upah-pengajuan', [PembangunanKawasanController::class, 'upahStore'])->name('produksi.pembangunanKawasan.upahStore');
+
+    // Persetujuan Upah Spesifik
+    Route::resource('persetujuan-upah-properti', PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('produksi.persetujuanUpahProperti');
+    Route::resource('persetujuan-upah-kontraktor', PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('produksi.persetujuanUpahKontraktor');
+    Route::resource('persetujuan-upah-kawasan', PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('produksi.persetujuanUpahKawasan');
 });
 
-Route::get('keuangan/persetujuan-upah', [PersetujuanUpahController::class, 'indexKeuangan'])->middleware('auth')->name('keuangan.persetujuanUpah.index');
+Route::middleware('auth')->prefix('manager')->group(function () {
+    Route::resource('persetujuan-upah-properti', App\Http\Controllers\Manager\PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('manager.persetujuanUpahProperti');
+    Route::resource('persetujuan-upah-kontraktor', App\Http\Controllers\Manager\PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('manager.persetujuanUpahKontraktor');
+    Route::resource('persetujuan-upah-kawasan', App\Http\Controllers\Manager\PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('manager.persetujuanUpahKawasan');
+});
 
+Route::middleware('auth')->prefix('akuntan')->group(function () {
+    Route::resource('persetujuan-upah-properti', App\Http\Controllers\Akuntan\PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahProperti');
+    Route::resource('persetujuan-upah-kontraktor', App\Http\Controllers\Akuntan\PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahKontraktor');
+    Route::resource('persetujuan-upah-kawasan', App\Http\Controllers\Akuntan\PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahKawasan');
+});
 Route::middleware('auth')->prefix('kpi')->group(function () {
     Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');
     Route::resource('user', KpiUserController::class)->names('kpi.user');

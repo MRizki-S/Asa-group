@@ -60,7 +60,7 @@
                             </td>
                             <td class="px-4 py-4">
                                 <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
-                                    {{ $item->tanggal_diajukan->translatedFormat('d F Y') }}
+                                    {{ $item->tanggal_diajukan->translatedFormat('d F Y, H:i') }}
                                 </p>
                                 <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
                                     {{ $item->nama_upah }}

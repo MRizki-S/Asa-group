@@ -23,9 +23,10 @@ class PembangunanUnitBarangReturnController extends Controller
         $this->notificationGroup = $notificationGroup;
     }
 
-    protected function sendGroupNotificationReturn(PembangunanUnit $pembangunanUnit)
+    protected function sendGroupNotificationReturn(PembangunanUnit $pembangunanUnit, $return)
     {
         $pembangunanUnit->loadMissing(['unit.tahap.perumahaan', 'pembangunanUnitQc']);
+        $return->loadMissing(['details.barang']);
 
         $unit = $pembangunanUnit->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
@@ -33,20 +34,19 @@ class PembangunanUnitBarangReturnController extends Controller
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $groupId = "ID GRUP GUDANG";
+        $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT');
 
         if (!$groupId) return;
 
-        $messageGroup = "🔄 *PENGAJUAN RETUR BAHAN*\n\n"
-            . "Dear *Tim Logistik/Gudang*, terdapat pengajuan pengembalian (retur) bahan material dari lapangan.\n\n"
-            . "```\n"
-            . "📍 Perumahan : {$namaPerumahan}\n"
-            . "🏠 Tahap     : {$namaTahap}\n"
-            . "🔑 Unit      : {$namaUnit}\n"
-            . "👤 Diajukan  : {$pengaju}\n"
-            . "📅 Tanggal   : " . now()->format('d/m/Y H:i') . " WIB\n"
-            . "```\n\n"
-            . "Mohon segera dicek pada sistem. Terima kasih! 🙏";
+        $messageGroup = view('notifications.whatsapp.retur_barang', [
+            'tipe' => 'Unit',
+            'namaPerumahan' => $namaPerumahan,
+            'namaTahap' => $namaTahap,
+            'namaUnit' => $namaUnit,
+            'pengaju' => $pengaju,
+            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            'return' => $return
+        ])->render();
 
         try {
             $this->notificationGroup->send($groupId, $messageGroup);
@@ -118,7 +118,7 @@ class PembangunanUnitBarangReturnController extends Controller
             $pembangunanUnit = PembangunanUnit::find($order->pembangunan_unit_id);
 
             if ($pembangunanUnit) {
-                $this->sendGroupNotificationReturn($pembangunanUnit);
+                $this->sendGroupNotificationReturn($pembangunanUnit, $return);
             }
 
             DB::commit();

@@ -1121,30 +1121,89 @@
                         @endcanany
                         <!-- Menu Item DaftarLaporan -->
 
+                        <!-- Persetujuan Upah Manager -->
+                        @if(auth()->user()->hasRole(['Manager Dukungan & Layanan', 'Superadmin']))
                         <li>
-                            <a href="{{ route('keuangan.persetujuanUpah.index') }}"
-                                @click="selected = (selected === 'persetujuanUpahKeuangan' ? '':'persetujuanUpahKeuangan')"
+                            <a href="#" @click.prevent="selected = (selected === 'persetujuanUpahManager' ? '':'persetujuanUpahManager')"
                                 class="menu-item group"
-                                :class="(selected === 'persetujuanUpahKeuangan') && (page === 'persetujuanUpahKeuangan') ?
-                                'menu-item-active' :
-                                'menu-item-inactive'">
-
-                                <svg :class="(selected === 'persetujuanUpahKeuangan') && (page === 'persetujuanUpahKeuangan') ?
-                                'menu-item-icon-active' :
-                                ''"
-                                    class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="currentColor">
-                                    <title>money-settings-24-regular</title>
-                                    <path
-                                        d="M10.5 8a3 3 0 1 0 0 6a3 3 0 0 0 0-6M9 11a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M2 7.25A2.25 2.25 0 0 1 4.25 5h12.5A2.25 2.25 0 0 1 19 7.25v3.924A6.5 6.5 0 0 0 17.5 11V9.5h-.75a2.25 2.25 0 0 1-2.25-2.25V6.5h-8v.75A2.25 2.25 0 0 1 4.25 9.5H3.5v3h.75a2.25 2.25 0 0 1 2.25 2.25v.75h4.813c-.154.478-.255.98-.294 1.5H4.25A2.25 2.25 0 0 1 2 14.75zM4.401 18.5h6.676c.08.523.223 1.026.421 1.5H7a3 3 0 0 1-2.599-1.5M20.5 11.732A6.5 6.5 0 0 1 22 12.81V10a3 3 0 0 0-1.5-2.599zM4.25 6.5a.75.75 0 0 0-.75.75V8h.75A.75.75 0 0 0 5 7.25V6.5zM17.5 8v-.75a.75.75 0 0 0-.75-.75H16v.75c0 .414.336.75.75.75zm-14 6.75c0 .414.336.75.75.75H5v-.75a.75.75 0 0 0-.75-.75H3.5zm10.778-.774a2 2 0 0 1-1.441 2.496l-.584.144a5.7 5.7 0 0 0 .006 1.808l.54.13a2 2 0 0 1 1.45 2.51l-.187.631c.44.386.94.699 1.484.922l.494-.519a2 2 0 0 1 2.899 0l.498.525a5.3 5.3 0 0 0 1.483-.913l-.198-.686a2 2 0 0 1 1.441-2.496l.584-.144a5.7 5 0 0 0-.006-1.808l-.54-.13a2 2 0 0 1-1.45-2.51l.187-.63a5.3 5.3 0 0 0-1.484-.922l-.493.518a2 2 0 0 1-2.9 0l-.498-.525a5.3 5.3 0 0 0-1.483.912zM17.5 19c-.8 0-1.45-.672-1.45-1.5S16.7 16 17.5 16s1.45.672 1.45 1.5S18.3 19 17.5 19" />
+                                :class="(selected === 'persetujuanUpahManager') || (page === 'managerPersetujuanUpahProperti' || page === 'managerPersetujuanUpahKontraktor' || page === 'managerPersetujuanUpahKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
+                                <svg :class="(selected === 'persetujuanUpahManager') || (page === 'managerPersetujuanUpahProperti' || page === 'managerPersetujuanUpahKontraktor' || page === 'managerPersetujuanUpahKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    class="w-6 h-6 size-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M10.5 8a3 3 0 1 0 0 6a3 3 0 0 0 0-6M9 11a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M2 7.25A2.25 2.25 0 0 1 4.25 5h12.5A2.25 2.25 0 0 1 19 7.25v3.924A6.5 6.5 0 0 0 17.5 11V9.5h-.75a2.25 2.25 0 0 1-2.25-2.25V6.5h-8v.75A2.25 2.25 0 0 1 4.25 9.5H3.5v3h.75a2.25 2.25 0 0 1 2.25 2.25v.75h4.813c-.154.478-.255.98-.294 1.5H4.25A2.25 2.25 0 0 1 2 14.75zM4.401 18.5h6.676c.08.523.223 1.026.421 1.5H7a3 3 0 0 1-2.599-1.5M20.5 11.732A6.5 6.5 0 0 1 22 12.81V10a3 3 0 0 0-1.5-2.599zM4.25 6.5a.75.75 0 0 0-.75.75V8h.75A.75.75 0 0 0 5 7.25V6.5zM17.5 8v-.75a.75.75 0 0 0-.75-.75H16v.75c0 .414.336.75.75.75zm-14 6.75c0 .414.336.75.75.75H5v-.75a.75.75 0 0 0-.75-.75H3.5zm10.778-.774a2 2 0 0 1-1.441 2.496l-.584.144a5.7 5.7 0 0 0 .006 1.808l.54.13a2 2 0 0 1 1.45 2.51l-.187.631c.44.386.94.699 1.484.922l.494-.519a2 2 0 0 1 2.899 0l.498.525a5.3 5.3 0 0 0 1.483-.913l-.198-.686a2 2 0 0 1 1.441-2.496l.584-.144a5.7 5 0 0 0-.006-1.808l-.54-.13a2 2 0 0 1-1.45-2.51l.187-.63a5.3 5.3 0 0 0-1.484-.922l-.493.518a2 2 0 0 1-2.9 0l-.498-.525a5.3 5.3 0 0 0-1.483.912zM17.5 19c-.8 0-1.45-.672-1.45-1.5S16.7 16 17.5 16s1.45.672 1.45 1.5S18.3 19 17.5 19" />
                                 </svg>
-
-                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                    Persetujuan Upah
-                                </span>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Pers. Upah Manager</span>
+                                <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                    :class="[(selected === 'persetujuanUpahManager') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                    width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
                             </a>
+                            <div class="overflow-hidden transform translate" :class="(selected === 'persetujuanUpahManager') ? 'block' : 'hidden'">
+                                <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                    <li>
+                                        <a href="{{ route('manager.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'managerPersetujuanUpahProperti' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Properti
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('manager.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'managerPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Kontraktor
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('manager.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'managerPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Kawasan
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
+                        @endif
+                        
+                        <!-- Persetujuan Upah Akuntan -->
+                        @if(auth()->user()->hasRole(['Staff Akuntansi', 'Superadmin']))
+                        <li>
+                            <a href="#" @click.prevent="selected = (selected === 'persetujuanUpahAkuntan' ? '':'persetujuanUpahAkuntan')"
+                                class="menu-item group"
+                                :class="(selected === 'persetujuanUpahAkuntan') || (page === 'akuntanPersetujuanUpahProperti' || page === 'akuntanPersetujuanUpahKontraktor' || page === 'akuntanPersetujuanUpahKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
+                                <svg :class="(selected === 'persetujuanUpahAkuntan') || (page === 'akuntanPersetujuanUpahProperti' || page === 'akuntanPersetujuanUpahKontraktor' || page === 'akuntanPersetujuanUpahKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    class="w-6 h-6 size-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M10.5 8a3 3 0 1 0 0 6a3 3 0 0 0 0-6M9 11a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M2 7.25A2.25 2.25 0 0 1 4.25 5h12.5A2.25 2.25 0 0 1 19 7.25v3.924A6.5 6.5 0 0 0 17.5 11V9.5h-.75a2.25 2.25 0 0 1-2.25-2.25V6.5h-8v.75A2.25 2.25 0 0 1 4.25 9.5H3.5v3h.75a2.25 2.25 0 0 1 2.25 2.25v.75h4.813c-.154.478-.255.98-.294 1.5H4.25A2.25 2.25 0 0 1 2 14.75zM4.401 18.5h6.676c.08.523.223 1.026.421 1.5H7a3 3 0 0 1-2.599-1.5M20.5 11.732A6.5 6.5 0 0 1 22 12.81V10a3 3 0 0 0-1.5-2.599zM4.25 6.5a.75.75 0 0 0-.75.75V8h.75A.75.75 0 0 0 5 7.25V6.5zM17.5 8v-.75a.75.75 0 0 0-.75-.75H16v.75c0 .414.336.75.75.75zm-14 6.75c0 .414.336.75.75.75H5v-.75a.75.75 0 0 0-.75-.75H3.5zm10.778-.774a2 2 0 0 1-1.441 2.496l-.584.144a5.7 5.7 0 0 0 .006 1.808l.54.13a2 2 0 0 1 1.45 2.51l-.187.631c.44.386.94.699 1.484.922l.494-.519a2 2 0 0 1 2.899 0l.498.525a5.3 5.3 0 0 0 1.483-.913l-.198-.686a2 2 0 0 1 1.441-2.496l.584-.144a5.7 5 0 0 0-.006-1.808l-.54-.13a2 2 0 0 1-1.45-2.51l.187-.63a5.3 5.3 0 0 0-1.484-.922l-.493.518a2 2 0 0 1-2.9 0l-.498-.525a5.3 5.3 0 0 0-1.483.912zM17.5 19c-.8 0-1.45-.672-1.45-1.5S16.7 16 17.5 16s1.45.672 1.45 1.5S18.3 19 17.5 19" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Pers. Upah Akuntan</span>
+                                <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                    :class="[(selected === 'persetujuanUpahAkuntan') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                    width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </a>
+                            <div class="overflow-hidden transform translate" :class="(selected === 'persetujuanUpahAkuntan') ? 'block' : 'hidden'">
+                                <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                    <li>
+                                        <a href="{{ route('akuntan.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'akuntanPersetujuanUpahProperti' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Properti
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('akuntan.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'akuntanPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Kontraktor
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('akuntan.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'akuntanPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Kawasan
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        @endif
 
                     </ul>
                 </div>
@@ -1524,136 +1583,160 @@
                 </h3>
 
                 <ul class="flex flex-col gap-2 mb-6">
-                    <!-- Menu Master QC & RAP-->
+                    <!-- Pembangunan Properti -->
                     <li>
-                        <a href="{{ route('produksi.masterQcRap.index') }}"
-                            @click="selected = (selected === 'MasterQC-RAP' ? '':'MasterQC-RAP')"
+                        <a href="#" @click.prevent="selected = (selected === 'Properti' ? '':'Properti')"
                             class="menu-item group"
-                            :class="(selected === 'MasterQC-RAP') && (page === 'MasterQC-RAP') ? 'menu-item-active' :
-                            'menu-item-inactive'">
-
-                            <svg :class="(selected === 'MasterQC-RAP') && (page === 'MasterQC-RAP') ? 'menu-item-icon-active' : ''"
-                                class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                fill="none">
-                                <g fill="currentColor">
-                                    <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                    <path
-                                        d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                    <path
-                                        d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                    <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                </g>
+                            :class="(selected === 'Properti') || (page === 'MasterQC-RAP' || page === 'PengajuanPembangunan' || page === 'pembangunanUnit') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Properti') || (page === 'MasterQC-RAP' || page === 'PengajuanPembangunan' || page === 'pembangunanUnit') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                             </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Master QC & RAP
-                            </span>
-                        </a>
-                    </li>
-                    <!-- Menu Master QC & RAP-->
-
-                    <!-- Menu Penamaan Upah -->
-                    <li>
-                        <a href="{{ route('produksi.masterUpah.index') }}"
-                            @click="selected = (selected === 'PenamaanUpah' ? '':'PenamaanUpah')"
-                            class="menu-item group"
-                            :class="(selected === 'PenamaanUpah') && (page === 'PenamaanUpah') ? 'menu-item-active' :
-                            'menu-item-inactive'">
-
-                            <svg :class="(selected === 'PenamaanUpah') && (page === 'PenamaanUpah') ? 'menu-item-icon-active' :
-                            ''"
-                                class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="currentColor">
-                                <title>money-settings-24-regular</title>
-                                <path
-                                    d="M10.5 8a3 3 0 1 0 0 6a3 3 0 0 0 0-6M9 11a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M2 7.25A2.25 2.25 0 0 1 4.25 5h12.5A2.25 2.25 0 0 1 19 7.25v3.924A6.5 6.5 0 0 0 17.5 11V9.5h-.75a2.25 2.25 0 0 1-2.25-2.25V6.5h-8v.75A2.25 2.25 0 0 1 4.25 9.5H3.5v3h.75a2.25 2.25 0 0 1 2.25 2.25v.75h4.813c-.154.478-.255.98-.294 1.5H4.25A2.25 2.25 0 0 1 2 14.75zM4.401 18.5h6.676c.08.523.223 1.026.421 1.5H7a3 3 0 0 1-2.599-1.5M20.5 11.732A6.5 6.5 0 0 1 22 12.81V10a3 3 0 0 0-1.5-2.599zM4.25 6.5a.75.75 0 0 0-.75.75V8h.75A.75.75 0 0 0 5 7.25V6.5zM17.5 8v-.75a.75.75 0 0 0-.75-.75H16v.75c0 .414.336.75.75.75zm-14 6.75c0 .414.336.75.75.75H5v-.75a.75.75 0 0 0-.75-.75H3.5zm10.778-.774a2 2 0 0 1-1.441 2.496l-.584.144a5.7 5.7 0 0 0 .006 1.808l.54.13a2 2 0 0 1 1.45 2.51l-.187.631c.44.386.94.699 1.484.922l.494-.519a2 2 0 0 1 2.899 0l.498.525a5.3 5.3 0 0 0 1.483-.913l-.198-.686a2 2 0 0 1 1.441-2.496l.584-.144a5.7 5 0 0 0-.006-1.808l-.54-.13a2 2 0 0 1-1.45-2.51l.187-.63a5.3 5.3 0 0 0-1.484-.922l-.493.518a2 2 0 0 1-2.9 0l-.498-.525a5.3 5.3 0 0 0-1.483.912zM17.5 19c-.8 0-1.45-.672-1.45-1.5S16.7 16 17.5 16s1.45.672 1.45 1.5S18.3 19 17.5 19" />
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Properti</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'Properti') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Penamaan Upah
-                            </span>
                         </a>
-                    </li>
-                    <!-- Menu Penamaan Upah -->
-
-                    <!-- Menu Item Unit Menunggu Pengawas-->
-                    <li>
-                        <a href="{{ route('produksi.pengajuanPembangunanUnit.index') }}"
-                            @click="selected = (selected === 'PengajuanPembangunan' ? '':'PengajuanPembangunan')"
-                            class="menu-item group"
-                            :class="(selected === 'PengajuanPembangunan') && (page === 'PengajuanPembangunan') ?
-                            'menu-item-active' :
-                            'menu-item-inactive'">
-
-                            <svg :class="(selected === 'PengajuanPembangunan') && (page === 'PengajuanPembangunan') ?
-                            'menu-item-icon-active' : ''"
-                                class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <title>home-person-20-regular</title>
-
-                                <path
-                                    d="M8.998 2.388a1.5 1.5 0 0 1 2.005 0l5.5 4.942A1.5 1.5 0 0 1 17 8.445v.956a3 3 0 0 0-1-.36v-.596a.5.5 0 0 0-.166-.371l-5.5-4.942a.5.5 0 0 0-.668 0l-5.5 4.942A.5.5 0 0 0 4 8.445V15.5a.5.5 0 0 0 .5.5H7a.5.5 0 0 0 .5-.5V12A1.5 1.5 0 0 1 9 10.5h2a1.5 1.5 0 0 1 1.5 1.5v2.207a2.5 2.5 0 0 0-1 .792v-3a.5.5 0 0 0-.5-.5H9a.5.5 0 0 0-.5.5v3.5A1.5 1.5 0 0 1 7 17H4.5A1.5 1.5 0 0 1 3 15.5V8.446c0-.425.18-.83.498-1.115zM17.5 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.5 4.5c0 1.245-1 2.5-3.5 2.5S12 17.75 12 16.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5" />
-                            </svg>
-
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Permintaan Dibangun
-                            </span>
-                        </a>
-                    </li>
-                    <!-- Menu Item Unit Menunggu Pengawas-->
-
-
-                    <!-- Menu Item Pembangunan Unit-->
-                    <li>
-                        <a href="{{ route('produksi.pembangunanUnit.index') }}"
-                            @click="selected = (selected === 'pembangunanUnit' ? '':'pembangunanUnit')"
-                            class="menu-item group"
-                            :class="(selected === 'pembangunanUnit') && (page === 'pembangunanUnit') ? 'menu-item-active' :
-                            'menu-item-inactive'">
-
-                            <svg :class="(selected === 'PembangunanUnit') && (page === 'PembangunanUnit') ?
-                            'menu-item-icon-active' : ''"
-                                class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="currentColor">
-                                <title>home-gear-line</title>
-                                <path
-                                    d="M19 21H5a1 1 0 0 1-1-1v-9H1l10.327-9.388a1 1 0 0 1 1.346 0L23 11h-3v9a1 1 0 0 1-1 1M6 19h12V9.157l-6-5.454l-6 5.454zm2.591-5.191a3.5 3.5 0 0 1 0-1.622l-.991-.572l1-1.732l.991.573a3.5 3.5 0 0 1 1.404-.812V8.5h2v1.144c.532.159 1.01.44 1.404.812l.991-.573l1 1.731l-.991.573a3.5 3.5 0 0 1 0 1.622l.991.572l-1 1.731l-.991-.572a3.5 3.5 0 0 1-1.404.811v1.145h-2V16.35a3.5 3.5 0 0 1-1.404-.811l-.991.572l-1-1.73zm3.404.688a1.5 1.5 0 1 0 0-2.998a1.5 1.5 0 0 0 0 2.998" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Pembangunan Unit
-                            </span>
-                        </a>
+                        <div class="overflow-hidden transform translate" :class="(selected === 'Properti') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                <li>
+                                    <a href="{{ route('produksi.masterQcRap.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'MasterQC-RAP' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Master QC & RAP
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.pengajuanPembangunanUnit.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'PengajuanPembangunan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Permintaan Dibangun
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanUnit.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'pembangunanUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Pembangunan Unit
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
 
+                    <!-- Proyek Kontraktor -->
                     <li>
-                        <a href="{{ route('produksi.persetujuanUpah.index') }}"
-                            @click="selected = (selected === 'persetujuanUpah' ? '':'persetujuanUpah')"
+                        <a href="#" @click.prevent="selected = (selected === 'Kontraktor' ? '':'Kontraktor')"
                             class="menu-item group"
-                            :class="(selected === 'persetujuanUpah') && (page === 'persetujuanUpah') ? 'menu-item-active' :
-                            'menu-item-inactive'">
-
-                            <svg :class="(selected === 'persetujuanUpah') && (page === 'persetujuanUpah') ?
-                            'menu-item-icon-active' :
-                            ''"
-                                class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="currentColor">
-                                <title>money-settings-24-regular</title>
-                                <path
-                                    d="M10.5 8a3 3 0 1 0 0 6a3 3 0 0 0 0-6M9 11a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M2 7.25A2.25 2.25 0 0 1 4.25 5h12.5A2.25 2.25 0 0 1 19 7.25v3.924A6.5 6.5 0 0 0 17.5 11V9.5h-.75a2.25 2.25 0 0 1-2.25-2.25V6.5h-8v.75A2.25 2.25 0 0 1 4.25 9.5H3.5v3h.75a2.25 2.25 0 0 1 2.25 2.25v.75h4.813c-.154.478-.255.98-.294 1.5H4.25A2.25 2.25 0 0 1 2 14.75zM4.401 18.5h6.676c.08.523.223 1.026.421 1.5H7a3 3 0 0 1-2.599-1.5M20.5 11.732A6.5 6.5 0 0 1 22 12.81V10a3 3 0 0 0-1.5-2.599zM4.25 6.5a.75.75 0 0 0-.75.75V8h.75A.75.75 0 0 0 5 7.25V6.5zM17.5 8v-.75a.75.75 0 0 0-.75-.75H16v.75c0 .414.336.75.75.75zm-14 6.75c0 .414.336.75.75.75H5v-.75a.75.75 0 0 0-.75-.75H3.5zm10.778-.774a2 2 0 0 1-1.441 2.496l-.584.144a5.7 5.7 0 0 0 .006 1.808l.54.13a2 2 0 0 1 1.45 2.51l-.187.631c.44.386.94.699 1.484.922l.494-.519a2 2 0 0 1 2.899 0l.498.525a5.3 5.3 0 0 0 1.483-.913l-.198-.686a2 2 0 0 1 1.441-2.496l.584-.144a5.7 5 0 0 0-.006-1.808l-.54-.13a2 2 0 0 1-1.45-2.51l.187-.63a5.3 5.3 0 0 0-1.484-.922l-.493.518a2 2 0 0 1-2.9 0l-.498-.525a5.3 5.3 0 0 0-1.483.912zM17.5 19c-.8 0-1.45-.672-1.45-1.5S16.7 16 17.5 16s1.45.672 1.45 1.5S18.3 19 17.5 19" />
+                            :class="(selected === 'Kontraktor') || (page === 'projectBaru' || page === 'pembangunanProyek') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Kontraktor') || (page === 'projectBaru' || page === 'pembangunanProyek') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"></path>
                             </svg>
-
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Persetujuan Upah
-                            </span>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Kontraktor</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'Kontraktor') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
                         </a>
+                        <div class="overflow-hidden transform translate" :class="(selected === 'Kontraktor') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                <li>
+                                    <a href="{{ route('produksi.projectBaru.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'projectBaru' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Project Baru
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanProyek.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'pembangunanProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Pembangunan Proyek
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
-                    <!-- Menu Item Pembangunan Unit-->
+
+                     <!-- Pembangunan Kawasan -->
+                    <li>
+                        <a href="#" @click.prevent="selected = (selected === 'Kawasan' ? '':'Kawasan')"
+                            class="menu-item group"
+                            :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Kawasan</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'Kawasan') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                        <div class="overflow-hidden transform translate" :class="(selected === 'Kawasan') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                <li>
+                                    <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'buatPembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Buat Pembangunan
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanKawasan.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'pembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Pembangunan Kawasan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+
+                    <!-- Manajemen Upah -->
+                    <li>
+                        <a href="#" @click.prevent="selected = (selected === 'ManajemenUpah' ? '':'ManajemenUpah')"
+                            class="menu-item group"
+                            :class="(selected === 'ManajemenUpah') || (page === 'PenamaanUpah' || page === 'persetujuanUpah' || page === 'persetujuanUpahKontraktor' || page === 'persetujuanUpahKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'ManajemenUpah') || (page === 'PenamaanUpah' || page === 'persetujuanUpah' || page === 'persetujuanUpahKontraktor' || page === 'persetujuanUpahKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"></path>
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Manajemen Upah</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'ManajemenUpah') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                        <div class="overflow-hidden transform translate" :class="(selected === 'ManajemenUpah') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                <li>
+                                    <a href="{{ route('produksi.masterUpah.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'PenamaanUpah' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Penamaan Upah
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'persetujuanUpah' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Upah Properti
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'persetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Upah Kontraktor
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('produksi.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'persetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Upah Kawasan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                 </ul>
             </div>
             {{-- @endcan --}}
@@ -1683,21 +1766,12 @@
                                     :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'menu-item-icon-active' :
-                                    ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
                                     </svg>
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                         Dashboard
@@ -1713,21 +1787,11 @@
                                     :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'menu-item-icon-active' :
-                                    ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
                                     </svg>
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                         Master KPI
@@ -1743,20 +1807,11 @@
                                     :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'menu-item-icon-active' : ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
 
 
@@ -1774,21 +1829,11 @@
                                     :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'menu-item-icon-active' :
-                                    ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" />
                                     </svg>
 
 

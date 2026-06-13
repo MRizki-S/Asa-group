@@ -21,9 +21,10 @@ class PembangunanUnitOrderBarangController extends Controller
         $this->notificationGroup = $notificationGroup;
     }
 
-    public function sendGroupNotificationOrder(PembangunanUnit $pembangunanUnit)
+    public function sendGroupNotificationOrder(PembangunanUnit $pembangunanUnit, $order)
     {
         $pembangunanUnit->loadMissing(['unit.tahap.perumahaan', 'pembangunanUnitQc']);
+        $order->loadMissing(['details']);
 
         $unit = $pembangunanUnit->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
@@ -31,24 +32,19 @@ class PembangunanUnitOrderBarangController extends Controller
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $groupId = "ID GRUP GUDANG";
+        $groupId = env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT');
 
         if (!$groupId) return;
 
-        $header = "📦 *PENGAJUAN PERMINTAAN BAHAN*";
-        $body = "Dear *Tim Logistik/Gudang*, terdapat pengajuan permintaan bahan material baru dari lapangan.";
-
-
-        $messageGroup = "{$header}\n\n"
-            . "{$body}\n\n"
-            . "```\n"
-            . "📍 Perumahan : {$namaPerumahan}\n"
-            . "🏠 Tahap     : {$namaTahap}\n"
-            . "🔑 Unit      : {$namaUnit}\n"
-            . "👤 Diajukan  : {$pengaju}\n"
-            . "📅 Tanggal   : " . now()->format('d/m/Y H:i') . " WIB\n"
-            . "```\n\n"
-            . "Mohon segera dicek pada sistem. Terima kasih! 🙏";
+        $messageGroup = view('notifications.whatsapp.order_barang', [
+            'tipe' => 'Unit',
+            'namaPerumahan' => $namaPerumahan,
+            'namaTahap' => $namaTahap,
+            'namaUnit' => $namaUnit,
+            'pengaju' => $pengaju,
+            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            'order' => $order
+        ])->render();
 
         try {
             $this->notificationGroup->send($groupId, $messageGroup);
@@ -102,7 +98,7 @@ class PembangunanUnitOrderBarangController extends Controller
                 ]);
             }
 
-            $this->sendGroupNotificationOrder($pembangunanUnit);
+            $this->sendGroupNotificationOrder($pembangunanUnit, $order);
 
             DB::commit();
             return response()->json(['message' => 'Permintaan barang berhasil dikirim.']);

@@ -94,6 +94,9 @@
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.01]">
                                     <td class="px-4 py-4">
                                         <div class="flex flex-col leading-tight">
+                                            <span class="text-[9px] text-gray-500 mb-0.5">
+                                                {{ \Carbon\Carbon::parse($item->tanggal_diajukan)->format('d M Y, H:i') }}
+                                            </span>
                                             <span class="font-bold text-gray-900 dark:text-white uppercase">
                                                 {{ $item->pembangunanUnit->unit->nama_unit ?? '-' }}
                                             </span>
