@@ -44,6 +44,26 @@ class MasterBarang extends Model
         return $this->hasMany(NotaBarangMasukDetail::class, 'barang_id');
     }
 
+    public function rakitanSebagaiHasil()
+    {
+        return $this->hasMany(BarangRakitan::class, 'barang_hasil_id');
+    }
+
+    public function rakitanSebagaiBahan()
+    {
+        return $this->hasMany(BarangRakitanDetail::class, 'barang_bahan_id');
+    }
+
+    public function produksiRakitanSebagaiHasil()
+    {
+        return $this->hasMany(ProduksiBarangRakitan::class, 'barang_hasil_id');
+    }
+
+    public function produksiRakitanSebagaiBahan()
+    {
+        return $this->hasMany(ProduksiBarangRakitanDetail::class, 'barang_bahan_id');
+    }
+
     public function transferGudang()
     {
         return $this->hasMany(TransferGudangHubUbs::class, 'barang_id');

@@ -20,4 +20,9 @@ class Ubs extends Model
     {
         return $this->hasMany(StockGudang::class, 'ubs_id');
     }
+
+    public function produksiBarangRakitan()
+    {
+        return $this->hasMany(ProduksiBarangRakitan::class, 'ubs_id');
+    }
 }

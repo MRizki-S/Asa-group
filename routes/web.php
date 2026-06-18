@@ -16,10 +16,12 @@ use App\Http\Controllers\FeeAgenController;
 use App\Http\Controllers\Gudang\DaftarNotaMasukController;
 use App\Http\Controllers\Gudang\DraftNotaMasukController;
 use App\Http\Controllers\Gudang\BarangRusakController;
+use App\Http\Controllers\Gudang\KomposisiRakitanController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\PermintaanBarangController;
+use App\Http\Controllers\Gudang\ProduksiRakitanController;
 use App\Http\Controllers\Gudang\StockBarangController;
 
 use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
@@ -506,6 +508,12 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Master Barang
     Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
 
+    // Barang Rakitan > Komposisi Rakitan
+    Route::resource('/barang-rakitan', KomposisiRakitanController::class)->names('gudang.komposisiRakitan');
+
+    // Barang Rakitan > Produksi Rakitan
+    Route::resource('/produksi-rakitan', ProduksiRakitanController::class)->names('gudang.produksiRakitan');
+    
     // Tambah Nota Masuk
     Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
     Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');

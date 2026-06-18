@@ -46,4 +46,9 @@ class NotaBarangMasukDetail extends Model
     {
         return $this->belongsTo(MasterSatuan::class, 'satuan_id');
     }
+
+    public function produksiRakitanFifo()
+    {
+        return $this->hasMany(ProduksiBarangRakitanFifo::class, 'nota_barang_masuk_detail_id');
+    }
 }

@@ -37,4 +37,9 @@ class NotaBarangMasuk extends Model
     {
         return $this->hasMany(NotaBarangMasukDetail::class, 'nota_id');
     }
+
+    public function produksiBarangRakitan()
+    {
+        return $this->hasOne(ProduksiBarangRakitan::class, 'nota_barang_masuk_id');
+    }
 }
