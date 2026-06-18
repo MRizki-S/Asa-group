@@ -355,6 +355,7 @@ class PermintaanBarangController extends Controller
         return round((float) $detail->jumlah_input * (float) $faktorKonversi, 3);
     }
 
+    // function untuk mendapatkan harga total dari inputan user
     private function resolveDirectHargaTotal(Request $request, $detail): float
     {
         $hargaTotal = $request->input("harga_total.{$detail->id}");
@@ -374,6 +375,7 @@ class PermintaanBarangController extends Controller
         return round($hargaTotal, 2);
     }
 
+    // function untuk memastikan detail barang sesuai dengan jenis order
     private function assertDetailMatchesOrderType(PembangunanUnitBarangOrder $order, $detail): void
     {
         $barang = $detail->barang;
