@@ -29,9 +29,15 @@ class KonfirmasiPembangunanController extends Controller
         $unit = $pembangunan->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
 
-        $groupId = "Ada Grup sendiri";
+        $groupId = env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN');
 
-        $messageGroup = "✅ *PEMBANGUNAN UNIT DIMULAI*\n\n" . "Pengajuan pembangunan unit berikut telah disetujui dan statusnya kini *Dalam Proses Pembangunan*.\n\n" . "```\n" . "📍 Perumahan : {$namaPerumahan}\n" . '🏠 Tahap     : ' . ($unit->tahap->nama_tahap ?? '-') . "\n" . '🔑 Unit      : ' . ($unit->nama_unit ?? '-') . "\n" . '👷 Pengawas  : ' . ($pembangunan->pengawas->nama_lengkap ?? '-') . "\n" . '📅 Estimasi  : ' . \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d/m/Y') . "\n" . "```\n\n" . 'Instruksi kerja telah diteruskan ke Pengawas terkait. Semangat untuk tim lapangan! 🏗️✨';
+        $messageGroup = view('notifications.whatsapp.konfirmasi_pembangunan', [
+            'namaPerumahan' => $namaPerumahan,
+            'namaTahap' => $unit->tahap->nama_tahap ?? '-',
+            'namaUnit' => $unit->nama_unit ?? '-',
+            'namaPengawas' => $pembangunan->pengawas->nama_lengkap ?? '-',
+            'tanggal' => \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d/m/Y')
+        ])->render();
 
         if ($groupId) {
             try {
@@ -119,7 +125,7 @@ class KonfirmasiPembangunanController extends Controller
 
             DB::commit();
 
-            // $this->sendAcceptNotification($pembangunan);
+            $this->sendAcceptNotification($pembangunan);
 
             return redirect()->route('produksi.pembangunanUnit.index')->with('success', 'Data Pengajuan Pembangunan Unit berhasil diassign!');
         } catch (\Exception $e) {

@@ -66,13 +66,19 @@ class PermintaanDibangunController extends Controller
         $unit = $pembangunan->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
 
-        $groupId = "ID group proyek manager - manager produksi - dan anak Teknik";
+        $groupId = env('FONNTE_ID_GROUP_PERMINTAAN_DIBANGUN');
 
         $namaTahap = $unit->tahap->nama_tahap ?? '-';
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $messageGroup = "🏗️ *PENGAJUAN PEMBANGUNAN UNIT*\n\n" . "Dear *Manager Produksi*, terdapat pengajuan pembangunan unit baru dari *Project Manager* yang perlu ditindaklanjuti.\n\n" . "```\n" . "📍 Perumahan : {$namaPerumahan}\n" . "🏠 Tahap     : {$namaTahap}\n" . "🔑 Unit      : {$namaUnit}\n" . "👤 Diajukan  : {$pengaju}\n" . '📅 Tanggal   : ' . now()->format('d/m/Y H:i') . " WIB\n" . "```\n\n" . 'Mohon untuk segera dicek pada sistem untuk proses persetujuan. Terima kasih! 🙏';
+        $messageGroup = view('notifications.whatsapp.permintaan_dibangun', [
+            'namaPerumahan' => $namaPerumahan,
+            'namaTahap' => $namaTahap,
+            'namaUnit' => $namaUnit,
+            'peminta' => $pengaju,
+            'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
+        ])->render();
 
         if ($groupId) {
             try {
@@ -124,7 +130,7 @@ class PermintaanDibangunController extends Controller
 
             DB::commit();
 
-            // $this->sendGroupMessage($pembangunan);
+            $this->sendGroupMessage($pembangunan);
 
             return redirect()->back()->with('success', 'Data Pengajuan Pembangunan Unit berhasil ditambahkan!');
         } catch (\Exception $e) {

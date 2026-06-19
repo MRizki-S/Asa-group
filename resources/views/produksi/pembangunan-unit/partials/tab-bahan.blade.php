@@ -71,7 +71,7 @@
                             </td>
                             <td class="px-4 py-4">
                                 <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
-                                    {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y') }}
+                                    {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
                                 </p>
                                 <div class="flex items-center gap-2">
                                     <p class="text-xs font-bold text-gray-700 dark:text-gray-200">

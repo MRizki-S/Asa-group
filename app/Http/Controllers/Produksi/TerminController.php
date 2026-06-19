@@ -409,4 +409,482 @@ class TerminController extends Controller
             ],
         );
     }
+
+    public function laporanBahanProyek(string $id)
+    {
+        $proyek = \App\Models\PembangunanProyek::with([
+            'orders.details', 
+            'pembangunanProyekBahan'
+        ])->findOrFail($id);
+
+        $orders = $proyek->orders;
+        $orderDetails = collect();
+        foreach ($orders as $order) {
+            foreach ($order->details as $detail) {
+                $orderDetails->push($detail);
+            }
+        }
+        
+        $real = $proyek->pembangunanProyekBahan;
+
+        $allBarangIds = $orderDetails->pluck('barang_id')->merge($real->pluck('barang_id'))->unique();
+
+        $laporanDetails = $allBarangIds->map(function ($barangId) use ($orderDetails, $real) {
+            $reqItems = $orderDetails->where('barang_id', $barangId);
+            $realItems = $real->where('barang_id', $barangId);
+
+            $firstReq = $reqItems->first();
+            $firstReal = $realItems->first();
+
+            $namaBarang = $firstReal ? $firstReal->nama_barang : ($firstReq ? $firstReq->nama_barang : 'Tidak Diketahui');
+
+            return [
+                'barang_id' => $barangId,
+                'nama_barang' => $namaBarang,
+                'qty_request' => $reqItems->sum('jumlah_input'),
+                'satuan_request' => $firstReq ? $firstReq->satuan : '-',
+                'qty_real' => $realItems->sum('jumlah_pakai'),
+                'satuan_real' => $firstReal ? $firstReal->satuan : '-',
+                'harga_real' => $realItems->sum('harga_total_snapshot'),
+            ];
+        })->values();
+
+        $laporan = [
+            'total_harga_real' => $real->sum('harga_total_snapshot'),
+            'details' => $laporanDetails
+        ];
+
+        return view('produksi.pembangunan-proyek.laporan.bahan', compact('proyek', 'laporan'));
+    }
+
+    public function laporanBahanKawasan(string $id)
+    {
+        $kawasan = \App\Models\PembangunanKawasan::with([
+            'orders.details', 
+            'pembangunanKawasanBahan'
+        ])->findOrFail($id);
+
+        $orders = $kawasan->orders;
+        $orderDetails = collect();
+        foreach ($orders as $order) {
+            foreach ($order->details as $detail) {
+                $orderDetails->push($detail);
+            }
+        }
+        
+        $real = $kawasan->pembangunanKawasanBahan;
+
+        $allBarangIds = $orderDetails->pluck('barang_id')->merge($real->pluck('barang_id'))->unique();
+
+        $laporanDetails = $allBarangIds->map(function ($barangId) use ($orderDetails, $real) {
+            $reqItems = $orderDetails->where('barang_id', $barangId);
+            $realItems = $real->where('barang_id', $barangId);
+
+            $firstReq = $reqItems->first();
+            $firstReal = $realItems->first();
+
+            $namaBarang = $firstReal ? $firstReal->nama_barang : ($firstReq ? $firstReq->nama_barang : 'Tidak Diketahui');
+
+            return [
+                'barang_id' => $barangId,
+                'nama_barang' => $namaBarang,
+                'qty_request' => $reqItems->sum('jumlah_input'),
+                'satuan_request' => $firstReq ? $firstReq->satuan : '-',
+                'qty_real' => $realItems->sum('jumlah_pakai'),
+                'satuan_real' => $firstReal ? $firstReal->satuan : '-',
+                'harga_real' => $realItems->sum('harga_total_snapshot'),
+            ];
+        })->values();
+
+        $laporan = [
+            'total_harga_real' => $real->sum('harga_total_snapshot'),
+            'details' => $laporanDetails
+        ];
+
+        return view('produksi.pembangunan-kawasan.laporan.bahan', compact('kawasan', 'laporan'));
+    }
+
+    public function laporanUpahProyek(string $id)
+    {
+        $proyek = \App\Models\PembangunanProyek::with([
+            'pengajuanUpah',
+            'upah'
+        ])->findOrFail($id);
+
+        $requestUpah = $proyek->pengajuanUpah->filter(function ($u) {
+            return !str_starts_with($u->status_pengajuan, 'ditolak_');
+        });
+        
+        $realUpah = $proyek->upah;
+
+        $allUpahNames = $requestUpah->pluck('nama_upah')->merge($realUpah->pluck('nama_upah'))->unique();
+
+        $laporanDetails = $allUpahNames->map(function ($name) use ($requestUpah, $realUpah) {
+            $reqNominal = $requestUpah->where('nama_upah', $name)->sum('nominal_diajukan');
+            $realNominal = $realUpah->where('nama_upah', $name)->sum('total_nominal');
+
+            return [
+                'nama_upah' => $name,
+                'nominal_request' => $reqNominal,
+                'nominal_real' => $realNominal,
+            ];
+        })->values();
+
+        $laporan = [
+            'total_request' => $requestUpah->sum('nominal_diajukan'),
+            'total_real' => $realUpah->sum('total_nominal'),
+            'details' => $laporanDetails
+        ];
+
+        return view('produksi.pembangunan-proyek.laporan.upah', compact('proyek', 'laporan'));
+    }
+
+    public function laporanUpahKawasan(string $id)
+    {
+        $kawasan = \App\Models\PembangunanKawasan::with([
+            'pengajuanUpah',
+            'upah'
+        ])->findOrFail($id);
+
+        $requestUpah = $kawasan->pengajuanUpah->filter(function ($u) {
+            return !str_starts_with($u->status_pengajuan, 'ditolak_');
+        });
+        
+        $realUpah = $kawasan->upah;
+
+        $allUpahNames = $requestUpah->pluck('nama_upah')->merge($realUpah->pluck('nama_upah'))->unique();
+
+        $laporanDetails = $allUpahNames->map(function ($name) use ($requestUpah, $realUpah) {
+            $reqNominal = $requestUpah->where('nama_upah', $name)->sum('nominal_diajukan');
+            $realNominal = $realUpah->where('nama_upah', $name)->sum('total_nominal');
+
+            return [
+                'nama_upah' => $name,
+                'nominal_request' => $reqNominal,
+                'nominal_real' => $realNominal,
+            ];
+        })->values();
+
+        $laporan = [
+            'total_request' => $requestUpah->sum('nominal_diajukan'),
+            'total_real' => $realUpah->sum('total_nominal'),
+            'details' => $laporanDetails
+        ];
+
+        return view('produksi.pembangunan-kawasan.laporan.upah', compact('kawasan', 'laporan'));
+    }
+
+    public function exportLaporanTerminProyek(string $id)
+    {
+        $proyek = \App\Models\PembangunanProyek::with([
+            'pengajuanUpah', 'upah', 'orders.details', 'pembangunanProyekBahan'
+        ])->findOrFail($id);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Termin Proyek');
+
+        $styleHeaderTable = [
+            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF305496']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ];
+        $styleSubHeaderTable = [
+            'font' => ['bold' => true, 'italic' => true, 'color' => ['argb' => 'FF000000']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF2F2F2']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ];
+        $styleBorderAll = ['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]];
+
+        $sheet->setCellValue('A1', 'LAPORAN TERMIN PROYEK');
+        $sheet->mergeCells('A1:E1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->setCellValue('A2', 'Proyek');
+        $sheet->setCellValue('B2', ': ' . ($proyek->nama ?? '-'));
+        $sheet->setCellValue('A3', 'Tgl Export');
+        $sheet->setCellValue('B3', ': ' . date('d F Y H:i'));
+
+        $row = 5;
+
+        // A. UPAH
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", '   A. RINCIAN UPAH PEKERJAAN');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubHeaderTable);
+        $row++;
+
+        $headersUpah = ['NO', 'NAMA PEKERJAAN', 'REQUEST (Rp)', 'REALISASI (Rp)', 'SELISIH (Rp)'];
+        foreach (range('A', 'E') as $index => $col) {
+            $sheet->setCellValue($col . $row, $headersUpah[$index]);
+        }
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleHeaderTable);
+        $row++;
+
+        $requestUpah = $proyek->pengajuanUpah->filter(fn($u) => !str_starts_with($u->status_pengajuan, 'ditolak_'));
+        $realUpah = $proyek->upah;
+        $allUpahNames = $requestUpah->pluck('nama_upah')->merge($realUpah->pluck('nama_upah'))->unique();
+
+        $subTotalReqUpah = 0; $subTotalRealUpah = 0; $noUpah = 1;
+        foreach ($allUpahNames as $name) {
+            $reqNominal = $requestUpah->where('nama_upah', $name)->sum('nominal_diajukan');
+            $realNominal = $realUpah->where('nama_upah', $name)->sum('total_nominal');
+            $selisih = $reqNominal - $realNominal;
+
+            $subTotalReqUpah += $reqNominal; $subTotalRealUpah += $realNominal;
+
+            $sheet->setCellValue("A{$row}", $noUpah++);
+            $sheet->setCellValue("B{$row}", $name);
+            $sheet->setCellValue("C{$row}", $reqNominal);
+            $sheet->setCellValue("D{$row}", $realNominal);
+            $sheet->setCellValue("E{$row}", $selisih);
+
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll);
+            $sheet->getStyle("C{$row}:E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            $row++;
+        }
+
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("A{$row}", 'SUB TOTAL UPAH');
+        $sheet->setCellValue("C{$row}", $subTotalReqUpah);
+        $sheet->setCellValue("D{$row}", $subTotalRealUpah);
+        $sheet->setCellValue("E{$row}", $subTotalReqUpah - $subTotalRealUpah);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
+        $sheet->getStyle("C{$row}:E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row += 2;
+
+        // B. BAHAN
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", '   B. RINCIAN PEMAKAIAN BAHAN');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubHeaderTable);
+        $row++;
+
+        $headersBahan = ['NO', 'NAMA BAHAN', 'QTY REQUEST', 'QTY REAL', 'TOTAL HARGA REAL (Rp)'];
+        foreach (range('A', 'E') as $index => $col) {
+            $sheet->setCellValue($col . $row, $headersBahan[$index]);
+        }
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleHeaderTable);
+        $row++;
+
+        $orderDetails = collect();
+        foreach ($proyek->orders as $order) {
+            foreach ($order->details as $detail) $orderDetails->push($detail);
+        }
+        $realBahan = $proyek->pembangunanProyekBahan;
+        $allBarangIds = $orderDetails->pluck('barang_id')->merge($realBahan->pluck('barang_id'))->unique();
+
+        $subTotalHargaBahan = 0; $noBahan = 1;
+        foreach ($allBarangIds as $barangId) {
+            $reqItems = $orderDetails->where('barang_id', $barangId);
+            $realItems = $realBahan->where('barang_id', $barangId);
+            
+            $firstReq = $reqItems->first();
+            $firstReal = $realItems->first();
+            $namaBarang = $firstReal ? $firstReal->nama_barang : ($firstReq ? $firstReq->nama_barang : '-');
+            
+            $qtyReq = $reqItems->sum('jumlah_input');
+            $qtyReal = $realItems->sum('jumlah_pakai');
+            $hargaReal = $realItems->sum('harga_total_snapshot');
+            $subTotalHargaBahan += $hargaReal;
+
+            $sheet->setCellValue("A{$row}", $noBahan++);
+            $sheet->setCellValue("B{$row}", $namaBarang);
+            $sheet->setCellValue("C{$row}", $qtyReq . ' ' . ($firstReq ? $firstReq->satuan : '-'));
+            $sheet->setCellValue("D{$row}", $qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '-'));
+            $sheet->setCellValue("E{$row}", $hargaReal);
+
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll);
+            $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            $row++;
+        }
+
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'SUB TOTAL BAHAN');
+        $sheet->setCellValue("E{$row}", $subTotalHargaBahan);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row += 2;
+
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI (UPAH + BAHAN)');
+        $sheet->setCellValue("E{$row}", $subTotalRealUpah + $subTotalHargaBahan);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}:E{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getColumnDimension('B')->setWidth(45);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(28);
+
+        $namaProyek = preg_replace('/[^A-Za-z0-9\-]/', '_', $proyek->nama ?? 'Proyek');
+        $filename = "Laporan_Termin_Proyek_{$namaProyek}.xlsx";
+
+        $writer = new Xlsx($spreadsheet);
+        return response()->streamDownload(function () use ($writer) { $writer->save('php://output'); }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    public function exportLaporanTerminKawasan(string $id)
+    {
+        $kawasan = \App\Models\PembangunanKawasan::with([
+            'pengajuanUpah', 'upah', 'orders.details', 'pembangunanKawasanBahan'
+        ])->findOrFail($id);
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Termin Kawasan');
+
+        $styleHeaderTable = [
+            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF305496']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ];
+        $styleSubHeaderTable = [
+            'font' => ['bold' => true, 'italic' => true, 'color' => ['argb' => 'FF000000']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF2F2F2']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ];
+        $styleBorderAll = ['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]];
+
+        $sheet->setCellValue('A1', 'LAPORAN TERMIN KAWASAN');
+        $sheet->mergeCells('A1:E1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->setCellValue('A2', 'Kawasan');
+        $sheet->setCellValue('B2', ': ' . ($kawasan->nama ?? '-'));
+        $sheet->setCellValue('A3', 'Tgl Export');
+        $sheet->setCellValue('B3', ': ' . date('d F Y H:i'));
+
+        $row = 5;
+
+        // A. UPAH
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", '   A. RINCIAN UPAH PEKERJAAN');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubHeaderTable);
+        $row++;
+
+        $headersUpah = ['NO', 'NAMA PEKERJAAN', 'REQUEST (Rp)', 'REALISASI (Rp)', 'SELISIH (Rp)'];
+        foreach (range('A', 'E') as $index => $col) {
+            $sheet->setCellValue($col . $row, $headersUpah[$index]);
+        }
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleHeaderTable);
+        $row++;
+
+        $requestUpah = $kawasan->pengajuanUpah->filter(fn($u) => !str_starts_with($u->status_pengajuan, 'ditolak_'));
+        $realUpah = $kawasan->upah;
+        $allUpahNames = $requestUpah->pluck('nama_upah')->merge($realUpah->pluck('nama_upah'))->unique();
+
+        $subTotalReqUpah = 0; $subTotalRealUpah = 0; $noUpah = 1;
+        foreach ($allUpahNames as $name) {
+            $reqNominal = $requestUpah->where('nama_upah', $name)->sum('nominal_diajukan');
+            $realNominal = $realUpah->where('nama_upah', $name)->sum('total_nominal');
+            $selisih = $reqNominal - $realNominal;
+
+            $subTotalReqUpah += $reqNominal; $subTotalRealUpah += $realNominal;
+
+            $sheet->setCellValue("A{$row}", $noUpah++);
+            $sheet->setCellValue("B{$row}", $name);
+            $sheet->setCellValue("C{$row}", $reqNominal);
+            $sheet->setCellValue("D{$row}", $realNominal);
+            $sheet->setCellValue("E{$row}", $selisih);
+
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll);
+            $sheet->getStyle("C{$row}:E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            $row++;
+        }
+
+        $sheet->mergeCells("A{$row}:B{$row}");
+        $sheet->setCellValue("A{$row}", 'SUB TOTAL UPAH');
+        $sheet->setCellValue("C{$row}", $subTotalReqUpah);
+        $sheet->setCellValue("D{$row}", $subTotalRealUpah);
+        $sheet->setCellValue("E{$row}", $subTotalReqUpah - $subTotalRealUpah);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
+        $sheet->getStyle("C{$row}:E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row += 2;
+
+        // B. BAHAN
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", '   B. RINCIAN PEMAKAIAN BAHAN');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubHeaderTable);
+        $row++;
+
+        $headersBahan = ['NO', 'NAMA BAHAN', 'QTY REQUEST', 'QTY REAL', 'TOTAL HARGA REAL (Rp)'];
+        foreach (range('A', 'E') as $index => $col) {
+            $sheet->setCellValue($col . $row, $headersBahan[$index]);
+        }
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleHeaderTable);
+        $row++;
+
+        $orderDetails = collect();
+        foreach ($kawasan->orders as $order) {
+            foreach ($order->details as $detail) $orderDetails->push($detail);
+        }
+        $realBahan = $kawasan->pembangunanKawasanBahan;
+        $allBarangIds = $orderDetails->pluck('barang_id')->merge($realBahan->pluck('barang_id'))->unique();
+
+        $subTotalHargaBahan = 0; $noBahan = 1;
+        foreach ($allBarangIds as $barangId) {
+            $reqItems = $orderDetails->where('barang_id', $barangId);
+            $realItems = $realBahan->where('barang_id', $barangId);
+            
+            $firstReq = $reqItems->first();
+            $firstReal = $realItems->first();
+            $namaBarang = $firstReal ? $firstReal->nama_barang : ($firstReq ? $firstReq->nama_barang : '-');
+            
+            $qtyReq = $reqItems->sum('jumlah_input');
+            $qtyReal = $realItems->sum('jumlah_pakai');
+            $hargaReal = $realItems->sum('harga_total_snapshot');
+            $subTotalHargaBahan += $hargaReal;
+
+            $sheet->setCellValue("A{$row}", $noBahan++);
+            $sheet->setCellValue("B{$row}", $namaBarang);
+            $sheet->setCellValue("C{$row}", $qtyReq . ' ' . ($firstReq ? $firstReq->satuan : '-'));
+            $sheet->setCellValue("D{$row}", $qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '-'));
+            $sheet->setCellValue("E{$row}", $hargaReal);
+
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll);
+            $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            $row++;
+        }
+
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'SUB TOTAL BAHAN');
+        $sheet->setCellValue("E{$row}", $subTotalHargaBahan);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row += 2;
+
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI (UPAH + BAHAN)');
+        $sheet->setCellValue("E{$row}", $subTotalRealUpah + $subTotalHargaBahan);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}:E{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getColumnDimension('B')->setWidth(45);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(28);
+
+        $namaKawasan = preg_replace('/[^A-Za-z0-9\-]/', '_', $kawasan->nama ?? 'Kawasan');
+        $filename = "Laporan_Termin_Kawasan_{$namaKawasan}.xlsx";
+
+        $writer = new Xlsx($spreadsheet);
+        return response()->streamDownload(function () use ($writer) { $writer->save('php://output'); }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
 }
