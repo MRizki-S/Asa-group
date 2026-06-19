@@ -191,7 +191,7 @@
                 console.error(error.response?.data);
                 alert('Gagal mengirim order: ' + (error.response?.data?.message || 'Terjadi kesalahan'));
             } finally {
-                this.loadingRequest = true;
+                this.loadingRequest = false;
             }
         },
 

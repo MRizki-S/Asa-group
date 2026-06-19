@@ -293,7 +293,8 @@
                                                 <th class="border px-3 py-1 text-center text-blue-700">Sisa</th>
                                                 <th class="border px-3 py-1 text-center">Satuan</th>
                                                 <th class="border px-3 py-1 text-right">Harga Satuan</th>
-                                                <th class="border px-3 py-1 text-right">Harga Total</th>
+                                                <th class="border px-3 py-1 text-right">Harga Total Nota</th>
+                                                <th class="border px-3 py-1 text-right">Nilai Sisa</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -302,7 +303,8 @@
                                             $dMasuk = ($detail->jumlah_base ?? 0) / $konversiRate;
                                             $dSisa = ($detail->jumlah_sisa ?? 0) / $konversiRate;
                                             $dHargaUnit = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * $konversiRate;
-                                            $dHargaTotal = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
+                                            $dHargaTotalNota = $detail->harga_total ?? 0;
+                                            $dNilaiSisa = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
                                             @endphp
                                             <tr class="hover:bg-yellow-50 border-b border-gray-100">
                                                 <td class="px-3 py-1 font-medium">{{ $detail->nota->nomor_nota }}</td>
@@ -312,11 +314,12 @@
                                                 <td class="px-3 py-1 text-center font-bold text-blue-600">{{ formatStock($dSisa) }}</td>
                                                 <td class="px-3 py-1 text-center font-medium">{{ $satuanNama }}</td>
                                                 <td class="px-3 py-1 text-right tabular-nums">Rp {{ formatStock($dHargaUnit) }}</td>
-                                                <td class="px-3 py-1 text-right font-semibold tabular-nums">Rp {{ formatStock($dHargaTotal) }}</td>
+                                                <td class="px-3 py-1 text-right font-semibold tabular-nums">Rp {{ formatStock($dHargaTotalNota) }}</td>
+                                                <td class="px-3 py-1 text-right font-semibold text-blue-700 tabular-nums">Rp {{ formatStock($dNilaiSisa) }}</td>
                                             </tr>
                                             @empty
                                             <tr>
-                                                <td colspan="8" class="px-3 py-2 text-center text-gray-400">Tidak ada
+                                                <td colspan="9" class="px-3 py-2 text-center text-gray-400">Tidak ada
                                                     stock FIFO aktif</td>
                                             </tr>
                                             @endforelse

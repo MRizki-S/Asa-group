@@ -27,4 +27,24 @@ class MasterSatuan extends Model
     public function masterRapBahan(){
         return $this->hasMany(MasterRapBahan::class);
     }
+
+    public function rakitanHasil()
+    {
+        return $this->hasMany(BarangRakitan::class, 'satuan_hasil_id');
+    }
+
+    public function rakitanDetail()
+    {
+        return $this->hasMany(BarangRakitanDetail::class, 'satuan_id');
+    }
+
+    public function produksiRakitanHasil()
+    {
+        return $this->hasMany(ProduksiBarangRakitan::class, 'satuan_hasil_id');
+    }
+
+    public function produksiRakitanDetail()
+    {
+        return $this->hasMany(ProduksiBarangRakitanDetail::class, 'satuan_id');
+    }
 }

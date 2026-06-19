@@ -38,7 +38,7 @@ class TestingSeeder extends Seeder
 
         Type::create([
             'perumahaan_id' => 1,
-            'nama_type' => 'Type 33/66',
+            'nama_type' => 'Type 1',
             'slug' => 'type-1-LgsFl',
             'luas_bangunan' => 45,
             'luas_tanah' => 65,
@@ -100,7 +100,7 @@ class TestingSeeder extends Seeder
         $pengawas1->assignRole('Pengawas Unit');
 
         MasterQcContainer::create([
-            'nama_container' => 'Pembangunan Type 33/66',
+            'nama_container' => 'Pembangunan Type1',
             'type_id' => 1
         ]);
 

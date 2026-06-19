@@ -108,4 +108,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(PembangunanUnit::class, 'pengawas_id');
     }
+
+    public function barangRakitanDibuat()
+    {
+        return $this->hasMany(BarangRakitan::class, 'created_by');
+    }
+
+    public function produksiBarangRakitanDibuat()
+    {
+        return $this->hasMany(ProduksiBarangRakitan::class, 'created_by');
+    }
+
+    public function produksiBarangRakitanDibatalkan()
+    {
+        return $this->hasMany(ProduksiBarangRakitan::class, 'cancelled_by');
+    }
 }

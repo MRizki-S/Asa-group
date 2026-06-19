@@ -91,23 +91,36 @@ class PembangunanUnitController extends Controller
     public function show(string $id)
     {
         $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
-        $allBarang = MasterBarang::with(['satuanKonversi.satuan'])
-            ->select('id', 'kode_barang', 'nama_barang', 'is_stock')
+        $allBarang = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan'])
+            ->select('id', 'kode_barang', 'nama_barang', 'base_unit_id', 'is_stock')
             ->get()
             ->map(function ($barang) {
+                $availableSatuan = $barang->satuanKonversi->map(function ($konv) {
+                    return [
+                        'id' => $konv->satuan_id,
+                        'nama' => $konv->satuan->nama,
+                        'faktor' => $konv->konversi_ke_base,
+                        'is_default' => (bool) $konv->is_default
+                    ];
+                });
+
+                if ($availableSatuan->isEmpty() && $barang->baseUnit) {
+                    $availableSatuan = collect([
+                        [
+                            'id' => $barang->baseUnit->id,
+                            'nama' => $barang->baseUnit->nama,
+                            'faktor' => 1,
+                            'is_default' => true
+                        ]
+                    ]);
+                }
+
                 return [
                     'id' => $barang->id,
                     'kode_barang' => $barang->kode_barang,
                     'nama_barang' => $barang->nama_barang,
                     'is_stock' => (bool) $barang->is_stock,
-                    'available_satuan' => $barang->satuanKonversi->map(function ($konv) {
-                        return [
-                            'id' => $konv->satuan_id,
-                            'nama' => $konv->satuan->nama,
-                            'faktor' => $konv->konversi_ke_base,
-                            'is_default' => (bool) $konv->is_default
-                        ];
-                    })
+                    'available_satuan' => $availableSatuan
                 ];
             });
 

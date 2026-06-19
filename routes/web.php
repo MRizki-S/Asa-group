@@ -15,10 +15,13 @@ use App\Http\Controllers\Etalase\UnitController;
 use App\Http\Controllers\FeeAgenController;
 use App\Http\Controllers\Gudang\DaftarNotaMasukController;
 use App\Http\Controllers\Gudang\DraftNotaMasukController;
+use App\Http\Controllers\Gudang\BarangRusakController;
+use App\Http\Controllers\Gudang\KomposisiRakitanController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\PermintaanBarangController;
+use App\Http\Controllers\Gudang\ProduksiRakitanController;
 use App\Http\Controllers\Gudang\StockBarangController;
 
 use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
@@ -60,7 +63,6 @@ use App\Http\Controllers\Marketing\TargetPenjualanController;
 use App\Http\Controllers\PerumahaanSelectController;
 use App\Http\Controllers\Produksi\KonfirmasiPembangunanController;
 use App\Http\Controllers\Produksi\MasterQcRapController;
-use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitBarangReturnController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitOrderBarangController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitPengajuanUpahController;
@@ -513,6 +515,12 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Master Barang
     Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
 
+    // Barang Rakitan > Komposisi Rakitan
+    Route::resource('/barang-rakitan', KomposisiRakitanController::class)->names('gudang.komposisiRakitan');
+
+    // Barang Rakitan > Produksi Rakitan
+    Route::resource('/produksi-rakitan', ProduksiRakitanController::class)->names('gudang.produksiRakitan');
+    
     // Tambah Nota Masuk
     Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
     Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
@@ -528,6 +536,14 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
     Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
+    // Barang Rusak
+    Route::get('/barang-rusak', [BarangRusakController::class, 'index'])->name('gudang.barangRusak.index');
+    Route::get('/barang-rusak/create', [BarangRusakController::class, 'create'])->name('gudang.barangRusak.create');
+    Route::post('/barang-rusak', [BarangRusakController::class, 'store'])->name('gudang.barangRusak.store');
+    Route::get('/barang-rusak/satuan-dan-stok/{barangId}', [BarangRusakController::class, 'getSatuanDanStok'])->name('gudang.barangRusak.satuanStok');
+    Route::patch('/barang-rusak/{nomorBarangRusak}/cancel', [BarangRusakController::class, 'cancel'])->name('gudang.barangRusak.cancel');
+    Route::get('/barang-rusak/{nomorBarangRusak}', [BarangRusakController::class, 'show'])->name('gudang.barangRusak.show');
 
     // Permintaan Barang Proyek
     Route::get('/permintaan-barang', [PermintaanBarangController::class, 'index'])->name('gudang.permintaanBarang.index');
@@ -599,7 +615,7 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
         ->name('produksi.pembangunanUnit.orderStore');
-    Route::post('order/{order}/return', [PembangunanUnitBarangReturnController::class, 'store'])
+    Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
         ->name('produksi.order.storeReturn');
 
     Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])

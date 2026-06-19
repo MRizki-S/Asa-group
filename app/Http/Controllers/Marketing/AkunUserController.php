@@ -172,7 +172,7 @@ class AkunUserController extends Controller
         ];
 
         if ($isSPVKPR) {
-            $rules['agent_id'] = 'nullable|exists:master_agent,id';
+            $rules['agent_id'] = 'required|exists:master_agent,id';
         }
 
         $request->validate($rules, [
