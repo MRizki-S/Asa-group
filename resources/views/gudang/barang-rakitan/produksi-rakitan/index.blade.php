@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'KomposisiRakitan')
+@section('pageActive', 'ProduksiRakitan')
 
 @section('content')
 <!-- ===== Main Content Start ===== -->
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
     <!-- Breadcrumb Start -->
-    <div x-data="{ pageName: 'KomposisiRakitan' }">
+    <div x-data="{ pageName: 'ProduksiRakitan' }">
         @include('partials.breadcrumb')
     </div>
     <!-- Breadcrumb End -->
