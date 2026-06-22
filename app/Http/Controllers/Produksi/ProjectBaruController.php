@@ -39,7 +39,7 @@ class ProjectBaruController extends Controller
     public function index()
     {
         $projects = PembangunanProyek::latest()->get();
-        $users = \App\Models\User::role('Pengawas Unit')->get();
+        $users = \App\Models\User::role('Pengawas Proyek Mangoon')->get();
         return view('produksi.project_baru.index', compact('projects', 'users'));
     }
 
@@ -64,7 +64,7 @@ class ProjectBaruController extends Controller
         if ($project->status_pembangunan !== 'pending') {
             abort(403, 'Hanya project pending yang dapat diedit');
         }
-        $users = \App\Models\User::role('Pengawas Unit')->get();
+        $users = \App\Models\User::role('Pengawas Proyek Mangoon')->get();
         return view('produksi.project_baru.edit', compact('project', 'users'));
     }
 

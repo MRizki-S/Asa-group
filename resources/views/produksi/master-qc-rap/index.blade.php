@@ -104,11 +104,11 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                 Dibuat Pada
                             </th>
-                            @canany(['etalase.blok.update', ' etalase.blok.delete'])
+                            {{-- @canany(['etalase.blok.update', ' etalase.blok.delete']) --}}
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Aksi
                                 </th>
-                            @endcanany
+                            {{-- @endcanany --}}
                         </tr>
                     </thead>
                     <tbody>
