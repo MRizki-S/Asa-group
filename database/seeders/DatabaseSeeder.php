@@ -96,6 +96,7 @@ class DatabaseSeeder extends Seeder
 
             // User Kpi Sistem
             UsersKpiSystemSeeder::class,
+            KaryawanSeeder::class,
         ]);
 
         //  5. KPI Indicator

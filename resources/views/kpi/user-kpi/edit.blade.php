@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="kpiCalculator()">
-        <div x-data="{ pageName: '{{ $kpiUser->status == 'final' ? 'Detail Nilai KPI' : 'Input Nilai KPI' }}: {{ $kpiUser->user->nama_lengkap }}' }">
+        <div x-data="{ pageName: '{{ $kpiUser->status == 'final' ? 'Detail Nilai KPI' : 'Input Nilai KPI' }}: {{ $kpiUser->karyawan->nama }}' }">
             @include('partials.breadcrumb')
         </div>
 
@@ -12,7 +12,7 @@
         <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Karyawan</p>
-                <p class="text-sm font-bold text-gray-800 dark:text-white">{{ $kpiUser->user->nama_lengkap }}</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-white">{{ $kpiUser->karyawan->nama }}</p>
             </div>
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Periode</p>

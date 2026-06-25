@@ -46,6 +46,7 @@ use App\Http\Controllers\PerumahaanSelectController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
 use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use App\Http\Controllers\Superadmin\DevisiController;
+use App\Http\Controllers\Superadmin\KaryawanController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -483,4 +484,5 @@ Route::middleware('auth')->prefix('superadmin')->group(function () {
     Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
     Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
     Route::resource('devisi', DevisiController::class)->names('superadmin.devisi');
+    Route::resource('karyawan', KaryawanController::class)->names('superadmin.karyawan');
 });

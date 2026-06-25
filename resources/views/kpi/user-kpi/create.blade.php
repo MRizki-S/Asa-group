@@ -99,7 +99,7 @@
                                 </label>
                             </template>
                             <div x-show="users.length === 0" class="text-sm text-gray-400 italic py-4 text-center">Tidak ada
-                                user dengan role ini.</div>
+                                karyawan dengan role ini.</div>
                         </div>
                     </div>
 

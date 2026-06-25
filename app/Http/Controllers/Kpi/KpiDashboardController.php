@@ -22,15 +22,10 @@ class KpiDashboardController extends Controller
         $jabatanId = $request->input('jabatan');
         $devisiId = $request->input('devisi');
 
-        // 1. Fetch all users of type 'karyawan' (with optional role/jabatan filter, excluding Superadmin)
-        $usersRaw = DB::table('users')
-            ->where('users.type', 'karyawan')
-            ->leftJoin('ubs', 'users.perumahaan_id', '=', 'ubs.id')
-            ->leftJoin('model_has_roles', function ($join) {
-                $join->on('users.id', '=', 'model_has_roles.model_id')
-                    ->where('model_has_roles.model_type', '=', 'App\Models\User');
-            })
-            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+        // 1. Fetch all employees (karyawan) (with optional role/jabatan filter, excluding Superadmin)
+        $usersRaw = DB::table('karyawan')
+            ->leftJoin('ubs', 'karyawan.perumahaan_id', '=', 'ubs.id')
+            ->leftJoin('roles', 'karyawan.role_id', '=', 'roles.id')
             ->leftJoin('devisi', 'roles.devisi_id', '=', 'devisi.id')
             ->where(function ($query) {
                 $query->where('roles.name', '!=', 'Superadmin')
@@ -43,15 +38,14 @@ class KpiDashboardController extends Controller
                 return $query->where('roles.devisi_id', $devisiId);
             })
             ->select(
-                'users.id as user_id',
-                'users.nama_lengkap',
-                'users.is_global',
-                'users.perumahaan_id',
+                'karyawan.id as user_id',
+                'karyawan.nama as nama_lengkap',
+                'karyawan.perumahaan_id',
                 'ubs.nama_ubs',
                 'roles.name as role_name',
                 'devisi.nama_devisi'
             )
-            ->orderBy('users.nama_lengkap', 'asc')
+            ->orderBy('karyawan.nama', 'asc')
             ->get();
 
         // 2. Fetch all KPI component sums for the selected year
@@ -59,11 +53,11 @@ class KpiDashboardController extends Controller
             ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
             ->where('kpi_user.tahun', $tahun)
             ->select(
-                'kpi_user.user_id',
+                'kpi_user.karyawan_id as user_id',
                 'kpi_user.bulan',
                 DB::raw('SUM(kpi_user_komponen.nilai_akhir) as total_nilai')
             )
-            ->groupBy('kpi_user.user_id', 'kpi_user.bulan')
+            ->groupBy('kpi_user.karyawan_id', 'kpi_user.bulan')
             ->get();
 
         $monthMap = [
@@ -164,15 +158,10 @@ class KpiDashboardController extends Controller
         $jabatanId = $request->input('jabatan');
         $devisiId = $request->input('devisi');
 
-        // 1. Fetch all users of type 'karyawan' (with optional role/jabatan filter, excluding Superadmin)
-        $usersRaw = DB::table('users')
-            ->where('users.type', 'karyawan')
-            ->leftJoin('ubs', 'users.perumahaan_id', '=', 'ubs.id')
-            ->leftJoin('model_has_roles', function ($join) {
-                $join->on('users.id', '=', 'model_has_roles.model_id')
-                    ->where('model_has_roles.model_type', '=', 'App\Models\User');
-            })
-            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+        // 1. Fetch all employees (karyawan) (with optional role/jabatan filter, excluding Superadmin)
+        $usersRaw = DB::table('karyawan')
+            ->leftJoin('ubs', 'karyawan.perumahaan_id', '=', 'ubs.id')
+            ->leftJoin('roles', 'karyawan.role_id', '=', 'roles.id')
             ->leftJoin('devisi', 'roles.devisi_id', '=', 'devisi.id')
             ->where(function ($query) {
                 $query->where('roles.name', '!=', 'Superadmin')
@@ -185,15 +174,14 @@ class KpiDashboardController extends Controller
                 return $query->where('roles.devisi_id', $devisiId);
             })
             ->select(
-                'users.id as user_id',
-                'users.nama_lengkap',
-                'users.is_global',
-                'users.perumahaan_id',
+                'karyawan.id as user_id',
+                'karyawan.nama as nama_lengkap',
+                'karyawan.perumahaan_id',
                 'ubs.nama_ubs',
                 'roles.name as role_name',
                 'devisi.nama_devisi'
             )
-            ->orderBy('users.nama_lengkap', 'asc')
+            ->orderBy('karyawan.nama', 'asc')
             ->get();
 
         // 2. Fetch all KPI component sums for the selected year
@@ -201,11 +189,11 @@ class KpiDashboardController extends Controller
             ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
             ->where('kpi_user.tahun', $tahun)
             ->select(
-                'kpi_user.user_id',
+                'kpi_user.karyawan_id as user_id',
                 'kpi_user.bulan',
                 DB::raw('SUM(kpi_user_komponen.nilai_akhir) as total_nilai')
             )
-            ->groupBy('kpi_user.user_id', 'kpi_user.bulan')
+            ->groupBy('kpi_user.karyawan_id', 'kpi_user.bulan')
             ->get();
 
         $monthMap = [

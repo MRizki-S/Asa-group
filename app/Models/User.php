@@ -26,6 +26,7 @@ class User extends Authenticatable
         'perumahaan_id',
         'is_global',
         'tanggal_expired',
+        'karyawan_id',
     ];
 
     /**
@@ -90,5 +91,13 @@ class User extends Authenticatable
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    /**
+     * Relasi ke data Karyawan
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 }

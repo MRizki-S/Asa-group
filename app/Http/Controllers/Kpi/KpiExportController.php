@@ -16,18 +16,18 @@ class KpiExportController extends Controller
 {
     public function exportById($id)
     {
-        $kpi = KpiUser::with(['details', 'user.roles.devisi'])->findOrFail($id);
+        $kpi = KpiUser::with(['details', 'karyawan.role.devisi'])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('KPI ' . substr($kpi->user->nama_lengkap, 0, 20));
+        $sheet->setTitle('KPI ' . substr($kpi->karyawan->nama, 0, 20));
 
         $row = 1;
 
         $headerData = [
-            ['NAMA',    ': ' . $kpi->user->nama_lengkap],
-            ['JABATAN', ': ' . ($kpi->user->getRoleNames()->implode(', ') ?: '-')],
-            ['DIVISI',  ': ' . ($kpi->user->roles->first()?->devisi?->nama_devisi ?? '-')],
+            ['NAMA',    ': ' . $kpi->karyawan->nama],
+            ['JABATAN', ': ' . ($kpi->karyawan->role?->name ?? '-')],
+            ['DIVISI',  ': ' . ($kpi->karyawan->role?->devisi?->nama_devisi ?? '-')],
             ['BULAN',   ': ' . date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun))],
         ];
 
@@ -119,7 +119,7 @@ class KpiExportController extends Controller
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        $fileName = 'KPI_' . str_replace(' ', '_', $kpi->user->nama_lengkap) . '_' . $kpi->bulan . '_' . $kpi->tahun . '.xlsx';
+        $fileName = 'KPI_' . str_replace(' ', '_', $kpi->karyawan->nama) . '_' . $kpi->bulan . '_' . $kpi->tahun . '.xlsx';
         $writer = new Xlsx($spreadsheet);
 
         return response()->streamDownload(function () use ($writer) {
@@ -140,12 +140,12 @@ class KpiExportController extends Controller
             'tahun'     => 'nullable',
         ]);
 
-        $kpiList = KpiUser::with(['details', 'user.roles.devisi'])
+        $kpiList = KpiUser::with(['details', 'karyawan.role.devisi'])
             ->whereIn('id', $request->kpi_ids)
             ->get()
             ->sortBy(function ($kpi) {
-                $devisiName = $kpi->user->roles->first()?->devisi?->nama_devisi ?? 'LAINNYA';
-                $userName = $kpi->user->nama_lengkap ?? '';
+                $devisiName = $kpi->karyawan->role?->devisi?->nama_devisi ?? 'LAINNYA';
+                $userName = $kpi->karyawan->nama ?? '';
                 return strtolower($devisiName . '_' . $userName);
             });
 
@@ -167,9 +167,9 @@ class KpiExportController extends Controller
 
         foreach ($kpiList as $kpi) {
             $headerData = [
-                ['NAMA',    ': ' . $kpi->user->nama_lengkap],
-                ['JABATAN', ': ' . ($kpi->user->getRoleNames()->implode(', ') ?: '-')],
-                ['DIVISI',  ': ' . ($kpi->user->roles->first()?->devisi?->nama_devisi ?? '-')],
+                ['NAMA',    ': ' . $kpi->karyawan->nama],
+                ['JABATAN', ': ' . ($kpi->karyawan->role?->name ?? '-')],
+                ['DIVISI',  ': ' . ($kpi->karyawan->role?->devisi?->nama_devisi ?? '-')],
                 ['BULAN',   ': ' . date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun))],
             ];
 

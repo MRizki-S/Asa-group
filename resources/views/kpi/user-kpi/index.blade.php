@@ -137,24 +137,24 @@
                             @foreach ($allKpiUser as $item)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] border-b dark:border-gray-800">
                                     <td class="py-4 px-4 text-sm font-medium text-gray-800 dark:text-white">
-                                        {{ $item->user->nama_lengkap }}
+                                        {{ $item->karyawan->nama }}
                                     </td>
                                     <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">
-                                        {{ $item->user->no_hp ?? '-' }}
+                                        {{ $item->karyawan->no_hp ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 text-sm text-center">
                                         <span class="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400 rounded text-xs font-semibold">
-                                            {{ $item->user->roles->first()?->id ?? '-' }}
+                                            {{ $item->karyawan->role?->id ?? '-' }}
                                         </span>
                                     </td>
                                     <td class="py-4 px-4 text-sm">
                                         <span
                                             class="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded text-xs font-medium">
-                                            {{ $item->user->getRoleNames()->implode(', ') }}
+                                            {{ $item->karyawan->role?->name ?? '-' }}
                                         </span>
                                     </td>
                                     <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">
-                                        {{ $item->user->roles->first()?->devisi?->nama_devisi ?? '-' }}
+                                        {{ $item->karyawan->role?->devisi?->nama_devisi ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 text-sm text-center">
                                         <p>{{ (float) $item->total_nilai }}</p>
@@ -240,10 +240,10 @@
                                 checked>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-800 dark:text-white truncate">
-                                    {{ $item->user->nama_lengkap }}
+                                    {{ $item->karyawan->nama }}
                                 </p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                    {{ $item->user->getRoleNames()->implode(', ') }}
+                                    {{ $item->karyawan->role?->name ?? '-' }}
                                     <span
                                         class="ml-1.5 {{ $item->status == 'draft' ? 'text-yellow-600' : 'text-green-600' }} font-medium uppercase">
                                         · {{ $item->status }}

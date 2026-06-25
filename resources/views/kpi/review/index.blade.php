@@ -56,7 +56,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] border-b dark:border-gray-800">
                                     <td class="py-4 px-4 align-top">
                                         <div class="text-sm font-bold text-gray-800 dark:text-white">
-                                            {{ $kpi->user->nama_lengkap }}
+                                            {{ $kpi->karyawan->nama }}
                                         </div>
                                         <div class="text-[11px] text-blue-600 font-medium uppercase tracking-tight">
                                             {{ date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun)) }}
