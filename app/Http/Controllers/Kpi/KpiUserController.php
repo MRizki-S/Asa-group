@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 
 
@@ -28,8 +28,9 @@ class KpiUserController extends Controller
         $tahunFilter = $request->get('tahun', date('Y')) ?? Carbon::now()->year;
         $roleFilter = $request->get('role');
         $statusFilter = $request->get('status');
+        $devisiFilter = $request->get('devisi');
 
-        $query = KpiUser::with(['user', 'details', 'user.roles'])
+        $query = KpiUser::with(['user', 'details', 'user.roles.devisi'])
             ->where('bulan', (int) $bulanFilter)
             ->where('tahun', (int) $tahunFilter);
 
@@ -43,15 +44,23 @@ class KpiUserController extends Controller
             });
         }
 
+        if ($request->filled('devisi')) {
+            $query->whereHas('user.roles', function ($q) use ($devisiFilter) {
+                $q->where('devisi_id', $devisiFilter);
+            });
+        }
+
         $allKpiUser = $query->latest()->get();
 
         $roles = Role::all();
+        $devisis = \App\Models\Devisi::orderBy('nama_devisi')->get();
 
         return view('kpi.user-kpi.index', [
             'allKpiUser'  => $allKpiUser,
             'bulanFilter' => $bulanFilter,
             'tahunFilter' => $tahunFilter,
             'roles'       => $roles,
+            'devisis'     => $devisis,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI Karyawan', 'url' => '#']
             ],

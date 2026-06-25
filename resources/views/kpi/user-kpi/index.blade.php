@@ -70,6 +70,18 @@
                         @endfor
                     </select>
 
+                    <select name="devisi"
+                        class="flex-1 min-w-[130px] max-w-[200px] bg-gray-50 border border-gray-200 text-sm rounded-lg py-2 pl-3 pr-8
+               dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-white outline-none
+               focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer">
+                        <option value="">Semua Devisi</option>
+                        @foreach ($devisis as $devisi)
+                            <option value="{{ $devisi->id }}" {{ request('devisi') == $devisi->id ? 'selected' : '' }}>
+                                {{ strtoupper($devisi->nama_devisi) }}
+                            </option>
+                        @endforeach
+                    </select>
+
                     <select name="role"
                         class="flex-1 min-w-[130px] max-w-[200px] bg-gray-50 border border-gray-200 text-sm rounded-lg py-2 pl-3 pr-8
                dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-white outline-none
@@ -108,18 +120,16 @@
                     <table id="table-user-kpi" class="min-w-full">
                         <thead>
                             <tr class="text-left border-b border-gray-200 dark:border-gray-800">
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Nama Karyawan
-                                </th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Jabatan (Role)
-                                </th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Total
-                                    Nilai</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">
-                                    Status</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Nama Lengkap</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">No HP</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Role ID</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Jabatan (Role)</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Devisi</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Total Nilai</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Status</th>
 
                                 @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail'])
-                                    <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi
-                                    </th>
+                                    <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi</th>
                                 @endcanany
                             </tr>
                         </thead>
@@ -129,11 +139,22 @@
                                     <td class="py-4 px-4 text-sm font-medium text-gray-800 dark:text-white">
                                         {{ $item->user->nama_lengkap }}
                                     </td>
+                                    <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">
+                                        {{ $item->user->no_hp ?? '-' }}
+                                    </td>
+                                    <td class="py-4 px-4 text-sm text-center">
+                                        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400 rounded text-xs font-semibold">
+                                            {{ $item->user->roles->first()?->id ?? '-' }}
+                                        </span>
+                                    </td>
                                     <td class="py-4 px-4 text-sm">
                                         <span
                                             class="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded text-xs font-medium">
                                             {{ $item->user->getRoleNames()->implode(', ') }}
                                         </span>
+                                    </td>
+                                    <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">
+                                        {{ $item->user->roles->first()?->devisi?->nama_devisi ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 text-sm text-center">
                                         <p>{{ (float) $item->total_nilai }}</p>

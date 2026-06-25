@@ -7,7 +7,7 @@ use App\Models\KpiKomponen;
 use App\Models\KpiTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class KpiKomponenController extends Controller
 {

@@ -1276,7 +1276,8 @@
                 <!-- Produksi -  Group -->
             @endcan
 
-            @canany(['kpi.master-kpi.read', 'kpi.kpi-user.read', 'kpi.kpi-riview.read'])
+
+             @canany(['kpi.master-kpi.read', 'kpi.kpi-user.read', 'kpi.kpi-riview.read'])
                 <div>
                     <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
                         <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1301,21 +1302,12 @@
                                     :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'menu-item-icon-active' :
-                                    ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
                                     </svg>
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                         Dashboard
@@ -1331,21 +1323,11 @@
                                     :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'menu-item-icon-active' :
-                                    ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
                                     </svg>
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                         Master KPI
@@ -1361,20 +1343,11 @@
                                     :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'menu-item-icon-active' : ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
 
 
@@ -1392,21 +1365,11 @@
                                     :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'menu-item-icon-active' :
-                                    ''"
-                                        class="w-6 h-6 text-gray-800 dark:text-white size-6" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48"
-                                        fill="none">
-                                        <g fill="currentColor">
-                                            <path d="M26 6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-1h-6V8h6V7a1 1 0 0 1 1-1" />
-                                            <path
-                                                d="M16 6a1 1 0 0 0-1 1v1h-2a3 3 0 0 0-3 3v24a3 3 0 0 0 3 3h17a3 3 0 0 0 3-3V11a3 3 0 0 0-3-3h-1v2h1a1 1 0 0 1 1 1v24a1 1 0 0 1-1 1H13a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h2v1a1 1 0 1 0 2 0V7a1 1 0 0 0-1-1" />
-                                            <path
-                                                d="M14 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1m1 4a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h11a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1" />
-                                            <path d="M13 40a5 5 0 0 1-5-5V10H6v25a7 7 0 0 0 7 7h17v-2z" />
-                                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M36 13a3 3 0 1 1 6 0v20.303l-3 4.5l-3-4.5zm3-1a1 1 0 0 0-1 1v2h2v-2a1 1 0 0 0-1-1m0 22.197l1-1.5V17h-2v15.697z" />
-                                        </g>
+                                    <svg :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                        class="w-6 h-6 size-6" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" />
                                     </svg>
 
 
@@ -1474,7 +1437,7 @@
                         </li>
                         <!-- Menu Item Role & Hak Akses -->
 
-                        <!-- Menu Item Akun Karyawan -->
+                         <!-- Menu Item Akun Karyawan -->
                         <li>
                             <a href="{{ route('superadmin.akunKaryawan.index') }}"
                                 @click="selected = (selected === 'akunKaryawan' ? '':'akunKaryawan')"
@@ -1496,6 +1459,28 @@
                             </a>
                         </li>
                         <!-- Menu Item Akun Karyawan -->
+
+                        <!-- Menu Item Devisi -->
+                        <li>
+                            <a href="{{ route('superadmin.devisi.index') }}"
+                                @click="selected = (selected === 'devisi' ? '':'devisi')"
+                                class="menu-item group"
+                                :class="(selected === 'devisi') && (page === 'devisi') ? 'menu-item-active' :
+                                'menu-item-inactive'">
+
+                                <svg :class="(selected === 'devisi') && (page === 'devisi') ? 'menu-item-icon-active' :
+                                ''"
+                                    width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                    Devisi
+                                </span>
+                            </a>
+                        </li>
+                        <!-- Menu Item Devisi -->
                     </ul>
                 </div>
             @endcanany

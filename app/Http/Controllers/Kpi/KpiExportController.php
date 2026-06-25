@@ -16,7 +16,7 @@ class KpiExportController extends Controller
 {
     public function exportById($id)
     {
-        $kpi = KpiUser::with(['details', 'user'])->findOrFail($id);
+        $kpi = KpiUser::with(['details', 'user.roles.devisi'])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -27,7 +27,7 @@ class KpiExportController extends Controller
         $headerData = [
             ['NAMA',    ': ' . $kpi->user->nama_lengkap],
             ['JABATAN', ': ' . ($kpi->user->getRoleNames()->implode(', ') ?: '-')],
-            ['DIVISI',  ': -'],
+            ['DIVISI',  ': ' . ($kpi->user->roles->first()?->devisi?->nama_devisi ?? '-')],
             ['BULAN',   ': ' . date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun))],
         ];
 
@@ -44,7 +44,7 @@ class KpiExportController extends Controller
 
         $row++;
 
-        $headers = ['NO', 'KOMPONEN KPI', 'BOBOT (%)', 'SKOR', 'NILAI AKHIR'];
+        $headers = ['NO', 'KOMPONEN KPI', 'BOBOT KPI', 'SKOR', 'NILAI AKHIR'];
         $cols = ['A', 'B', 'C', 'D', 'E'];
 
         foreach ($headers as $i => $headerText) {
@@ -140,9 +140,14 @@ class KpiExportController extends Controller
             'tahun'     => 'nullable',
         ]);
 
-        $kpiList = KpiUser::with(['details', 'user'])
+        $kpiList = KpiUser::with(['details', 'user.roles.devisi'])
             ->whereIn('id', $request->kpi_ids)
-            ->get();
+            ->get()
+            ->sortBy(function ($kpi) {
+                $devisiName = $kpi->user->roles->first()?->devisi?->nama_devisi ?? 'LAINNYA';
+                $userName = $kpi->user->nama_lengkap ?? '';
+                return strtolower($devisiName . '_' . $userName);
+            });
 
         if ($kpiList->isEmpty()) {
             return back()->with('error', 'Tidak ada data KPI yang ditemukan.');
@@ -164,7 +169,7 @@ class KpiExportController extends Controller
             $headerData = [
                 ['NAMA',    ': ' . $kpi->user->nama_lengkap],
                 ['JABATAN', ': ' . ($kpi->user->getRoleNames()->implode(', ') ?: '-')],
-                ['DIVISI',  ': -'],
+                ['DIVISI',  ': ' . ($kpi->user->roles->first()?->devisi?->nama_devisi ?? '-')],
                 ['BULAN',   ': ' . date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun))],
             ];
 
@@ -181,7 +186,7 @@ class KpiExportController extends Controller
 
             $row++;
 
-            $headers = ['NO', 'KOMPONEN KPI', 'BOBOT (%)', 'SKOR', 'NILAI AKHIR'];
+            $headers = ['NO', 'KOMPONEN KPI', 'BOBOT KPI', 'SKOR', 'NILAI AKHIR'];
             $cols = ['A', 'B', 'C', 'D', 'E'];
 
             foreach ($headers as $i => $headerText) {

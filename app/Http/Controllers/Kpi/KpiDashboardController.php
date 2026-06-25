@@ -20,6 +20,7 @@ class KpiDashboardController extends Controller
 
         $tahun = $request->input('tahun', $tahunAktif);
         $jabatanId = $request->input('jabatan');
+        $devisiId = $request->input('devisi');
 
         // 1. Fetch all users of type 'karyawan' (with optional role/jabatan filter, excluding Superadmin)
         $usersRaw = DB::table('users')
@@ -30,6 +31,7 @@ class KpiDashboardController extends Controller
                     ->where('model_has_roles.model_type', '=', 'App\Models\User');
             })
             ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->leftJoin('devisi', 'roles.devisi_id', '=', 'devisi.id')
             ->where(function ($query) {
                 $query->where('roles.name', '!=', 'Superadmin')
                       ->orWhereNull('roles.name');
@@ -37,13 +39,17 @@ class KpiDashboardController extends Controller
             ->when($jabatanId, function ($query, $jabatanId) {
                 return $query->where('roles.id', $jabatanId);
             })
+            ->when($devisiId, function ($query, $devisiId) {
+                return $query->where('roles.devisi_id', $devisiId);
+            })
             ->select(
                 'users.id as user_id',
                 'users.nama_lengkap',
                 'users.is_global',
                 'users.perumahaan_id',
                 'ubs.nama_ubs',
-                'roles.name as role_name'
+                'roles.name as role_name',
+                'devisi.nama_devisi'
             )
             ->orderBy('users.nama_lengkap', 'asc')
             ->get();
@@ -86,13 +92,14 @@ class KpiDashboardController extends Controller
         }
 
         $roles = DB::table('roles')->select('id', 'name')->orderBy('name', 'asc')->get();
+        $devisis = DB::table('devisi')->select('id', 'nama_devisi')->orderBy('nama_devisi', 'asc')->get();
 
         $dashboardData = [];
 
-        // 3. Build dashboard structure grouped by Jabatan/Role
+        // 3. Build dashboard structure grouped by Devisi
         foreach ($usersRaw as $userRow) {
-            // Determine Jabatan/Role name group
-            $jabatanName = $userRow->role_name ?? 'LAINNYA';
+            // Determine Devisi name group
+            $devisiName = $userRow->nama_devisi ?? 'LAINNYA';
 
             $nama = $userRow->nama_lengkap;
 
@@ -106,13 +113,13 @@ class KpiDashboardController extends Controller
                 }
             }
 
-            if (!isset($dashboardData[$jabatanName])) {
-                $dashboardData[$jabatanName] = [];
+            if (!isset($dashboardData[$devisiName])) {
+                $dashboardData[$devisiName] = [];
             }
 
-            $dashboardData[$jabatanName][] = [
+            $dashboardData[$devisiName][] = [
                 'nama' => $nama,
-                'jabatan' => $jabatanName,
+                'jabatan' => $userRow->role_name ?? 'LAINNYA',
                 'bulan' => $userBulanScores
             ];
         }
@@ -143,6 +150,7 @@ class KpiDashboardController extends Controller
             'tahun' => $tahun,
             'pilihanTahun' => $pilihanTahun,
             'roles' => $roles,
+            'devisis' => $devisis,
             'dashboardData' => $dashboardData,
             'breadcrumbs' => [
                 ['label' => 'Dashboard KPI', 'url' => route('kpi.dashboard.index')],
@@ -154,6 +162,7 @@ class KpiDashboardController extends Controller
     {
         $tahun = $request->input('tahun', date('Y'));
         $jabatanId = $request->input('jabatan');
+        $devisiId = $request->input('devisi');
 
         // 1. Fetch all users of type 'karyawan' (with optional role/jabatan filter, excluding Superadmin)
         $usersRaw = DB::table('users')
@@ -164,6 +173,7 @@ class KpiDashboardController extends Controller
                     ->where('model_has_roles.model_type', '=', 'App\Models\User');
             })
             ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->leftJoin('devisi', 'roles.devisi_id', '=', 'devisi.id')
             ->where(function ($query) {
                 $query->where('roles.name', '!=', 'Superadmin')
                       ->orWhereNull('roles.name');
@@ -171,13 +181,17 @@ class KpiDashboardController extends Controller
             ->when($jabatanId, function ($query, $jabatanId) {
                 return $query->where('roles.id', $jabatanId);
             })
+            ->when($devisiId, function ($query, $devisiId) {
+                return $query->where('roles.devisi_id', $devisiId);
+            })
             ->select(
                 'users.id as user_id',
                 'users.nama_lengkap',
                 'users.is_global',
                 'users.perumahaan_id',
                 'ubs.nama_ubs',
-                'roles.name as role_name'
+                'roles.name as role_name',
+                'devisi.nama_devisi'
             )
             ->orderBy('users.nama_lengkap', 'asc')
             ->get();
@@ -221,9 +235,9 @@ class KpiDashboardController extends Controller
 
         $dashboardData = [];
 
-        // 3. Build dashboard data grouped by Jabatan/Role
+        // 3. Build dashboard data grouped by Devisi
         foreach ($usersRaw as $userRow) {
-            $jabatanName = $userRow->role_name ?? 'LAINNYA';
+            $devisiName = $userRow->nama_devisi ?? 'LAINNYA';
 
             $nama = $userRow->nama_lengkap;
 
@@ -235,13 +249,13 @@ class KpiDashboardController extends Controller
                 }
             }
 
-            if (!isset($dashboardData[$jabatanName])) {
-                $dashboardData[$jabatanName] = [];
+            if (!isset($dashboardData[$devisiName])) {
+                $dashboardData[$devisiName] = [];
             }
 
-            $dashboardData[$jabatanName][] = [
+            $dashboardData[$devisiName][] = [
                 'nama' => $nama,
-                'jabatan' => $jabatanName,
+                'jabatan' => $userRow->role_name ?? 'LAINNYA',
                 'bulan' => $userBulanScores
             ];
         }
@@ -323,10 +337,10 @@ class KpiDashboardController extends Controller
         $sheet->getStyle('A4:R4')->applyFromArray($borderStyle);
 
         $rowNum = 5;
-        foreach ($dashboardData as $jabatanName => $users) {
-            // Add Jabatan group subheader in Excel
+        foreach ($dashboardData as $devisiName => $users) {
+            // Add Devisi group subheader in Excel
             $sheet->mergeCells("A{$rowNum}:R{$rowNum}");
-            $sheet->setCellValue("A{$rowNum}", strtoupper($jabatanName));
+            $sheet->setCellValue("A{$rowNum}", strtoupper($devisiName));
             $sheet->getStyle("A{$rowNum}:R{$rowNum}")->applyFromArray([
                 'font' => ['bold' => true, 'size' => 11],
                 'alignment' => [

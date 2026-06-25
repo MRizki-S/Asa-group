@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
+use App\Models\Devisi;
 
 class RoleHakAksesController extends Controller
 {
     public function index()
     {
-        $roles = Role::withCount('permissions')->orderBy('name')->get();
+        $roles = Role::with('devisi')->withCount('permissions')->orderBy('name')->get();
         $totalRoles = $roles->count();
         $totalPermissions = Permission::count();
 
@@ -32,9 +33,11 @@ class RoleHakAksesController extends Controller
     public function create() {
         $permissions = Permission::orderBy('name')->get();
         $groupedPermissions = $this->groupPermissions($permissions);
+        $devisis = Devisi::orderBy('nama_devisi')->get();
 
         return view('superadmin.role-hakAkses.create', [
             'groupedPermissions' => $groupedPermissions,
+            'devisis' => $devisis,
             'breadcrumbs' => [
                 [
                     'label' => 'Role dan Hak Akses',
@@ -55,11 +58,13 @@ class RoleHakAksesController extends Controller
         
         $groupedPermissions = $this->groupPermissions($permissions);
         $rolePermissions = $role->permissions->pluck('id')->toArray();
+        $devisis = Devisi::orderBy('nama_devisi')->get();
 
         return view('superadmin.role-hakAkses.edit', [
             'role' => $role,
             'groupedPermissions' => $groupedPermissions,
             'rolePermissions' => $rolePermissions,
+            'devisis' => $devisis,
             'breadcrumbs' => [
                 [
                     'label' => 'Role dan Hak Akses',
@@ -106,6 +111,7 @@ class RoleHakAksesController extends Controller
     {
         $request->validate([
             'role_name' => 'required|string|max:255|unique:roles,name',
+            'devisi_id' => 'nullable|exists:devisi,id',
             'permissions' => 'required|array|min:1',
             'permissions.*' => 'exists:permissions,id',
         ], [
@@ -118,6 +124,7 @@ class RoleHakAksesController extends Controller
         try {
             $role = Role::create([
                 'name' => $request->role_name,
+                'devisi_id' => $request->devisi_id,
                 'guard_name' => 'web'
             ]);
 
@@ -141,6 +148,7 @@ class RoleHakAksesController extends Controller
 
         $request->validate([
             'role_name' => 'required|string|max:255|unique:roles,name,' . $id,
+            'devisi_id' => 'nullable|exists:devisi,id',
             'permissions' => 'required|array|min:1',
             'permissions.*' => 'exists:permissions,id',
         ], [
@@ -153,6 +161,7 @@ class RoleHakAksesController extends Controller
         try {
             $role->update([
                 'name' => $request->role_name,
+                'devisi_id' => $request->devisi_id,
             ]);
 
             // Sync permissions

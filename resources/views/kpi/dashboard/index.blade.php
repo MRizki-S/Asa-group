@@ -13,7 +13,19 @@
     <div class="mt-4 mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <form action="{{ route('kpi.dashboard.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end w-full">
 
-            <div class="w-full md:w-1/3">
+            <div class="w-full md:w-1/4">
+                <label for="devisi" class="block mb-1 text-sm font-medium text-gray-700">Devisi</label>
+                <select name="devisi" id="devisi" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                    <option value="">Semua Devisi</option>
+                    @foreach($devisis as $devisi)
+                        <option value="{{ $devisi->id }}" {{ request('devisi') == $devisi->id ? 'selected' : '' }}>
+                            {{ $devisi->nama_devisi }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="w-full md:w-1/4">
                 <label for="jabatan" class="block mb-1 text-sm font-medium text-gray-700">Jabatan</label>
                 <select name="jabatan" id="jabatan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
                     <option value="">Semua Jabatan</option>
@@ -25,7 +37,7 @@
                 </select>
             </div>
 
-            <div class="w-full md:w-1/4">
+            <div class="w-full md:w-1/5">
                 <label for="tahun" class="block mb-1 text-sm font-medium text-gray-700">Tahun Penilaian</label>
                 <select name="tahun" id="tahun" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
                     @foreach($pilihanTahun as $t)
@@ -44,12 +56,12 @@
                     Reset
                 </a>
 
-                <a href="{{ route('kpi.dashboard.export', ['tahun' => request('tahun', $tahun), 'jabatan' => request('jabatan')]) }}"
+                <a href="{{ route('kpi.dashboard.export', ['tahun' => request('tahun', $tahun), 'jabatan' => request('jabatan'), 'devisi' => request('devisi')]) }}"
                    class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none flex items-center gap-2">
                     <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 18">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 1v11m0 0 4-4m-4 4L4 8m11 4v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3"/>
                     </svg>
-                    Export Excel
+                    Export  
                 </a>
             </div>
         </form>
@@ -85,11 +97,11 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($dashboardData as $jabatanName => $users)
-                    {{-- Subheader Group Jabatan --}}
+                @forelse($dashboardData as $devisiName => $users)
+                    {{-- Subheader Group Devisi --}}
                     <tr class="bg-gray-100 font-bold border-b border-gray-200">
                         <td colspan="18" class="px-3 py-2 text-left bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-wider border-r border-gray-300">
-                            💼 {{ $jabatanName }}
+                            🏢 {{ $devisiName }}
                         </td>
                     </tr>
                     @foreach($users as $user)

@@ -81,6 +81,9 @@ class DatabaseSeeder extends Seeder
             // Master Data Keuangan
             KategoriAkunKeuanganSeeder::class,
             AkunKeuanganSeeder::class,
+
+            // Devisi
+            \Database\Seeders\Master\DevisiSeeder::class,
         ]);
 
         // 4. Users
