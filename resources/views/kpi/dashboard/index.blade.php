@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageActive', 'KpiReview')
+@section('pageActive', 'Dashboard-KPI')
 
 @section('content')
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{ openModal: false, modalContent: { name: '', tasks: [] } }">
@@ -107,32 +107,32 @@
                     @foreach($users as $user)
                         <tr class="hover:bg-gray-50 border-b border-gray-200 dark:hover:bg-white/[0.02] dark:border-gray-800">
                             <td class="px-2 py-1.5 border-r border-gray-300 font-medium text-gray-900 dark:text-white dark:border-gray-700" title="{{ $user['nama'] }}">{{ $user['nama'] }}</td>
-                            <td class="px-2 py-1.5 border-r border-gray-300 dark:text-gray-300 dark:border-gray-700" title="{{ $user['jabatan'] }}">{{ $user['jabatan'] }}</td>
+                            <td class="px-2 py-1.5 border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" title="{{ $user['jabatan'] }}">{{ $user['jabatan'] }}</td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['januari'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['februari'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['maret'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['januari'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['februari'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['maret'] ?? '-' }}</td>
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-yellow-100 font-bold text-yellow-900 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-gray-700">
                                 {{ $user['q1'] ? rtrim(rtrim(number_format($user['q1'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['april'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['mei'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['juni'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['april'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['mei'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['juni'] ?? '-' }}</td>
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-green-100 font-bold text-green-900 dark:bg-green-950/20 dark:text-green-400 dark:border-gray-700">
                                 {{ $user['q2'] ? rtrim(rtrim(number_format($user['q2'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['juli'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['agustus'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['september'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['juli'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['agustus'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['september'] ?? '-' }}</td>
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-blue-100 font-bold text-blue-900 dark:bg-blue-950/20 dark:text-blue-400 dark:border-gray-700">
                                 {{ $user['q3'] ? rtrim(rtrim(number_format($user['q3'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['oktober'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['november'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['desember'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['oktober'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['november'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['desember'] ?? '-' }}</td>
                             <td class="px-1 py-1.5 text-center bg-red-100 font-bold text-red-900 dark:bg-red-950/20 dark:text-red-400">
                                 {{ $user['q4'] ? rtrim(rtrim(number_format($user['q4'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>

@@ -1910,10 +1910,10 @@
                             <li>
                                 <a href="{{ route('kpi.dashboard.index') }}"
                                     @click="selected = (selected === 'Dashboard-KPI' ? '':'Dashboard-KPI')" class="menu-item group"
-                                    :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'menu-item-active' :
+                                    :class="(selected === 'Dashboard-KPI' || page === 'Dashboard-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Dashboard-KPI') && (page === 'Dashboard-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    <svg :class="(selected === 'Dashboard-KPI' || page === 'Dashboard-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                         class="w-6 h-6 size-6" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1931,10 +1931,10 @@
                             <li>
                                 <a href="{{ route('kpi.komponen.index') }}"
                                     @click="selected = (selected === 'Master-KPI' ? '':'Master-KPI')" class="menu-item group"
-                                    :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'menu-item-active' :
+                                    :class="(selected === 'Master-KPI' || page === 'Master-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Master-KPI') && (page === 'Master-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    <svg :class="(selected === 'Master-KPI' || page === 'Master-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                         class="w-6 h-6 size-6" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1951,10 +1951,10 @@
                             <li>
                                 <a href="{{ route('kpi.user.index') }}"
                                     @click="selected = (selected === 'User-KPI' ? '':'User-KPI')" class="menu-item group"
-                                    :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'menu-item-active' :
+                                    :class="(selected === 'User-KPI' || page === 'User-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'User-KPI') && (page === 'User-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    <svg :class="(selected === 'User-KPI' || page === 'User-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                         class="w-6 h-6 size-6" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1973,10 +1973,10 @@
                             <li>
                                 <a href="{{ route('kpi.review.index') }}"
                                     @click="selected = (selected === 'Review-KPI' ? '':'Review-KPI')" class="menu-item group"
-                                    :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'menu-item-active' :
+                                    :class="(selected === 'Review-KPI' || page === 'Review-KPI') ? 'menu-item-active' :
                                     'menu-item-inactive'">
 
-                                    <svg :class="(selected === 'Review-KPI') && (page === 'Review-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    <svg :class="(selected === 'Review-KPI' || page === 'Review-KPI') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                         class="w-6 h-6 size-6" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="1.5">
