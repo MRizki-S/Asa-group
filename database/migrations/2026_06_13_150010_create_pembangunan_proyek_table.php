@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('pembangunan_proyek', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->foreignId('pengawas_unit')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('pengawas_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('tanggal_mulai')->nullable();
             $table->timestamp('tanggal_selesai')->nullable();
             $table->enum('status_pembangunan', ['pending', 'proses', 'selesai', 'selesai dengan catatan'])->default('pending');

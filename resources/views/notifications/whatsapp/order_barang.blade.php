@@ -1,18 +1,17 @@
 📦 *PENGAJUAN PERMINTAAN BAHAN {{ strtoupper($tipe ?? 'UNIT') }}*
 
-Dear *Tim Logistik/Gudang*, terdapat pengajuan permintaan bahan material baru.
+Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
 
-```
-@if(isset($namaPerumahan) && $namaPerumahan !== '-')📍 Perumahan : {{ $namaPerumahan }}
+@if(isset($namaPerumahan) && $namaPerumahan !== '-')Perumahan: {{ $namaPerumahan }}
 @endif
-@if(isset($namaArea))🏘️ {{ $tipe ?? 'Area' }}   : {{ $namaArea }}
+@if(isset($namaArea)){{ $tipe ?? 'Area' }}: {{ $namaArea }}
 @endif
-@if(isset($namaTahap))🏠 Tahap     : {{ $namaTahap }}
+@if(isset($namaTahap))Tahap: {{ $namaTahap }}
 @endif
-@if(isset($namaUnit))🔑 Unit      : {{ $namaUnit }}
-@endif👤 Diajukan  : {{ $pengaju }}
-📅 Tanggal   : {{ $tanggal }}
-```
+@if(isset($namaUnit))Unit: {{ $namaUnit }}
+@endif
+Diajukan: {{ $pengaju }}
+Tanggal: {{ $tanggal }}
 
 *Daftar Barang:*
 @foreach($order->details as $idx => $item)
@@ -22,8 +21,6 @@ Dear *Tim Logistik/Gudang*, terdapat pengajuan permintaan bahan material baru.
 @endif
 @endforeach
 
-Mohon untuk segera dicek pada sistem. Terima kasih! 🙏
 @if(!empty($order->catatan))
-
-📝 *Catatan:* {{ $order->catatan }}
+Catatan: {{ $order->catatan }}
 @endif

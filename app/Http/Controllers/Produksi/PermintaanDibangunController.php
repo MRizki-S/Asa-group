@@ -125,7 +125,7 @@ class PermintaanDibangunController extends Controller
 
             $unit = Unit::find($validated['unit_id']);
             $unit->update([
-                'status_unit' => 'under_construction'
+                'status_pembangunan' => 'diajukan'
             ]);
 
             DB::commit();
@@ -150,49 +150,6 @@ class PermintaanDibangunController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $pengajuanPembangunanUnit = PengajuanPembangunanUnit::findOrFail($id);
-        $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
-
-        $allPerumahaan = Perumahaan::select('id', 'nama_perumahaan', 'slug')->get();
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
-        $allQcContainer = MasterQcContainer::select('id', 'nama_container')->get();
-
-        return view('Produksi.permintaan-dibangun.edit', [
-            'pembangunan' => $pembangunan,
-            'allPerumahaan' => $allPerumahaan,
-            'allPengawas' => $allPengawas,
-            'allQcContainer' => $allQcContainer,
-            'breadcrumbs' => [['label' => 'Permintaan Dibangun', 'url' => route('produksi.pengajuanPembangunanUnit.index')], ['label' => 'Edit Pengajuan', 'url' => '#']],
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $pembangunan = PembangunanUnit::findOrFail($id);
-
-        $validated = $request->validate([
-            'unit_id' => 'required|exists:unit,id',
-            'perumahaan_id' => 'required|exists:perumahaan,id',
-            'tahap_id' => 'required|exists:tahap,id',
-            'pengawas_id' => 'required|exists:users,id',
-            'qc_container_id' => 'required|exists:master_qc_container,id',
-            'tanggal_mulai' => 'required',
-            'tanggal_selesai' => 'required|after_or_equal:tanggal_mulai',
-        ]);
-
-        $pembangunan->update($validated);
-
-        return redirect()->route('produksi.pengajuanPembangunanUnit.index')->with('success', 'Data pengajuan pembangunan berhasil diperbarui!');
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
@@ -200,12 +157,65 @@ class PermintaanDibangunController extends Controller
         $pengajuanPembangunanUnit = PengajuanPembangunanUnit::findOrFail($id);
 
         if ($pengajuanPembangunanUnit->status_pengajuan == 'dibangun') {
-            return back()->with('error', 'Gagal menghapus! Data ini sudah dalam tahap pembangunan.');
+            return back()->with('error', 'Gagal membatalkan! Data ini sudah dalam tahap pembangunan.');
         }
 
-        $pengajuanPembangunanUnit->pembangunanUnit->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('produksi.pengajuanPembangunanUnit.index')->with('success', 'Pengajuan Pembangunan unit berhasil dihapus.');
+            $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
+            if ($pembangunan) {
+                $this->sendCancelNotification($pembangunan);
+
+                $unit = $pembangunan->unit;
+                if ($unit) {
+                    $unit->update([
+                        'status_pembangunan' => 'belum dibangun'
+                    ]);
+                }
+                $pembangunan->delete();
+            }
+
+            DB::commit();
+
+            return redirect()->route('produksi.pengajuanPembangunanUnit.index')->with('success', 'Pengajuan Pembangunan unit berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membatalkan pengajuan: ' . $e->getMessage());
+        }
+    }
+
+    public function sendCancelNotification($pembangunan)
+    {
+        if (!$pembangunan) return;
+
+        $pembangunan->load(['unit.tahap.perumahaan']);
+
+        $unit = $pembangunan->unit;
+        if (!$unit) return;
+
+        $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
+        $namaTahap = $unit->tahap->nama_tahap ?? '-';
+        $namaUnit = $unit->nama_unit ?? '-';
+        $pembatal = Auth::user()->nama_lengkap ?? Auth::user()->name;
+
+        $groupId = env('FONNTE_ID_GROUP_BATAL_PERMINTAAN_DIBANGUN');
+
+        $messageGroup = view('notifications.whatsapp.batal_permintaan_dibangun', [
+            'namaPerumahan' => $namaPerumahan,
+            'namaTahap' => $namaTahap,
+            'namaUnit' => $namaUnit,
+            'pembatal' => $pembatal,
+            'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
+        ])->render();
+
+        if ($groupId) {
+            try {
+                $this->notificationGroup->send($groupId, $messageGroup);
+            } catch (\Exception $e) {
+                Log::error('Fonnte Cancel Notification Error: ' . $e->getMessage());
+            }
+        }
     }
 
     public function getUnitsByTahap(string $tahapId)
@@ -215,7 +225,7 @@ class PermintaanDibangunController extends Controller
 
             $units = Unit::where('tahap_id', $tahapId)
                 ->where(function ($query) use ($currentUnitId) {
-                    $query->where('status_unit', 'under_construction');
+                    $query->where('status_pembangunan', 'belum dibangun');
                     if ($currentUnitId) {
                         $query->orWhere('id', $currentUnitId);
                     }

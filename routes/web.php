@@ -594,37 +594,48 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
 // Produksi
 Route::middleware('auth')->prefix('produksi')->group(function () {
     // Master QC RAP
-    Route::resource('master-qc-rap', MasterQcRapController::class)->names('produksi.masterQcRap');
+    Route::resource('master-qc-rap', MasterQcRapController::class)->middleware('can:produksi.master-qc-rap')->names('produksi.masterQcRap');
 
     // Penamaan Upah
-    Route::resource('penamaan-upah', PenamaanUpahController::class)->names('produksi.masterUpah');
+    Route::resource('penamaan-upah', PenamaanUpahController::class)->middleware('can:produksi.penamaan-upah')->names('produksi.masterUpah');
 
     // Permintaan Dibangun
-    Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->names('produksi.pengajuanPembangunanUnit');
-    Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
-    Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
+    Route::middleware('can:produksi.permintaan-dibangun')->group(function () {
+        Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->except(['edit', 'update'])->names('produksi.pengajuanPembangunanUnit');
+        Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
+        Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
+    });
 
     // Pembangunan Unit
-    Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
-    Route::post('pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
-        ->name('produksi.pembangunanUnit.updateSerahTerima');
-    Route::post('pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
-        ->name('produksi.pembangunanUnit.updateTask');
-    Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
-        ->name('produksi.pembangunanUnit.updateTaskNote');
+    Route::middleware('can:produksi.pembangunan-unit')->group(function () {
+        Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
+        Route::post('pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
+            ->name('produksi.pembangunanUnit.updateSerahTerima');
+        Route::post('pembangunan-unit/task/{id}/update', [PembangunanUnitController::class, 'updateTask'])
+            ->name('produksi.pembangunanUnit.updateTask');
+        Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
+            ->name('produksi.pembangunanUnit.updateTaskNote');
 
-    Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
-        ->name('produksi.pembangunanUnit.orderStore');
-    Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
-        ->name('produksi.order.storeReturn');
+        Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
+            ->name('produksi.pembangunanUnit.orderStore');
+        Route::delete('pembangunan-unit/order-barang/{id}', [PembangunanUnitOrderBarangController::class, 'destroy'])
+            ->name('produksi.pembangunanUnit.orderDestroy');
+        Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
+            ->name('produksi.order.storeReturn');
 
-    Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
-        ->name('produksi.pembangunanUnit.upahStore');
+        Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
+            ->name('produksi.pembangunanUnit.upahStore');
+        Route::delete('pembangunan-unit/upah-pengajuan/{id}', [PembangunanUnitPengajuanUpahController::class, 'destroy'])
+            ->name('produksi.pembangunanUnit.upahDestroy');
+    });
 
-    // Persetujuan Upah
-    Route::get('persetujuan-upah', [PersetujuanUpahController::class, 'index'])->name('produksi.persetujuanUpah.index');
-    Route::patch('persetujuan-upah/{id}/update-status', [PersetujuanUpahController::class, 'update'])->name('produksi.persetujuanUpah.update');
-
+    // Persetujuan Upah (Shared across properti/kontraktor/kawasan approvals)
+    Route::get('persetujuan-upah', [PersetujuanUpahController::class, 'index'])
+        ->middleware('canany:produksi.upah-properti,produksi.upah-kontraktor,produksi.upah-kawasan')
+        ->name('produksi.persetujuanUpah.index');
+    Route::patch('persetujuan-upah/{id}/update-status', [PersetujuanUpahController::class, 'update'])
+        ->middleware('canany:produksi.upah-properti,produksi.upah-kontraktor,produksi.upah-kawasan')
+        ->name('produksi.persetujuanUpah.update');
 
     // Laporan
     Route::get('/pembangunan-unit/{id}/laporan-upah/{qcId?}', [TerminController::class, 'laporanUpah'])
@@ -634,39 +645,46 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     Route::get('/pembangunan-unit/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTermin'])
         ->name('produksi.pembangunanUnit.laporanTermin.export');
 
-    Route::get('/pembangunan-proyek/{id}/laporan-upah', [TerminController::class, 'laporanUpahProyek'])
-        ->name('produksi.pembangunanProyek.laporanUpah');
-    Route::get('/pembangunan-proyek/{id}/laporan-bahan', [TerminController::class, 'laporanBahanProyek'])
-        ->name('produksi.pembangunanProyek.laporanBahan');
     Route::get('/pembangunan-proyek/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTerminProyek'])
         ->name('produksi.pembangunanProyek.laporanTermin.export');
 
-    Route::get('/pembangunan-kawasan/{id}/laporan-upah', [TerminController::class, 'laporanUpahKawasan'])
-        ->name('produksi.pembangunanKawasan.laporanUpah');
-    Route::get('/pembangunan-kawasan/{id}/laporan-bahan', [TerminController::class, 'laporanBahanKawasan'])
-        ->name('produksi.pembangunanKawasan.laporanBahan');
     Route::get('/pembangunan-kawasan/{id}/laporan-termin/export', [TerminController::class, 'exportLaporanTerminKawasan'])
         ->name('produksi.pembangunanKawasan.laporanTermin.export');
+
     // Kontraktor (Pembangunan Proyek)
-    Route::resource('project-baru', ProjectBaruController::class)->names('produksi.projectBaru');
-    Route::post('project-baru/{id}/proses', [ProjectBaruController::class, 'proses'])->name('produksi.projectBaru.proses');
-    Route::resource('pembangunan-proyek', PembangunanProyekController::class)->names('produksi.pembangunanProyek');
-    Route::post('pembangunan-proyek/order-barang', [PembangunanProyekController::class, 'orderStore'])->name('produksi.pembangunanProyek.orderStore');
-    Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
-    Route::post('pembangunan-proyek/upah-pengajuan', [PembangunanProyekController::class, 'upahStore'])->name('produksi.pembangunanProyek.upahStore');
+    Route::middleware('can:produksi.project-baru')->group(function () {
+        Route::resource('project-baru', ProjectBaruController::class)->names('produksi.projectBaru');
+        Route::post('project-baru/{id}/proses', [ProjectBaruController::class, 'proses'])->name('produksi.projectBaru.proses');
+    });
+
+    Route::middleware('can:produksi.pembangunan-proyek')->group(function () {
+        Route::resource('pembangunan-proyek', PembangunanProyekController::class)->names('produksi.pembangunanProyek');
+        Route::post('pembangunan-proyek/order-barang', [PembangunanProyekController::class, 'orderStore'])->name('produksi.pembangunanProyek.orderStore');
+        Route::delete('pembangunan-proyek/order-barang/{id}', [PembangunanProyekController::class, 'orderDestroy'])->name('produksi.pembangunanProyek.orderDestroy');
+        Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
+        Route::post('pembangunan-proyek/upah-pengajuan', [PembangunanProyekController::class, 'upahStore'])->name('produksi.pembangunanProyek.upahStore');
+        Route::delete('pembangunan-proyek/upah-pengajuan/{id}', [PembangunanProyekController::class, 'upahDestroy'])->name('produksi.pembangunanProyek.upahDestroy');
+    });
 
     // Kawasan (Pembangunan Kawasan)
-    Route::resource('buat-pembangunan', BuatPembangunanKawasanController::class)->names('produksi.buatPembangunanKawasan');
-    Route::post('buat-pembangunan/{id}/proses', [BuatPembangunanKawasanController::class, 'proses'])->name('produksi.buatPembangunanKawasan.proses');
-    Route::resource('pembangunan-kawasan', PembangunanKawasanController::class)->names('produksi.pembangunanKawasan');
-    Route::post('pembangunan-kawasan/order-barang', [PembangunanKawasanController::class, 'orderStore'])->name('produksi.pembangunanKawasan.orderStore');
-    Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
-    Route::post('pembangunan-kawasan/upah-pengajuan', [PembangunanKawasanController::class, 'upahStore'])->name('produksi.pembangunanKawasan.upahStore');
+    Route::middleware('can:produksi.buat-pembangunan-kawasan')->group(function () {
+        Route::resource('buat-pembangunan', BuatPembangunanKawasanController::class)->names('produksi.buatPembangunanKawasan');
+        Route::post('buat-pembangunan/{id}/proses', [BuatPembangunanKawasanController::class, 'proses'])->name('produksi.buatPembangunanKawasan.proses');
+    });
+
+    Route::middleware('can:produksi.pembangunan-kawasan')->group(function () {
+        Route::resource('pembangunan-kawasan', PembangunanKawasanController::class)->names('produksi.pembangunanKawasan');
+        Route::post('pembangunan-kawasan/order-barang', [PembangunanKawasanController::class, 'orderStore'])->name('produksi.pembangunanKawasan.orderStore');
+        Route::delete('pembangunan-kawasan/order-barang/{id}', [PembangunanKawasanController::class, 'orderDestroy'])->name('produksi.pembangunanKawasan.orderDestroy');
+        Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
+        Route::post('pembangunan-kawasan/upah-pengajuan', [PembangunanKawasanController::class, 'upahStore'])->name('produksi.pembangunanKawasan.upahStore');
+        Route::delete('pembangunan-kawasan/upah-pengajuan/{id}', [PembangunanKawasanController::class, 'upahDestroy'])->name('produksi.pembangunanKawasan.upahDestroy');
+    });
 
     // Persetujuan Upah Spesifik
-    Route::resource('persetujuan-upah-properti', PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('produksi.persetujuanUpahProperti');
-    Route::resource('persetujuan-upah-kontraktor', PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('produksi.persetujuanUpahKontraktor');
-    Route::resource('persetujuan-upah-kawasan', PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('produksi.persetujuanUpahKawasan');
+    Route::resource('persetujuan-upah-properti', PersetujuanUpahPropertiController::class)->middleware('can:produksi.upah-properti')->only(['index', 'update'])->names('produksi.persetujuanUpahProperti');
+    Route::resource('persetujuan-upah-kontraktor', PersetujuanUpahKontraktorController::class)->middleware('can:produksi.upah-kontraktor')->only(['index', 'update'])->names('produksi.persetujuanUpahKontraktor');
+    Route::resource('persetujuan-upah-kawasan', PersetujuanUpahKawasanController::class)->middleware('can:produksi.upah-kawasan')->only(['index', 'update'])->names('produksi.persetujuanUpahKawasan');
 });
 
 Route::middleware('auth')->prefix('manager')->group(function () {

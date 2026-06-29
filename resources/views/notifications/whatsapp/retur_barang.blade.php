@@ -1,18 +1,17 @@
 🔄 *PENGAJUAN RETUR BAHAN {{ strtoupper($tipe ?? 'UNIT') }}*
 
-Dear *Tim Logistik/Gudang*, terdapat pengajuan pengembalian (retur) bahan material.
+Terdapat pengajuan pengembalian (retur) bahan material dengan rincian berikut:
 
-```
-@if(isset($namaPerumahan) && $namaPerumahan !== '-')📍 Perumahan : {{ $namaPerumahan }}
+@if(isset($namaPerumahan) && $namaPerumahan !== '-')Perumahan: {{ $namaPerumahan }}
 @endif
-@if(isset($namaArea))🏘️ {{ $tipe ?? 'Area' }}   : {{ $namaArea }}
+@if(isset($namaArea)){{ $tipe ?? 'Area' }}: {{ $namaArea }}
 @endif
-@if(isset($namaTahap))🏠 Tahap     : {{ $namaTahap }}
+@if(isset($namaTahap))Tahap: {{ $namaTahap }}
 @endif
-@if(isset($namaUnit))🔑 Unit      : {{ $namaUnit }}
-@endif👤 Diajukan  : {{ $pengaju }}
-📅 Tanggal   : {{ $tanggal }}
-```
+@if(isset($namaUnit))Unit: {{ $namaUnit }}
+@endif
+Diajukan: {{ $pengaju }}
+Tanggal: {{ $tanggal }}
 
 *Daftar Barang yang Diretur:*
 @foreach($return->details as $idx => $item)
@@ -25,5 +24,3 @@ $satuanItem = $item->satuan ?? ($item->orderDetail->satuan ?? '-');
    _Alasan: {{ $item->keterangan_return }}_
 @endif
 @endforeach
-
-Mohon untuk segera dicek pada sistem untuk proses validasi. Terima kasih! 🙏

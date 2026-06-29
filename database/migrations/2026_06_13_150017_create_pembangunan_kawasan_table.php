@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama');
             $table->foreignId('perumahaan_id')->constrained('perumahaan')->cascadeOnDelete();
-            $table->foreignId('pengawas_kawasan')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('pengawas_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('tanggal_mulai')->nullable();
             $table->timestamp('tanggal_selesai')->nullable();
             $table->enum('status_pembangunan', ['pending', 'proses', 'selesai', 'selesai dengan catatan'])->default('pending');

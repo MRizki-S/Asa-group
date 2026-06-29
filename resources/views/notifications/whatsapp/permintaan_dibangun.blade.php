@@ -1,13 +1,9 @@
 🏗️ *PERMINTAAN PEMBANGUNAN UNIT BARU*
 
-Dear Tim, Terdapat permintaan pembangunan unit baru yang membutuhkan konfirmasi.
+Terdapat permintaan pembangunan unit baru yang membutuhkan konfirmasi dengan rincian berikut:
 
-```
-📍 Perumahan : {{ $namaPerumahan }}
-🏠 Tahap     : {{ $namaTahap }}
-🔑 Unit      : {{ $namaUnit }}
-👤 Peminta   : {{ $peminta }}
-📅 Tanggal   : {{ $tanggal }}
-```
-
-Mohon segera dicek pada sistem. Terima kasih! 🙏
+Perumahan: {{ $namaPerumahan }}
+Tahap: {{ $namaTahap }}
+Unit: {{ $namaUnit }}
+Peminta: {{ $peminta }}
+Tanggal: {{ $tanggal }}

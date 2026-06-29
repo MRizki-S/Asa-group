@@ -1,14 +1,10 @@
 🏗️ *{{ strtoupper($tipe) }} MULAI DIPROSES*
 
-Dear Tim, Pembangunan {{ strtolower($tipe) }} baru telah mulai diproses dan dikerjakan.
+Pembangunan {{ strtolower($tipe) }} baru telah mulai diproses dengan rincian berikut:
 
-```
-📍 Perumahan : {{ $namaPerumahan }}
+Perumahan: {{ $namaPerumahan }}
 @if(isset($namaArea))
-🏘️ {{ $tipe }}   : {{ $namaArea }}
+{{ $tipe }}: {{ $namaArea }}
 @endif
-👤 Pengawas  : {{ $namaPengawas }}
-📅 Tanggal   : {{ $tanggal }}
-```
-
-Mohon koordinasinya. Terima kasih! 🙏
+Pengawas: {{ $namaPengawas }}
+Tanggal: {{ $tanggal }}

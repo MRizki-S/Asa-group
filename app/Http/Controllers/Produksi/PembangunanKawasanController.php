@@ -70,13 +70,44 @@ class PembangunanKawasanController extends Controller
 
     public function index(Request $request)
     {
-        $allPembangunanKawasan = PembangunanKawasan::with(['perumahan', 'pengawas'])
-            ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
-            ->latest('created_at')
-            ->get();
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
+
+        $user = Auth::user();
+        $query = PembangunanKawasan::with(['perumahan', 'pengawas'])
+            ->whereIn('status_pembangunan', ['proses', 'selesai'])
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->latest('created_at');
+
+        if ($user->hasRole('Pengawas Kawasan')) {
+            $query->where('pengawas_id', $user->id);
+        }
+
+        $allPembangunanKawasan = $query->get();
+
+        $months = [
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember',
+        ];
+        $years = range(date('Y') - 5, date('Y') + 2);
 
         return view('produksi.pembangunan_kawasan.index', [
             'allPembangunanKawasan' => $allPembangunanKawasan,
+            'selectedMonth' => $month,
+            'selectedYear' => $year,
+            'months' => $months,
+            'years' => $years,
             'breadcrumbs' => [['label' => 'Pembangunan Kawasan', 'url' => route('produksi.pembangunanKawasan.index')]],
         ]);
     }
@@ -114,13 +145,11 @@ class PembangunanKawasanController extends Controller
     {
         $kawasan = PembangunanKawasan::findOrFail($id);
         $request->validate([
-            'status_pembangunan' => 'required|in:selesai,selesai dengan catatan',
-            'catatan' => 'nullable|string'
+            'status_pembangunan' => 'required|in:proses,selesai',
         ]);
 
         $kawasan->update([
             'status_pembangunan' => $request->status_pembangunan,
-            'catatan' => $request->catatan,
         ]);
 
         return redirect()->back()->with('success', 'Status kawasan berhasil diperbarui');
@@ -252,5 +281,72 @@ class PembangunanKawasanController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Pengajuan upah berhasil dibuat');
+    }
+
+    public function orderDestroy($id)
+    {
+        $order = PembangunanKawasanBarangOrder::with(['details'])->findOrFail($id);
+
+        if ($order->status_order !== 'diproses') {
+            return redirect()->back()->with('error', 'Gagal membatalkan order! Order ini sudah tidak dalam status menunggu.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $kawasan = PembangunanKawasan::find($order->pembangunan_kawasan_id);
+            if ($kawasan) {
+                $this->sendGroupNotificationCancelOrder($kawasan, $order);
+            }
+
+            $order->details()->delete();
+            $order->delete();
+
+            \Illuminate\Support\Facades\DB::commit();
+            return redirect()->back()->with('success', 'Order barang berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    protected function sendGroupNotificationCancelOrder(PembangunanKawasan $kawasan, $order)
+    {
+        $kawasan->loadMissing(['pengawas', 'perumahan']);
+        $order->loadMissing(['details']);
+
+        $groupId = env('FONNTE_ID_GROUP_BATAL_ORDER_BARANG_KAWASAN');
+        if (!$groupId) return;
+
+        $messageGroup = view('notifications.whatsapp.batal_order_barang_kawasan', [
+            'tipe' => 'Kawasan',
+            'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
+            'namaArea' => $kawasan->nama ?? '-',
+            'pembatal' => Auth::user()->nama_lengkap ?? Auth::user()->name,
+            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            'order' => $order
+        ])->render();
+
+        try {
+            $this->notificationGroup->send($groupId, $messageGroup);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('WA Cancel Kawasan Order Error: ' . $e->getMessage());
+        }
+    }
+
+    public function upahDestroy($id)
+    {
+        $upah = PembangunanKawasanUpahPengajuan::findOrFail($id);
+
+        if (!is_null($upah->disetujui_mgr_produksi) || !is_null($upah->disetujui_mgr_dukungan) || !is_null($upah->disetujui_akuntan) || !is_null($upah->ditolak_pada)) {
+            return redirect()->back()->with('error', 'Gagal membatalkan pengajuan upah! Data sudah diproses.');
+        }
+
+        try {
+            $upah->delete();
+            return redirect()->back()->with('success', 'Pengajuan upah berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }

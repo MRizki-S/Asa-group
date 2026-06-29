@@ -19,7 +19,7 @@ class PembangunanKawasan extends Model
 
     public function pengawas()
     {
-        return $this->belongsTo(User::class, 'pengawas_kawasan');
+        return $this->belongsTo(User::class, 'pengawas_id');
     }
 
     public function orders()

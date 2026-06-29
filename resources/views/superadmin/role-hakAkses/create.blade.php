@@ -119,7 +119,7 @@
                                                                 @php
                                                                     $parts = explode('.', $perm->name);
                                                                     $action = end($parts);
-                                                                    $label = ucfirst(str_replace('-', ' ', $action));
+                                                                    $label = $perm->custom_label ?? ucfirst(str_replace('-', ' ', $action));
                                                                 @endphp
                                                                 <label class="inline-flex items-center group cursor-pointer">
                                                                     <div class="relative flex items-center">

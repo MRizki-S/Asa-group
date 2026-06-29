@@ -79,6 +79,14 @@ class KonfirmasiPembangunanController extends Controller
                 'status_pembangunan' => 'proses',
             ]);
 
+            // Update Unit status_pembangunan
+            $unit = $pembangunan->unit;
+            if ($unit) {
+                $unit->update([
+                    'status_pembangunan' => 'dalam pembangunan'
+                ]);
+            }
+
             $qcUrutan = $pembangunan->qcContainer->urutan;
 
             foreach ($qcUrutan as $key => $urutan) {

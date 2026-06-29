@@ -36,10 +36,19 @@ class PembangunanUnitController extends Controller
     {
         $perumahaanId = $this->currentPerumahaanId();
 
-        $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'qcContainer', 'pengajuan'])
-            ->where('perumahaan_id', $perumahaanId)
-            ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
-            ->latest('created_at');
+        $user = Auth::user();
+        if ($user->hasRole('Pengawas Unit')) {
+            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'qcContainer', 'pengajuan'])
+                ->where('perumahaan_id', $perumahaanId)
+                ->where('pengawas_id', $user->id)
+                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
+                ->latest('created_at');
+        } else {
+            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'qcContainer', 'pengajuan'])
+                ->where('perumahaan_id', $perumahaanId)
+                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
+                ->latest('created_at');
+        }
 
         if ($request->filled('tahapFil')) {
             $slugTahap = $request->input('tahapFil');
@@ -171,6 +180,13 @@ class PembangunanUnitController extends Controller
         $unit->update([
             'status_pembangunan' => $newStatus
         ]);
+
+        $unitTable = $unit->unit;
+        if ($unitTable) {
+            $unitTable->update([
+                'status_pembangunan' => in_array($newStatus, ['selesai', 'selesai dengan catatan']) ? 'selesai dibangun' : 'dalam pembangunan'
+            ]);
+        }
 
         return response()->json([
             'success' => true,

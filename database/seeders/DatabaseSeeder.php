@@ -17,6 +17,7 @@ use Database\Seeders\permissions\MasterAgenPermissionSeeder;
 use Database\Seeders\Permissions\SuperadminMenuPermissionSeeder;
 use Database\Seeders\Permissions\KpiPermissionSeeder;
 use Database\Seeders\permissions\TargetMarketingPermissionSeeder;
+use Database\Seeders\Permissions\ProduksiPermissionSeeder;
 use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
 use Database\Seeders\Roles\MarketingRoleSeeder;
 use Database\Seeders\Roles\ProjectManagerRoleSeeder;
@@ -24,6 +25,7 @@ use Database\Seeders\Roles\StaffAdminUmumRoleSeeder;
 use Database\Seeders\Roles\StaffAkuntansiRoleSeeder;
 use Database\Seeders\Roles\StaffKprRoleSeeder;
 use Database\Seeders\Roles\SuperadminRoleSeeder;
+use Database\Seeders\Roles\ProduksiRoleSeeder;
 use Database\Seeders\users\UsersKeuanganSystemSeeder;
 use Database\Seeders\users\UsersMarketingSystemSeeder;
 use Database\Seeders\Roles\KpiRoleSeeder;
@@ -53,6 +55,9 @@ class DatabaseSeeder extends Seeder
             // Kpi
             KpiPermissionSeeder::class,
 
+            // Produksi Sistem
+            ProduksiPermissionSeeder::class,
+
         ]);
 
         // Role >> Assign permission (Saat ini masih selesai di marketing sistem)
@@ -72,6 +77,9 @@ class DatabaseSeeder extends Seeder
 
             // Kpi
             KpiRoleSeeder::class,
+
+            // Produksi
+            ProduksiRoleSeeder::class,
 
         ]);
 

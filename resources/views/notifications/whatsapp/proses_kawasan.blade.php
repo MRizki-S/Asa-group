@@ -1,12 +1,8 @@
 🏗️ *KAWASAN MULAI DIPROSES*
 
-Dear Tim, Pembangunan kawasan baru telah mulai diproses dan dikerjakan.
+Pembangunan kawasan baru telah mulai diproses dengan rincian berikut:
 
-```
-📍 Perumahan : {{ $namaPerumahan }}
-🏘️ Kawasan   : {{ $namaKawasan }}
-👤 Pengawas  : {{ $namaPengawas }}
-📅 Tanggal   : {{ $tanggal }}
-```
-
-Mohon koordinasinya. Terima kasih! 🙏
+Perumahan: {{ $namaPerumahan }}
+Kawasan: {{ $namaKawasan }}
+Pengawas: {{ $namaPengawas }}
+Tanggal: {{ $tanggal }}

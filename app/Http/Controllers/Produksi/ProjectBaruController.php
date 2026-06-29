@@ -47,7 +47,7 @@ class ProjectBaruController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'pengawas_unit' => 'nullable|exists:users,id',
+            'pengawas_id' => 'nullable|exists:users,id',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string'
@@ -77,7 +77,7 @@ class ProjectBaruController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:255',
-            'pengawas_unit' => 'nullable|exists:users,id',
+            'pengawas_id' => 'nullable|exists:users,id',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string'

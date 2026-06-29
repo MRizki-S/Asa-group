@@ -11,7 +11,6 @@
             'status' => $p->status_pembangunan,
             'tanggal_mulai' => $p->tanggal_mulai ? \Carbon\Carbon::parse($p->tanggal_mulai)->format('d M Y') : '-',
             'tanggal_selesai' => $p->tanggal_selesai ? \Carbon\Carbon::parse($p->tanggal_selesai)->format('d M Y') : '-',
-            'catatan' => $p->catatan ?? '-'
         ]
     )->toJson() }})">
 
@@ -23,22 +22,38 @@
         </div>
     @endif
 
-    <div class="mb-6 flex flex-col xl:flex-row xl:items-center justify-between gap-4 mt-6">
-        <div class="flex flex-col md:flex-row gap-4 flex-1">
-            <div class="relative w-full md:w-80">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </span>
-                <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="Cari nama proyek atau pengawas..." class="w-full text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" />
-            </div>
+    <div class="mb-6 mt-6">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4 flex-1">
+                <div class="relative w-full md:w-80">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                    <input type="text" x-model="searchQuery" @input="currentPage = 1" placeholder="Cari nama proyek atau pengawas..." class="w-full text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all" />
+                </div>
 
-            <div class="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-lg w-fit overflow-x-auto">
-                <button @click="filterStatus = 'all'; currentPage = 1" :class="filterStatus === 'all' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Semua</button>
-                <button @click="filterStatus = 'proses'; currentPage = 1" :class="filterStatus === 'proses' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Proses</button>
-                <button @click="filterStatus = 'selesai'; currentPage = 1" :class="filterStatus === 'selesai' ? 'bg-white shadow text-green-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Selesai</button>
-                <button @click="filterStatus = 'selesai dengan catatan'; currentPage = 1" :class="filterStatus === 'selesai dengan catatan' ? 'bg-white shadow text-yellow-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Selesai (Catatan)</button>
+                <!-- Month & Year Filter Form -->
+                <form action="" method="GET" class="flex items-center gap-2">
+                    <select name="month" onchange="this.form.submit()" class="text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-3 pr-8 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all">
+                        @foreach($months as $key => $val)
+                            <option value="{{ $key }}" {{ $selectedMonth == $key ? 'selected' : '' }}>{{ $val }}</option>
+                        @endforeach
+                    </select>
+
+                    <select name="year" onchange="this.form.submit()" class="text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-3 pr-8 w-28 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all">
+                        @foreach($years as $y)
+                            <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endforeach
+                    </select>
+                </form>
+
+                <div class="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-lg w-fit overflow-x-auto">
+                    <button @click="filterStatus = 'all'; currentPage = 1" :class="filterStatus === 'all' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Semua</button>
+                    <button @click="filterStatus = 'proses'; currentPage = 1" :class="filterStatus === 'proses' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Proses</button>
+                    <button @click="filterStatus = 'selesai'; currentPage = 1" :class="filterStatus === 'selesai' ? 'bg-white shadow text-green-600' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase whitespace-nowrap">Selesai</button>
+                </div>
             </div>
         </div>
     </div>
@@ -51,8 +66,7 @@
                         <div class="flex items-center justify-between mb-3">
                             <span :class="{
                                     'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': item.status === 'proses',
-                                    'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': item.status === 'selesai',
-                                    'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': item.status === 'selesai dengan catatan'
+                                    'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': item.status === 'selesai'
                                 }"
                                 class="rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
                                 x-text="item.status"></span>

@@ -14,7 +14,7 @@ class PembangunanProyek extends Model
 
     public function pengawas()
     {
-        return $this->belongsTo(User::class, 'pengawas_unit');
+        return $this->belongsTo(User::class, 'pengawas_id');
     }
 
     public function orders()

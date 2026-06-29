@@ -50,7 +50,7 @@ class BuatPembangunanKawasanController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'perumahaan_id' => 'required|exists:perumahaan,id',
-            'pengawas_kawasan' => 'nullable|exists:users,id',
+            'pengawas_id' => 'nullable|exists:users,id',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string'
@@ -82,7 +82,7 @@ class BuatPembangunanKawasanController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'perumahaan_id' => 'required|exists:perumahaan,id',
-            'pengawas_kawasan' => 'nullable|exists:users,id',
+            'pengawas_id' => 'nullable|exists:users,id',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string'

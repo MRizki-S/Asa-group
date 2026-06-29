@@ -18,7 +18,7 @@
 
         {{-- Ringkasan Total --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {{-- Karena Bahan RAP tidak ada harga, kita fokus ke total biaya realisasi --}}
+            {{-- Karena Bahan RAB tidak ada harga, kita fokus ke total biaya realisasi --}}
             <div
                 class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl md:col-span-2">
                 <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Total
@@ -27,7 +27,7 @@
                     {{ number_format($laporan->sum('total_harga_real'), 0, ',', '.') }}</p>
             </div>
 
-            {{-- Menghitung total item yang di luar RAP sebagai indikator --}}
+            {{-- Menghitung total item yang di luar RAB sebagai indikator --}}
             @php
                 $itemLuarRap = 0;
                 foreach ($laporan as $qc) {
@@ -40,7 +40,7 @@
             @endphp
             <div
                 class="p-4 {{ $itemLuarRap > 0 ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100' }} rounded-2xl border">
-                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Item Diluar RAP</p>
+                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Item Diluar RAB</p>
                 <p class="text-xl font-bold {{ $itemLuarRap > 0 ? 'text-red-600' : 'text-blue-600' }}">
                     {{ $itemLuarRap }} Macam Bahan
                 </p>
@@ -69,7 +69,7 @@
                                 <tr
                                     class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter border-b border-gray-50 dark:border-gray-700">
                                     <th class="px-5 py-3">Nama Bahan</th>
-                                    <th class="px-5 py-3 text-right">Qty RAP</th>
+                                    <th class="px-5 py-3 text-right">Qty RAB</th>
                                     <th class="px-5 py-3 text-right">Qty Realisasi</th>
                                     <th class="px-5 py-3 text-center">Status Qty</th>
                                     <th class="px-5 py-3 text-right">Total Harga Real</th>
@@ -84,12 +84,12 @@
                                             @if ($detail['qty_rap'] == 0)
                                                 <span
                                                     class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                                                    DI LUAR RAP
+                                                    DI LUAR RAB
                                                 </span>
                                             @endif
                                         </td>
 
-                                        {{-- Kolom Qty RAP --}}
+                                        {{-- Kolom Qty RAB --}}
                                         <td class="px-5 py-3 text-right font-mono text-gray-500">
                                             @if ($detail['qty_rap'] > 0)
                                                 {{ floatval($detail['qty_rap']) }} <span

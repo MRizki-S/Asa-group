@@ -20,7 +20,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl">
                 <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Total Budget
-                    (RAP)</p>
+                    (RAB)</p>
                 <p class="text-xl font-bold text-gray-800 dark:text-white">Rp
                     {{ number_format($laporan->sum('total_rap'), 0, ',', '.') }}</p>
             </div>
@@ -61,7 +61,7 @@
                             <tr
                                 class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter border-b border-gray-50 dark:border-gray-700">
                                 <th class="px-5 py-3">Nama Pekerjaan</th>
-                                <th class="px-5 py-3 text-right">Budget RAP</th>
+                                <th class="px-5 py-3 text-right">Budget RAB</th>
                                 <th class="px-5 py-3 text-right">Realisasi</th>
                                 <th class="px-5 py-3 text-right">Selisih</th>
                             </tr>

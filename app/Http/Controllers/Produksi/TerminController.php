@@ -164,7 +164,7 @@ class TerminController extends Controller
             $row++;
 
             // Kolom Header Tabel Upah
-            $headersUpah = ['NO', 'NAMA PEKERJAAN', 'BUDGET RAP (Rp)', 'REALISASI (Rp)', 'SELISIH (Rp)'];
+            $headersUpah = ['NO', 'NAMA PEKERJAAN', 'BUDGET RAB (Rp)', 'REALISASI (Rp)', 'SELISIH (Rp)'];
             foreach (range('A', 'E') as $index => $col) {
                 $sheet->setCellValue($col . $row, $headersUpah[$index]);
             }
@@ -234,7 +234,7 @@ class TerminController extends Controller
             $row++;
 
             // Kolom Header Tabel Bahan
-            $headersBahan = ['NO', 'NAMA BAHAN', 'QTY RAP', 'QTY REAL', 'TOTAL HARGA REAL (Rp)'];
+            $headersBahan = ['NO', 'NAMA BAHAN', 'QTY RAB', 'QTY REAL', 'TOTAL HARGA REAL (Rp)'];
             foreach (range('A', 'E') as $index => $col) {
                 $sheet->setCellValue($col . $row, $headersBahan[$index]);
             }
@@ -410,169 +410,7 @@ class TerminController extends Controller
         );
     }
 
-    public function laporanBahanProyek(string $id)
-    {
-        $proyek = \App\Models\PembangunanProyek::with([
-            'orders.details', 
-            'pembangunanProyekBahan'
-        ])->findOrFail($id);
 
-        $orders = $proyek->orders;
-        $orderDetails = collect();
-        foreach ($orders as $order) {
-            foreach ($order->details as $detail) {
-                $orderDetails->push($detail);
-            }
-        }
-        
-        $real = $proyek->pembangunanProyekBahan;
-
-        $allBarangIds = $orderDetails->pluck('barang_id')->merge($real->pluck('barang_id'))->unique();
-
-        $laporanDetails = $allBarangIds->map(function ($barangId) use ($orderDetails, $real) {
-            $reqItems = $orderDetails->where('barang_id', $barangId);
-            $realItems = $real->where('barang_id', $barangId);
-
-            $firstReq = $reqItems->first();
-            $firstReal = $realItems->first();
-
-            $namaBarang = $firstReal ? $firstReal->nama_barang : ($firstReq ? $firstReq->nama_barang : 'Tidak Diketahui');
-
-            return [
-                'barang_id' => $barangId,
-                'nama_barang' => $namaBarang,
-                'qty_request' => $reqItems->sum('jumlah_input'),
-                'satuan_request' => $firstReq ? $firstReq->satuan : '-',
-                'qty_real' => $realItems->sum('jumlah_pakai'),
-                'satuan_real' => $firstReal ? $firstReal->satuan : '-',
-                'harga_real' => $realItems->sum('harga_total_snapshot'),
-            ];
-        })->values();
-
-        $laporan = [
-            'total_harga_real' => $real->sum('harga_total_snapshot'),
-            'details' => $laporanDetails
-        ];
-
-        return view('produksi.pembangunan-proyek.laporan.bahan', compact('proyek', 'laporan'));
-    }
-
-    public function laporanBahanKawasan(string $id)
-    {
-        $kawasan = \App\Models\PembangunanKawasan::with([
-            'orders.details', 
-            'pembangunanKawasanBahan'
-        ])->findOrFail($id);
-
-        $orders = $kawasan->orders;
-        $orderDetails = collect();
-        foreach ($orders as $order) {
-            foreach ($order->details as $detail) {
-                $orderDetails->push($detail);
-            }
-        }
-        
-        $real = $kawasan->pembangunanKawasanBahan;
-
-        $allBarangIds = $orderDetails->pluck('barang_id')->merge($real->pluck('barang_id'))->unique();
-
-        $laporanDetails = $allBarangIds->map(function ($barangId) use ($orderDetails, $real) {
-            $reqItems = $orderDetails->where('barang_id', $barangId);
-            $realItems = $real->where('barang_id', $barangId);
-
-            $firstReq = $reqItems->first();
-            $firstReal = $realItems->first();
-
-            $namaBarang = $firstReal ? $firstReal->nama_barang : ($firstReq ? $firstReq->nama_barang : 'Tidak Diketahui');
-
-            return [
-                'barang_id' => $barangId,
-                'nama_barang' => $namaBarang,
-                'qty_request' => $reqItems->sum('jumlah_input'),
-                'satuan_request' => $firstReq ? $firstReq->satuan : '-',
-                'qty_real' => $realItems->sum('jumlah_pakai'),
-                'satuan_real' => $firstReal ? $firstReal->satuan : '-',
-                'harga_real' => $realItems->sum('harga_total_snapshot'),
-            ];
-        })->values();
-
-        $laporan = [
-            'total_harga_real' => $real->sum('harga_total_snapshot'),
-            'details' => $laporanDetails
-        ];
-
-        return view('produksi.pembangunan-kawasan.laporan.bahan', compact('kawasan', 'laporan'));
-    }
-
-    public function laporanUpahProyek(string $id)
-    {
-        $proyek = \App\Models\PembangunanProyek::with([
-            'pengajuanUpah',
-            'upah'
-        ])->findOrFail($id);
-
-        $requestUpah = $proyek->pengajuanUpah->filter(function ($u) {
-            return !str_starts_with($u->status_pengajuan, 'ditolak_');
-        });
-        
-        $realUpah = $proyek->upah;
-
-        $allUpahNames = $requestUpah->pluck('nama_upah')->merge($realUpah->pluck('nama_upah'))->unique();
-
-        $laporanDetails = $allUpahNames->map(function ($name) use ($requestUpah, $realUpah) {
-            $reqNominal = $requestUpah->where('nama_upah', $name)->sum('nominal_diajukan');
-            $realNominal = $realUpah->where('nama_upah', $name)->sum('total_nominal');
-
-            return [
-                'nama_upah' => $name,
-                'nominal_request' => $reqNominal,
-                'nominal_real' => $realNominal,
-            ];
-        })->values();
-
-        $laporan = [
-            'total_request' => $requestUpah->sum('nominal_diajukan'),
-            'total_real' => $realUpah->sum('total_nominal'),
-            'details' => $laporanDetails
-        ];
-
-        return view('produksi.pembangunan-proyek.laporan.upah', compact('proyek', 'laporan'));
-    }
-
-    public function laporanUpahKawasan(string $id)
-    {
-        $kawasan = \App\Models\PembangunanKawasan::with([
-            'pengajuanUpah',
-            'upah'
-        ])->findOrFail($id);
-
-        $requestUpah = $kawasan->pengajuanUpah->filter(function ($u) {
-            return !str_starts_with($u->status_pengajuan, 'ditolak_');
-        });
-        
-        $realUpah = $kawasan->upah;
-
-        $allUpahNames = $requestUpah->pluck('nama_upah')->merge($realUpah->pluck('nama_upah'))->unique();
-
-        $laporanDetails = $allUpahNames->map(function ($name) use ($requestUpah, $realUpah) {
-            $reqNominal = $requestUpah->where('nama_upah', $name)->sum('nominal_diajukan');
-            $realNominal = $realUpah->where('nama_upah', $name)->sum('total_nominal');
-
-            return [
-                'nama_upah' => $name,
-                'nominal_request' => $reqNominal,
-                'nominal_real' => $realNominal,
-            ];
-        })->values();
-
-        $laporan = [
-            'total_request' => $requestUpah->sum('nominal_diajukan'),
-            'total_real' => $realUpah->sum('total_nominal'),
-            'details' => $laporanDetails
-        ];
-
-        return view('produksi.pembangunan-kawasan.laporan.upah', compact('kawasan', 'laporan'));
-    }
 
     public function exportLaporanTerminProyek(string $id)
     {

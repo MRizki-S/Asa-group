@@ -245,6 +245,17 @@
                                                     </button>
                                                 </div>
                                             @endif
+
+                                            @if ($order->status_order == 'diproses')
+                                                 <div class="pt-2">
+                                                     <button type="button"
+                                                         @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanUnit.orderDestroy', $order->id) }}'"
+                                                         class="w-full py-2.5 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                                         <i class="fa-solid fa-trash-can"></i>
+                                                         Batalkan Orderan
+                                                     </button>
+                                                 </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

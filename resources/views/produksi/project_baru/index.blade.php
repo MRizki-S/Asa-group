@@ -33,7 +33,7 @@
 
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Pengawas Unit</label>
-                            <select name="pengawas_unit" id="selectPengawas" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <select name="pengawas_id" id="selectPengawas" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                                 <option value="">Pilih Pengawas</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}">{{ $user->nama_lengkap ?? $user->name ?? $user->email }}</option>
@@ -105,21 +105,23 @@
                                         {{ $p->status_pembangunan }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 flex gap-2">
-                                    @if($p->status_pembangunan === 'pending')
-                                        <form action="{{ route('produksi.projectBaru.proses', $p->id) }}" method="POST" class="inline confirm-process-form">
-                                            @csrf
-                                            <button type="button" class="btn-process rounded bg-green-500 px-3 py-1 text-xs font-bold text-white hover:bg-green-600">Proses</button>
-                                        </form>
-                                        <a href="{{ route('produksi.projectBaru.edit', $p->id) }}" class="rounded bg-yellow-500 px-3 py-1 text-xs font-bold text-white hover:bg-yellow-600">Edit</a>
-                                        <form action="{{ route('produksi.projectBaru.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" class="btn-delete rounded bg-red-500 px-3 py-1 text-xs font-bold text-white hover:bg-red-600">Hapus</button>
-                                        </form>
-                                    @else
-                                        <span class="text-xs italic text-gray-400">Tidak ada aksi</span>
-                                    @endif
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        @if($p->status_pembangunan === 'pending')
+                                            <form action="{{ route('produksi.projectBaru.proses', $p->id) }}" method="POST" class="inline confirm-process-form">
+                                                @csrf
+                                                <button type="button" class="btn-process rounded bg-green-500 px-3 py-1 text-xs font-bold text-white hover:bg-green-600">Proses</button>
+                                            </form>
+                                            <a href="{{ route('produksi.projectBaru.edit', $p->id) }}" class="inline-flex items-center justify-center rounded bg-yellow-500 px-3 py-1 text-xs font-bold text-white hover:bg-yellow-600">Edit</a>
+                                            <form action="{{ route('produksi.projectBaru.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="btn-delete rounded bg-red-500 px-3 py-1 text-xs font-bold text-white hover:bg-red-600">Hapus</button>
+                                            </form>
+                                        @else
+                                            <span class="text-xs italic text-gray-400">Tidak ada aksi</span>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach

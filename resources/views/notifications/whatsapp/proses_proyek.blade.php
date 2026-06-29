@@ -1,11 +1,7 @@
 🏗️ *PROYEK MULAI DIPROSES*
 
-Dear Tim, Proyek baru telah mulai diproses dan dikerjakan.
+Proyek baru telah mulai diproses dengan rincian berikut:
 
-```
-📍 Nama Proyek : {{ $namaProyek }}
-👤 Pengawas    : {{ $namaPengawas }}
-📅 Tanggal     : {{ $tanggal }}
-```
-
-Mohon koordinasinya. Terima kasih! 🙏
+Nama Proyek: {{ $namaProyek }}
+Pengawas: {{ $namaPengawas }}
+Tanggal: {{ $tanggal }}

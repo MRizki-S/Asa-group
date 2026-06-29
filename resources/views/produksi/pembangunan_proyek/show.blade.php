@@ -18,6 +18,10 @@
     openReturnModal: false,
     returnItems: [],
     returnOrderId: null,
+    openCancelOrderModal: false,
+    cancelOrderActionUrl: '',
+    openCancelUpahModal: false,
+    cancelUpahActionUrl: '',
 
     prepareReturn(orderId, items) {
         this.returnOrderId = orderId;
@@ -72,7 +76,7 @@
                 <p>Pengawas: <span class="font-medium text-gray-900 dark:text-white">{{ $data->pengawas->nama_lengkap ?? '-' }}</span></p>
                 <p>Tanggal: <span class="font-medium text-gray-900 dark:text-white">{{ $data->tanggal_mulai ? \Carbon\Carbon::parse($data->tanggal_mulai)->format('d M Y') : '-' }} s/d {{ $data->tanggal_selesai ? \Carbon\Carbon::parse($data->tanggal_selesai)->format('d M Y') : '-' }}</span></p>
                 <p>Status: <span class="font-bold uppercase
-                    {{ $data->status_pembangunan == 'proses' ? 'text-blue-600' : ($data->status_pembangunan == 'selesai' ? 'text-green-600' : 'text-yellow-600') }}">{{ $data->status_pembangunan }}</span></p>
+                    {{ $data->status_pembangunan == 'proses' ? 'text-blue-600' : 'text-green-600' }}">{{ $data->status_pembangunan }}</span></p>
             </div>
         </div>
         <div class="flex flex-col gap-4 items-end">
@@ -82,21 +86,14 @@
                 <div class="flex flex-col gap-2 items-end">
                     <div class="flex items-center gap-3">
                         <select name="status_pembangunan" x-model="status" class="bg-white text-gray-900 rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="proses">Proses</option>
                             <option value="selesai">Selesai</option>
-                            <option value="selesai dengan catatan">Selesai dengan catatan</option>
                         </select>
                         <button type="submit" class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 font-bold">Update Status</button>
                     </div>
-                    <textarea name="catatan" x-show="status === 'selesai dengan catatan'" placeholder="Tuliskan catatan..." class="bg-white text-gray-900 rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-64" rows="2">{{ $data->catatan }}</textarea>
                 </div>
             </form>
             <div class="flex flex-wrap gap-2 justify-end">
-                <a href="{{ route('produksi.pembangunanProyek.laporanUpah', $data->id) }}" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all duration-200">
-                    <i class="fa-solid fa-money-bill-wave"></i> Laporan Termin Upah
-                </a>
-                <a href="{{ route('produksi.pembangunanProyek.laporanBahan', $data->id) }}" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all duration-200">
-                    <i class="fa-solid fa-file-invoice"></i> Laporan Termin Bahan
-                </a>
                 <a href="{{ route('produksi.pembangunanProyek.laporanTermin.export', $data->id) }}" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all duration-200">
                     <i class="fa-solid fa-file-excel"></i> Export Excel
                 </a>
@@ -315,6 +312,17 @@
                                         </button>
                                     </div>
                                 @endif
+
+                                @if ($order->status_order == 'diproses')
+                                    <div class="pt-4">
+                                        <button type="button"
+                                            @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanProyek.orderDestroy', $order->id) }}'"
+                                            class="w-full py-2.5 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            Batalkan Orderan
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         @endforeach
@@ -493,16 +501,27 @@
                                     </div>
 
                                     @if($u->alasan_ditolak)
-                                    <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-lg">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            <span class="text-[9px] font-black text-red-600 uppercase">Alasan Penolakan:</span>
-                                        </div>
-                                        <p class="text-xs text-red-700 dark:text-red-400 font-medium">{{ $u->alasan_ditolak }}</p>
-                                    </div>
-                                    @endif
+                                     <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-lg">
+                                         <div class="flex items-center gap-2 mb-1">
+                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                             </svg>
+                                             <span class="text-[9px] font-black text-red-600 uppercase">Alasan Penolakan:</span>
+                                         </div>
+                                         <p class="text-xs text-red-700 dark:text-red-400 font-medium">{{ $u->alasan_ditolak }}</p>
+                                     </div>
+                                     @endif
+
+                                    @if(is_null($u->disetujui_mgr_produksi) && is_null($u->disetujui_mgr_dukungan) && is_null($u->disetujui_akuntan) && is_null($u->ditolak_pada))
+                                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                                         <button type="button"
+                                             @click="openCancelUpahModal = true; cancelUpahActionUrl = '{{ route('produksi.pembangunanProyek.upahDestroy', $u->id) }}'"
+                                             class="w-full py-2.5 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                             <i class="fa-solid fa-trash-can"></i>
+                                             Batalkan Pengajuan Upah
+                                         </button>
+                                     </div>
+                                     @endif
                                 </div>
                             </div>
                         </div>
@@ -581,6 +600,90 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal Konfirmasi Batal Order -->
+    <template x-teleport="body">
+        <div x-show="openCancelOrderModal"
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+            x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100">
+            <div @click.away="openCancelOrderModal = false" class="relative w-full max-w-md p-4">
+                <div class="relative bg-white rounded-xl shadow-xl dark:bg-gray-800 overflow-hidden border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Batalkan Order Barang</h3>
+                        <button type="button" @click="openCancelOrderModal = false" class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form :action="cancelOrderActionUrl" method="POST" class="p-5 space-y-4">
+                        @csrf
+                        @method('DELETE')
+                        
+                        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                            Apakah Anda yakin ingin membatalkan order barang ini? Tindakan ini tidak dapat dibatalkan.
+                        </p>
+
+                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-600">
+                            <button type="button" @click="openCancelOrderModal = false"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                                Kembali
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 shadow-sm transition">
+                                Ya, Batalkan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal Konfirmasi Batal Upah -->
+    <template x-teleport="body">
+        <div x-show="openCancelUpahModal"
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+            x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100">
+            <div @click.away="openCancelUpahModal = false" class="relative w-full max-w-md p-4">
+                <div class="relative bg-white rounded-xl shadow-xl dark:bg-gray-800 overflow-hidden border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Batalkan Pengajuan Upah</h3>
+                        <button type="button" @click="openCancelUpahModal = false" class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form :action="cancelUpahActionUrl" method="POST" class="p-5 space-y-4">
+                        @csrf
+                        @method('DELETE')
+                        
+                        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                            Apakah Anda yakin ingin membatalkan pengajuan upah ini? Tindakan ini tidak dapat dibatalkan.
+                        </p>
+
+                        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-600">
+                            <button type="button" @click="openCancelUpahModal = false"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                                Kembali
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 shadow-sm transition">
+                                Ya, Batalkan
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </template>

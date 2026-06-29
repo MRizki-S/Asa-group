@@ -42,10 +42,10 @@
                 
                 <div>
                     <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Pengawas Kawasan</label>
-                    <select name="pengawas_kawasan" id="selectPengawas" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    <select name="pengawas_id" id="selectPengawas" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         <option value="">Pilih Pengawas</option>
                         @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ $kawasan->pengawas_kawasan == $user->id ? 'selected' : '' }}>{{ $user->nama_lengkap ?? $user->name ?? $user->email }}</option>
+                            <option value="{{ $user->id }}" {{ $kawasan->pengawas_id == $user->id ? 'selected' : '' }}>{{ $user->nama_lengkap ?? $user->name ?? $user->email }}</option>
                         @endforeach
                     </select>
                     <script>

@@ -21,6 +21,7 @@ class Unit extends Model
         'nominal_kelebihan',
         'tahap_kualifikasi_id',
         'status_unit',
+        'status_pembangunan',
         'harga_final',
         'harga_jual',
     ];

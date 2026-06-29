@@ -41,4 +41,20 @@ class PembangunanUnitPengajuanUpahController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        $upah = PembangunanUnitUpahPengajuan::findOrFail($id);
+
+        if (!is_null($upah->disetujui_mgr_produksi) || !is_null($upah->disetujui_mgr_dukungan) || !is_null($upah->disetujui_akuntan) || !is_null($upah->ditolak_pada)) {
+            return redirect()->back()->with('error', 'Gagal membatalkan pengajuan upah! Data sudah diproses.');
+        }
+
+        try {
+            $upah->delete();
+            return redirect()->back()->with('success', 'Pengajuan upah berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

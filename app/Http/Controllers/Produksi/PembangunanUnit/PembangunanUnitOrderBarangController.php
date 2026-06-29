@@ -141,6 +141,65 @@ class PembangunanUnitOrderBarangController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        $order = PembangunanUnitBarangOrder::with(['details'])->findOrFail($id);
+
+        if ($order->status_order !== 'diproses') {
+            return redirect()->back()->with('error', 'Gagal membatalkan order! Order ini sudah tidak dalam status menunggu.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $pembangunanUnit = PembangunanUnit::find($order->pembangunan_unit_id);
+            if ($pembangunanUnit) {
+                $this->sendGroupNotificationCancelOrder($pembangunanUnit, $order);
+            }
+
+            $order->details()->delete();
+            $order->delete();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Order barang berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function sendGroupNotificationCancelOrder(PembangunanUnit $pembangunanUnit, $order)
+    {
+        $pembangunanUnit->loadMissing(['unit.tahap.perumahaan']);
+        $order->loadMissing(['details']);
+
+        $unit = $pembangunanUnit->unit;
+        $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
+        $namaTahap = $unit->tahap->nama_tahap ?? '-';
+        $namaUnit = $unit->nama_unit ?? '-';
+        $pembatal = Auth::user()->nama_lengkap ?? Auth::user()->name;
+
+        $groupId = env('FONNTE_ID_GROUP_BATAL_ORDER_BARANG_UNIT');
+
+        if (!$groupId) return;
+
+        $messageGroup = view('notifications.whatsapp.batal_order_barang_unit', [
+            'tipe' => 'Unit',
+            'namaPerumahan' => $namaPerumahan,
+            'namaTahap' => $namaTahap,
+            'namaUnit' => $namaUnit,
+            'pembatal' => $pembatal,
+            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            'order' => $order
+        ])->render();
+
+        try {
+            $this->notificationGroup->send($groupId, $messageGroup);
+        } catch (\Exception $e) {
+            Log::error('WA Cancel Order Error: ' . $e->getMessage());
+        }
+    }
+
     public function update(Request $request) {}
 
     public function storeReturn(Request $request, $orderId)
