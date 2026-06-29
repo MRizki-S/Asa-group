@@ -7,11 +7,12 @@ use App\Models\KpiIndicator;
 use App\Models\KpiKomponen;
 use App\Models\KpiUser;
 use App\Models\User;
+use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 
 
@@ -28,8 +29,9 @@ class KpiUserController extends Controller
         $tahunFilter = $request->get('tahun', date('Y')) ?? Carbon::now()->year;
         $roleFilter = $request->get('role');
         $statusFilter = $request->get('status');
+        $devisiFilter = $request->get('devisi');
 
-        $query = KpiUser::with(['user', 'details', 'user.roles'])
+        $query = KpiUser::with(['karyawan', 'details', 'karyawan.role.devisi'])
             ->where('bulan', (int) $bulanFilter)
             ->where('tahun', (int) $tahunFilter);
 
@@ -38,20 +40,28 @@ class KpiUserController extends Controller
         }
 
         if ($request->filled('role')) {
-            $query->whereHas('user.roles', function ($q) use ($roleFilter) {
+            $query->whereHas('karyawan.role', function ($q) use ($roleFilter) {
                 $q->where('name', $roleFilter);
+            });
+        }
+
+        if ($request->filled('devisi')) {
+            $query->whereHas('karyawan.role', function ($q) use ($devisiFilter) {
+                $q->where('devisi_id', $devisiFilter);
             });
         }
 
         $allKpiUser = $query->latest()->get();
 
         $roles = Role::all();
+        $devisis = \App\Models\Devisi::orderBy('nama_devisi')->get();
 
         return view('kpi.user-kpi.index', [
             'allKpiUser'  => $allKpiUser,
             'bulanFilter' => $bulanFilter,
             'tahunFilter' => $tahunFilter,
             'roles'       => $roles,
+            'devisis'     => $devisis,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI Karyawan', 'url' => '#']
             ],
@@ -79,8 +89,8 @@ class KpiUserController extends Controller
         $role = Role::find($roleId);
         if (!$role) return response()->json(['users' => [], 'komponen' => []]);
 
-        // Ambil user yang punya role ini
-        $users = User::role($role->name)->get(['id', 'nama_lengkap']);
+        // Ambil karyawan yang punya role ini
+        $users = Karyawan::where('role_id', $roleId)->get(['id', 'nama as nama_lengkap']);
 
         // Ambil komponen KPI yang aktif untuk role ini
         $komponen = KpiKomponen::where('role_id', $roleId)
@@ -101,7 +111,7 @@ class KpiUserController extends Controller
         $request->validate([
             'role_id' => 'required',
             'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
+            'user_ids.*' => 'exists:karyawan,id',
             'komponen_ids' => 'required|array',
             'bobot' => 'required|array', // Validasi array bobot
             'bulan' => 'required|integer|between:1,12',
@@ -124,21 +134,21 @@ class KpiUserController extends Controller
 
         DB::transaction(function () use ($request, &$countSuccess, &$errors) {
             foreach ($request->user_ids as $userId) {
-                // Cek Duplikat per User per Periode
-                $exists = KpiUser::where('user_id', $userId)
+                // Cek Duplikat per Karyawan per Periode
+                $exists = KpiUser::where('karyawan_id', $userId)
                     ->where('bulan', $request->bulan)
                     ->where('tahun', $request->tahun)
                     ->exists();
 
                 if ($exists) {
-                    $user = User::find($userId);
-                    $errors[] = "User {$user->nama_lengkap} sudah memiliki data pada periode ini.";
+                    $user = Karyawan::find($userId);
+                    $errors[] = "Karyawan {$user->nama} sudah memiliki data pada periode ini.";
                     continue;
                 }
 
                 // 1. Simpan Header KPI User
                 $kpiUser = KpiUser::create([
-                    'user_id' => $userId,
+                    'karyawan_id' => $userId,
                     'bulan'   => $request->bulan,
                     'tahun'   => $request->tahun,
                     'status'  => 'draft',
@@ -202,7 +212,7 @@ class KpiUserController extends Controller
      */
     public function show($id)
     {
-        $kpiUser = KpiUser::with(['user', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
@@ -223,7 +233,7 @@ class KpiUserController extends Controller
             'prosesReview' => $prosesReview,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Input Nilai: ' . $kpiUser->user->nama_lengkap, 'url' => '#']
+                ['label' => 'Input Nilai: ' . $kpiUser->karyawan->nama, 'url' => '#']
             ],
         ]);
     }
@@ -233,7 +243,7 @@ class KpiUserController extends Controller
      */
     public function edit($id)
     {
-        $kpiUser = KpiUser::with(['user', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
@@ -254,7 +264,7 @@ class KpiUserController extends Controller
             'prosesReview' => $prosesReview,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Input Nilai: ' . $kpiUser->user->nama_lengkap, 'url' => '#']
+                ['label' => 'Input Nilai: ' . $kpiUser->karyawan->nama, 'url' => '#']
             ],
         ]);
     }

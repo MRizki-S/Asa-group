@@ -45,7 +45,7 @@
                         Informasi Role
                     </h3>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Role -->
                         <div>
                             <label for="role_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -57,6 +57,26 @@
                                dark:bg-gray-700 dark:text-white
                                @error('role_name') border-red-500 @else border-gray-300 @enderror">
                             @error('role_name')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Devisi -->
+                        <div>
+                            <label for="devisi_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Devisi
+                            </label>
+                            <select id="devisi_id" name="devisi_id"
+                                class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                               dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Pilih Devisi (Opsional) --</option>
+                                @foreach($devisis as $devisi)
+                                    <option value="{{ $devisi->id }}" {{ old('devisi_id') == $devisi->id ? 'selected' : '' }}>
+                                        {{ $devisi->nama_devisi }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('devisi_id')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>

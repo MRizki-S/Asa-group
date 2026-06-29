@@ -95,6 +95,9 @@ class DatabaseSeeder extends Seeder
             // Master Data Keuangan
             KategoriAkunKeuanganSeeder::class,
             AkunKeuanganSeeder::class,
+
+            // Devisi
+            \Database\Seeders\Master\DevisiSeeder::class,
         ]);
 
         // 4. Users
@@ -107,7 +110,7 @@ class DatabaseSeeder extends Seeder
 
             // User Kpi Sistem
             UsersKpiSystemSeeder::class,
-
+            KaryawanSeeder::class,
         ]);
 
         // 5. KPI Indicator

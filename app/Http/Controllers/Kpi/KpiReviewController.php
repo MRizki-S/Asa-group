@@ -34,7 +34,7 @@ class KpiReviewController extends Controller
                         ->groupBy('kpi_user_id');
                 })->whereNull('direspon_pada');
             })
-            ->with(['user', 'details.tasks', 'reviewRequests' => function ($q) {
+            ->with(['karyawan', 'details.tasks', 'reviewRequests' => function ($q) {
                 $q->latest();
             }])
             ->latest()
@@ -52,7 +52,7 @@ class KpiReviewController extends Controller
     public function edit($id)
     {
 
-        $kpiUser = KpiUser::with(['user', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details.tasks', 'reviewRequests'])->findOrFail($id);
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
@@ -65,7 +65,7 @@ class KpiReviewController extends Controller
             'bolehRequest' =>  $bolehRequest,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Review Nilai: ' . $kpiUser->user->nama_lengkap, 'url' => '#']
+                ['label' => 'Review Nilai: ' . $kpiUser->karyawan->nama, 'url' => '#']
             ],
         ]);
     }
@@ -117,7 +117,7 @@ class KpiReviewController extends Controller
         //     return;
         // }
 
-        $namaKaryawan = $kpiUser->user->nama_lengkap;
+        $namaKaryawan = $kpiUser->karyawan->nama;
         $periode = date('F Y', mktime(0, 0, 0, $kpiUser->bulan, 1, $kpiUser->tahun));
 
         $komponenNol = $kpiUser->details->where('skor', 0)->pluck('nama_komponen')->implode(', ');

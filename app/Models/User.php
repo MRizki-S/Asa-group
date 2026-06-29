@@ -27,6 +27,7 @@ class User extends Authenticatable
         'perumahaan_id',
         'is_global',
         'tanggal_expired',
+        'karyawan_id',
     ];
 
     /**
@@ -122,5 +123,13 @@ class User extends Authenticatable
     public function produksiBarangRakitanDibatalkan()
     {
         return $this->hasMany(ProduksiBarangRakitan::class, 'cancelled_by');
+    }
+
+    /**
+     * Relasi ke data Karyawan
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 }

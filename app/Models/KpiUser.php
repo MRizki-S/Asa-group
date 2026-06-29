@@ -9,15 +9,15 @@ class KpiUser extends Model
     protected $table = 'kpi_user';
 
     protected $fillable = [
-        'user_id',
+        'karyawan_id',
         'bulan',
         'tahun',
         'status'
     ];
 
-    public function user()
+    public function karyawan()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 
     public function details()
