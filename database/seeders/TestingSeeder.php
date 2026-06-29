@@ -82,7 +82,7 @@ class TestingSeeder extends Seeder
             'harga_final' => 30000000
         ]);
 
-        Role::create([
+        Role::firstOrCreate([
             'name' => 'Pengawas Unit'
         ]);
 
