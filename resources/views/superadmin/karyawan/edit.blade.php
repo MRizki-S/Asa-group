@@ -105,13 +105,17 @@
                         <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-white">
                             Unit Bisnis (UBS) / HUB <span class="text-red-500">*</span>
                         </label>
-                        <select name="ubs_id" required class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                        <select name="perumahaan_id" required class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                             <option value="">-- Pilih Unit Bisnis --</option>
-                            <option value="HUB" {{ old('ubs_id', $karyawan->ubs_id ? '' : 'HUB') == 'HUB' ? 'selected' : '' }}>HUB (PUSAT)</option>
+                            <option value="HUB" {{ old('perumahaan_id', $karyawan->perumahaan_id ? '' : 'HUB') == 'HUB' ? 'selected' : '' }}>HUB (PUSAT)</option>
                             @foreach ($ubs as $u)
+                                @php
+                                    $isMangoon = str_contains(strtolower($u->nama_ubs), 'mangoon');
+                                @endphp
                                 <option value="{{ $u->id }}" 
-                                    {{ old('ubs_id', $karyawan->ubs_id) == $u->id ? 'selected' : '' }}>
-                                    {{ $u->nama_ubs }}
+                                    {{ $isMangoon ? 'disabled' : '' }}
+                                    {{ old('perumahaan_id', $karyawan->perumahaan_id) == $u->id ? 'selected' : '' }}>
+                                    {{ $u->nama_ubs }} {{ $isMangoon ? '(Belum Siap)' : '' }}
                                 </option>
                             @endforeach
                         </select>
