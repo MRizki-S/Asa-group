@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('nama');
             $table->string('no_hp');
             $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
-            $table->foreignId('perumahaan_id')->nullable()->constrained('ubs')->onDelete('set null');
+            $table->foreignId('ubs_id')->nullable()->constrained('ubs')->onDelete('set null');
             $table->timestamps();
         });
 
@@ -43,7 +43,7 @@ return new class extends Migration
                 'nama' => $k->nama_lengkap ?? 'Karyawan ' . $k->id,
                 'no_hp' => $k->no_hp ?? '',
                 'role_id' => $k->role_id,
-                'perumahaan_id' => $k->perumahaan_id,
+                'ubs_id' => $k->perumahaan_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -61,13 +61,41 @@
                     </a>
                 </div>
 
+                {{-- Filter Section --}}
+                <form method="GET" action="{{ route('superadmin.karyawan.index') }}"
+                    class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <h3 class="text-sm text-gray-500 whitespace-nowrap">Filter UBS:</h3>
+                    <div class="w-full sm:min-w-[200px] sm:w-auto">
+                        <select name="ubs_id" id="selectUbs"
+                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2.5 text-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">Semua Unit Bisnis</option>
+                            <option value="HUB" {{ request('ubs_id') == 'HUB' ? 'selected' : '' }}>HUB (PUSAT)</option>
+                            @foreach ($ubs as $u)
+                                <option value="{{ $u->id }}" {{ request('ubs_id') == $u->id ? 'selected' : '' }}>
+                                    {{ $u->nama_ubs }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit"
+                            class="flex-1 sm:flex-none px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                            Terapkan
+                        </button>
+                        <a href="{{ route('superadmin.karyawan.index') }}"
+                            class="flex-1 sm:flex-none px-4 py-2 text-sm text-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition">
+                            Reset
+                        </a>
+                    </div>
+                </form>
+
                 <table id="table-karyawan">
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Nama</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No HP</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Jabatan</th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit Bisnis / Perumahaan</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">UBS</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
                         </tr>
                     </thead>

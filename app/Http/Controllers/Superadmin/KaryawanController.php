@@ -12,12 +12,25 @@ use Illuminate\Support\Facades\DB;
 
 class KaryawanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $karyawans = Karyawan::with(['role', 'perumahaan', 'users'])->latest()->get();
+        $ubsFilter = $request->input('ubs_id');
+
+        $karyawans = Karyawan::with(['role', 'ubs', 'users'])
+            ->when($ubsFilter, function ($query, $ubsFilter) {
+                if ($ubsFilter === 'HUB') {
+                    return $query->whereNull('ubs_id');
+                }
+                return $query->where('ubs_id', $ubsFilter);
+            })
+            ->latest()
+            ->get();
+
+        $ubs = Ubs::orderBy('nama_ubs')->get();
 
         return view('superadmin.karyawan.index', [
             'karyawans' => $karyawans,
+            'ubs' => $ubs,
             'breadcrumbs' => [
                 [
                     'label' => 'Karyawan',
@@ -60,7 +73,7 @@ class KaryawanController extends Controller
             'nama' => 'required|string|max:255',
             'no_hp' => 'required|string|max:20',
             'role_id' => 'required|exists:roles,id',
-            'perumahaan_id' => 'nullable',
+            'ubs_id' => 'nullable',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ], [
@@ -69,14 +82,14 @@ class KaryawanController extends Controller
             'role_id.required' => 'Jabatan/Role wajib dipilih.',
         ]);
 
-        $perumahaanId = ($request->perumahaan_id === 'HUB' || empty($request->perumahaan_id)) ? null : $request->perumahaan_id;
+        $ubsId = ($request->ubs_id === 'HUB' || empty($request->ubs_id)) ? null : $request->ubs_id;
 
-        DB::transaction(function () use ($request, $perumahaanId) {
+        DB::transaction(function () use ($request, $ubsId) {
             $karyawan = Karyawan::create([
                 'nama' => $request->nama,
                 'no_hp' => '62' . ltrim($request->no_hp, '0'),
                 'role_id' => $request->role_id,
-                'perumahaan_id' => $perumahaanId,
+                'ubs_id' => $ubsId,
             ]);
 
             if ($request->has('user_ids')) {
@@ -127,7 +140,7 @@ class KaryawanController extends Controller
             'nama' => 'required|string|max:255',
             'no_hp' => 'required|string|max:20',
             'role_id' => 'required|exists:roles,id',
-            'perumahaan_id' => 'nullable',
+            'ubs_id' => 'nullable',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ], [
@@ -136,19 +149,19 @@ class KaryawanController extends Controller
             'role_id.required' => 'Jabatan/Role wajib dipilih.',
         ]);
 
-        $perumahaanId = ($request->perumahaan_id === 'HUB' || empty($request->perumahaan_id)) ? null : $request->perumahaan_id;
+        $ubsId = ($request->ubs_id === 'HUB' || empty($request->ubs_id)) ? null : $request->ubs_id;
 
         $noHp = $request->no_hp;
         if (!str_starts_with($noHp, '62')) {
             $noHp = '62' . ltrim($noHp, '0');
         }
 
-        DB::transaction(function () use ($request, $karyawan, $perumahaanId, $noHp) {
+        DB::transaction(function () use ($request, $karyawan, $ubsId, $noHp) {
             $karyawan->update([
                 'nama' => $request->nama,
                 'no_hp' => $noHp,
                 'role_id' => $request->role_id,
-                'perumahaan_id' => $perumahaanId,
+                'ubs_id' => $ubsId,
             ]);
 
             // Set karyawan_id to null for users previously linked to this karyawan
