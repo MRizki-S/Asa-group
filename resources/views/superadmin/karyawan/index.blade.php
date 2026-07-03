@@ -68,7 +68,7 @@
                     <div class="w-full sm:min-w-[200px] sm:w-auto">
                         <select name="ubs_id" id="selectUbs"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2.5 text-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="">Semua Unit Bisnis</option>
+                            <option value="">Semua UBS dan HUB</option>
                             <option value="HUB" {{ request('ubs_id') == 'HUB' ? 'selected' : '' }}>HUB (PUSAT)</option>
                             @foreach ($ubs as $u)
                                 <option value="{{ $u->id }}" {{ request('ubs_id') == $u->id ? 'selected' : '' }}>
