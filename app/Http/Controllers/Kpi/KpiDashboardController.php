@@ -24,7 +24,7 @@ class KpiDashboardController extends Controller
 
         // 1. Fetch all employees (karyawan) (with optional role/jabatan filter, excluding Superadmin)
         $usersRaw = DB::table('karyawan')
-            ->leftJoin('ubs', 'karyawan.perumahaan_id', '=', 'ubs.id')
+            ->leftJoin('ubs', 'karyawan.ubs_id', '=', 'ubs.id')
             ->leftJoin('roles', 'karyawan.role_id', '=', 'roles.id')
             ->leftJoin('devisi', 'roles.devisi_id', '=', 'devisi.id')
             ->where(function ($query) {
@@ -40,7 +40,7 @@ class KpiDashboardController extends Controller
             ->select(
                 'karyawan.id as user_id',
                 'karyawan.nama as nama_lengkap',
-                'karyawan.perumahaan_id',
+                'karyawan.ubs_id',
                 'ubs.nama_ubs',
                 'roles.name as role_name',
                 'devisi.nama_devisi'
@@ -160,7 +160,7 @@ class KpiDashboardController extends Controller
 
         // 1. Fetch all employees (karyawan) (with optional role/jabatan filter, excluding Superadmin)
         $usersRaw = DB::table('karyawan')
-            ->leftJoin('ubs', 'karyawan.perumahaan_id', '=', 'ubs.id')
+            ->leftJoin('ubs', 'karyawan.ubs_id', '=', 'ubs.id')
             ->leftJoin('roles', 'karyawan.role_id', '=', 'roles.id')
             ->leftJoin('devisi', 'roles.devisi_id', '=', 'devisi.id')
             ->where(function ($query) {
@@ -176,7 +176,7 @@ class KpiDashboardController extends Controller
             ->select(
                 'karyawan.id as user_id',
                 'karyawan.nama as nama_lengkap',
-                'karyawan.perumahaan_id',
+                'karyawan.ubs_id',
                 'ubs.nama_ubs',
                 'roles.name as role_name',
                 'devisi.nama_devisi'

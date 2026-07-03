@@ -14,7 +14,7 @@ class Karyawan extends Model
         'nama',
         'no_hp',
         'role_id',
-        'perumahaan_id',
+        'ubs_id',
     ];
 
     /**
@@ -28,9 +28,17 @@ class Karyawan extends Model
     /**
      * Relasi ke Unit Bisnis (UBS)
      */
+    public function ubs(): BelongsTo
+    {
+        return $this->belongsTo(Ubs::class, 'ubs_id');
+    }
+
+    /**
+     * Relasi ke Unit Bisnis (UBS) - Compatibility Alias
+     */
     public function perumahaan(): BelongsTo
     {
-        return $this->belongsTo(Ubs::class, 'perumahaan_id');
+        return $this->belongsTo(Ubs::class, 'ubs_id');
     }
 
     /**
