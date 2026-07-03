@@ -96,7 +96,6 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No HP</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Jabatan</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">UBS</th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Akun User Login</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -125,7 +124,7 @@
                                         </svg>
                                         Edit
                                     </a>
-                                    
+
                                     <form action="{{ route('superadmin.karyawan.destroy', $item->id) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
