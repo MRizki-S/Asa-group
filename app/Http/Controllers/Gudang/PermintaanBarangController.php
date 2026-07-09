@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\BarangSatuanKonversi;
 use App\Models\MasterBarang;
 use App\Models\NotaBarangMasukDetail;
+use App\Models\PembangunanKawasanBahan;
+use App\Models\PembangunanKawasanBarangOrder;
+use App\Models\PembangunanProyekBahan;
+use App\Models\PembangunanProyekBarangOrder;
 use App\Models\PembangunanUnitBahan;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\StockGudang;
@@ -16,17 +20,60 @@ use Illuminate\Support\Facades\DB;
 
 class PermintaanBarangController extends Controller
 {
-    private function orderQuery()
+    private function getOrderConfig($jenisOrder)
     {
-        return PembangunanUnitBarangOrder::with([
-            'details',
-            'user',
-            'qc',
-            'pembangunanUnit.unit.blok',
-            'pembangunanUnit.unit.type',
-            'pembangunanUnit.tahap.perumahaan',
-            'pembangunanUnit.pengawas',
-        ])
+        $configs = [
+            'pembangunan_unit' => [
+                'model' => PembangunanUnitBarangOrder::class,
+                'with' => [
+                    'details.barang.baseUnit',
+                    'details.rapBahan',
+                    'user',
+                    'qc',
+                    'pembangunanUnit.unit.blok',
+                    'pembangunanUnit.unit.type',
+                    'pembangunanUnit.tahap.perumahaan',
+                    'pembangunanUnit.pengawas',
+                ],
+                'title' => 'Permintaan Barang Unit',
+                'bahanModel' => PembangunanUnitBahan::class,
+                'parent_id_field' => 'pembangunan_unit_id',
+                'qc_id_field' => 'pembangunan_unit_qc_id',
+            ],
+            'pembangunan_kawasan' => [
+                'model' => PembangunanKawasanBarangOrder::class,
+                'with' => [
+                    'details.barang.baseUnit',
+                    'pembuat',
+                    'kawasan.perumahan',
+                ],
+                'title' => 'Permintaan Barang Kawasan',
+                'bahanModel' => PembangunanKawasanBahan::class,
+                'parent_id_field' => 'pembangunan_kawasan_id',
+                'qc_id_field' => null, // Kawasan might not have QC termin?
+            ],
+            'pembangunan_proyek_mangoon' => [
+                'model' => PembangunanProyekBarangOrder::class,
+                'with' => [
+                    'details.barang.baseUnit',
+                    'pembuat',
+                    'proyek',
+                ],
+                'title' => 'Permintaan Barang Proyek Mangoon',
+                'bahanModel' => PembangunanProyekBahan::class,
+                'parent_id_field' => 'pembangunan_proyek_id',
+                'qc_id_field' => null,
+            ],
+        ];
+
+        return $configs[$jenisOrder] ?? $configs['pembangunan_unit'];
+    }
+
+    private function orderQuery($category)
+    {
+        $config = $this->getOrderConfig($category);
+
+        return $config['model']::with($config['with'])
             ->withCount('details')
             ->latest('tanggal_diajukan');
     }
@@ -48,16 +95,29 @@ class PermintaanBarangController extends Controller
     public function index(Request $request)
     {
         $status = $request->get('status', 'diproses');
-        $jenisOrder = $request->get('jenis_order', 'all');
+        $rawJenisOrder = $request->get('jenis_order', 'pembangunan_unit');
 
-        $query = $this->orderQuery();
+        // Categories from sidebar
+        $categories = ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon'];
+
+        // Resolve category and filter
+        if (in_array($rawJenisOrder, $categories)) {
+            $category = $rawJenisOrder;
+            $filterJenis = 'all';
+        } else {
+            $category = $request->get('category', 'pembangunan_unit');
+            $filterJenis = in_array($rawJenisOrder, ['stock', 'direct']) ? $rawJenisOrder : 'all';
+        }
+
+        $config = $this->getOrderConfig($category);
+        $query = $this->orderQuery($category);
 
         if ($status !== 'all') {
             $query->where('status_order', $status);
         }
 
-        if ($jenisOrder !== 'all') {
-            $query->where('jenis_order', $jenisOrder);
+        if ($filterJenis !== 'all') {
+            $query->where('jenis_order', $filterJenis);
         }
 
         $orders = $query->get();
@@ -65,14 +125,15 @@ class PermintaanBarangController extends Controller
         return view('gudang.permintaan-barang.index', [
             'orders' => $orders,
             'status' => $status,
-            'jenisOrder' => $jenisOrder,
+            'category' => $category,
+            'jenisOrder' => $filterJenis,
             'statusOptions' => $this->statusOptions(),
             'isHistory' => false,
-            'titlePage' => 'Daftar Permintaan Barang Proyek',
+            'titlePage' => $config['title'],
             'breadcrumbs' => [
                 [
                     'label' => 'Permintaan Barang',
-                    'url' => route('gudang.permintaanBarang.index'),
+                    'url' => route('gudang.permintaanBarang.index', ['jenis_order' => $category]),
                 ],
             ],
         ]);
@@ -82,9 +143,20 @@ class PermintaanBarangController extends Controller
     public function history(Request $request)
     {
         $status = $request->get('status', 'all');
-        $jenisOrder = $request->get('jenis_order', 'all');
+        $rawJenisOrder = $request->get('jenis_order', 'pembangunan_unit');
 
-        $query = $this->orderQuery();
+        $categories = ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon'];
+
+        if (in_array($rawJenisOrder, $categories)) {
+            $category = $rawJenisOrder;
+            $filterJenis = 'all';
+        } else {
+            $category = $request->get('category', 'pembangunan_unit');
+            $filterJenis = in_array($rawJenisOrder, ['stock', 'direct']) ? $rawJenisOrder : 'all';
+        }
+
+        $config = $this->getOrderConfig($category);
+        $query = $this->orderQuery($category);
 
         if ($status === 'all') {
             $query->where('status_order', '!=', 'diproses');
@@ -92,57 +164,52 @@ class PermintaanBarangController extends Controller
             $query->where('status_order', $status);
         }
 
-        if ($jenisOrder !== 'all') {
-            $query->where('jenis_order', $jenisOrder);
+        if ($filterJenis !== 'all') {
+            $query->where('jenis_order', $filterJenis);
         }
 
-        $orders = $query
-            ->get();
+        $orders = $query->get();
 
         return view('gudang.permintaan-barang.index', [
             'orders' => $orders,
             'status' => $status,
-            'jenisOrder' => $jenisOrder,
+            'category' => $category,
+            'jenisOrder' => $filterJenis,
             'statusOptions' => $this->statusOptions(false),
             'isHistory' => true,
-            'titlePage' => 'Riwayat Permintaan Barang',
+            'titlePage' => 'Riwayat ' . $config['title'],
             'breadcrumbs' => [
                 [
                     'label' => 'Permintaan Barang',
-                    'url' => route('gudang.permintaanBarang.index'),
+                    'url' => route('gudang.permintaanBarang.index', ['jenis_order' => $category]),
                 ],
                 [
-                    'label' => 'Riwayat Permintaan Barang',
-                    'url' => route('gudang.permintaanBarang.history'),
+                    'label' => 'Riwayat',
+                    'url' => route('gudang.permintaanBarang.history', ['jenis_order' => $category]),
                 ],
             ],
         ]);
     }
 
     // function untuk melihat detail order barang sebelum dilakukan acc oleh gudang
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $order = PembangunanUnitBarangOrder::with([
-            'details.barang',
-            'details.rapBahan',
-            'user',
-            'qc',
-            'pembangunanUnit.unit.blok',
-            'pembangunanUnit.unit.type',
-            'pembangunanUnit.tahap.perumahaan',
-            'pembangunanUnit.pengawas',
-        ])->findOrFail($id);
+        $category = $request->get('jenis_order', 'pembangunan_unit');
+        $config = $this->getOrderConfig($category);
+
+        $order = $config['model']::with($config['with'])->findOrFail($id);
 
         return view('gudang.permintaan-barang.show', [
             'order' => $order,
+            'category' => $category,
             'breadcrumbs' => [
                 [
                     'label' => 'Permintaan Barang',
-                    'url' => route('gudang.permintaanBarang.index'),
+                    'url' => route('gudang.permintaanBarang.index', ['jenis_order' => $category]),
                 ],
                 [
                     'label' => 'Detail Permintaan - REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT),
-                    'url' => route('gudang.permintaanBarang.show', $order->id),
+                    'url' => route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => $category]),
                 ],
             ],
         ]);
@@ -150,87 +217,77 @@ class PermintaanBarangController extends Controller
 
     public function acc(Request $request, $id)
     {
-        // Ambil order beserta detail barang, master barang, dan pembangunan unit.
-        // Relasi ini dibutuhkan untuk menentukan tipe barang, nama satuan, serta UBS/perumahan tujuan stock.
-        $order = PembangunanUnitBarangOrder::with([
-            'details.barang.baseUnit',
-            'pembangunanUnit',
-        ])->findOrFail($id);
+        $category = $request->get('jenis_order', 'pembangunan_unit');
+
+        if ($category === 'pembangunan_unit') {
+            return back()->with('error', 'ACC permintaan barang unit harus melalui route khusus pembangunan unit.');
+        }
+
+        $config = $this->getOrderConfig($category);
+
+        // Ambil order beserta detail barang, master barang, dan pembangunan unit/kawasan/proyek.
+        $order = $config['model']::with($config['with'])->findOrFail($id);
 
         // ACC hanya boleh dilakukan sekali ketika order masih menunggu diproses gudang.
-        // Ini mencegah stock dan FIFO nota barang masuk berkurang dua kali untuk order yang sama.
         if ($order->status_order !== 'diproses') {
             return back()->with('error', 'Permintaan barang ini sudah tidak dalam status menunggu.');
         }
 
         try {
-            // Semua proses ACC dibuat atomic.
-            // Kalau cek stock, FIFO, ledger, atau realisasi bahan gagal, seluruh perubahan otomatis rollback.
-            DB::transaction(function () use ($order, $request) {
-                $pembangunanUnit = $order->pembangunanUnit;
-
+            DB::transaction(function () use ($order, $request, $category, $config) {
                 // Di sistem ini id perumahaan dianggap sama dengan id UBS.
-                // Jadi order dari perumahan 1 akan mengambil stock_gudang stock_type UBS dengan ubs_id 1.
-                $ubsId = $pembangunanUnit?->perumahaan_id;
+                $ubsId = $order->ubs_id;
 
-                // Tanpa data pembangunan unit/UBS, sistem tidak tahu stock unit mana yang harus dikurangi.
-                if (!$pembangunanUnit || !$ubsId) {
-                    throw new \Exception('Data pembangunan unit atau UBS/perumahan tidak ditemukan.');
+                // Fallback for Unit if not in order root (unit model seems to have it sometimes but controller gets it from relation)
+                if (!$ubsId) {
+                    if ($category === 'pembangunan_unit') {
+                        $ubsId = $order->pembangunanUnit?->perumahaan_id;
+                    } elseif ($category === 'pembangunan_kawasan') {
+                        $ubsId = $order->kawasan?->perumahaan_id;
+                    }
+                }
+
+                if (!$ubsId) {
+                    throw new \Exception('Data UBS/perumahan tujuan stock tidak ditemukan.');
                 }
 
                 // Proses setiap item order satu per satu.
-                // Setiap detail akan dikonfirmasi, dihitung nilai FIFO-nya, lalu masuk realisasi bahan proyek.
                 foreach ($order->details as $detail) {
                     $this->assertDetailMatchesOrderType($order, $detail);
 
-                    // Jika ada detail yang sudah pernah dikonfirmasi, lewati agar tidak double pengurangan stock.
                     if ($detail->konfirmasi) {
                         continue;
                     }
 
-                    // jumlah_base adalah kuantitas dalam satuan dasar barang.
-                    // Stock gudang dan FIFO nota barang masuk dikurangi berdasarkan nilai base ini.
-                    // Nilainya dihitung ulang dari master konversi agar order lama/frontend stale tidak membuat stock salah.
                     $jumlahBase = $this->resolveJumlahBase($detail);
-
-                    // Default harga akan diganti sesuai tipe order.
-                    // Stock mengambil harga dari FIFO nota, sedangkan direct mengambil input manual gudang.
                     $hargaTotal = 0.0;
                     $hargaSatuanBase = 0.0;
 
-                    // Barang stock harus benar-benar keluar dari stock UBS dan mengonsumsi layer nota FIFO.
-                    // Barang direct tetap masuk realisasi bahan, tetapi tidak mengurangi stock gudang.
                     if ($detail->barang?->is_stock) {
-                        // Lock baris stock agar dua user tidak bisa ACC dan mengurangi stock yang sama bersamaan.
                         $stock = StockGudang::where('barang_id', $detail->barang_id)
                             ->where('stock_type', 'UBS')
                             ->where('ubs_id', $ubsId)
                             ->lockForUpdate()
                             ->first();
 
-                        // Validasi stock UBS harus cukup sebelum nota FIFO dikurangi.
                         if (!$stock || (float) $stock->jumlah_stock < $jumlahBase) {
                             $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
                             throw new \Exception("Stok UBS untuk {$namaBarang} tidak mencukupi.");
                         }
 
-                        // Ambil harga aktual dari nota barang masuk paling lama yang masih punya jumlah_sisa.
-                        // Helper ini juga langsung mengurangi jumlah_sisa pada layer nota yang dipakai.
                         $fifoResult = $this->consumeNotaFifo($detail->barang_id, $jumlahBase);
                         $hargaTotal = $fifoResult['harga_total'];
                         $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
 
-                        // Setelah FIFO valid, kurangi stock UBS sesuai jumlah base yang benar-benar keluar.
                         $stock->decrement('jumlah_stock', $jumlahBase);
 
-                        // Simpan jejak keluar stock untuk audit riwayat stock.
                         StockLedger::create([
                             'tanggal' => now(),
                             'barang_id' => $detail->barang_id,
                             'stock_type' => 'UBS',
                             'ubs_id' => $ubsId,
                             'tipe' => 'keluar',
-                            'ref_type' => 'PembangunanUnitBarangOrder',
+                            'ref_type' => class_basename($order),
                             'ref_id' => $order->id,
                             'qty_masuk' => 0,
                             'qty_keluar' => $jumlahBase,
@@ -238,14 +295,10 @@ class PermintaanBarangController extends Controller
                             'created_by' => Auth::id(),
                         ]);
                     } else {
-                        // Barang direct tidak punya sumber harga dari stock/nota.
-                        // Karena itu total harga wajib diinput manual ketika ACC.
                         $hargaTotal = $this->resolveDirectHargaTotal($request, $detail);
                         $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
                     }
 
-                    // Simpan snapshot harga pada detail order.
-                    // Walaupun harga disembunyikan di view gudang, data ini tetap dipakai laporan realisasi bahan.
                     $detail->update([
                         'konfirmasi' => true,
                         'jumlah_base' => $jumlahBase,
@@ -253,12 +306,9 @@ class PermintaanBarangController extends Controller
                         'harga_total_snapshot' => $hargaTotal,
                     ]);
 
-                    // Masukkan barang ke realisasi bahan pembangunan unit.
-                    // Jika barang yang sama pada QC yang sama sudah ada, jumlah dan harga diakumulasikan.
-                    $this->upsertPembangunanUnitBahan($order, $detail, $hargaTotal);
+                    $this->upsertBahan($order, $detail, $hargaTotal, $config);
                 }
 
-                // Jika semua detail berhasil diproses, order dinyatakan selesai.
                 $order->update([
                     'status_order' => 'selesai',
                     'tanggal_selesai' => now(),
@@ -271,7 +321,7 @@ class PermintaanBarangController extends Controller
         }
 
         return redirect()
-            ->route('gudang.permintaanBarang.history')
+            ->route('gudang.permintaanBarang.history', ['jenis_order' => $category])
             ->with('success', 'Permintaan barang berhasil di-ACC.');
     }
 
@@ -376,7 +426,7 @@ class PermintaanBarangController extends Controller
     }
 
     // function untuk memastikan detail barang sesuai dengan jenis order
-    private function assertDetailMatchesOrderType(PembangunanUnitBarangOrder $order, $detail): void
+    private function assertDetailMatchesOrderType($order, $detail): void
     {
         $barang = $detail->barang;
 
@@ -392,14 +442,24 @@ class PermintaanBarangController extends Controller
         }
     }
 
-    private function upsertPembangunanUnitBahan(PembangunanUnitBarangOrder $order, $detail, float $hargaTotal): void
+    private function upsertBahan($order, $detail, float $hargaTotal, $config): void
     {
-        // Cari realisasi bahan untuk proyek, QC, dan barang yang sama.
-        // Kalau sudah ada, order berikutnya cukup menambah jumlah_pakai dan harga_total_snapshot.
-        $bahan = PembangunanUnitBahan::where('pembangunan_unit_id', $order->pembangunan_unit_id)
-            ->where('pembangunan_unit_qc_id', $order->pembangunan_unit_qc_id)
-            ->where('barang_id', $detail->barang_id)
-            ->first();
+        $parentIdField = $config['parent_id_field'];
+        $qcIdField = $config['qc_id_field'];
+        $bahanModel = $config['bahanModel'];
+
+        $parentId = $order->$parentIdField;
+        $qcId = $qcIdField ? $order->$qcIdField : null;
+
+        // Cari realisasi bahan untuk proyek, QC (if any), dan barang yang sama.
+        $query = $bahanModel::where($parentIdField, $parentId)
+            ->where('barang_id', $detail->barang_id);
+
+        if ($qcIdField) {
+            $query->where($qcIdField, $qcId);
+        }
+
+        $bahan = $query->first();
 
         // Akumulasi ke row realisasi bahan yang sudah ada.
         if ($bahan) {
@@ -411,15 +471,20 @@ class PermintaanBarangController extends Controller
             return;
         }
 
-        // Buat row realisasi bahan baru bila barang ini belum pernah masuk pada QC tersebut.
-        PembangunanUnitBahan::create([
-            'pembangunan_unit_id' => $order->pembangunan_unit_id,
-            'pembangunan_unit_qc_id' => $order->pembangunan_unit_qc_id,
+        // Buat row realisasi bahan baru
+        $data = [
+            $parentIdField => $parentId,
             'barang_id' => $detail->barang_id,
             'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
             'satuan' => $detail->satuan ?? $detail->barang?->baseUnit?->nama ?? '-',
             'jumlah_pakai' => (float) $detail->jumlah_input,
             'harga_total_snapshot' => $hargaTotal,
-        ]);
+        ];
+
+        if ($qcIdField) {
+            $data[$qcIdField] = $qcId;
+        }
+
+        $bahanModel::create($data);
     }
 }

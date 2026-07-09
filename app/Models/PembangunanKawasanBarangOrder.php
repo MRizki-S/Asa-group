@@ -11,6 +11,11 @@ class PembangunanKawasanBarangOrder extends Model
 
     protected $table = 'pembangunan_kawasan_barang_order';
     protected $guarded = [];
+    
+    protected $casts = [
+        'tanggal_diajukan' => 'datetime',
+        'tanggal_selesai' => 'datetime',
+    ];
 
     public function kawasan()
     {

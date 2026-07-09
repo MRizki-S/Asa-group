@@ -1,11 +1,47 @@
 @extends('layouts.app')
 
-@section('pageActive', 'PermintaanBarang')
+@php
+    $pageActive = [
+        'pembangunan_unit' => 'PermintaanBarangUnit',
+        'pembangunan_kawasan' => 'PermintaanBarangKawasan',
+        'pembangunan_proyek_mangoon' => 'PermintaanBarangProyek',
+    ][$category] ?? 'PermintaanBarangUnit';
+@endphp
+
+@section('pageActive', $pageActive)
 
 @section('content')
 @php
-    $pembangunan = $order->pembangunanUnit;
-    $unit = $pembangunan?->unit;
+    $pembangunanItem = null;
+    $perumahaanLabel = '-';
+    $tahapLabel = '-';
+    $unitLabel = '-';
+    $qcLabel = '-';
+    $pengawasLabel = '-';
+
+    if ($category === 'pembangunan_unit') {
+        $pembangunanItem = $order->pembangunanUnit;
+        $perumahaanLabel = $pembangunanItem?->tahap?->perumahaan?->nama_perumahaan ?? '-';
+        $tahapLabel = $pembangunanItem?->tahap?->nama_tahap ?? '-';
+        $unitLabel = $pembangunanItem?->unit?->nama_unit ?? '-';
+        $qcLabel = $order->qc->nama_qc ?? '-';
+        $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
+    } elseif ($category === 'pembangunan_kawasan') {
+        $pembangunanItem = $order->kawasan;
+        $perumahaanLabel = $pembangunanItem?->perumahan?->nama_perumahaan ?? '-';
+        $tahapLabel = 'Kawasan';
+        $unitLabel = $pembangunanItem?->nama_pembangunan ?? '-';
+        $qcLabel = 'Kawasan / Umum';
+        $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
+    } elseif ($category === 'pembangunan_proyek_mangoon') {
+        $pembangunanItem = $order->proyek;
+        $perumahaanLabel = 'Proyek Luar';
+        $tahapLabel = 'Proyek';
+        $unitLabel = $pembangunanItem?->nama ?? '-';
+        $qcLabel = 'Proyek / Umum';
+        $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
+    }
+
     $statusMap = [
         'diproses' => 'bg-blue-50 border-blue-300 text-blue-800 dark:bg-blue-900/30 dark:border-blue-600 dark:text-blue-300',
         'selesai' => 'bg-green-50 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-600 dark:text-green-300',
@@ -29,6 +65,10 @@
 
         return rtrim(rtrim(number_format($number, 3, ',', '.'), '0'), ',');
     };
+
+    $accRoute = $category === 'pembangunan_unit'
+        ? route('gudang.permintaanBarang.pembangunanUnit.acc', ['id' => $order->id])
+        : route('gudang.permintaanBarang.acc', ['id' => $order->id, 'jenis_order' => $category]);
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
@@ -79,44 +119,44 @@
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perumahan</label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-' }}
+                        {{ $perumahaanLabel }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tahap</label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $pembangunan?->tahap?->nama_tahap ?? '-' }}
+                        {{ $tahapLabel }}
                     </div>
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit / Lokasi</label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $unit->nama_unit ?? '-' }}
+                        {{ $unitLabel }}
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">QC / Termin</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Keterangan / QC</label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $order->qc->nama_qc ?? '-' }}
+                        {{ $qcLabel }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas</label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $pembangunan?->pengawas?->nama_lengkap ?? $pembangunan?->pengawas?->name ?? '-' }}
+                        {{ $pengawasLabel }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Diajukan Oleh</label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $order->user->nama_lengkap ?? $order->user->name ?? '-' }}
+                        {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->pembuat->nama_lengkap ?? '-' }}
                     </div>
                 </div>
             </div>
@@ -219,7 +259,7 @@
     </div>
 
     <div class="flex flex-wrap justify-between gap-3 items-center bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <a href="{{ route('gudang.permintaanBarang.index') }}"
+        <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
             class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -228,7 +268,7 @@
         </a>
 
         @if ($order->status_order === 'diproses')
-            <form id="acc-form" x-ref="accForm" method="POST" action="{{ route('gudang.permintaanBarang.acc', $order->id) }}"
+            <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
                 @submit="accSubmitting = true">
                 @csrf
                 @method('PATCH')
@@ -295,11 +335,11 @@
                     </div>
 
                     <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Unit</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Unit / Lokasi</p>
                         <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ $pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-' }} /
-                            {{ $pembangunan?->tahap?->nama_tahap ?? '-' }} /
-                            {{ $unit->nama_unit ?? '-' }}
+                            {{ $perumahaanLabel }} /
+                            {{ $tahapLabel }} /
+                            {{ $unitLabel }}
                         </p>
                     </div>
                 </div>

@@ -34,7 +34,7 @@ class PembangunanUnitOrderBarangController extends Controller
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $groupId = env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT');
+        $groupId = env('FONNTE_ID_ORDER_BARANG_ABM');
 
         if (!$groupId) return;
 

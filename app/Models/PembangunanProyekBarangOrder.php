@@ -11,6 +11,11 @@ class PembangunanProyekBarangOrder extends Model
 
     protected $table = 'pembangunan_proyek_barang_order';
     protected $guarded = [];
+    
+    protected $casts = [
+        'tanggal_diajukan' => 'datetime',
+        'tanggal_selesai' => 'datetime',
+    ];
 
     public function proyek()
     {

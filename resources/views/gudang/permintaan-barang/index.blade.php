@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
-@section('pageActive', 'PermintaanBarang')
+@php
+    $pageActive = [
+        'pembangunan_unit' => 'PermintaanBarangUnit',
+        'pembangunan_kawasan' => 'PermintaanBarangKawasan',
+        'pembangunan_proyek_mangoon' => 'PermintaanBarangProyek',
+    ][$category] ?? 'PermintaanBarangUnit';
+@endphp
+
+@section('pageActive', $pageActive)
 
 @section('content')
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
@@ -18,12 +26,12 @@
                     </h3>
 
                     @if ($isHistory)
-                        <a href="{{ route('gudang.permintaanBarang.index') }}"
+                        <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
                             class="inline-flex w-fit items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                             Kembali ke Permintaan
                         </a>
                     @else
-                        <a href="{{ route('gudang.permintaanBarang.history') }}"
+                        <a href="{{ route('gudang.permintaanBarang.history', ['jenis_order' => $category]) }}"
                             class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
                             Riwayat Permintaan Barang
                         </a>
@@ -32,6 +40,8 @@
 
                 <form method="GET" action="{{ $isHistory ? route('gudang.permintaanBarang.history') : route('gudang.permintaanBarang.index') }}"
                     class="flex flex-wrap items-end gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                    
+                    <input type="hidden" name="category" value="{{ $category }}">
 
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Order</label>
@@ -64,7 +74,7 @@
                         Tampilkan
                     </button>
 
-                    <a href="{{ $isHistory ? route('gudang.permintaanBarang.history') : route('gudang.permintaanBarang.index') }}"
+                    <a href="{{ $isHistory ? route('gudang.permintaanBarang.history', ['jenis_order' => $category]) : route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
                         class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                         Reset
                     </a>
@@ -76,8 +86,8 @@
                     <tr>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No Request</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal</th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit</th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">QC</th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Lokasi / Proyek</th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Keterangan</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Jenis</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Item</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Status</th>
@@ -87,8 +97,26 @@
                 <tbody>
                     @forelse ($orders as $order)
                         @php
-                            $pembangunan = $order->pembangunanUnit;
-                            $unit = $pembangunan?->unit;
+                            $locationLabel = '-';
+                            $subLocationLabel = '-';
+                            $qcLabel = '-';
+
+                            if ($category === 'pembangunan_unit') {
+                                $pembangunan = $order->pembangunanUnit;
+                                $unit = $pembangunan?->unit;
+                                $locationLabel = $unit->nama_unit ?? '-';
+                                $subLocationLabel = ($pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-') . ($pembangunan?->tahap?->nama_tahap ? ' / ' . $pembangunan->tahap->nama_tahap : '');
+                                $qcLabel = $order->qc->nama_qc ?? '-';
+                            } elseif ($category === 'pembangunan_kawasan') {
+                                $locationLabel = $order->kawasan?->nama_pembangunan ?? 'Kawasan';
+                                $subLocationLabel = $order->kawasan?->perumahan?->nama_perumahaan ?? '-';
+                                $qcLabel = 'Kawasan / Umum';
+                            } elseif ($category === 'pembangunan_proyek_mangoon') {
+                                $locationLabel = $order->proyek?->nama ?? 'Proyek';
+                                $subLocationLabel = 'Proyek Luar';
+                                $qcLabel = 'Proyek / Umum';
+                            }
+
                             $statusMap = [
                                 'diproses' => 'bg-blue-100 text-blue-700',
                                 'selesai' => 'bg-green-100 text-green-700',
@@ -112,16 +140,11 @@
                                 {{ $order->tanggal_diajukan?->format('d-M-Y H:i') ?? '-' }}
                             </td>
                             <td class="font-medium text-gray-900 dark:text-white">
-                                <div>{{ $unit->nama_unit ?? '-' }}</div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-' }}
-                                    @if ($pembangunan?->tahap?->nama_tahap)
-                                        / {{ $pembangunan->tahap->nama_tahap }}
-                                    @endif
-                                </div>
+                                <div>{{ $locationLabel }}</div>
+                                <div class="text-xs text-gray-500">{{ $subLocationLabel }}</div>
                             </td>
                             <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ $order->qc->nama_qc ?? '-' }}
+                                {{ $qcLabel }}
                             </td>
                             <td class="text-center">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $order->jenis_order === 'stock' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700' }}">
@@ -137,7 +160,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                <a href="{{ route('gudang.permintaanBarang.show', $order->id) }}"
+                                <a href="{{ route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => $category]) }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 active:scale-95">
                                     Detail
                                 </a>

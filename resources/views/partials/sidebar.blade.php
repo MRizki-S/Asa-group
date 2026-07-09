@@ -1627,49 +1627,61 @@
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
+                                <!-- Sub-Menu Permintaan -->
+                                <li class="text-[10px] font-semibold text-gray-400 uppercase mt-4 mb-1">
+                                    Permintaan (Order)
+                                </li>
                                 <li>
-                                    <a href="{{ route('gudang.permintaanBarang.index') }}"
-                                        class="menu-dropdown-item group flex items-center"
-                                        :class="page === 'PermintaanBarang' ? 'menu-dropdown-item-active' :
-                                            'menu-dropdown-item-inactive'">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            :class="(selected === 'MaterialProyekGroup') ||
-                                            (page === 'PermintaanBarang' ||
-                                                page === 'proFormLayout') ?
-                                            'menu-item-icon-active' :
-                                            'menu-item-icon-inactive'"
-                                            width="24" height="24" viewBox="0 0 32 32">
-                                            <title>delivery-parcel</title>
-                                            <path fill="currentColor"
-                                                d="m29.482 8.624l-10-5.5a1 1 0 0 0-.964 0l-10 5.5a1 1 0 0 0 0 1.752L18 15.591V26.31l-3.036-1.67L14 26.391l4.518 2.485a1 1 0 0 0 .964 0l10-5.5A1 1 0 0 0 30 22.5v-13a1 1 0 0 0-.518-.876M19 5.142L26.925 9.5L19 13.858L11.075 9.5Zm9 16.767l-8 4.4V15.59l8-4.4Z" />
-                                            <path fill="currentColor" d="M10 16H2v-2h8zm2 8H4v-2h8zm2-4H6v-2h8z" />
-                                        </svg>
-                                        Permintaan Barang
+                                    <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_unit']) }}"
+                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        :class="page === 'PermintaanBarangUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
+                                        Pemb. Unit
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_kawasan']) }}"
+                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        :class="page === 'PermintaanBarangKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
+                                        Pemb. Kawasan
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_proyek_mangoon']) }}"
+                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        :class="page === 'PermintaanBarangProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
+                                        Proyek Mangoon
                                     </a>
                                 </li>
 
-                                <!-- Daftar Nota Masuk -->
+                                <!-- Sub-Menu Retur -->
+                                <li class="text-[10px] font-semibold text-gray-400 uppercase mt-4 mb-1">
+                                    Retur Barang
+                                </li>
                                 <li>
-                                    <a href="{{ route('gudang.daftarNotaMasuk.index') }}"
-                                        class="menu-dropdown-item group flex items-center"
-                                        :class="page === 'BarangReturnGudang' ? 'menu-dropdown-item-active' :
-                                            'menu-dropdown-item-inactive'">
-                                        <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                            <title>delivery-return-01</title>
-                                            <g fill="none" stroke="currentColor" stroke-linecap="round"
-                                                stroke-linejoin="round" stroke-width="1.5">
-                                                <path
-                                                    d="M2.5 7.5v6c0 3.771 0 5.657 1.17 6.828C4.843 21.5 6.729 21.5 10.5 21.5H14m7.5-7.5V7.5" />
-                                                <path
-                                                    d="M3.868 5.315L2.5 7.5h19l-1.252-2.087c-.854-1.423-1.28-2.134-1.968-2.524c-.688-.389-1.517-.389-3.177-.389h-6.15c-1.624 0-2.436 0-3.114.375c-.678.376-1.109 1.064-1.97 2.44" />
-                                                <path d="M12 7.5v-5" />
-                                                <path d="M16 14.5s-2.5 1.841-2.5 2.5s2.5 2.5 2.5 2.5" />
-                                                <path d="M14 17h5.25a2.25 2.25 0 1 1 0 4.5h-.75" />
-                                                <path d="M10 10.5h4" />
-                                            </g>
-                                        </svg>
-                                        Barang Return
+                                    <a href="{{ route('under-development') }}"
+                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        :class="page === 'BarangReturnUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
+                                        Retur Unit
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('under-development') }}"
+                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        :class="page === 'BarangReturnKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
+                                        Retur Kawasan
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('under-development') }}"
+                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        :class="page === 'BarangReturnProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
+                                        Retur Proyek Mangoon
                                     </a>
                                 </li>
                             </ul>
