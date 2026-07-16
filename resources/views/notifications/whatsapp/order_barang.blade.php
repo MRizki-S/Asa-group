@@ -2,6 +2,8 @@
 
 Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
 
+@if(!empty($order->nomor_order))Nomor Order: {{ $order->nomor_order }}
+@endif
 @if(isset($namaPerumahan) && $namaPerumahan !== '-')Perumahan: {{ $namaPerumahan }}
 @endif
 @if(isset($namaArea)){{ $tipe ?? 'Area' }}: {{ $namaArea }}

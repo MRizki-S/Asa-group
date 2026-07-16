@@ -87,9 +87,9 @@
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No Request</label>
-                    <div class="w-full bg-gray-100 border border-gray-300 text-gray-700 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-gray-200">
-                        REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No Order</label>
+                    <div class="w-full bg-gray-100 border border-gray-300 text-gray-700 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-gray-200 font-semibold">
+                        {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                     </div>
                 </div>
 
@@ -186,7 +186,11 @@
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Jumlah</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Jumlah Base</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Konfirmasi</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Retur</th>
+                            @if ($order->jenis_order !== 'direct')
+                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                    Stock Saat Ini {{ $ubsCode ? '(' . $ubsCode . ')' : '' }}
+                                </th>
+                            @endif
                             <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">Harga Total</th>
                         </tr>
                     </thead>
@@ -216,30 +220,41 @@
                                     {{ $formatQty($detail->jumlah_input) }} {{ $detail->satuan }}
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-center text-sm text-gray-800 dark:text-white">
-                                    {{ $formatQty($detail->jumlah_base) }}
+                                    {{ $formatQty($detail->jumlah_base) }} {{ $detail->barang?->baseUnit?->nama ?? '' }}
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-center">
                                     <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $detail->konfirmasi ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' }}">
                                         {{ $detail->konfirmasi ? 'Ya' : 'Belum' }}
                                     </span>
                                 </td>
-                                <td class="border border-gray-300 px-3 py-2 text-center text-sm text-gray-800 dark:text-white">
-                                    @if ((float) $detail->jumlah_return > 0)
-                                        <div class="font-bold text-orange-700">{{ $formatQty($detail->jumlah_return) }} {{ $detail->satuan }}</div>
-                                        @if ($detail->keterangan_return)
-                                            <div class="text-xs text-gray-500">{{ $detail->keterangan_return }}</div>
-                                        @endif
-                                    @else
-                                        -
-                                    @endif
-                                </td>
+                                @if ($order->jenis_order !== 'direct')
+                                    @php
+                                        $baseStock = $stocks[$detail->barang_id] ?? 0;
+                                        $conv = $conversions[$detail->id] ?? 1.0;
+                                        $stockInDefault = $conv > 0 ? ($baseStock / $conv) : $baseStock;
+                                        $isStockInsufficient = $detail->jumlah_base > $baseStock && !$detail->konfirmasi;
+                                    @endphp
+                                    <td
+                                        class="border border-gray-300 px-3 py-2 text-center text-sm
+                                        {{ $isStockInsufficient
+                                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-semibold'
+                                            : 'text-gray-800 dark:text-white'
+                                        }}">
+                                        {{ $formatQty($stockInDefault) }} {{ $detail->satuan }}
+                                    </td>
+                                @endif
                                 <td class="border border-gray-300 px-3 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
                                     @if ($order->jenis_order === 'direct' && $order->status_order === 'diproses' && ! $detail->konfirmasi)
-                                        <input type="number" form="acc-form"
-                                            name="harga_total[{{ $detail->id }}]" min="0" step="0.01"
-                                            value="{{ old('harga_total.' . $detail->id, $detail->harga_total_snapshot) }}"
-                                            placeholder="0" required
-                                            class="w-36 rounded-lg border border-gray-300 bg-white px-3 py-2 text-right text-sm font-semibold text-gray-900 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                        <div class="inline-block" x-data="rupiahInput('{{ (int) old('harga_total.' . $detail->id, $detail->harga_total_snapshot ?? '') ? (int) old('harga_total.' . $detail->id, $detail->harga_total_snapshot) : '' }}')">
+                                            <input type="text"
+                                                x-model="display"
+                                                @input="onInput($event)"
+                                                placeholder="Masukan nominal"
+                                                class="w-36 rounded-lg border border-gray-300 bg-white px-3 py-2 text-right text-sm font-semibold text-gray-900 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                                            <input type="hidden" form="acc-form"
+                                                name="harga_total[{{ $detail->id }}]"
+                                                :value="value">
+                                        </div>
                                     @else
                                         {{ ! is_null($detail->harga_total_snapshot) ? 'Rp ' . number_format((float) $detail->harga_total_snapshot, 0, ',', '.') : '-' }}
                                     @endif
@@ -247,7 +262,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="border border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
+                                <td colspan="{{ $order->jenis_order === 'direct' ? 5 : 6 }}" class="border border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
                                     Belum ada detail barang.
                                 </td>
                             </tr>
@@ -291,8 +306,8 @@
                             <h3 class="text-base font-bold text-gray-900 dark:text-white">
                                 Konfirmasi ACC Permintaan
                             </h3>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                             </p>
                         </div>
                         <button type="button" @click="openAccModal = false"

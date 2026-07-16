@@ -55,6 +55,11 @@ class PembangunanUnitQc extends Model
         return $this->hasMany(PembangunanUnitBahan::class, 'pembangunan_unit_qc_id');
     }
 
+    public function returns()
+    {
+        return $this->hasMany(PembangunanUnitBarangReturn::class, 'pembangunan_unit_qc_id');
+    }
+
     public function getPersentaseAttribute()
     {
         $total = $this->pembangunanUnitQcTask->count();

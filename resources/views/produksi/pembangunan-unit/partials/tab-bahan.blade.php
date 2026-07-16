@@ -6,10 +6,14 @@
             ->where('pembangunan_unit_qc_id', $qc->id)
             ->latest()
             ->get();
+
+        $hasSelesai = $orders->where('status_order', 'selesai')->count() > 0;
+
+        $qcNama = 'Ke - ' . $qc->qc_urutan_ke . ' (' . ($qc->nama_qc ?? $qc->masterQc->nama_qc ?? 'QC') . ')';
     @endphp
 
     {{-- Header --}}
-    <div class="flex justify-between items-center px-1">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1">
         <div class="flex items-center gap-3">
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Riwayat Order Bahan</h4>
             <span class="bg-blue-100 text-blue-600 text-[9px] font-bold px-2 py-0.5 rounded-full">
@@ -17,7 +21,7 @@
             </span>
         </div>
 
-        <div class="flex flex-row gap-2 items-center">
+        <div class="flex flex-wrap gap-2 sm:items-center">
             <a href="{{ route('produksi.pembangunanUnit.laporanBahan', ['id' => $data->id, 'qcId' => $qc->master_qc_urutan_id]) }}"
                 class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all uppercase flex items-center gap-2">
                 <i class="fa-solid fa-chart-line text-blue-500"></i>
@@ -34,20 +38,25 @@
                     Order Barang
                 </button>
             @endif
+            @if($hasSelesai)
+                <button @click="prepareReturn({{ $qc->id }}, '{{ $qcNama }}')"
+                    class="px-4 py-2 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 shadow-sm transition-all uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left text-xs"></i>
+                    Return Barang
+                </button>
+            @endif
         </div>
     </div>
 
     {{-- Tabel Order Bahan --}}
     @if ($orders->count() > 0)
         <div
-            class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+            class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                         <th class="w-10 px-4 py-3"></th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">ID
-                            Request
-                        </th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">No Order</th>
                         <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">
                             Item</th>
                         <th
@@ -75,7 +84,8 @@
                                 </p>
                                 <div class="flex items-center gap-2">
                                     <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
-                                        REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</p>
+                                        {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                                    </p>
                                     {{-- Badge jika ada retur di salah satu item --}}
                                     @if ($order->details->where('jumlah_return', '>', 0)->count() > 0)
                                         <span
@@ -125,7 +135,7 @@
                                                 Detail Item Barang</h5>
                                             <div
                                                 class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-                                                <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
+                                                <div class="max-h-[350px] overflow-auto custom-scrollbar">
                                                     <table class="w-full text-left border-collapse">
                                                         <thead
                                                             class="bg-gray-50/80 dark:bg-gray-700/50 sticky top-0 z-10 backdrop-blur-sm">
@@ -235,16 +245,6 @@
                                                 </div>
                                             </div>
 
-                                            @if ($order->status_order == 'selesai' || $order->status_order == 'return_pending')
-                                                <div class="pt-2">
-                                                    <button type="button"
-                                                        @click="prepareReturn({{ $order->id }}, {{ $order->details->map(fn($d) => ['id' => $d->id, 'nama' => $d->nama_barang, 'jumlah' => $d->jumlah_input, 'satuan' => $d->satuan, 'retur' => (float) $d->jumlah_return, 'keterangan' => $d->keterangan_return])->toJson() }})"
-                                                        class="w-full py-2.5 text-[10px] font-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl uppercase border border-gray-200 dark:border-gray-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
-                                                        <i class="fa-solid fa-rotate-left"></i>
-                                                        {{ $order->status_order == 'return_pending' ? 'Perbarui Data Retur' : 'Ajukan Pengembalian' }}
-                                                    </button>
-                                                </div>
-                                            @endif
 
                                             @if ($order->status_order == 'diproses')
                                                  <div class="pt-2">

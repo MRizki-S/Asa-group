@@ -241,13 +241,20 @@
                     // Divide by conversion rate
                     $stockDisplay = $stockVal / $konversiRate;
                     $minStockDisplay = $minStockVal / $konversiRate;
+
+                    // Cek apakah stock di bawah minimal (hanya relevan saat filter gudang tertentu)
+                    $isBelowMin = $selectedUbs !== 'all' && $minStockVal > 0 && $stockVal < $minStockVal;
+                    $rowBg = $isBelowMin
+                        ? 'bg-red-50 border-red-200 hover:bg-red-100'
+                        : 'bg-blue-50 border-blue-200 hover:bg-blue-100';
+                    $textColor = $isBelowMin ? 'text-red-700' : 'text-blue-800';
                     @endphp
 
                     <tbody x-data="{ open: false }" class="border-b">
                         {{-- ROW UTAMA --}}
                         <tr @click="open = !open"
-                            class="bg-blue-50 font-bold text-gray-900 border-t-2 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
-                            <td class="border px-3 py-2 text-center text-blue-800">
+                            class="font-bold text-gray-900 border-t-2 cursor-pointer transition-colors {{ $rowBg }}">
+                            <td class="border px-3 py-2 text-center {{ $textColor }}">
                                 <div class="flex items-center gap-2">
                                     @if($selectedUbs == 'all')
                                     <svg class="w-4 h-4 transition-transform duration-200"
@@ -258,19 +265,26 @@
                                     </svg>
                                     @endif
                                     {{ $barang->kode_barang }}
+                                    @if($isBelowMin)
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-600 border border-red-300 px-1.5 py-0.5 rounded">
+                                            ⚠ Stok Rendah
+                                        </span>
+                                    @endif
                                 </div>
                             </td>
-                            <td class="border px-3 py-2 text-blue-800">
-                                {{ $barang->nama_barang }}
+                            <td class="border px-3 py-2 {{ $textColor }}">
+                                <div class="flex items-center gap-2">
+                                    {{ $barang->nama_barang }}
+                                </div>
                             </td>
                             <td class="border px-3 py-2 text-center text-gray-700">
                                 {{ $satuanNama }}
                             </td>
-                            <td class="border px-3 py-2 text-center font-bold">
+                            <td class="border px-3 py-2 text-center font-bold {{ $isBelowMin ? 'text-red-600' : '' }}">
                                 {{ formatStock($stockDisplay) }}
                             </td>
                             @if($selectedUbs != 'all')
-                            <td class="border px-3 py-2 text-center italic text-gray-500">
+                            <td class="border px-3 py-2 text-center italic {{ $isBelowMin ? 'text-red-500 font-semibold' : 'text-gray-500' }}">
                                 {{ formatStock($minStockDisplay) }}
                             </td>
                             @endif

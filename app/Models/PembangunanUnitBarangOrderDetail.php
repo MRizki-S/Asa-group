@@ -22,6 +22,7 @@ class PembangunanUnitBarangOrderDetail extends Model
         'rap_bahan_id',
         'alasan_permintaan_tidak_sesuai_rap',
         'jumlah_return',
+        'jumlah_return_base',
         'keterangan_return',
         'harga_satuan_snapshot',
         'harga_total_snapshot'
@@ -40,5 +41,10 @@ class PembangunanUnitBarangOrderDetail extends Model
     public function rapBahan(): BelongsTo
     {
         return $this->belongsTo(PembangunanUnitRapBahan::class, 'rap_bahan_id');
+    }
+
+    public function fifoUsages()
+    {
+        return $this->hasMany(PembangunanUnitBarangFifoUsage::class, 'order_detail_id');
     }
 }

@@ -2,6 +2,8 @@
 
 Permintaan bahan material berikut telah dibatalkan:
 
+@if(!empty($order->nomor_order))Nomor Order: {{ $order->nomor_order }}
+@endif
 Perumahan: {{ $namaPerumahan }}
 Tahap: {{ $namaTahap }}
 Unit: {{ $namaUnit }}

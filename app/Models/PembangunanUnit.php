@@ -73,6 +73,11 @@ class PembangunanUnit extends Model
         return $this->hasMany(PembangunanUnitBahan::class, 'pembangunan_unit_id');
     }
 
+    public function returns()
+    {
+        return $this->hasMany(PembangunanUnitBarangReturn::class, 'pembangunan_unit_id');
+    }
+
     public function getTotalProgresAttribute()
     {
         $qcs = $this->pembangunanUnitQc;

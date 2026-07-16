@@ -1,6 +1,6 @@
 <div x-show="tab === 'upah'" class="space-y-4">
     {{-- Header --}}
-    <div class="flex justify-between items-center px-1">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1">
         <div class="flex items-center gap-3">
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Daftar Pengajuan Upah</h4>
             <span class="bg-blue-100 text-blue-600 text-[9px] font-bold px-2 py-0.5 rounded-full">
@@ -8,7 +8,7 @@
             </span>
         </div>
 
-        <div class="flex flex-row gap-2 items-center">
+        <div class="flex flex-wrap gap-2 sm:items-center">
             <a href="{{ route('produksi.pembangunanUnit.laporanUpah', ['id' => $data->id, 'qcId' => $qc->master_qc_urutan_id]) }}"
                 class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all uppercase flex items-center gap-2">
                 <i class="fa-solid fa-chart-line text-blue-500"></i>
@@ -28,7 +28,7 @@
     {{-- Tabel Pengajuan --}}
     @if ($qc->pembangunanUnitUpahPengajuan->count() > 0)
         <div
-            class="overflow-hidden border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+            class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>

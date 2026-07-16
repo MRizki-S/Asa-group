@@ -66,6 +66,7 @@ use App\Http\Controllers\Produksi\KonfirmasiPembangunanController;
 use App\Http\Controllers\Produksi\MasterQcRapController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitOrderBarangController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitBarangReturnController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitPengajuanUpahController;
 use App\Http\Controllers\Produksi\PenamaanUpahController;
 use App\Http\Controllers\Produksi\PermintaanDibangunController;
@@ -624,8 +625,11 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
             ->name('produksi.pembangunanUnit.orderStore');
         Route::delete('pembangunan-unit/order-barang/{id}', [PembangunanUnitOrderBarangController::class, 'destroy'])
             ->name('produksi.pembangunanUnit.orderDestroy');
-        Route::post('order/{order}/return', [PembangunanUnitOrderBarangController::class, 'storeReturn'])
-            ->name('produksi.order.storeReturn');
+        // Return barang per-QC (baru)
+        Route::get('pembangunan-unit/return-barang/{qcId}/summary', [PembangunanUnitBarangReturnController::class, 'summary'])
+            ->name('produksi.pembangunanUnit.returnSummary');
+        Route::post('pembangunan-unit/return-barang', [PembangunanUnitBarangReturnController::class, 'store'])
+            ->name('produksi.pembangunanUnit.returnStore');
 
         Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
             ->name('produksi.pembangunanUnit.upahStore');

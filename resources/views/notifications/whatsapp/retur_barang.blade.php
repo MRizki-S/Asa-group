@@ -16,11 +16,11 @@ Tanggal: {{ $tanggal }}
 *Daftar Barang yang Diretur:*
 @foreach($return->details as $idx => $item)
 @php
-$namaBarang = $item->nama_barang ?? ($item->barang->nama_barang ?? ($item->orderDetail->nama_barang ?? 'Barang'));
-$satuanItem = $item->satuan ?? ($item->orderDetail->satuan ?? '-');
+$namaBarang = $item->nama_barang ?? ($item->barang->nama_barang ?? 'Barang');
+$satuanItem = $item->satuan ?? '-';
 @endphp
-{{ $idx + 1 }}. {{ $namaBarang }} ({{ (float)$item->jumlah_return }} {{ $satuanItem }})
-@if(!empty($item->keterangan_return))
-   _Alasan: {{ $item->keterangan_return }}_
+{{ $idx + 1 }}. {{ $namaBarang }} ({{ (float)$item->jumlah_input }} {{ $satuanItem }})
+@if(!empty($item->keterangan))
+   _Alasan: {{ $item->keterangan }}_
 @endif
 @endforeach

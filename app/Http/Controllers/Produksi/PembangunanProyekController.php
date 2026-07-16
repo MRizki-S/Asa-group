@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Produksi;
 
 use App\Http\Controllers\Controller;
 use App\Models\MasterBarang;
+use App\Models\MasterUpah;
 use App\Models\PembangunanProyek;
 use App\Models\PembangunanProyekBarangOrder;
 use App\Models\PembangunanProyekBarangOrderDetail;
@@ -11,7 +12,7 @@ use App\Models\PembangunanProyekUpahPengajuan;
 use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\MasterUpah;
+use Illuminate\Support\Facades\DB;
 
 class PembangunanProyekController extends Controller
 {
@@ -165,43 +166,66 @@ class PembangunanProyekController extends Controller
             'barang.*.satuan_id' => 'required'
         ]);
 
-        $order = PembangunanProyekBarangOrder::create([
-            'pembangunan_proyek_id' => $request->pembangunan_proyek_id,
-            'jenis_order' => $request->jenis_order,
-            'catatan' => $request->catatan,
-            'tanggal_diajukan' => now(),
-            'status_order' => 'diproses',
-            'created_by' => Auth::id(),
-            'ubs_id' => \App\Models\Ubs::where('kode_ubs', 'MGN')->value('id') ?? 3
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $ubsId = \App\Models\Ubs::where('nama_ubs', 'Mangoon.id')->value('id');
+            $datePrefix = 'ORD-MGN-' . now()->format('Ymd') . '-';
+            $lastOrder = PembangunanProyekBarangOrder::where('nomor_order', 'like', $datePrefix . '%')
+                ->orderBy('nomor_order', 'desc')
+                ->lockForUpdate()
+                ->first();
 
-        foreach ($request->barang as $item) {
-            $barang = MasterBarang::find($item['id']);
-            $namaBarang = $barang ? $barang->nama_barang : 'Barang tidak ditemukan';
-            $konversi = \App\Models\BarangSatuanKonversi::where('barang_id', $item['id'])
-                        ->where('satuan_id', $item['satuan_id'])->first();
-            $jumlahBase = $konversi ? ($item['jumlah_input'] * $konversi->konversi_ke_base) : $item['jumlah_input'];
+            $nextSeq = 1;
+            if ($lastOrder) {
+                $lastSeq = (int) substr($lastOrder->nomor_order, strlen($datePrefix));
+                $nextSeq = $lastSeq + 1;
+            }
+            $nomorOrder = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
 
-            PembangunanProyekBarangOrderDetail::create([
-                'order_id' => $order->id,
-                'barang_id' => $item['id'],
-                'satuan_id' => $item['satuan_id'],
-                'jumlah_input' => $item['jumlah_input'],
-                'nama_barang' => $namaBarang,
-                'satuan' => \App\Models\MasterSatuan::find($item['satuan_id'])->nama ?? '',
-                'jumlah_base' => $jumlahBase,
-                'ubs_id' => $ubsId
+            $order = PembangunanProyekBarangOrder::create([
+                'nomor_order' => $nomorOrder,
+                'pembangunan_proyek_id' => $request->pembangunan_proyek_id,
+                'jenis_order' => $request->jenis_order,
+                'catatan' => $request->catatan,
+                'tanggal_diajukan' => now(),
+                'status_order' => 'diproses',
+                'created_by' => Auth::id(),
+                'ubs_id' => \App\Models\Ubs::where('kode_ubs', 'MGN')->value('id') ?? 3
             ]);
-        }
 
-        $project = PembangunanProyek::find($request->pembangunan_proyek_id);
-        if ($project) {
-            $this->sendGroupNotificationOrder($project, $order);
-        }
+            $ubsId = \App\Models\Ubs::where('nama_ubs', 'Mangoon.id')->value('id');
 
-        return redirect()->back()->with('success', 'Order barang berhasil diajukan');
+            foreach ($request->barang as $item) {
+                $barang = MasterBarang::find($item['id']);
+                $namaBarang = $barang ? $barang->nama_barang : 'Barang tidak ditemukan';
+                $konversi = \App\Models\BarangSatuanKonversi::where('barang_id', $item['id'])
+                            ->where('satuan_id', $item['satuan_id'])->first();
+                $jumlahBase = $konversi ? ($item['jumlah_input'] * $konversi->konversi_ke_base) : $item['jumlah_input'];
+
+                PembangunanProyekBarangOrderDetail::create([
+                    'order_id' => $order->id,
+                    'barang_id' => $item['id'],
+                    'satuan_id' => $item['satuan_id'],
+                    'jumlah_input' => $item['jumlah_input'],
+                    'nama_barang' => $namaBarang,
+                    'satuan' => \App\Models\MasterSatuan::find($item['satuan_id'])->nama ?? '',
+                    'jumlah_base' => $jumlahBase,
+                    'ubs_id' => $ubsId
+                ]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            $project = PembangunanProyek::find($request->pembangunan_proyek_id);
+            if ($project) {
+                $this->sendGroupNotificationOrder($project, $order);
+            }
+
+            return redirect()->back()->with('success', 'Order barang berhasil diajukan');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan order: ' . $e->getMessage());
+        }
     }
 
     public function returnStore(Request $request)

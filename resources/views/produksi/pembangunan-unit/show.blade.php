@@ -24,17 +24,176 @@
         cancelUpahActionUrl: '',
         showAdditional: false,
         openReturnModal: false,
+        returnLoading: false,
+        returnSubmitting: false,
+        returnQcId: null,
+        returnQcName: '',
+        returnPembangunanUnitId: '{{ $data->id }}',
+        returnSummary: [],
         returnItems: [],
-        returnOrderId: null,
+        returnTanggal: new Date().toISOString().slice(0, 10),
+        returnCatatan: '',
 
-        prepareReturn(orderId, items) {
-            this.returnOrderId = orderId;
-            this.returnItems = items.map(i => ({
-                ...i,
-                retur: i.retur ? parseFloat(i.retur) : 0,
-                keterangan: ''
-            }));
+        async prepareReturn(qcId, qcName) {
+            this.returnQcId = qcId;
+            this.returnQcName = qcName;
+            this.returnItems = [];
+            this.returnTanggal = new Date().toISOString().slice(0, 10);
+            this.returnCatatan = '';
+            this.returnSummary = [];
+            this.returnLoading = true;
             this.openReturnModal = true;
+            try {
+                const res = await axios.get(`/produksi/pembangunan-unit/return-barang/${qcId}/summary`);
+                this.returnSummary = res.data.items || [];
+                this.returnQcName = res.data.qc?.nama || qcName;
+            } catch (e) {
+                alert('Gagal memuat data barang QC.');
+                this.openReturnModal = false;
+            } finally {
+                this.returnLoading = false;
+            }
+        },
+
+        getAvailableReturnBarang(currentIndex) {
+            const usedIds = this.returnItems
+                .filter((_, i) => i !== currentIndex && _.barang_id)
+                .map(i => i.barang_id);
+            return this.returnSummary.filter(s => !usedIds.includes(s.barang_id));
+        },
+
+        getBarangSatuanOptions(barangId) {
+            if (!barangId) return [];
+            const barang = this.allBarang.find(b => b.id == barangId);
+            return barang ? barang.available_satuan : [];
+        },
+
+        onReturnBarangChange(index, barangId) {
+            const item = this.returnItems[index];
+            const summary = this.returnSummary.find(s => s.barang_id == barangId);
+            if (!summary) return;
+            // Set barang meta from summary
+            item.barang_id = parseInt(barangId);
+            item.nama_barang = summary.nama_barang;
+            item.total_diterima = summary.total_diterima;
+            item.sudah_return = summary.sudah_return;
+            item.sisa_return = summary.sisa_return;
+            item.sisa_return_base = summary.sisa_return_base;
+            // Default satuan from summary
+            item.satuan_id = summary.satuan_id;
+            item.satuan_display = summary.satuan;
+            item.satuan_selected_nama = summary.satuan;
+            item.faktor = 1; // will recalculate
+            item.max_jumlah_input = summary.sisa_return;
+            item.jumlah_input = 0;
+            // Try find faktor from allBarang
+            const barang = this.allBarang.find(b => b.id == barangId);
+            if (barang) {
+                const defSat = barang.available_satuan.find(s => s.id == summary.satuan_id);
+                if (defSat) {
+                    item.faktor = defSat.faktor;
+                }
+            }
+        },
+
+        onReturnSatuanChange(index) {
+            const item = this.returnItems[index];
+            const barang = this.allBarang.find(b => b.id == item.barang_id);
+            if (!barang) return;
+            const sat = barang.available_satuan.find(s => s.id == item.satuan_id);
+            if (!sat) return;
+            item.faktor = sat.faktor;
+            item.satuan_selected_nama = sat.nama;
+            // Recalculate max in new satuan
+            item.max_jumlah_input = item.sisa_return_base / sat.faktor;
+            item.jumlah_input = 0;
+        },
+
+        addReturnItem() {
+            this.returnItems.push({
+                barang_id: null,
+                nama_barang: '',
+                satuan_id: null,
+                satuan_display: '',
+                satuan_selected_nama: '',
+                faktor: 1,
+                jumlah_input: 0,
+                max_jumlah_input: 0,
+                total_diterima: 0,
+                sudah_return: 0,
+                sisa_return: 0,
+                sisa_return_base: 0,
+                keterangan: '',
+            });
+            const index = this.returnItems.length - 1;
+            this.initReturnSelect2(index);
+        },
+
+        removeReturnItem(index) {
+            this.returnItems.splice(index, 1);
+            // Destroy select2 is handled when DOM node is removed
+        },
+
+        initReturnSelect2(index) {
+            this.$nextTick(() => {
+                const el = $(`#return-barang-select-${index}`);
+                if(el.length === 0) return;
+                const modalContainer = el.closest('.fixed');
+
+                el.select2({
+                    placeholder: '-- Pilih Barang --',
+                    dropdownParent: modalContainer,
+                    width: '100%'
+                });
+
+                el.on('change', (e) => {
+                    // Update Alpine data manually because Select2 hides original select change event
+                    this.onReturnBarangChange(index, e.target.value);
+                });
+            });
+        },
+
+        async submitReturn() {
+            if (!this.returnTanggal) {
+                alert('Harap isi tanggal return.');
+                return;
+            }
+
+            const validItems = this.returnItems.filter(i => i.barang_id && i.jumlah_input > 0);
+            if (validItems.length === 0) {
+                alert('Tambahkan minimal satu barang dengan jumlah return yang valid.');
+                return;
+            }
+
+            const overLimit = validItems.some(i => i.jumlah_input > i.max_jumlah_input && i.max_jumlah_input > 0);
+            if (overLimit) {
+                alert('Salah satu item melebihi sisa yang dapat dikembalikan.');
+                return;
+            }
+
+            this.returnSubmitting = true;
+            try {
+                await axios.post('{{ route('produksi.pembangunanUnit.returnStore') }}', {
+                    pembangunan_unit_id: this.returnPembangunanUnitId,
+                    pembangunan_unit_qc_id: this.returnQcId,
+                    tanggal_return: this.returnTanggal,
+                    catatan: this.returnCatatan,
+                    items: validItems.map(i => ({
+                        barang_id: i.barang_id,
+                        nama_barang: i.nama_barang,
+                        satuan_id: i.satuan_id,
+                        satuan: i.satuan_selected_nama,
+                        jumlah_input: i.jumlah_input,
+                        keterangan: i.keterangan,
+                    })),
+                });
+                location.reload();
+            } catch (error) {
+                const msg = error.response?.data?.message || 'Terjadi kesalahan.';
+                alert('Gagal mengajukan return: ' + msg);
+            } finally {
+                this.returnSubmitting = false;
+            }
         },
 
         formatRupiah(val) {

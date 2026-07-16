@@ -84,7 +84,21 @@ class PembangunanUnitOrderBarangController extends Controller
                 throw new \Exception('QC tidak sesuai dengan pembangunan unit yang dipilih.');
             }
 
+            $datePrefix = 'ORD-UNT-' . now()->format('Ymd') . '-';
+            $lastOrder = PembangunanUnitBarangOrder::where('nomor_order', 'like', $datePrefix . '%')
+                ->orderBy('nomor_order', 'desc')
+                ->lockForUpdate()
+                ->first();
+
+            $nextSeq = 1;
+            if ($lastOrder) {
+                $lastSeq = (int) substr($lastOrder->nomor_order, strlen($datePrefix));
+                $nextSeq = $lastSeq + 1;
+            }
+            $nomorOrder = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+
             $order = PembangunanUnitBarangOrder::create([
+                'nomor_order' => $nomorOrder,
                 'pembangunan_unit_id' => $request->pembangunan_unit_id,
                 'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
                 'jenis_order' => $request->jenis_order,

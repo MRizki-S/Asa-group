@@ -84,7 +84,7 @@
             <table id="table-permintaanBarang">
                 <thead>
                     <tr>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No Request</th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No Order</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Lokasi / Proyek</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Keterangan</th>
@@ -121,20 +121,18 @@
                                 'diproses' => 'bg-blue-100 text-blue-700',
                                 'selesai' => 'bg-green-100 text-green-700',
                                 'ditolak' => 'bg-red-100 text-red-700',
-                                'pengembalian' => 'bg-orange-100 text-orange-700',
                             ];
                             $statusLabels = [
                                 'diproses' => 'Menunggu',
                                 'selesai' => 'Selesai',
                                 'ditolak' => 'Ditolak',
-                                'pengembalian' => 'Pengembalian',
                             ];
                             $statusClass = $statusMap[$order->status_order] ?? 'bg-gray-100 text-gray-700';
                             $statusLabel = $statusLabels[$order->status_order] ?? str_replace('_', ' ', $order->status_order);
                         @endphp
                         <tr>
-                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                REQ-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            <td class="font-medium text-gray-900 dark:text-white">
+                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                             </td>
                             <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {{ $order->tanggal_diajukan?->format('d-M-Y H:i') ?? '-' }}

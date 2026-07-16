@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Produksi\PembangunanUnit;
 
 use App\Http\Controllers\Controller;
+use App\Models\BarangSatuanKonversi;
+use App\Models\MasterBarang;
+use App\Models\MasterSatuan;
 use App\Models\PembangunanUnit;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\PembangunanUnitBarangOrderDetail;
 use App\Models\PembangunanUnitBarangReturn;
 use App\Models\PembangunanUnitBarangReturnDetail;
+use App\Models\PembangunanUnitQc;
 use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,110 +27,259 @@ class PembangunanUnitBarangReturnController extends Controller
         $this->notificationGroup = $notificationGroup;
     }
 
+    /**
+     * Return aggregated barang data (total ACC'd & already returned) per QC.
+     * Used by the front-end modal via AJAX / blade to build the return form.
+     */
+    public function summary(Request $request, int $qcId)
+    {
+        $qc = PembangunanUnitQc::findOrFail($qcId);
+
+        // Aggregate all confirmed order-details for this QC
+        $details = PembangunanUnitBarangOrderDetail::query()
+            ->join('pembangunan_unit_barang_order as o', 'o.id', '=', 'pembangunan_unit_barang_order_detail.order_id')
+            ->where('o.pembangunan_unit_qc_id', $qcId)
+            ->where('o.status_order', 'selesai')
+            ->where('pembangunan_unit_barang_order_detail.konfirmasi', true)
+            ->select([
+                'pembangunan_unit_barang_order_detail.barang_id',
+                'pembangunan_unit_barang_order_detail.nama_barang',
+                'pembangunan_unit_barang_order_detail.satuan_id',
+                'pembangunan_unit_barang_order_detail.satuan',
+                DB::raw('SUM(pembangunan_unit_barang_order_detail.jumlah_input) as total_diterima'),
+                DB::raw('SUM(pembangunan_unit_barang_order_detail.jumlah_base) as total_diterima_base'),
+            ])
+            ->groupBy(
+                'pembangunan_unit_barang_order_detail.barang_id',
+                'pembangunan_unit_barang_order_detail.nama_barang',
+                'pembangunan_unit_barang_order_detail.satuan_id',
+                'pembangunan_unit_barang_order_detail.satuan',
+            )
+            ->get();
+
+        // Sum up already-returned base quantities for each barang from this QC's returns
+        $returned = PembangunanUnitBarangReturnDetail::query()
+            ->join('pembangunan_unit_barang_return as r', 'r.id', '=', 'pembangunan_unit_barang_return_detail.return_id')
+            ->where('r.pembangunan_unit_qc_id', $qcId)
+            ->whereIn('r.status', ['diajukan', 'diproses', 'selesai'])  // exclude only tolak
+            ->select([
+                'pembangunan_unit_barang_return_detail.barang_id',
+                DB::raw('SUM(pembangunan_unit_barang_return_detail.jumlah_input) as total_returned'),
+                DB::raw('SUM(pembangunan_unit_barang_return_detail.jumlah_base) as total_returned_base'),
+            ])
+            ->groupBy('pembangunan_unit_barang_return_detail.barang_id')
+            ->pluck('total_returned', 'barang_id')
+            ->toArray();
+
+        $returnedBase = PembangunanUnitBarangReturnDetail::query()
+            ->join('pembangunan_unit_barang_return as r', 'r.id', '=', 'pembangunan_unit_barang_return_detail.return_id')
+            ->where('r.pembangunan_unit_qc_id', $qcId)
+            ->whereIn('r.status', ['diajukan', 'diproses', 'selesai'])
+            ->select([
+                'pembangunan_unit_barang_return_detail.barang_id',
+                DB::raw('SUM(pembangunan_unit_barang_return_detail.jumlah_base) as total_returned_base'),
+            ])
+            ->groupBy('pembangunan_unit_barang_return_detail.barang_id')
+            ->pluck('total_returned_base', 'barang_id')
+            ->toArray();
+
+        $items = $details->map(function ($d) use ($returned, $returnedBase) {
+            $totalDiterima    = (float) $d->total_diterima;
+            $totalDiterimaBase = (float) $d->total_diterima_base;
+            $sudahReturn      = (float) ($returned[$d->barang_id] ?? 0);
+            $sudahReturnBase  = (float) ($returnedBase[$d->barang_id] ?? 0);
+            $sisaBase         = max(0, $totalDiterimaBase - $sudahReturnBase);
+
+            return [
+                'barang_id'          => $d->barang_id,
+                'nama_barang'        => $d->nama_barang,
+                'satuan_id'          => $d->satuan_id,
+                'satuan'             => $d->satuan,
+                'total_diterima'     => $totalDiterima,
+                'total_diterima_base'=> $totalDiterimaBase,
+                'sudah_return'       => $sudahReturn,
+                'sudah_return_base'  => $sudahReturnBase,
+                'sisa_return_base'   => $sisaBase,
+                // sisa in display satuan (based on the default satuan faktor)
+                'sisa_return'        => $totalDiterima - $sudahReturn,
+            ];
+        })->filter(fn($i) => $i['sisa_return_base'] > 0.0001)->values();
+
+        return response()->json([
+            'qc'    => ['id' => $qc->id, 'nama' => 'Ke - ' . $qc->qc_urutan_ke . ' (' . ($qc->nama_qc ?? $qc->masterQc->nama_qc ?? 'QC') . ')'],
+            'items' => $items,
+        ]);
+    }
+
+    /**
+     * Store a new return request per-QC.
+     * Only saves header + details. No stock/FIFO changes here.
+     */
+    public function store(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'pembangunan_unit_id'     => 'required|exists:pembangunan_unit,id',
+            'pembangunan_unit_qc_id'  => 'required|exists:pembangunan_unit_qc,id',
+            'tanggal_return'          => 'required|date',
+            'catatan'                 => 'nullable|string',
+            'items'                   => 'required|array|min:1',
+            'items.*.barang_id'       => 'required|exists:master_barang,id',
+            'items.*.satuan_id'       => 'required|exists:master_satuan,id',
+            'items.*.jumlah_input'    => 'required|numeric|min:0.001',
+        ]);
+
+        if ($validator->fails()) {
+            \Illuminate\Support\Facades\Log::error('Return Store Validation Failed: ', $validator->errors()->toArray());
+            $firstError = collect($validator->errors()->all())->first();
+            return response()->json([
+                'message' => 'Validasi Data Gagal: ' . $firstError
+            ], 422);
+        }
+
+        $qcId = $request->pembangunan_unit_qc_id;
+
+        // Build per-barang sisa map (base unit)
+        $details = PembangunanUnitBarangOrderDetail::query()
+            ->join('pembangunan_unit_barang_order as o', 'o.id', '=', 'pembangunan_unit_barang_order_detail.order_id')
+            ->where('o.pembangunan_unit_qc_id', $qcId)
+            ->where('o.status_order', 'selesai')
+            ->where('pembangunan_unit_barang_order_detail.konfirmasi', true)
+            ->select([
+                'pembangunan_unit_barang_order_detail.barang_id',
+                DB::raw('SUM(pembangunan_unit_barang_order_detail.jumlah_base) as total_base'),
+            ])
+            ->groupBy('pembangunan_unit_barang_order_detail.barang_id')
+            ->pluck('total_base', 'barang_id')
+            ->toArray();
+
+        $returnedBase = PembangunanUnitBarangReturnDetail::query()
+            ->join('pembangunan_unit_barang_return as r', 'r.id', '=', 'pembangunan_unit_barang_return_detail.return_id')
+            ->where('r.pembangunan_unit_qc_id', $qcId)
+            ->whereIn('r.status', ['diproses', 'selesai'])
+            ->select([
+                'pembangunan_unit_barang_return_detail.barang_id',
+                DB::raw('SUM(pembangunan_unit_barang_return_detail.jumlah_base) as total_returned_base'),
+            ])
+            ->groupBy('pembangunan_unit_barang_return_detail.barang_id')
+            ->pluck('total_returned_base', 'barang_id')
+            ->toArray();
+
+        try {
+            return DB::transaction(function () use ($request, $qcId, $details, $returnedBase) {
+                // Generate Nomor Return
+                $datePrefix = 'RTN-UNT-' . now()->format('Ymd') . '-';
+                $lastReturn = PembangunanUnitBarangReturn::where('nomor_return', 'like', $datePrefix . '%')
+                    ->orderBy('nomor_return', 'desc')
+                    ->lockForUpdate()
+                    ->first();
+
+                $nextSeq = 1;
+                if ($lastReturn) {
+                    $lastSeq = (int) substr($lastReturn->nomor_return, strlen($datePrefix));
+                    $nextSeq = $lastSeq + 1;
+                }
+                $nomorReturn = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+
+                // Create Return Header
+                $return = PembangunanUnitBarangReturn::create([
+                    'nomor_return'           => $nomorReturn,
+                    'pembangunan_unit_id'    => $request->pembangunan_unit_id,
+                    'pembangunan_unit_qc_id' => $qcId,
+                    'tanggal_return'         => $request->tanggal_return,
+                    'catatan'                => $request->catatan,
+                    'status'                 => 'diproses',
+                    'created_by'             => Auth::id(),
+                ]);
+
+                foreach ($request->items as $item) {
+                    $barangId     = $item['barang_id'];
+                    $satuanId     = $item['satuan_id'];
+                    $jumlahInput  = (float) $item['jumlah_input'];
+
+                    // Lookup Master Data (Never trust request for names)
+                    $masterBarang = MasterBarang::find($barangId);
+                    $masterSatuan = MasterSatuan::find($satuanId);
+                    if (!$masterBarang || !$masterSatuan) {
+                        throw new \Exception("Data barang atau satuan tidak ditemukan for ID: {$barangId}.");
+                    }
+
+                    // Resolve faktor konversi
+                    $faktor = BarangSatuanKonversi::where('barang_id', $barangId)
+                        ->where('satuan_id', $satuanId)
+                        ->value('konversi_ke_base') ?? 1;
+
+                    $jumlahBase = round($jumlahInput * $faktor, 4);
+
+                    // Validate does not exceed sisa (barang pernah keluar)
+                    $totalOrdered = (float)($details[$barangId] ?? 0);
+                    if ($totalOrdered <= 0.0001) {
+                         throw new \Exception("Barang {$masterBarang->nama_barang} tidak pernah keluar atau belum dikonfirmasi selesai pada QC ini.");
+                    }
+
+                    $sisaBase = max(0, $totalOrdered - (float)($returnedBase[$barangId] ?? 0));
+                    if ($jumlahBase > $sisaBase + 0.0001) {
+                        throw new \Exception("Jumlah return melebihi sisa yang dapat dikembalikan untuk barang {$masterBarang->nama_barang}.");
+                    }
+
+                    PembangunanUnitBarangReturnDetail::create([
+                        'return_id'             => $return->id,
+                        'barang_id'             => $barangId,
+                        'nama_barang'           => $masterBarang->nama_barang,
+                        'satuan_id'             => $satuanId,
+                        'satuan'                => $masterSatuan->nama,
+                        'jumlah_input'          => $jumlahInput,
+                        'jumlah_base'           => $jumlahBase,
+                        'jumlah_layak_base'     => 0,
+                        'jumlah_rusak_base'     => 0,
+                        'harga_satuan_snapshot' => 0,
+                        'harga_total_snapshot'  => 0,
+                        'keterangan'            => $item['keterangan'] ?? null,
+                    ]);
+                }
+
+                // WA notification via After Commit
+                DB::afterCommit(function () use ($request, $return) {
+                    $pembangunanUnit = PembangunanUnit::find($request->pembangunan_unit_id);
+                    if ($pembangunanUnit) {
+                        $this->sendGroupNotificationReturn($pembangunanUnit, $return);
+                    }
+                });
+
+                return response()->json(['message' => 'Pengajuan return barang berhasil disimpan.'], 200);
+            });
+        } catch (\Exception $e) {
+            Log::error('Return Store Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 422); // Using 422 if it's validation logic exception
+        }
+    }
+
     protected function sendGroupNotificationReturn(PembangunanUnit $pembangunanUnit, $return)
     {
-        $pembangunanUnit->loadMissing(['unit.tahap.perumahaan', 'pembangunanUnitQc']);
-        $return->loadMissing(['details.barang']);
+        $pembangunanUnit->loadMissing(['unit.tahap.perumahaan']);
 
-        $unit = $pembangunanUnit->unit;
+        $unit         = $pembangunanUnit->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
-        $namaTahap = $unit->tahap->nama_tahap ?? '-';
-        $namaUnit = $unit->nama_unit ?? '-';
-        $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
-
-        $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT');
+        $namaTahap    = $unit->tahap->nama_tahap ?? '-';
+        $namaUnit     = $unit->nama_unit ?? '-';
+        $pengaju      = Auth::user()->nama_lengkap ?? Auth::user()->name;
+        $groupId      = env('FONNTE_ID_ORDER_BARANG_ABM');
 
         if (!$groupId) return;
 
         $messageGroup = view('notifications.whatsapp.retur_barang', [
-            'tipe' => 'Unit',
+            'tipe'          => 'Unit',
             'namaPerumahan' => $namaPerumahan,
-            'namaTahap' => $namaTahap,
-            'namaUnit' => $namaUnit,
-            'pengaju' => $pengaju,
-            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
-            'return' => $return
+            'namaTahap'     => $namaTahap,
+            'namaUnit'      => $namaUnit,
+            'pengaju'       => $pengaju,
+            'tanggal'       => now()->format('d/m/Y H:i') . ' WIB',
+            'return'        => $return,
         ])->render();
 
         try {
             $this->notificationGroup->send($groupId, $messageGroup);
         } catch (\Exception $e) {
-            Log::error('WA Error: ' . $e->getMessage());
-        }
-    }
-
-    public function store(Request $request, string $orderId)
-    {
-        $request->validate([
-            'items'                       => 'required|array',
-            'items.*.detail_id'           => 'required|exists:pembangunan_unit_barang_order_detail,id',
-            'items.*.jumlah_return'       => 'required|numeric|min:0',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            $order = PembangunanUnitBarangOrder::findOrFail($orderId);
-            $hasReturn = false;
-
-            foreach ($request->items as $item) {
-                if ($item['jumlah_return'] > 0) {
-                    $detail = PembangunanUnitBarangOrderDetail::where('id', $item['detail_id'])
-                        ->where('order_id', $order->id)
-                        ->firstOrFail();
-
-                    if ($item['jumlah_return'] > $detail->jumlah_input) {
-                        return back()->with('error', "Jumlah retur {$detail->nama_barang} melebihi jumlah order.");
-                    }
-
-                    $hasReturn = true;
-                }
-            }
-
-            if (!$hasReturn) {
-                return back()->with('error', 'Tidak ada item retur yang diisi.');
-            }
-
-            $return = PembangunanUnitBarangReturn::create([
-                'order_id'         => $order->id,
-                'status'           => 'diajukan',
-                'diajukan_oleh'    => Auth::id(),
-                'tanggal_diajukan' => now(),
-            ]);
-
-            foreach ($request->items as $item) {
-                if ($item['jumlah_return'] > 0) {
-                    $detail = PembangunanUnitBarangOrderDetail::where('id', $item['detail_id'])
-                        ->where('order_id', $order->id)
-                        ->firstOrFail();
-
-                    PembangunanUnitBarangReturnDetail::create([
-                        'return_id'         => $return->id,
-                        'order_detail_id'   => $detail->id,
-                        'barang_id'         => $detail->barang_id,
-                        'jumlah_return'     => $item['jumlah_return'],
-                        'keterangan_return' => $item['keterangan_return'] ?? null,
-                    ]);
-                }
-            }
-
-            $order->update([
-                'status_order' => 'pengembalian',
-                'updated_at'   => now(),
-            ]);
-
-            $pembangunanUnit = PembangunanUnit::find($order->pembangunan_unit_id);
-
-            if ($pembangunanUnit) {
-                $this->sendGroupNotificationReturn($pembangunanUnit, $return);
-            }
-
-            DB::commit();
-            return back()->with('success', 'Data retur barang berhasil disimpan.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            Log::error('WA Return Error: ' . $e->getMessage());
         }
     }
 }
-

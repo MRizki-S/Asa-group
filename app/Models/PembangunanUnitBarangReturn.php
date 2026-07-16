@@ -6,35 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class PembangunanUnitBarangOrder extends Model
+class PembangunanUnitBarangReturn extends Model
 {
-    protected $table = 'pembangunan_unit_barang_order';
+    protected $table = 'pembangunan_unit_barang_return';
 
     protected $fillable = [
-        'nomor_order',
         'pembangunan_unit_id',
         'pembangunan_unit_qc_id',
-        'jenis_order',
+        'nomor_return',
+        'tanggal_return',
         'catatan',
-        'tanggal_diajukan',
-        'status_order',
-        'tanggal_selesai',
-        'created_by'
+        'status',
+        'created_by',
+        'acc_by',
+        'acc_at',
+        'alasan_tolak',
     ];
 
     protected $casts = [
-        'tanggal_diajukan' => 'datetime',
-        'tanggal_selesai' => 'datetime',
+        'tanggal_return' => 'datetime',
+        'acc_at' => 'datetime',
     ];
 
     public function details(): HasMany
     {
-        return $this->hasMany(PembangunanUnitBarangOrderDetail::class, 'order_id');
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasMany(PembangunanUnitBarangReturnDetail::class, 'return_id');
     }
 
     public function pembangunanUnit(): BelongsTo
@@ -46,4 +42,15 @@ class PembangunanUnitBarangOrder extends Model
     {
         return $this->belongsTo(PembangunanUnitQc::class, 'pembangunan_unit_qc_id');
     }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function accBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'acc_by');
+    }
+
 }

@@ -7,15 +7,24 @@ use App\Models\BarangSatuanKonversi;
 use App\Models\MasterBarang;
 use App\Models\NotaBarangMasukDetail;
 use App\Models\PembangunanUnitBahan;
+use App\Models\PembangunanUnitBarangFifoUsage;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\StockGudang;
 use App\Models\StockLedger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\NotificationPribadiService;
 
 class PermintaanBarangPembangunanUnitController extends Controller
 {
+    protected NotificationPribadiService $notification;
+
+    public function __construct(NotificationPribadiService $notification)
+    {
+        $this->notification = $notification;
+    }
+
     public function accBarangOrder(Request $request, $id)
     {
         $order = PembangunanUnitBarangOrder::with([
@@ -37,6 +46,15 @@ class PermintaanBarangPembangunanUnitController extends Controller
             DB::transaction(function () use ($order, $request) {
                 $this->processAcc($order, $request);
             });
+
+            // Kirim notifikasi WA setelah transaksi berhasil commit
+            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $nomorOrder = $order->nomor_order ?? ('REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT));
+            $message = "✅ Orderan barang dengan No. Order *{$nomorOrder}* telah dikonfirmasi oleh Pihak Gudang (*{$adminName}*).";
+            $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM');
+            if (!empty($targetGroup)) {
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -91,6 +109,18 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 $hargaTotal = $fifoResult['harga_total'];
                 $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
 
+                // Simpan setiap layer FIFO yang dipakai ke tabel fifo_usage
+                foreach ($fifoResult['layers'] as $layer) {
+                    PembangunanUnitBarangFifoUsage::create([
+                        'order_detail_id' => $detail->id,
+                        'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
+                        'jumlah_base' => $layer['jumlah_base'],
+                        'jumlah_return_base' => 0,
+                        'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
+                        'harga_total_snapshot' => $layer['harga_total_snapshot'],
+                    ]);
+                }
+
                 $stock->decrement('jumlah_stock', $jumlahBase);
 
                 StockLedger::create([
@@ -132,6 +162,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
     {
         $remaining = $jumlahBase;
         $hargaTotal = 0.0;
+        $usedLayers = [];
 
         $layers = NotaBarangMasukDetail::query()
             ->select('nota_barang_masuk_detail.*')
@@ -162,17 +193,27 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 $hargaSatuanBase = (float) $layer->harga_total / (float) $layer->jumlah_base;
             }
 
-            $hargaTotal += $takeQty * $hargaSatuanBase;
+            $layerHargaTotal = round($takeQty * $hargaSatuanBase, 2);
+            $hargaTotal += $layerHargaTotal;
 
             $layer->update([
                 'jumlah_sisa' => (float) $layer->jumlah_sisa - $takeQty,
             ]);
+
+            // Catat layer yang dipakai untuk INSERT ke fifo_usage
+            $usedLayers[] = [
+                'nota_barang_masuk_detail_id' => $layer->id,
+                'jumlah_base' => $takeQty,
+                'harga_satuan_snapshot' => $hargaSatuanBase,
+                'harga_total_snapshot' => $layerHargaTotal,
+            ];
 
             $remaining -= $takeQty;
         }
 
         return [
             'harga_total' => round($hargaTotal, 2),
+            'layers' => $usedLayers,
         ];
     }
 
