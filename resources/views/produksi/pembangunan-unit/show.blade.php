@@ -14,6 +14,7 @@
         itemsToPay: [],
         catatanUpah: '',
         unitStatus: '{{ $data->status_pembangunan ?? 'proses' }}',
+        totalProgress: {{ $data->total_progres }},
         statusST: '{{ $data->status_serah_terima ?? 'pending' }}',
         filterType: 'stock',
         itemsAdditional: [],

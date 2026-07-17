@@ -21,6 +21,7 @@
                         document.getElementById('total-progress-bar').style.width = res.data.new_total_percentage + '%';
                         document.getElementById('total-progress-text').innerText = res.data.new_total_percentage + '%';
                         $data.unitStatus = res.data.unit_status;
+                        $data.totalProgress = res.data.new_total_percentage;
             
                     } catch (e) { alert('Gagal menyimpan perubahan.'); }
                     this.loading = false;

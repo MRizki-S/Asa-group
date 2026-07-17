@@ -145,7 +145,6 @@
                     </div>
                 </div>
 
-                {{-- Manual Selesai Button (always visible, disabled if progress < 100 or already completed) --}}
                 @php
                     $isCompleted = in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']);
                     $isProgressNotComplete = $data->total_progres < 100;
@@ -155,9 +154,13 @@
                     @csrf
                     @method('PATCH')
                     <button type="submit" 
+                        :disabled="['selesai', 'selesai dengan catatan'].includes(unitStatus) || totalProgress < 100"
                         @if ($isDisabled) disabled @endif
-                        class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-sm transition
-                        {{ $isDisabled ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 active:scale-95' }}">
+                        class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-sm transition transition-all duration-300
+                        {{ $isDisabled ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 active:scale-95 cursor-pointer' }}"
+                        :class="(['selesai', 'selesai dengan catatan'].includes(unitStatus) || totalProgress < 100)
+                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                            : 'bg-green-600 hover:bg-green-700 active:scale-95 cursor-pointer'">
                         <i class="fa-solid fa-circle-check"></i> Selesai
                     </button>
                 </form>
