@@ -81,18 +81,28 @@
         </div>
         <div class="flex flex-col gap-4 items-end">
             @if ($data->status_pembangunan !== 'selesai')
-            <form action="{{ route('produksi.pembangunanProyek.update', $data->id) }}" method="POST" x-data="{ status: '{{ $data->status_pembangunan }}' }">
+            <form action="{{ route('produksi.pembangunanProyek.update', $data->id) }}" method="POST"
+                @submit.prevent="
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: 'Apakah Anda yakin ingin menyelesaikan pembangunan proyek ini?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#059669',
+                        confirmButtonText: 'Ya, Selesaikan',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $el.submit();
+                        }
+                    })
+                ">
                 @csrf
                 @method('PUT')
-                <div class="flex flex-col gap-2 items-end">
-                    <div class="flex items-center gap-3">
-                        <select name="status_pembangunan" x-model="status" class="bg-white text-gray-900 rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <option value="proses">Proses</option>
-                            <option value="selesai">Selesai</option>
-                        </select>
-                        <button type="submit" class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 font-bold">Update Status</button>
-                    </div>
-                </div>
+                <input type="hidden" name="status_pembangunan" value="selesai">
+                <button type="submit" class="inline-flex items-center gap-1.5 bg-green-600 text-white text-sm px-4 py-2.5 rounded-lg hover:bg-green-700 font-bold shadow-sm transition active:scale-95">
+                    <i class="fa-solid fa-circle-check"></i> Selesaikan
+                </button>
             </form>
             @endif
             <div class="flex flex-wrap gap-2 justify-end">
@@ -313,6 +323,7 @@
                                             ];
                                         });
                                     @endphp
+                                    @if ($data->status_pembangunan !== 'selesai')
                                     <div class="pt-4">
                                         <button type="button"
                                             @click="prepareReturn({{ $order->id }}, {{ $returnItemsForModal->toJson() }})"
@@ -321,6 +332,7 @@
                                             {{ $order->status_order == 'pengembalian' ? 'Tambah / Perbarui Retur' : 'Ajukan Pengembalian' }}
                                         </button>
                                     </div>
+                                    @endif
                                 @endif
 
                                 @if ($order->status_order == 'diproses')

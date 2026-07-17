@@ -270,6 +270,8 @@ class PermintaanBarangPembangunanUnitController extends Controller
     // Upsert data bahan pembangunan unit
     private function upsertPembangunanUnitBahan(PembangunanUnitBarangOrder $order, $detail, float $hargaTotal): void
     {
+        $baseUnitName = $detail->barang?->baseUnit?->nama ?? ($detail->satuanModel?->nama ?? ($detail->satuan ?? '-'));
+
         $bahan = PembangunanUnitBahan::where('pembangunan_unit_id', $order->pembangunan_unit_id)
             ->where('pembangunan_unit_qc_id', $order->pembangunan_unit_qc_id)
             ->where('barang_id', $detail->barang_id)
@@ -277,7 +279,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
         if ($bahan) {
             $bahan->update([
-                'jumlah_pakai' => (float) $bahan->jumlah_pakai + (float) $detail->jumlah_input,
+                'jumlah_pakai' => (float) $bahan->jumlah_pakai + (float) $detail->jumlah_base,
                 'harga_total_snapshot' => (float) $bahan->harga_total_snapshot + $hargaTotal,
             ]);
 
@@ -289,8 +291,8 @@ class PermintaanBarangPembangunanUnitController extends Controller
             'pembangunan_unit_qc_id' => $order->pembangunan_unit_qc_id,
             'barang_id' => $detail->barang_id,
             'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
-            'satuan' => $detail->satuan ?? $detail->barang?->baseUnit?->nama ?? '-',
-            'jumlah_pakai' => (float) $detail->jumlah_input,
+            'satuan' => $baseUnitName,
+            'jumlah_pakai' => (float) $detail->jumlah_base,
             'harga_total_snapshot' => $hargaTotal,
         ]);
     }

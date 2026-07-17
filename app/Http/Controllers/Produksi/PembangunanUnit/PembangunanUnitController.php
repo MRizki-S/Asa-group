@@ -100,6 +100,33 @@ class PembangunanUnitController extends Controller
     public function show(string $id)
     {
         $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
+
+        // Get already ordered base quantities per RAP item
+        $orderedQuantities = \App\Models\PembangunanUnitBarangOrderDetail::query()
+            ->join('pembangunan_unit_barang_order as o', 'o.id', '=', 'pembangunan_unit_barang_order_detail.order_id')
+            ->where('o.pembangunan_unit_id', $id)
+            ->select('pembangunan_unit_barang_order_detail.rap_bahan_id', \Illuminate\Support\Facades\DB::raw('SUM(pembangunan_unit_barang_order_detail.jumlah_base) as total_ordered_base'))
+            ->groupBy('pembangunan_unit_barang_order_detail.rap_bahan_id')
+            ->pluck('total_ordered_base', 'rap_bahan_id')
+            ->toArray();
+
+        // Get already requested wages per RAP upah item
+        $orderedUpah = \App\Models\PembangunanUnitUpahPengajuan::query()
+            ->where('pembangunan_unit_id', $id)
+            ->whereNull('ditolak_pada')
+            ->select('pembangunan_unit_rap_upah_id', \Illuminate\Support\Facades\DB::raw('SUM(nominal_diajukan) as total_ordered_upah'))
+            ->groupBy('pembangunan_unit_rap_upah_id')
+            ->pluck('total_ordered_upah', 'pembangunan_unit_rap_upah_id')
+            ->toArray();
+
+        foreach ($data->pembangunanUnitQc as $qc) {
+            foreach ($qc->pembangunanUnitRapBahan as $rapBahan) {
+                $rapBahan->total_ordered_base = (float) ($orderedQuantities[$rapBahan->id] ?? 0);
+            }
+            foreach ($qc->pembangunanUnitRapUpah as $rapUpah) {
+                $rapUpah->total_ordered_upah = (float) ($orderedUpah[$rapUpah->id] ?? 0);
+            }
+        }
         $allBarang = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan'])
             ->select('id', 'kode_barang', 'nama_barang', 'base_unit_id', 'is_stock')
             ->get()
@@ -233,16 +260,7 @@ class PembangunanUnitController extends Controller
             return redirect()->back()->with('error', 'Pembangunan unit ini sudah selesai, status tidak dapat diubah lagi.');
         }
 
-        // Calculate progress to make sure it is 100%
-        $totalQc = $pembangunanUnit->pembangunanUnitQc->count();
-        $sumProgressQc = 0;
-        foreach ($pembangunanUnit->pembangunanUnitQc as $qc) {
-            $qcProgress = $qc->total_task > 0 ? ($qc->task_selesai_count / $qc->total_task) * 100 : 0;
-            $sumProgressQc += $qcProgress;
-        }
-        $totalProgres = $totalQc > 0 ? round($sumProgressQc / $totalQc, 2) : 0;
-
-        if ($totalProgres < 100.0) {
+        if ($pembangunanUnit->total_progres < 100) {
             return redirect()->back()->with('error', 'Status selesai hanya dapat diaktifkan jika progres pembangunan sudah 100%.');
         }
 
@@ -279,6 +297,11 @@ class PembangunanUnitController extends Controller
         ]);
 
         $task = PembangunanUnitQcTask::findOrFail($id);
+        $unit = $task->pembangunanUnitQc->pembangunanUnit;
+        if (in_array($unit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+            return redirect()->back()->with('error', 'Unit ini sudah selesai dibangun, catatan tidak dapat diubah.');
+        }
+
         $task->update([
             'catatan' => $request->catatan
         ]);

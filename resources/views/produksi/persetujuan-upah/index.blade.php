@@ -81,8 +81,9 @@
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit / Pekerjaan
                                 </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tahap QC</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Nominal</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Budget RAP</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Akumulasi Real</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Nominal Diajukan</th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Status
                                 </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi
@@ -115,13 +116,24 @@
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center">
-                                        <div class="font-bold text-sm text-gray-700 dark:text-white leading-none">
-                                            Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}
+                                    <td class="px-4 py-4 text-right font-mono text-xs font-semibold text-gray-500">
+                                        Rp {{ number_format($item->rapUpah->nominal_standar ?? 0, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right font-mono text-xs font-semibold text-gray-500">
+                                        Rp {{ number_format($item->cumulative_requested ?? 0, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-4 py-4 text-right font-mono font-bold text-xs text-gray-700 dark:text-white">
+                                        <div class="flex flex-col items-end">
+                                            <span>Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}</span>
+                                            @if ($item->rapUpah && $item->cumulative_requested > ($item->rapUpah->nominal_standar + 0.01))
+                                                <span class="inline-block mt-1 px-1 rounded text-[7px] font-black text-red-500 uppercase bg-red-50 border border-red-100">
+                                                    Melebihi RAP
+                                                </span>
+                                            @endif
                                         </div>
 
                                         @if ($item->alasan_ditolak)
-                                            <div class="mt-1.5 flex justify-center">
+                                            <div class="mt-1.5 flex justify-end">
                                                 <div
                                                     class="max-w-[150px] bg-red-50 dark:bg-red-800/50 px-2 py-1 rounded border border-red-100 dark:border-red-700">
                                                     <p
@@ -129,20 +141,6 @@
                                                         <span
                                                             class="font-black uppercase text-[8px] not-italic text-red-400">Alasan:</span>
                                                         {{ $item->alasan_ditolak }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        @if ($item->catatan_pengawas && $filter === 'disetujui')
-                                            <div class="mt-1.5 flex justify-center">
-                                                <div
-                                                    class="max-w-[150px] bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded border border-gray-100 dark:border-gray-700">
-                                                    <p
-                                                        class="text-[9px] text-gray-500 dark:text-gray-400 italic leading-tight">
-                                                        <span
-                                                            class="font-black uppercase text-[8px] not-italic text-gray-400">Ket:</span>
-                                                        {{ $item->catatan_pengawas }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -162,21 +160,21 @@
                                                 $item->disetujui_mgr_produksi !== null;
                                         @endphp
 
-                                        @if (!$isFinal)
-                                            <button type="button"
-                                                @click="openModal({
-                                                        id: '{{ $item->id }}',
-                                                        unit_nama: '{{ $item->pembangunanUnit->unit->nama_unit }}',
-                                                        upah_nama: '{{ $item->nama_upah }}',
-                                                        pengawas: '{{ $item->pembangunanUnit->pengawas->nama_lengkap ?? '-' }}',
-                                                        nominal: 'Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}',
-                                                        catatan: '{{ addslashes($item->catatan_pengawas) }}'
-                                                    })"
-                                                class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-4 py-1.5 rounded-lg shadow-sm transition-all active:scale-95">
-                                                PROSES
-                                            </button>
-                                        @else
-                                            <div class="flex flex-col items-center justify-center gap-1">
+                                        <div class="flex flex-wrap items-center justify-center gap-1.5">
+                                            @if (!$isFinal)
+                                                <button type="button"
+                                                    @click="openModal({
+                                                            id: '{{ $item->id }}',
+                                                            unit_nama: '{{ $item->pembangunanUnit->unit->nama_unit }}',
+                                                            upah_nama: '{{ $item->nama_upah }}',
+                                                            pengawas: '{{ $item->pembangunanUnit->pengawas->nama_lengkap ?? '-' }}',
+                                                            nominal: 'Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}',
+                                                            catatan: '{{ addslashes($item->catatan_pengawas) }}'
+                                                        })"
+                                                    class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-4 py-1.5 rounded-lg shadow-sm transition-all active:scale-95">
+                                                    PROSES
+                                                 </button>
+                                            @else
                                                 <div class="flex flex-col items-center justify-center gap-1">
                                                     @if ($item->status_pengajuan === 'ditolak_mgr_produksi')
                                                         <span
@@ -196,8 +194,8 @@
                                                         </span>
                                                     @endif
                                                 </div>
-                                            </div>
-                                        @endif
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

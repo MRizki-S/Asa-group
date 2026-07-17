@@ -1751,7 +1751,7 @@
                                 <li>
                                     <a href="{{ route('produksi.pembangunanUnit.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pembangunan Unit
+                                        Pemb. Unit
                                     </a>
                                 </li>
                                 @endcan
@@ -1791,7 +1791,7 @@
                                 <li>
                                     <a href="{{ route('produksi.pembangunanProyek.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pembangunan Proyek
+                                        Pemb. Proyek
                                     </a>
                                 </li>
                                 @endcan
@@ -1823,7 +1823,7 @@
                                 <li>
                                     <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'buatPembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Buat Pembangunan
+                                        Buat Pemb.
                                     </a>
                                 </li>
                                 @endcan
@@ -1831,7 +1831,7 @@
                                 <li>
                                     <a href="{{ route('produksi.pembangunanKawasan.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pembangunan Kawasan
+                                        Pemb. Kawasan
                                     </a>
                                 </li>
                                 @endcan

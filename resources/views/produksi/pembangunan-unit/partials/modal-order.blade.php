@@ -69,8 +69,12 @@
                                                 <div class="flex justify-between items-start">
                                                     <p class="text-sm font-bold text-gray-700 dark:text-gray-200"
                                                         x-text="item.nama_barang"></p>
-                                                    <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 font-mono"
-                                                        x-text="'RAP: ' + Number(item.jumlah_standar).toLocaleString('id-ID') + ' ' + item.satuan"></span>
+                                                    <div class="flex flex-col items-end">
+                                                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 font-mono"
+                                                            x-text="'Limit RAP: ' + Number(item.jumlah_standar).toLocaleString('id-ID') + ' ' + item.satuan"></span>
+                                                        <span class="text-[9px] text-gray-500 font-mono"
+                                                            x-text="'Sudah Di-order: ' + Number(item.total_ordered_base / (item.faktor_konversi || 1)).toLocaleString('id-ID') + ' ' + item.satuan"></span>
+                                                    </div>
                                                 </div>
                                                 <div x-show="item.checked" x-collapse class="mt-3 space-y-3">
                                                     <div class="grid grid-cols-2 gap-3">
@@ -99,7 +103,7 @@
                                                     </div>
 
                                                     <template
-                                                        x-if="parseFloat(item.jumlah_input) > parseFloat(item.jumlah_standar)">
+                                                        x-if="(parseFloat(item.jumlah_input || 0) * parseFloat(item.faktor_konversi || 1) + parseFloat(item.total_ordered_base || 0)) > (parseFloat(item.base_total_anchor || 0) + 0.001)">
                                                         <div class="animate-in fade-in slide-in-from-top-1">
                                                             <label
                                                                 class="block text-[9px] font-black text-red-500 uppercase mb-1">Alasan

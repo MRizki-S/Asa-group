@@ -28,12 +28,28 @@ class PembangunanUnitPengajuanUpahController extends Controller
             DB::beginTransaction();
 
             foreach ($request->items as $item) {
+                $rapUpah = \App\Models\PembangunanUnitRapUpah::findOrFail($item['pembangunan_unit_rap_upah_id']);
+
+                // Calculate cumulative wages already requested (excluding rejected)
+                $alreadyRequested = PembangunanUnitUpahPengajuan::where('pembangunan_unit_rap_upah_id', $rapUpah->id)
+                    ->whereNull('ditolak_pada')
+                    ->sum('nominal_diajukan');
+
+                $newNominal = (float) $item['nominal_pengajuan'];
+                $limit = (float) $rapUpah->nominal_standar;
+
+                if (($alreadyRequested + $newNominal) > ($limit + 0.01)) {
+                    if (empty($item['catatan_pengawas'])) {
+                        throw new \Exception("Pengajuan upah {$rapUpah->nama_upah} melebihi RAP. Harap masukkan catatan pengawas.");
+                    }
+                }
+
                 PembangunanUnitUpahPengajuan::create([
                     'pembangunan_unit_id' => $request->pembangunan_unit_id,
                     'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
                     'pembangunan_unit_rap_upah_id' => $item['pembangunan_unit_rap_upah_id'],
                     'nama_upah' => $item['nama_upah'],
-                    'nominal_diajukan' => $item['nominal_pengajuan'],
+                    'nominal_diajukan' => $newNominal,
                     'catatan_pengawas' => $item['catatan_pengawas'] ?? null,
                     'tanggal_diajukan' => now(),
                 ]);

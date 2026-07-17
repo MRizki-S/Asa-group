@@ -150,18 +150,39 @@
                     $isProgressNotComplete = $data->total_progres < 100;
                     $isDisabled = $isCompleted || $isProgressNotComplete;
                 @endphp
-                <form action="{{ route('produksi.pembangunanUnit.update', $data->id) }}" method="POST" class="flex-1">
+                <form action="{{ route('produksi.pembangunanUnit.update', $data->id) }}" method="POST" class="flex-1"
+                    x-data="{ submitting: false, confirming: false }"
+                    @submit.prevent="
+                        if (confirming || submitting) return;
+                        confirming = true;
+                        Swal.fire({
+                            title: 'Konfirmasi',
+                            text: 'Apakah Anda yakin ingin menyelesaikan pembangunan unit ini?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#059669',
+                            confirmButtonText: 'Ya, Selesaikan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            confirming = false;
+                            if (result.isConfirmed) {
+                                submitting = true;
+                                $el.submit();
+                            }
+                        })
+                    ">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" 
-                        :disabled="['selesai', 'selesai dengan catatan'].includes(unitStatus) || totalProgress < 100"
+                    <button type="submit"
+                        :disabled="submitting || ['selesai', 'selesai dengan catatan'].includes(unitStatus) || totalProgress < 100"
                         @if ($isDisabled) disabled @endif
-                        class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-sm transition transition-all duration-300
+                        class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-sm transition-all duration-300
                         {{ $isDisabled ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 active:scale-95 cursor-pointer' }}"
-                        :class="(['selesai', 'selesai dengan catatan'].includes(unitStatus) || totalProgress < 100)
-                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                        :class="(submitting || ['selesai', 'selesai dengan catatan'].includes(unitStatus) || totalProgress < 100)
+                            ? 'bg-gray-300 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                             : 'bg-green-600 hover:bg-green-700 active:scale-95 cursor-pointer'">
-                        <i class="fa-solid fa-circle-check"></i> Selesai
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span x-text="submitting ? 'Memproses...' : 'Selesaikan'"></span>
                     </button>
                 </form>
             </div>

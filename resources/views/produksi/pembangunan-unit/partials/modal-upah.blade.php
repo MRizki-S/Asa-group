@@ -43,8 +43,12 @@
                                 <div class="flex-1 space-y-3">
                                     <div class="flex justify-between items-start">
                                         <p class="text-sm font-bold text-gray-700 dark:text-gray-200" x-text="item.nama_upah"></p>
-                                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 font-mono"
-                                            x-text="'Maks: Rp' + Number(item.nominal_standar).toLocaleString('id-ID')"></span>
+                                        <div class="flex flex-col items-end">
+                                            <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 font-mono"
+                                                x-text="'Limit RAP: Rp' + Number(item.nominal_standar).toLocaleString('id-ID')"></span>
+                                            <span class="text-[9px] text-gray-500 font-mono"
+                                                x-text="'Sudah Diajukan: Rp' + Number(item.total_ordered_upah).toLocaleString('id-ID')"></span>
+                                        </div>
                                     </div>
 
                                     <div x-show="item.checked" x-collapse class="space-y-3">
@@ -56,8 +60,15 @@
                                             placeholder="0"
                                             class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg text-left font-mono">
 
+                                        <template x-if="(parseFloat(item.nominal_pengajuan || 0) + parseFloat(item.total_ordered_upah || 0)) > (parseFloat(item.nominal_standar || 0) + 0.01)">
+                                             <div class="text-[9px] font-black text-red-500 uppercase">
+                                                 ⚠ Pengajuan melebihi budget RAP. Catatan pengawas wajib diisi sebagai alasan.
+                                             </div>
+                                        </template>
+
                                         <textarea x-model="item.catatan_pengawas" placeholder="Catatan khusus pekerjaan ini..."
-                                            class="w-full px-3 py-2 text-[11px] border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg outline-none bg-white min-h-[50px]"></textarea>
+                                            :class="(parseFloat(item.nominal_pengajuan || 0) + parseFloat(item.total_ordered_upah || 0)) > (parseFloat(item.nominal_standar || 0) + 0.01) ? 'border-red-300 focus:ring-red-500 bg-red-50/50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-600'"
+                                            class="w-full px-3 py-2 text-[11px] border dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg outline-none bg-white min-h-[50px]"></textarea>
                                     </div>
                                 </div>
                             </div>

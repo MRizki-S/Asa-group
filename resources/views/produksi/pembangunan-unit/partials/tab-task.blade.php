@@ -20,8 +20,8 @@
                         document.getElementById('text-qc-{{ $qc->id }}').innerText = res.data.new_qc_percentage + '%';
                         document.getElementById('total-progress-bar').style.width = res.data.new_total_percentage + '%';
                         document.getElementById('total-progress-text').innerText = res.data.new_total_percentage + '%';
-                        $data.unitStatus = res.data.unit_status;
-                        $data.totalProgress = res.data.new_total_percentage;
+                        $dispatch('update-unit-status', res.data.unit_status);
+                        $dispatch('update-total-progress', parseFloat(res.data.new_total_percentage));
             
                     } catch (e) { alert('Gagal menyimpan perubahan.'); }
                     this.loading = false;
@@ -51,6 +51,8 @@
                 </button>
 
                 <select x-model="status" @change="saveTask($event.target.value)"
+                    :disabled="['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
+                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) disabled @endif
                     class="text-xs font-bold rounded-lg border-gray-200 bg-gray-50 p-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 text-gray-700 dark:text-white">
                     <option value="belum sesuai">Belum Sesuai</option>
                     <option value="sesuai">Sesuai</option>
@@ -89,6 +91,8 @@
                                 </div>
 
                                 <textarea name="catatan" rows="5"
+                                    :readonly="['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
+                                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) readonly @endif
                                     class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
                                     placeholder="Tulis catatan atau detail temuan di sini...">{{ $task->catatan }}</textarea>
                             </div>
@@ -100,6 +104,8 @@
                                     BATAL
                                 </button>
                                 <button type="submit"
+                                    x-show="!['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
+                                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) style="display:none;" @endif
                                     class="px-5 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">
                                     SIMPAN CATATAN
                                 </button>

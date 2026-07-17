@@ -3,7 +3,10 @@
 @section('pageActive', 'pembangunanUnit')
 
 @section('content')
-    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6 text-gray-700" x-data="{
+    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6 text-gray-700" 
+        @update-unit-status.window="unitStatus = $event.detail"
+        @update-total-progress.window="totalProgress = $event.detail"
+        x-data="{
         openRequest: false,
         loadingRequest: false,
         selectedQcId: null,
@@ -241,13 +244,20 @@
         prepareUpah(upahArray, qcId) {
             this.selectedQcId = qcId;
             this.catatanUpah = '';
-            this.itemsToPay = upahArray.map(u => ({
-                pembangunan_unit_rap_upah_id: u.id,
-                nama_upah: u.nama_upah,
-                nominal_standar: Number(u.nominal_standar),
-                nominal_pengajuan: Number(u.nominal_standar),
-                checked: false
-            }));
+            this.itemsToPay = upahArray.map(u => {
+                const nominalStandar = Number(u.nominal_standar) || 0;
+                const totalOrderedUpah = Number(u.total_ordered_upah) || 0;
+                const remaining = Math.max(0, nominalStandar - totalOrderedUpah);
+                return {
+                    pembangunan_unit_rap_upah_id: u.id,
+                    nama_upah: u.nama_upah,
+                    nominal_standar: nominalStandar,
+                    total_ordered_upah: totalOrderedUpah,
+                    nominal_pengajuan: remaining,
+                    catatan_pengawas: '',
+                    checked: false
+                };
+            });
             this.openUpahModal = true;
         },
 
@@ -258,12 +268,19 @@
                 alert('Nominal pengajuan harus diisi untuk item yang dipilih!');
                 return;
             }
+            if (selected.some(i => {
+                const total = parseFloat(i.nominal_pengajuan || 0) + parseFloat(i.total_ordered_upah || 0);
+                const limit = parseFloat(i.nominal_standar || 0);
+                return total > limit + 0.01 && (!i.catatan_pengawas || !i.catatan_pengawas.trim());
+            })) {
+                alert('Terdapat item upah yang melebihi RAP. Harap isi catatan pengawas sebagai alasan!');
+                return;
+            }
             this.loadingUpah = true;
             try {
                 await axios.post('{{ route('produksi.pembangunanUnit.upahStore') }}', {
                     pembangunan_unit_id: '{{ $data->id }}',
                     pembangunan_unit_qc_id: this.selectedQcId,
-                    {{-- catatan: this.catatanUpah, --}}
                     items: selected
                 });
                 location.reload(); // Setelah reload, URL parameter akan menjaga tab tetap terbuka
@@ -295,6 +312,7 @@
 
                     // Simpan angka 80 sebagai patokan tetap
                     base_total_anchor: baseTotal,
+                    total_ordered_base: parseFloat(b.total_ordered_base) || 0,
 
                     satuan_id: b.satuan_id,
                     satuan: b.satuan,

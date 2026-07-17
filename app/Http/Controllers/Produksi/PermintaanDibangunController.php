@@ -225,7 +225,7 @@ class PermintaanDibangunController extends Controller
 
             $units = Unit::where('tahap_id', $tahapId)
                 ->where(function ($query) use ($currentUnitId) {
-                    $query->where('status_pembangunan', 'belum dibangun');
+                    $query->whereIn('status_pembangunan', ['belum dibangun', 'selesai dibangun']);
                     if ($currentUnitId) {
                         $query->orWhere('id', $currentUnitId);
                     }

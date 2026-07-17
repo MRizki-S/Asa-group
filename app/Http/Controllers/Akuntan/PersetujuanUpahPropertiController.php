@@ -16,8 +16,18 @@ class PersetujuanUpahPropertiController extends Controller
         $query = PembangunanUnitUpahPengajuan::with([
             'pembangunanUnit.unit',
             'pembangunanUnit.qcContainer',
-            'pembangunanUnitQc'
-        ])->latest();
+            'pembangunanUnitQc',
+            'rapUpah'
+        ])
+        ->select('pembangunan_unit_upah_pengajuan.*')
+        ->selectSub(function($q) {
+            $q->selectRaw('SUM(up.nominal_diajukan)')
+              ->from('pembangunan_unit_upah_pengajuan as up')
+              ->whereColumn('up.pembangunan_unit_rap_upah_id', 'pembangunan_unit_upah_pengajuan.pembangunan_unit_rap_upah_id')
+              ->whereNull('up.ditolak_pada')
+              ->whereColumn('up.id', '<=', 'pembangunan_unit_upah_pengajuan.id');
+        }, 'cumulative_requested')
+        ->latest();
 
         if ($filter === 'disetujui') {
             $query->whereNotNull('disetujui_akuntan');
@@ -53,10 +63,11 @@ class PersetujuanUpahPropertiController extends Controller
             $pengajuan->status_pengajuan = 'disetujui';
 
             PembangunanUnitUpah::create([
-                'pembangunan_unit_id'    => $pengajuan->pembangunan_unit_id,
-                'pembangunan_unit_qc_id' => $pengajuan->pembangunan_unit_qc_id,
-                'nama_upah'              => $pengajuan->nama_upah,
-                'total_nominal'          => $pengajuan->nominal_diajukan,
+                'pembangunan_unit_id'          => $pengajuan->pembangunan_unit_id,
+                'pembangunan_unit_qc_id'       => $pengajuan->pembangunan_unit_qc_id,
+                'pembangunan_unit_rap_upah_id' => $pengajuan->pembangunan_unit_rap_upah_id,
+                'nama_upah'                    => $pengajuan->nama_upah,
+                'total_nominal'                => $pengajuan->nominal_diajukan,
             ]);
         } else {
             $pengajuan->status_pengajuan = 'ditolak_akuntan';

@@ -135,6 +135,23 @@ class PembangunanUnitOrderBarangController extends Controller
                     throw new \Exception("Konversi satuan untuk {$item['nama_barang']} tidak valid.");
                 }
 
+                $newQtyBase = $faktorKonversi * (float) $item['jumlah_input'];
+                $alasan = $item['alasan'] ?? null;
+
+                if (!empty($item['pembangunan_unit_rap_bahan_id'])) {
+                    $rapBahan = \App\Models\PembangunanUnitRapBahan::findOrFail($item['pembangunan_unit_rap_bahan_id']);
+                    $alreadyOrderedBase = PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rapBahan->id)
+                        ->sum('jumlah_base');
+
+                    $rapTotalBase = (float) $rapBahan->jumlah_standar * (float) $rapBahan->faktor_konversi;
+
+                    if (($alreadyOrderedBase + $newQtyBase) > ($rapTotalBase + 0.001)) {
+                        if (empty($alasan)) {
+                            throw new \Exception("Order barang {$barang->nama_barang} melebihi RAP. Harap masukkan alasan melebihi RAP.");
+                        }
+                    }
+                }
+
                 PembangunanUnitBarangOrderDetail::create([
                     'order_id' => $order->id,
                     'barang_id' => $item['barang_id'],
@@ -144,8 +161,8 @@ class PembangunanUnitOrderBarangController extends Controller
                     'ubs_id' => $pembangunanUnit->perumahaan_id,
                     'rap_bahan_id' => $item['pembangunan_unit_rap_bahan_id'] ?? null,
                     'jumlah_input' => $item['jumlah_input'],
-                    'jumlah_base' => $faktorKonversi * (float) $item['jumlah_input'],
-                    'alasan_permintaan_tidak_sesuai_rap' => $item['alasan'] ?? null,
+                    'jumlah_base' => $newQtyBase,
+                    'alasan_permintaan_tidak_sesuai_rap' => $alasan,
                 ]);
             }
 

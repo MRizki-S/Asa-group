@@ -15,8 +15,18 @@ class PersetujuanUpahPropertiController extends Controller
         $query = PembangunanUnitUpahPengajuan::with([
             'pembangunanUnit.unit',
             'pembangunanUnit.qcContainer',
-            'pembangunanUnitQc'
-        ])->latest();
+            'pembangunanUnitQc',
+            'rapUpah'
+        ])
+        ->select('pembangunan_unit_upah_pengajuan.*')
+        ->selectSub(function($q) {
+            $q->selectRaw('SUM(up.nominal_diajukan)')
+              ->from('pembangunan_unit_upah_pengajuan as up')
+              ->whereColumn('up.pembangunan_unit_rap_upah_id', 'pembangunan_unit_upah_pengajuan.pembangunan_unit_rap_upah_id')
+              ->whereNull('up.ditolak_pada')
+              ->whereColumn('up.id', '<=', 'pembangunan_unit_upah_pengajuan.id');
+        }, 'cumulative_requested')
+        ->latest();
 
         if ($filter === 'disetujui') {
             $query->whereNotNull('disetujui_mgr_dukungan');

@@ -256,6 +256,10 @@ class PembangunanKawasanController extends Controller
         ]);
 
         $order = PembangunanKawasanBarangOrder::findOrFail($request->order_id);
+        $kawasan = PembangunanKawasan::findOrFail($order->pembangunan_kawasan_id);
+        if ($kawasan->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Kawasan ini sudah selesai, tidak dapat melakukan retur barang.');
+        }
         
         $returnRequest = \App\Models\PembangunanKawasanBarangReturn::firstOrCreate(
             ['order_id' => $order->id],

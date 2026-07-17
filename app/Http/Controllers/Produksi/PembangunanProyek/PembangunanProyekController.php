@@ -254,6 +254,10 @@ class PembangunanProyekController extends Controller
         ]);
 
         $order = PembangunanProyekBarangOrder::findOrFail($request->order_id);
+        $project = PembangunanProyek::findOrFail($order->pembangunan_proyek_id);
+        if ($project->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Proyek ini sudah selesai, tidak dapat melakukan retur barang.');
+        }
 
         $returnRequest = \App\Models\PembangunanProyekBarangReturn::firstOrCreate(
             ['order_id' => $order->id],

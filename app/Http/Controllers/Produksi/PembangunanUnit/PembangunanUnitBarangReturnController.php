@@ -117,6 +117,13 @@ class PembangunanUnitBarangReturnController extends Controller
      */
     public function store(Request $request)
     {
+        $unit = \App\Models\PembangunanUnit::findOrFail($request->pembangunan_unit_id);
+        if (in_array($unit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+            return response()->json([
+                'message' => 'Unit ini sudah selesai dibangun, tidak dapat melakukan retur barang.'
+            ], 403);
+        }
+
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'pembangunan_unit_id'     => 'required|exists:pembangunan_unit,id',
             'pembangunan_unit_qc_id'  => 'required|exists:pembangunan_unit_qc,id',

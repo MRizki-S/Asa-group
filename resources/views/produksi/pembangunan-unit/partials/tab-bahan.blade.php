@@ -38,7 +38,7 @@
                     Order Barang
                 </button>
             @endif
-            @if($hasSelesai)
+            @if($hasSelesai && !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']))
                 <button @click="prepareReturn({{ $qc->id }}, '{{ $qcNama }}')"
                     class="px-4 py-2 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 shadow-sm transition-all uppercase flex items-center gap-2">
                     <i class="fa-solid fa-rotate-left text-xs"></i>
@@ -246,16 +246,16 @@
                                             </div>
 
 
-                                            @if ($order->status_order == 'diproses')
-                                                 <div class="pt-2">
-                                                     <button type="button"
-                                                         @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanUnit.orderDestroy', $order->id) }}'"
-                                                         class="w-full py-2.5 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
-                                                         <i class="fa-solid fa-trash-can"></i>
-                                                         Batalkan Orderan
-                                                     </button>
-                                                 </div>
-                                            @endif
+                                             @if ($order->status_order == 'diproses')
+                                                  <div class="pt-2 flex justify-end">
+                                                      <button type="button"
+                                                          @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanUnit.orderDestroy', $order->id) }}'"
+                                                          class="px-4 py-2 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                                          <i class="fa-solid fa-trash-can"></i>
+                                                          Batalkan Orderan
+                                                      </button>
+                                                  </div>
+                                             @endif
                                         </div>
                                     </div>
                                 </div>

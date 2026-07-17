@@ -211,9 +211,9 @@
                                 </td>
                                 @can('etalase.unit.detail')
                                     <td class="text-center">
-                                        @if ($item->status_pembangunan === 'belum dibangun')
+                                        @if ($item->status_pembangunan === 'belum dibangun' || $item->status_pembangunan === 'selesai dibangun')
                                             <button type="button"
-                                                class="btn-ajukan-pembangunan w-full inline-flex justify-center items-center gap-1
+                                                class="btn-ajukan-pembangunan inline-flex justify-center items-center gap-1
                                             text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200
                                             dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700
                                             px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95"
@@ -226,9 +226,7 @@
                                         @elseif ($item->status_pembangunan === 'diajukan')
                                             <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-800/30 dark:text-yellow-400">Diajukan</span>
                                         @elseif ($item->status_pembangunan === 'dalam pembangunan')
-                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-800/30 dark:text-blue-400">Dalam Pembangunan</span>
-                                        @elseif ($item->status_pembangunan === 'selesai dibangun')
-                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400">Selesai</span>
+                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-800/30 dark:text-blue-400">Dlm pemb.</span>
                                         @endif
                                     </td>
                                 @endcan

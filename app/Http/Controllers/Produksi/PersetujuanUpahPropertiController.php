@@ -17,8 +17,18 @@ class PersetujuanUpahPropertiController extends Controller
         $query = PembangunanUnitUpahPengajuan::with([
             'pembangunanUnit.unit',
             'pembangunanUnit.qcContainer',
-            'pembangunanUnitQc'
-        ])->latest();
+            'pembangunanUnitQc',
+            'rapUpah'
+        ])
+        ->select('pembangunan_unit_upah_pengajuan.*')
+        ->selectSub(function($q) {
+            $q->selectRaw('SUM(up.nominal_diajukan)')
+              ->from('pembangunan_unit_upah_pengajuan as up')
+              ->whereColumn('up.pembangunan_unit_rap_upah_id', 'pembangunan_unit_upah_pengajuan.pembangunan_unit_rap_upah_id')
+              ->whereNull('up.ditolak_pada')
+              ->whereColumn('up.id', '<=', 'pembangunan_unit_upah_pengajuan.id');
+        }, 'cumulative_requested')
+        ->latest();
 
         if ($filter === 'disetujui') {
             $query->whereNotNull('disetujui_mgr_produksi');
@@ -53,24 +63,6 @@ class PersetujuanUpahPropertiController extends Controller
         if ($action === 'approve') {
             $pengajuan->disetujui_mgr_produksi = now();
             $pengajuan->status_pengajuan = 'req_mgr_dukungan';
-            
-            // Generate PembangunanUnitUpah record if it doesn't exist yet
-            $existingUpah = PembangunanUnitUpah::where('pembangunan_unit_id', $pengajuan->pembangunan_unit_id)
-                ->where('pembangunan_unit_qc_id', $pengajuan->pembangunan_unit_qc_id)
-                ->where('nama_upah', $pengajuan->nama_upah)
-                ->first();
-                
-            if (!$existingUpah) {
-                PembangunanUnitUpah::create([
-                    'pembangunan_unit_id' => $pengajuan->pembangunan_unit_id,
-                    'pembangunan_unit_qc_id' => $pengajuan->pembangunan_unit_qc_id,
-                    'pembangunan_unit_rap_upah_id' => $pengajuan->pembangunan_unit_rap_upah_id,
-                    'nama_upah' => $pengajuan->nama_upah,
-                    'total_nominal' => $pengajuan->nominal_diajukan
-                ]);
-            } else {
-                $existingUpah->increment('total_nominal', $pengajuan->nominal_diajukan);
-            }
         } else {
             $pengajuan->status_pengajuan = 'ditolak_mgr_produksi';
             $pengajuan->alasan_ditolak = $request->alasan_ditolak;

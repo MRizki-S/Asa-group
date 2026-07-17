@@ -15,7 +15,8 @@
                 </button>
             </div>
 
-            <form :action="'{{ route('produksi.konfirmasiPembangunan') }}'" method="POST" class="p-4 space-y-4">
+            <form :action="'{{ route('produksi.konfirmasiPembangunan') }}'" method="POST" class="p-4 space-y-4"
+                x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                 @csrf
                 <input type="hidden" name="pengajuan_id" :value="selectedItem?.id">
 
@@ -103,9 +104,10 @@
                 <div class="flex justify-end gap-3 mt-6">
                     <button type="button" @click="closeModal()"
                         class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Batal</button>
-                    <button type="submit"
+                    <button type="submit" :disabled="submitting"
+                        :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
                         class="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-md">
-                        Konfirmasi & Simpan
+                        <span x-text="submitting ? 'Memproses...' : 'Konfirmasi & Simpan'"></span>
                     </button>
                 </div>
             </form>

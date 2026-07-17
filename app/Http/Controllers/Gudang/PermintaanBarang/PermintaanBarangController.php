@@ -504,6 +504,8 @@ class PermintaanBarangController extends Controller
 
     private function upsertBahan($order, $detail, float $hargaTotal, string $category): void
     {
+        $baseUnitName = $detail->barang?->baseUnit?->nama ?? ($detail->satuanModel?->nama ?? ($detail->satuan ?? '-'));
+
         if ($category === 'pembangunan_kawasan') {
             $bahan = PembangunanKawasanBahan::where('pembangunan_kawasan_id', $order->pembangunan_kawasan_id)
                 ->where('barang_id', $detail->barang_id)
@@ -511,7 +513,7 @@ class PermintaanBarangController extends Controller
 
             if ($bahan) {
                 $bahan->update([
-                    'jumlah_pakai' => (float) $bahan->jumlah_pakai + (float) $detail->jumlah_input,
+                    'jumlah_pakai' => (float) $bahan->jumlah_pakai + (float) $detail->jumlah_base,
                     'harga_total_snapshot' => (float) $bahan->harga_total_snapshot + $hargaTotal,
                 ]);
                 return;
@@ -521,8 +523,8 @@ class PermintaanBarangController extends Controller
                 'pembangunan_kawasan_id' => $order->pembangunan_kawasan_id,
                 'barang_id' => $detail->barang_id,
                 'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
-                'satuan' => $detail->satuan ?? $detail->barang?->baseUnit?->nama ?? '-',
-                'jumlah_pakai' => (float) $detail->jumlah_input,
+                'satuan' => $baseUnitName,
+                'jumlah_pakai' => (float) $detail->jumlah_base,
                 'harga_total_snapshot' => $hargaTotal,
             ]);
         } else {
@@ -532,7 +534,7 @@ class PermintaanBarangController extends Controller
 
             if ($bahan) {
                 $bahan->update([
-                    'jumlah_pakai' => (float) $bahan->jumlah_pakai + (float) $detail->jumlah_input,
+                    'jumlah_pakai' => (float) $bahan->jumlah_pakai + (float) $detail->jumlah_base,
                     'harga_total_snapshot' => (float) $bahan->harga_total_snapshot + $hargaTotal,
                 ]);
                 return;
@@ -542,8 +544,8 @@ class PermintaanBarangController extends Controller
                 'pembangunan_proyek_id' => $order->pembangunan_proyek_id,
                 'barang_id' => $detail->barang_id,
                 'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
-                'satuan' => $detail->satuan ?? $detail->barang?->baseUnit?->nama ?? '-',
-                'jumlah_pakai' => (float) $detail->jumlah_input,
+                'satuan' => $baseUnitName,
+                'jumlah_pakai' => (float) $detail->jumlah_base,
                 'harga_total_snapshot' => $hargaTotal,
             ]);
         }
