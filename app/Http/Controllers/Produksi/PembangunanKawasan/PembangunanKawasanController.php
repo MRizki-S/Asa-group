@@ -145,6 +145,11 @@ class PembangunanKawasanController extends Controller
     public function update(Request $request, $id)
     {
         $kawasan = PembangunanKawasan::findOrFail($id);
+        
+        if ($kawasan->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Kawasan ini sudah selesai, status tidak dapat diubah lagi.');
+        }
+
         $request->validate([
             'status_pembangunan' => 'required|in:proses,selesai',
         ]);
@@ -169,6 +174,15 @@ class PembangunanKawasanController extends Controller
         ]);
 
         $kawasan = PembangunanKawasan::with('perumahan')->find($request->pembangunan_kawasan_id);
+        
+        if (!$kawasan) {
+            return redirect()->back()->with('error', 'Kawasan tidak ditemukan');
+        }
+
+        if ($kawasan->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Kawasan ini sudah selesai, tidak dapat melakukan order barang.');
+        }
+
         $namaPerumahan = $kawasan?->perumahan?->nama_perumahaan;
         $ubsId = $namaPerumahan ? \App\Models\Ubs::where('nama_ubs', $namaPerumahan)->value('id') : null;
 
@@ -286,6 +300,11 @@ class PembangunanKawasanController extends Controller
 
     public function upahStore(Request $request)
     {
+        $kawasan = PembangunanKawasan::findOrFail($request->pembangunan_kawasan_id);
+        if ($kawasan->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Kawasan ini sudah selesai, tidak dapat mengajukan upah.');
+        }
+
         $request->validate([
             'pembangunan_kawasan_id' => 'required|exists:pembangunan_kawasan,id',
             'nama_upah' => 'required|string',

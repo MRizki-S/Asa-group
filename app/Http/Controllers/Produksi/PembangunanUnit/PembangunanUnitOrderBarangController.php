@@ -75,6 +75,10 @@ class PembangunanUnitOrderBarangController extends Controller
 
             $pembangunanUnit = PembangunanUnit::findOrFail($request->pembangunan_unit_id);
 
+            if (in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+                throw new \Exception('Unit ini sudah selesai dibangun, tidak dapat melakukan order barang.');
+            }
+
             $qcBelongsToUnit = DB::table('pembangunan_unit_qc')
                 ->where('id', $request->pembangunan_unit_qc_id)
                 ->where('pembangunan_unit_id', $pembangunanUnit->id)

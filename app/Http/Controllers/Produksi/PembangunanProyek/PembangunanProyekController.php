@@ -143,6 +143,11 @@ class PembangunanProyekController extends Controller
     public function update(Request $request, $id)
     {
         $project = PembangunanProyek::findOrFail($id);
+        
+        if ($project->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Proyek ini sudah selesai, status tidak dapat diubah lagi.');
+        }
+
         $request->validate([
             'status_pembangunan' => 'required|in:proses,selesai',
         ]);
@@ -156,6 +161,16 @@ class PembangunanProyekController extends Controller
 
     public function orderStore(Request $request)
     {
+        $project = PembangunanProyek::find($request->pembangunan_proyek_id);
+        
+        if (!$project) {
+            return redirect()->back()->with('error', 'Proyek tidak ditemukan');
+        }
+
+        if ($project->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Proyek ini sudah selesai, tidak dapat melakukan order barang.');
+        }
+
         $request->validate([
             'pembangunan_proyek_id' => 'required|exists:pembangunan_proyek,id',
             'jenis_order' => 'required|in:stock,direct',
@@ -283,6 +298,11 @@ class PembangunanProyekController extends Controller
 
     public function upahStore(Request $request)
     {
+        $project = PembangunanProyek::findOrFail($request->pembangunan_proyek_id);
+        if ($project->status_pembangunan === 'selesai') {
+            return redirect()->back()->with('error', 'Proyek ini sudah selesai, tidak dapat mengajukan upah.');
+        }
+
         $request->validate([
             'pembangunan_proyek_id' => 'required|exists:pembangunan_proyek,id',
             'nama_upah' => 'required|string',

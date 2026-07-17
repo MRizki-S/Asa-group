@@ -19,6 +19,11 @@ class PembangunanUnitPengajuanUpahController extends Controller
             'items.*.catatan_pengawas' => 'nullable|string',
         ]);
 
+        $unit = \App\Models\PembangunanUnit::findOrFail($request->pembangunan_unit_id);
+        if (in_array($unit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+            return response()->json(['message' => 'Unit ini sudah selesai dibangun, tidak dapat mengajukan upah lagi.'], 403);
+        }
+
         try {
             DB::beginTransaction();
 

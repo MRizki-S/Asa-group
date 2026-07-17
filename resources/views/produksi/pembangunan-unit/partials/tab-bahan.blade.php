@@ -27,7 +27,7 @@
                 <i class="fa-solid fa-chart-line text-blue-500"></i>
                 Lihat Laporan
             </a>
-            @if ($qc->pembangunanUnitRapBahan->count() > 0)
+            @if ($qc->pembangunanUnitRapBahan->count() > 0 && !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']))
                 <button @click="prepareOrder({{ json_encode($qc->pembangunanUnitRapBahan) }}, {{ $qc->id }})"
                     class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"

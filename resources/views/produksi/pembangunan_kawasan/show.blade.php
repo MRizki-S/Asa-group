@@ -122,6 +122,7 @@
     <div x-show="tab === 'order'" style="display: none;">
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             
+            @if ($data->status_pembangunan !== 'selesai')
             <!-- Kiri: Form Order Baru -->
             <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Order Barang</h3>
@@ -196,6 +197,13 @@
                     </div>
                 </form>
             </div>
+            @else
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-800/50 p-5 shadow-sm dark:border-gray-700 text-center flex flex-col items-center justify-center min-h-[300px]">
+                <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-3"></i>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-1">Pembangunan Selesai</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Kawasan ini sudah berstatus selesai. Tidak dapat membuat order barang lagi.</p>
+            </div>
+            @endif
 
             <!-- Kanan: Riwayat Order -->
             <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">
@@ -341,6 +349,7 @@
     <div x-show="tab === 'upah'" style="display: none;">
         <div class="grid grid-cols-1 xl:grid-cols-10 gap-6">
             
+            @if ($data->status_pembangunan !== 'selesai')
             <!-- Kiri: Form Pengajuan Upah -->
             <div class="xl:col-span-3 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Pengajuan Upah</h3>
@@ -382,6 +391,13 @@
                     </div>
                 </form>
             </div>
+            @else
+            <div class="xl:col-span-3 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-800/50 p-5 shadow-sm dark:border-gray-700 text-center flex flex-col items-center justify-center min-h-[250px]">
+                <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-3"></i>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-1">Pembangunan Selesai</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Kawasan ini sudah berstatus selesai. Tidak dapat mengajukan upah lagi.</p>
+            </div>
+            @endif
 
             <!-- Kanan: Riwayat Pengajuan Upah -->
             <div class="xl:col-span-7 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">

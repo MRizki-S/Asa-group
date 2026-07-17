@@ -143,14 +143,20 @@ class PembangunanUnitController extends Controller
     public function updateTask(Request $request, $id)
     {
         $task = PembangunanUnitQcTask::findOrFail($id);
+        $qc = $task->pembangunanUnitQc;
+        $unit = $qc->pembangunanUnit;
+
+        if (in_array($unit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembangunan unit ini sudah selesai, data tidak dapat diubah lagi.'
+            ], 403);
+        }
 
         $task->update([
             'keterangan_selesai' => $request->keterangan_selesai,
             'selesai' => in_array($request->keterangan_selesai, ['sesuai', 'sesuai dengan catatan']) ? 1 : 0,
         ]);
-
-        $qc = $task->pembangunanUnitQc;
-        $unit = $qc->pembangunanUnit;
 
         $allTasksInQc = $qc->pembangunanUnitQcTask;
         $totalTasks = $allTasksInQc->count();
@@ -162,21 +168,9 @@ class PembangunanUnitController extends Controller
             $barColor = $hasNotes ? 'bg-yellow-500' : 'bg-green-500';
         }
 
-        $allTasks = PembangunanUnitQcTask::whereHas('pembangunanUnitQc', function ($query) use ($unit) {
-            $query->where('pembangunan_unit_id', $unit->id);
-        })->get();
-
-        $totalTasks = $allTasks->count();
-        $completedTasks = $allTasks->where('selesai', 1)->count();
-
-        $hasNotes = $allTasks->where('keterangan_selesai', 'sesuai dengan catatan')->count() > 0;
-
-        if ($completedTasks === $totalTasks) {
-            $newStatus = $hasNotes ? 'selesai dengan catatan' : 'selesai';
-        } else {
-            $newStatus = 'proses';
-        }
-
+        // We do NOT update the unit status_pembangunan automatically to selesai!
+        // We keep it as 'proses' unless it's manually submitted.
+        $newStatus = 'proses';
         $unit->update([
             'status_pembangunan' => $newStatus
         ]);
@@ -184,7 +178,7 @@ class PembangunanUnitController extends Controller
         $unitTable = $unit->unit;
         if ($unitTable) {
             $unitTable->update([
-                'status_pembangunan' => in_array($newStatus, ['selesai', 'selesai dengan catatan']) ? 'selesai dibangun' : 'dalam pembangunan'
+                'status_pembangunan' => 'dalam pembangunan'
             ]);
         }
 
@@ -231,7 +225,47 @@ class PembangunanUnitController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id) {}
+    public function update(Request $request, string $id)
+    {
+        $pembangunanUnit = PembangunanUnit::findOrFail($id);
+
+        if (in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+            return redirect()->back()->with('error', 'Pembangunan unit ini sudah selesai, status tidak dapat diubah lagi.');
+        }
+
+        // Calculate progress to make sure it is 100%
+        $totalQc = $pembangunanUnit->pembangunanUnitQc->count();
+        $sumProgressQc = 0;
+        foreach ($pembangunanUnit->pembangunanUnitQc as $qc) {
+            $qcProgress = $qc->total_task > 0 ? ($qc->task_selesai_count / $qc->total_task) * 100 : 0;
+            $sumProgressQc += $qcProgress;
+        }
+        $totalProgres = $totalQc > 0 ? round($sumProgressQc / $totalQc, 2) : 0;
+
+        if ($totalProgres < 100.0) {
+            return redirect()->back()->with('error', 'Status selesai hanya dapat diaktifkan jika progres pembangunan sudah 100%.');
+        }
+
+        // Determine if there are notes in any task to decide whether it is "selesai" or "selesai dengan catatan"
+        $hasNotes = PembangunanUnitQcTask::whereHas('pembangunanUnitQc', function ($query) use ($pembangunanUnit) {
+            $query->where('pembangunan_unit_id', $pembangunanUnit->id);
+        })->where('keterangan_selesai', 'sesuai dengan catatan')->exists();
+
+        $newStatus = $hasNotes ? 'selesai dengan catatan' : 'selesai';
+
+        $pembangunanUnit->update([
+            'status_pembangunan' => $newStatus
+        ]);
+
+        $unitTable = $pembangunanUnit->unit;
+        if ($unitTable) {
+            $unitTable->update([
+                'status_pembangunan' => 'selesai dibangun'
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Status pembangunan unit berhasil diperbarui menjadi selesai.');
+    }
 
     /**
      * Remove the specified resource from storage.

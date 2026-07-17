@@ -43,6 +43,19 @@
                                 <i class="fa-solid fa-circle-info animate-pulse"></i>
                             </button>
                         </template>
+
+                        {{-- Manual Selesai Button (only shows if progress is 100% and status is 'proses') --}}
+                        @if ($data->total_progres >= 100.0)
+                        <template x-if="unitStatus === 'proses'">
+                            <form action="{{ route('produksi.pembangunanUnit.update', $data->id) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-sm transition active:scale-95">
+                                    <i class="fa-solid fa-circle-check"></i> Set Selesai
+                                </button>
+                            </form>
+                        </template>
+                        @endif
                     </div>
                 </div>
 
@@ -118,21 +131,30 @@
                 </div>
             </div>
 
-            <div class="flex gap-2">
-                <a href="{{ route('produksi.pembangunanUnit.laporanBahan', ['id' => $data->id]) }}"
-                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-                    Laporan Bahan
-                </a>
+            <div class="relative w-full" x-data="{ openReportDropdown: false }">
+                <button @click="openReportDropdown = !openReportDropdown"
+                    class="w-full inline-flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+                    <span>Lihat Laporan</span>
+                    <i class="fa-solid fa-chevron-down transition-transform" :class="openReportDropdown ? 'rotate-180' : ''"></i>
+                </button>
 
-                <a href="{{ route('produksi.pembangunanUnit.laporanUpah', ['id' => $data->id]) }}"
-                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-                    Laporan Upah
-                </a>
-
-                <a href="{{ route('produksi.pembangunanUnit.laporanTermin.export', $data->id) }}"
-                    class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
-                    Laporan Termin
-                </a>
+                <div x-show="openReportDropdown" @click.away="openReportDropdown = false" x-transition x-cloak
+                    class="absolute right-0 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden text-left">
+                    <div class="p-1 space-y-1">
+                        <a href="{{ route('produksi.pembangunanUnit.laporanBahan', ['id' => $data->id]) }}"
+                            class="block px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <i class="fa-solid fa-cubes mr-1.5 text-blue-500"></i> Laporan Bahan
+                        </a>
+                        <a href="{{ route('produksi.pembangunanUnit.laporanUpah', ['id' => $data->id]) }}"
+                            class="block px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <i class="fa-solid fa-money-bill-wave mr-1.5 text-green-500"></i> Laporan Upah
+                        </a>
+                        <a href="{{ route('produksi.pembangunanUnit.laporanTermin.export', $data->id) }}"
+                            class="block px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <i class="fa-solid fa-file-invoice-dollar mr-2 text-purple-500"></i> Laporan Termin
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
