@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Produksi;
+namespace App\Http\Controllers\Produksi\PembangunanProyek;
 
 use App\Http\Controllers\Controller;
 use App\Models\PembangunanProyek;
@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NotificationGroupService;
 
-class ProjectBaruController extends Controller
+class BuatPembangunanProyekController extends Controller
 {
     protected NotificationGroupService $notificationGroup;
 

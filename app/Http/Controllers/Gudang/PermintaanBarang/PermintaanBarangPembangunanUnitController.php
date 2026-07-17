@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Gudang;
+namespace App\Http\Controllers\Gudang\PermintaanBarang;
 
 use App\Http\Controllers\Controller;
 use App\Models\BarangSatuanKonversi;
@@ -11,10 +11,10 @@ use App\Models\PembangunanUnitBarangFifoUsage;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\StockGudang;
 use App\Models\StockLedger;
+use App\Services\NotificationPribadiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\NotificationPribadiService;
 
 class PermintaanBarangPembangunanUnitController extends Controller
 {

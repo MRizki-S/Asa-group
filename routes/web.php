@@ -20,8 +20,8 @@ use App\Http\Controllers\Gudang\KomposisiRakitanController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
-use App\Http\Controllers\Gudang\PermintaanBarangController;
-use App\Http\Controllers\Gudang\PermintaanBarangPembangunanUnitController;
+use App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangController;
+use App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanUnitController;
 use App\Http\Controllers\Gudang\ProduksiRakitanController;
 use App\Http\Controllers\Gudang\StockBarangController;
 
@@ -72,10 +72,11 @@ use App\Http\Controllers\Produksi\PenamaanUpahController;
 use App\Http\Controllers\Produksi\PermintaanDibangunController;
 use App\Http\Controllers\Produksi\PersetujuanUpahController;
 use App\Http\Controllers\Produksi\TerminController;
-use App\Http\Controllers\Produksi\ProjectBaruController;
-use App\Http\Controllers\Produksi\PembangunanProyekController;
-use App\Http\Controllers\Produksi\BuatPembangunanKawasanController;
-use App\Http\Controllers\Produksi\PembangunanKawasanController;
+
+use App\Http\Controllers\Produksi\PembangunanProyek\BuatPembangunanProyekController;
+use App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekController;
+use App\Http\Controllers\Produksi\PembangunanKawasan\BuatPembangunanKawasanController;
+use App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanController;
 use App\Http\Controllers\Produksi\PersetujuanUpahPropertiController;
 use App\Http\Controllers\Produksi\PersetujuanUpahKontraktorController;
 use App\Http\Controllers\Produksi\PersetujuanUpahKawasanController;
@@ -661,8 +662,8 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     // Kontraktor (Pembangunan Proyek)
     Route::middleware('can:produksi.project-baru')->group(function () {
-        Route::resource('project-baru', ProjectBaruController::class)->names('produksi.projectBaru');
-        Route::post('project-baru/{id}/proses', [ProjectBaruController::class, 'proses'])->name('produksi.projectBaru.proses');
+        Route::resource('project-baru', BuatPembangunanProyekController::class)->names('produksi.projectBaru');
+        Route::post('project-baru/{id}/proses', [BuatPembangunanProyekController::class, 'proses'])->name('produksi.projectBaru.proses');
     });
 
     Route::middleware('can:produksi.pembangunan-proyek')->group(function () {

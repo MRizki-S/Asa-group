@@ -1,8 +1,8 @@
-Pada semua table order meliputi 
+Pada semua table order meliputi
     - pembangunan_unit_barang_oder
     - pembangunan_kawasan_barang_order
     - pembangunan_proyek_barang_order
-ditambahkan column tambahkan 1 column itu untuk nomor_order gunain format ini 
+ditambahkan column tambahkan 1 column itu untuk nomor_order gunain format ini
     ORD-UNT-20260716-0001 (pembangunan unit)
     ORD-KWS-20260716-0001 (pembangunan kawasan)
     ORD-MGN-20260716-0001 (pembangunan proyek mangoon)
@@ -21,7 +21,7 @@ pembangunan_unit_barang_order (tidak ada perubahaan column dll)
 - status_order
 - tanggal_selesai
 - created_by
-- timestampsa 
+- timestampsa
 
 pembangunan_unit_barang_order_detail (pembangunan_unit_barang_order_detail)
 
@@ -29,7 +29,7 @@ pembangunan_unit_barang_order_detail (pembangunan_unit_barang_order_detail)
 - order_id
 - barang_id
 - satuan_id
-- ubs_id    
+- ubs_id
 - jumlah_input
 - nama_barang
 - satuan
@@ -119,13 +119,13 @@ pembangunan_unit_barang_return_fifo
     Update Termin
 
 
-    nota 1 ; semen 4 sak 
-    nota 2 ; semen 5 sak 
+    nota 1 ; semen 4 sak
+    nota 2 ; semen 5 sak
 
     orderan dari pengawas semen 5 sak, nah berarti ngambil dari nota 1 sebanyak 4 sak dan nota 2 sebanyak 1 sak
-    maka fifo usage akan mencatat 
+    maka fifo usage akan mencatat
     - nota 1 -> 4 sak
-    - nota 2 -> 1 sak 
+    - nota 2 -> 1 sak
 
 ###RETURN BARANG - ACC KONFIRMASI GUDANG
 => ALUR ACC RETURN BARANG KE GUDANG
@@ -166,26 +166,26 @@ Syarat Return Barang
     Setiap return harus berasal dari: pembangunan unit + QC
         contoh: Unit A > QC 1  Pondasi
         Return pondasi tidak boleh di gabung dengan return QC 2 (Dinding)
-    
+
 2. Return tidak berdasarkan order
     misalnya: Order 1 -> semen 4 sak
               Order 2 -> Semen 3 Sak
     Pengawas tidak pernah memilih Order 1 atau Order 2 untuk return barang, yang ditampilkan hanya
         -> Semen - Total diterima: 7 Sak | Sudah return: 2 Sak | Sisa Return: 5 sak
     Pengawas cukup menentukan jumlah yang dikembalikan.
-    
+
 3. Barang yang dapat direturn
     Barang hanya muncul apabila
        - Status order = selesai && Konfirmasi = true
     Artinya: Barang sudah benar benar keluar dari gudang.
 
-4. Maksimal Return 
+4. Maksimal Return
     Maksimal return dihitung >> Total Order ACC - Total Return
     Contoh: Order 1 -> 10 sak Semen
             Return 1 -> 2 sak Semen
             Maksimal Return -> 8 sak Semen
 
-5. Satuan return 
+5. Satuan return
     Pengawas boleh memilih satuan.
         Contoh: Keramik Kamar mandi > 4 Dus atau 16 Pcs
     kemudian sistem mengubah menjadi jumlah_base menggunakan barang_satuan_konversi sehingga seluruf validasi menggunkan jumlah_base
@@ -195,12 +195,12 @@ Syarat Return Barang
     -> DiProses (Sudah dikirim ke gudang & belum mempengaruhi data apapun)
     -> Selesai (Gudang sudah menerima barang dan kualifikasi barang itu menjadi barang layak dan rusak)
     -> Ditolak (Gudang menolak return barang, ketika tidak ada barang yang direturn dilapangan)
-    
+
 KETENTUAN SAAT PENGAWAS UNIT SUBMIT RETURN
 => ketika status menjadi (diproses)
-    sistem hanya menyimpan: 
+    sistem hanya menyimpan:
         - header return
-        - detail return 
+        - detail return
         - belum terjadi
             ❌ Penambahan Stock Gudang
             ❌ Stock Ledger
@@ -215,15 +215,15 @@ KETENTUAN SAAT PENGAWAS UNIT SUBMIT RETURN
 
 => Prinsip fifo
     FIFO hanya digunakan oleh Backend.
-    Pengawas tidak pernah mengetahui Order pertama, order kedua atau nota barang masuk. 
+    Pengawas tidak pernah mengetahui Order pertama, order kedua atau nota barang masuk.
     FIFO hanya bertugas menentukan Order Detail mana yang harus dikurangi.
 
 => Prinsip Harga
     Harga return selalu menggunakan harga_satuan_snapshot milik order_detail
     bukan harga terbaru dan bukan mengambil ulang fifo dari nota barang masuk. Karena harga sudah dibekukan saat order di-ACC
 
-=> Prinsip Termin 
-    nilai pembangunan_unit_bahan selalu mencerminkan barang yang benar benar dipakai proyek, oleh karena itu setiap return 
+=> Prinsip Termin
+    nilai pembangunan_unit_bahan selalu mencerminkan barang yang benar benar dipakai proyek, oleh karena itu setiap return
     baik layak maupun rusak tetap mengurangi jumlah_pakai && harga_total_snapshot
 
 
@@ -235,25 +235,25 @@ A. BUSINESS RULE ORDER BARANG
         Setiap order hanya boleh berasal dari satu QC.
         Contoh: Unit A
                 QC Pondasi
-                
-    2. Jenis Order 
+
+    2. Jenis Order
         Order terdiri dari stock / direct Barang Stock dan Direct tidak boleh dicampur dalam satu order.
-    
+
     3. Status order
         Diproses (Gudang belum acc)
         Selesai (Gudang sudah acc)
-    
+
     Ketentuan ACC GUDANG ORDER
         Saat Gudang menekan tombol ACC seluruh proses dilakukan dalam satu Database Transaction.
 
     Langkah 1
-        Validasi: 
+        Validasi:
             - stok mencukupi
             - barang masih aktif
             - order belum pernah di ACC
         Jika gagal
-            - Rollback. 
-    
+            - Rollback.
+
     Langkah 2
         FIFO Pengeluaran
         - Backend mengambil Nota Barang Masuk berdasarkan FIFO.
@@ -262,41 +262,41 @@ A. BUSINESS RULE ORDER BARANG
             - Nota B ->3 Sak
 
             - Order ->7 Sak
-        backend mengambil: 
+        backend mengambil:
             5 dari nota a & 2 dari nota b
-    
+
     Langkah 3
         Update Nota Barang Masuk
     Mengurangi jumlah_sisa
             pada setiap layer FIFO yang digunakan.
-    
+
     Langkah 4
         Membuat FIFO Usage
             Untuk setiap layer FIFO yang dipakai dibuat mapping (pembangunan_unit_barang_fifo_usage)
-        contoh: 
-            order detail   | nota     | pakai 
+        contoh:
+            order detail   | nota     | pakai
             20             | nota A   | 5
             20             | nota B   | 2
-        table ini menjadi history permanen asal barang keluar. 
+        table ini menjadi history permanen asal barang keluar.
 
     Langkah 5
         Mengurangi Stock Gudang
             Stock Gudang dikurangi sesuai jumlah yang keluar.
-    
-    Langkah 6 
+
+    Langkah 6
         Membuat Stock Ledger
             Tipe Keluar
             menggunakan snapshot harga FIFO.
-    
-    Langkah 7 
+
+    Langkah 7
         Update Order Detail
             Mengisi:  konfirmasi, harga_satuan_snapshot, harga_total_snapshot
-            
+
     Langkah 8
-        Update termin 
+        Update termin
             menambah pembangunan_unit_bahan, karena material sekarang dianggap telah digunakan proyek
-    
-    Langkah 9 
+
+    Langkah 9
         Update status order
             status menjadi selesai
 
@@ -306,27 +306,27 @@ B. BUSINESS RULE RETURN BARANG
         Return dilakukan berdasarkan = Pembangunan Unit + QC
         bukan berdasarkan Order Barang.
 
-    Ketentuan ACC GUDANG RETURN 
+    Ketentuan ACC GUDANG RETURN
         Seluruh proses dilakukan dalam satu database transaction.
-    
-    Langkah 1
-        validasi 
-        Jumlah Return tidak boleh melebihi = Total acc - total return 
 
-    Langkah 2 
+    Langkah 1
+        validasi
+        Jumlah Return tidak boleh melebihi = Total acc - total return
+
+    Langkah 2
         FIFO Return
         Backend mencari (pembangunan_unit_barang_fifo_usage) yang masih memiliki jumlah_base > jumlah_return_base
         berdasarkan FIFO pemakaian.
         Backend membuat mapping (pembangunan_unit_barang_return_fifo)
         Pengawas tidak mengetahui proses ini.
 
-    Langkah 3 
+    Langkah 3
         Update fifo usage
-        untuk setiap mapping jumlah_return_base ditambah sesuai qty return. 
+        untuk setiap mapping jumlah_return_base ditambah sesuai qty return.
         Dengan demikian setiap layer FIFO mengetahui berapa yang sudah dikembalikan.
-    
+
     Langkah 4
-        Update order detail 
+        Update order detail
         Order Detail yang terkait ikut diperbarui jumlah_return & jumlah_return_base
 
     Langkah 5
@@ -337,10 +337,10 @@ B. BUSINESS RULE RETURN BARANG
         Input Pemeriksaan Gudang
         Gudang menentukan: Layak / Rusak
         Harus memenuhi = layak + rusak = total return
-    
-    Langkah 7 
+
+    Langkah 7
         Barang Layak
-        Jika    
+        Jika
             jumlah_layak_base > 0
         maka
             Membuat Nota Barang Masuk RTN
@@ -361,7 +361,7 @@ B. BUSINESS RULE RETURN BARANG
 
     Langkah 9
         Update status return
-        Status menjadi selesai && 
+        Status menjadi selesai &&
         mengisi acc_by & acc_at
 
-    
+
