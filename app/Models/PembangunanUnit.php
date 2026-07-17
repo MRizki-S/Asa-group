@@ -12,6 +12,7 @@ class PembangunanUnit extends Model
         'perumahaan_id',
         'tahap_id',
         'pengawas_id',
+        'spv_id',
         'tanggal_mulai',
         'tanggal_selesai',
         'status_pembangunan',
@@ -42,6 +43,11 @@ class PembangunanUnit extends Model
     public function pengawas()
     {
         return $this->belongsTo(User::class, 'pengawas_id');
+    }
+
+    public function spv()
+    {
+        return $this->belongsTo(User::class, 'spv_id');
     }
 
     public function pengajuan()

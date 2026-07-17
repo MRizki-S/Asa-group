@@ -97,6 +97,7 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Tahap</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">QC</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">SPV</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Progres &
                                 Status</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Pengawas
@@ -116,6 +117,9 @@
                                 </td>
                                 <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
                                     {{ $item->qcContainer->nama_container }}
+                                </td>
+                                <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
+                                    {{ $item->spv->nama_lengkap ?? '-' }}
                                 </td>
 
                                 <td class="p-0 text-center" style="padding: 0 !important;">

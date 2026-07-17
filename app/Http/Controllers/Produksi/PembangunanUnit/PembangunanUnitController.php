@@ -38,13 +38,19 @@ class PembangunanUnitController extends Controller
 
         $user = Auth::user();
         if ($user->hasRole('Pengawas Unit')) {
-            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'qcContainer', 'pengajuan'])
+            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
                 ->where('perumahaan_id', $perumahaanId)
                 ->where('pengawas_id', $user->id)
                 ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
                 ->latest('created_at');
+        } elseif ($user->hasRole('SPV Drafting, Teknis & Estimasi')) {
+            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
+                ->where('perumahaan_id', $perumahaanId)
+                ->where('spv_id', $user->id)
+                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
+                ->latest('created_at');
         } else {
-            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'qcContainer', 'pengajuan'])
+            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
                 ->where('perumahaan_id', $perumahaanId)
                 ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
                 ->latest('created_at');
@@ -99,7 +105,7 @@ class PembangunanUnitController extends Controller
      */
     public function show(string $id)
     {
-        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
+        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'spv', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
 
         // Get already ordered base quantities per RAP item
         $orderedQuantities = \App\Models\PembangunanUnitBarangOrderDetail::query()
@@ -274,6 +280,12 @@ class PembangunanUnitController extends Controller
         $pembangunanUnit->update([
             'status_pembangunan' => $newStatus
         ]);
+
+        if ($pembangunanUnit->pengajuan) {
+            $pembangunanUnit->pengajuan->update([
+                'status_pengajuan' => 'selesai'
+            ]);
+        }
 
         $unitTable = $pembangunanUnit->unit;
         if ($unitTable) {

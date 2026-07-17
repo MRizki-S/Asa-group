@@ -231,7 +231,7 @@
                                     </p>
                                     <div class="flex items-center gap-2">
                                         <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
-                                            ORDER-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                                            {{ $order->nomor_order }}
                                         </p>
                                         @if($order->returns && $order->returns->count() > 0)
                                             <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Ada Retur</span>
@@ -336,10 +336,10 @@
                                 @endif
 
                                 @if ($order->status_order == 'diproses')
-                                    <div class="pt-4">
+                                    <div class="pt-4 flex justify-end">
                                         <button type="button"
                                             @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanProyek.orderDestroy', $order->id) }}'"
-                                            class="w-full py-2.5 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                            class="px-4 py-2 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
                                             <i class="fa-solid fa-trash-can"></i>
                                             Batalkan Orderan
                                         </button>
@@ -543,10 +543,10 @@
                                      @endif
 
                                     @if(is_null($u->disetujui_mgr_produksi) && is_null($u->disetujui_mgr_dukungan) && is_null($u->disetujui_akuntan) && is_null($u->ditolak_pada))
-                                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
                                          <button type="button"
                                              @click="openCancelUpahModal = true; cancelUpahActionUrl = '{{ route('produksi.pembangunanProyek.upahDestroy', $u->id) }}'"
-                                             class="w-full py-2.5 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
+                                             class="px-4 py-2 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
                                              <i class="fa-solid fa-trash-can"></i>
                                              Batalkan Pengajuan Upah
                                          </button>

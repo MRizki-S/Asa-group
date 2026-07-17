@@ -607,7 +607,7 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     // Permintaan Dibangun
     Route::middleware('can:produksi.permintaan-dibangun')->group(function () {
-        Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->except(['edit', 'update'])->names('produksi.pengajuanPembangunanUnit');
+        Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->names('produksi.pengajuanPembangunanUnit');
         Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
         Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
     });

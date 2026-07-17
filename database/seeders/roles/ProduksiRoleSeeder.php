@@ -37,6 +37,10 @@ class ProduksiRoleSeeder extends Seeder
                     'produksi.penamaan-upah',
                     'produksi.upah-kontraktor',
                 ],
+                'SPV Drafting, Teknis & Estimasi' => [
+                    'produksi.pembangunan-unit',
+                    'produksi.permintaan-dibangun',
+                ],
             ];
 
             // 2. Create Roles & Sync Permissions

@@ -17,6 +17,7 @@
                 'status' => $p->status_pengajuan,
                 'qcContainerName' => $p->pembangunanUnit->qcContainer->nama_container ?? '-',
                 'pengawas' => $p->pembangunanUnit->pengawas->nama_lengkap ?? '-',
+                'spvName' => $p->pembangunanUnit->spv->nama_lengkap ?? '-',
                 'tanggal' => \Carbon\Carbon::parse($p->tanggal_diajukan)->format('d M Y H:i:s'),
                 'tanggal_respon' => $p->tanggal_direspon
                     ? \Carbon\Carbon::parse($p->tanggal_direspon)->format('d M Y H:i:s')
@@ -27,6 +28,12 @@
                 'tanggal_selesai' => $p->pembangunanUnit->tanggal_selesai
                     ? \Carbon\Carbon::parse($p->pembangunanUnit->tanggal_selesai)->format('d M Y')
                     : '',
+                'can_edit' => (
+                    $p->status_pengajuan === 'dibangun' && (
+                        auth()->user()->hasRole(['Superadmin', 'Manager Produksi']) || 
+                        (auth()->user()->hasRole('SPV Drafting, Teknis & Estimasi') && $p->pembangunanUnit->spv_id === auth()->user()->id)
+                    )
+                ),
             ],
         )->toJson() }})">
 
@@ -61,6 +68,10 @@
                         :class="filterStatus === 'dibangun' ? 'bg-white shadow text-green-600' :
                             'text-gray-500 hover:text-gray-700'"
                         class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase">Dibangun</button>
+                    <button @click="filterStatus = 'selesai'; currentPage = 1"
+                        :class="filterStatus === 'selesai' ? 'bg-white shadow text-blue-600' :
+                            'text-gray-500 hover:text-gray-700'"
+                        class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase">Selesai</button>
                 </div>
             </div>
         </div>
@@ -69,94 +80,100 @@
             x-show="pagedData.length > 0">
             <template x-for="item in pagedData" :key="item.id">
                 <div
-                    class="group rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-col h-full justify-between">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <span
-                                    :class="{
-                                        'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': item
-                                            .status === 'pending',
-                                        'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': item
-                                            .status === 'dibangun'
-                                    }"
-                                    class="rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
-                                    x-text="item.status"></span>
+                    class="group flex flex-col justify-between h-full rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all dark:border-gray-700 dark:bg-gray-800">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span
+                                :class="{
+                                    'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': item.status === 'pending',
+                                    'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': item.status === 'dibangun',
+                                    'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': item.status === 'selesai'
+                                }"
+                                class="rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
+                                x-text="item.status"></span>
 
-                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <template x-if="item.status === 'pending'">
-                                        <button @click="confirmCancel(item.id)"
-                                            title="Batalkan Pengajuan"
-                                            class="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <h4 class="text-lg font-bold text-gray-800 dark:text-white leading-tight"
-                                x-text="'Unit: ' + item.unit"></h4>
-                            <p class="text-xs text-gray-500 mt-1 font-medium" x-text="item.perumahaan"></p>
-
-                            <div class="mt-4 space-y-2 border-t border-gray-50 pt-3 dark:border-gray-700">
-                                <div class="flex justify-between text-[11px] items-center">
-                                    <span class="text-gray-400">Tahap:</span>
-                                    <span
-                                        class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold"
-                                        x-text="item.tahap"></span>
-                                </div>
-                                <div class="flex justify-between text-[11px] items-center">
-                                    <span class="text-gray-400">QC:</span>
-                                    <span class="text-blue-600 dark:text-blue-400 font-bold"
-                                        x-text="item.qcContainerName"></span>
-                                </div>
-                                <div class="flex justify-between text-[11px] items-center">
-                                    <span class="text-gray-400">Pengawas:</span>
-                                    <span class="text-gray-700 dark:text-gray-300 font-medium"
-                                        x-text="item.pengawas"></span>
-                                </div>
-                                <div class="flex justify-between text-[11px] items-center">
-                                    <span class="text-gray-400">Waktu:</span>
-                                    <span class="text-gray-700 dark:text-gray-300 font-medium"
-                                        x-text="item.tanggal_mulai + ' - ' + item.tanggal_selesai"></span>
-                                </div>
-                            </div>
                         </div>
 
-                        <div class="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
-                            <div class="flex items-center justify-between text-[10px] text-gray-400">
-                                <div class="flex items-center">
-                                    <svg class="w-3 h-3 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <span x-text="item.pengaju"></span>
-                                </div>
-                                <span x-text="item.tanggal"></span>
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-white leading-tight"
+                            x-text="'Unit: ' + item.unit"></h4>
+                        <p class="text-xs text-gray-500 mt-1 font-medium" x-text="item.perumahaan"></p>
+
+                        <div class="mt-4 space-y-2 border-t border-gray-50 pt-3 dark:border-gray-700">
+                            <div class="flex justify-between text-[11px] items-center">
+                                <span class="text-gray-400">Tahap:</span>
+                                <span
+                                    class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold"
+                                    x-text="item.tahap"></span>
                             </div>
+                            <div class="flex justify-between text-[11px] items-center">
+                                <span class="text-gray-400">QC:</span>
+                                <span class="text-blue-600 dark:text-blue-400 font-bold"
+                                    x-text="item.qcContainerName"></span>
+                            </div>
+                            <div class="flex justify-between text-[11px] items-center">
+                                <span class="text-gray-400">SPV:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium"
+                                    x-text="item.spvName"></span>
+                            </div>
+                            <div class="flex justify-between text-[11px] items-center">
+                                <span class="text-gray-400">Pengawas:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium"
+                                    x-text="item.pengawas"></span>
+                            </div>
+                            <div class="flex justify-between text-[11px] items-center">
+                                <span class="text-gray-400">Waktu:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium"
+                                    x-text="item.tanggal_mulai + ' - ' + item.tanggal_selesai"></span>
+                            </div>
+                        </div>
+                    </div>
 
-                            <template x-if="item.status === 'pending'">
+                    <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
+                        <div class="flex items-center justify-between text-[10px] text-gray-400">
+                            <div class="flex items-center">
+                                <svg class="w-3 h-3 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span class="text-gray-400 mr-1">Diajukan oleh:</span>
+                                <span class="font-semibold text-gray-700 dark:text-gray-300" x-text="item.pengaju"></span>
+                            </div>
+                            <span x-text="item.tanggal"></span>
+                        </div>
+
+                        <template x-if="item.status === 'pending'">
+                            <div class="flex gap-2">
                                 <button @click="openModal(item)"
-                                    class="w-full py-2.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 shadow-sm">
-                                    Kofirmasi Pembangunan
+                                    class="flex-grow py-2.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 shadow-sm">
+                                    Konfirmasi Pembangunan
                                 </button>
-                            </template>
+                                <button @click="confirmCancel(item.id)"
+                                    title="Batalkan Pengajuan"
+                                    class="px-4 py-2.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100 dark:bg-red-950/20 dark:border-red-900 dark:text-red-400 shadow-sm">
+                                    Batalkan
+                                </button>
+                            </div>
+                        </template>
 
-                            <template x-if="item.status !== 'pending'">
+                        <template x-if="item.status !== 'pending'">
+                            <div class="space-y-2">
                                 <div
                                     class="p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-700">
-                                    <p class="text-[9px] text-gray-400 uppercase font-bold mb-1">Direspon Oleh:</p>
+                                    <p class="text-[9px] text-gray-400 uppercase font-bold mb-1">Dikonfirmasi Oleh:</p>
                                     <div class="flex items-center justify-between text-[10px]">
                                         <span class="font-bold text-gray-700 dark:text-gray-300 truncate pr-2"
                                             x-text="item.penerima"></span>
                                         <span class="text-gray-400 whitespace-nowrap" x-text="item.tanggal_respon"></span>
                                     </div>
                                 </div>
-                            </template>
-                        </div>
+                                <template x-if="item.can_edit">
+                                    <a :href="'/produksi/permintaan-dibangun/' + item.id + '/edit'"
+                                        class="block w-full text-center py-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg transition-colors border border-blue-100 dark:border-blue-800 shadow-sm">
+                                        <i class="fa-solid fa-edit mr-1"></i> Edit Pembangunan
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -245,6 +262,43 @@
                 openModal(item) {
                     this.selectedItem = item;
                     this.isModalOpen = true;
+                    this.$nextTick(() => {
+                        const modalContainer = $('#selectSpv').closest('.fixed');
+
+                        if ($('#selectSpv').hasClass("select2-hidden-accessible")) {
+                            $('#selectSpv').select2('destroy');
+                        }
+                        if ($('#selectPengawas').hasClass("select2-hidden-accessible")) {
+                            $('#selectPengawas').select2('destroy');
+                        }
+                        if ($('#selectQC').hasClass("select2-hidden-accessible")) {
+                            $('#selectQC').select2('destroy');
+                        }
+
+                        $('#selectSpv').select2({
+                            placeholder: "-- Pilih SPV --",
+                            theme: 'bootstrap4',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: modalContainer
+                        }).val('').trigger('change');
+
+                        $('#selectPengawas').select2({
+                            placeholder: "-- Pilih Pengawas --",
+                            theme: 'bootstrap4',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: modalContainer
+                        }).val('').trigger('change');
+
+                        $('#selectQC').select2({
+                            placeholder: "-- Pilih QC --",
+                            theme: 'bootstrap4',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: modalContainer
+                        }).val('').trigger('change');
+                    });
                 },
                 closeModal() {
                     this.isModalOpen = false;

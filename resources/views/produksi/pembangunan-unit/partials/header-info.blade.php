@@ -12,10 +12,12 @@
                         Tahap {{ $data->tahap->nama_tahap }}
                     </span>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-x-2 gap-y-1">
                     <i class="fa-solid fa-location-dot"></i> {{ $data->perumahaan->nama_perumahaan ?? '-' }}
                     <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <i class="fa-solid fa-user-gear"></i> {{ $data->pengawas->nama_lengkap ?? '-' }}
+                    <i class="fa-solid fa-user-shield"></i> <span class="font-semibold text-gray-600 dark:text-gray-300">SPV:</span> {{ $data->spv->nama_lengkap ?? '-' }}
+                    <span class="text-gray-300 dark:text-gray-600">|</span>
+                    <i class="fa-solid fa-user-gear"></i> <span class="font-semibold text-gray-600 dark:text-gray-300">Pengawas:</span> {{ $data->pengawas->nama_lengkap ?? '-' }}
                 </p>
             </div>
 

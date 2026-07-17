@@ -1147,15 +1147,15 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('manager.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
-                                            :class="page === 'managerPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Kontraktor
-                                        </a>
-                                    </li>
-                                    <li>
                                         <a href="{{ route('manager.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'managerPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                             Upah Kawasan
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('manager.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'managerPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Kontraktor
                                         </a>
                                     </li>
                                 </ul>
@@ -1189,15 +1189,15 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('akuntan.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
-                                            :class="page === 'akuntanPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Kontraktor
-                                        </a>
-                                    </li>
-                                    <li>
                                         <a href="{{ route('akuntan.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'akuntanPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                             Upah Kawasan
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('akuntan.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
+                                            :class="page === 'akuntanPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Upah Kontraktor
                                         </a>
                                     </li>
                                 </ul>
@@ -1760,6 +1760,46 @@
                     </li>
                     @endcanany
 
+                    <!-- Pembangunan Kawasan -->
+                    @canany(['produksi.buat-pembangunan-kawasan', 'produksi.pembangunan-kawasan'])
+                    <li>
+                        <a href="#" @click.prevent="selected = (selected === 'Kawasan' ? '':'Kawasan')"
+                            class="menu-item group"
+                            :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Kawasan</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'Kawasan') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                        <div class="overflow-hidden transform translate" :class="(selected === 'Kawasan') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                @can('produksi.buat-pembangunan-kawasan')
+                                <li>
+                                    <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'buatPembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Buat Pemb.
+                                    </a>
+                                </li>
+                                @endcan
+                                @can('produksi.pembangunan-kawasan')
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanKawasan.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'pembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Pemb. Kawasan
+                                    </a>
+                                </li>
+                                @endcan
+                            </ul>
+                        </div>
+                    </li>
+                    @endcanany
+
                     <!-- Proyek Kontraktor -->
                     @canany(['produksi.project-baru', 'produksi.pembangunan-proyek'])
                     <li>
@@ -1792,46 +1832,6 @@
                                     <a href="{{ route('produksi.pembangunanProyek.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         Pemb. Proyek
-                                    </a>
-                                </li>
-                                @endcan
-                            </ul>
-                        </div>
-                    </li>
-                    @endcanany
-
-                     <!-- Pembangunan Kawasan -->
-                    @canany(['produksi.buat-pembangunan-kawasan', 'produksi.pembangunan-kawasan'])
-                    <li>
-                        <a href="#" @click.prevent="selected = (selected === 'Kawasan' ? '':'Kawasan')"
-                            class="menu-item group"
-                            :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
-                            <svg :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
-                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Kawasan</span>
-                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
-                                :class="[(selected === 'Kawasan') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
-                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </a>
-                        <div class="overflow-hidden transform translate" :class="(selected === 'Kawasan') ? 'block' : 'hidden'">
-                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
-                                @can('produksi.buat-pembangunan-kawasan')
-                                <li>
-                                    <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="menu-dropdown-item group"
-                                        :class="page === 'buatPembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Buat Pemb.
-                                    </a>
-                                </li>
-                                @endcan
-                                @can('produksi.pembangunan-kawasan')
-                                <li>
-                                    <a href="{{ route('produksi.pembangunanKawasan.index') }}" class="menu-dropdown-item group"
-                                        :class="page === 'pembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pemb. Kawasan
                                     </a>
                                 </li>
                                 @endcan
@@ -1876,19 +1876,19 @@
                                     </a>
                                 </li>
                                 @endcan
-                                @can('produksi.upah-kontraktor')
-                                <li>
-                                    <a href="{{ route('produksi.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
-                                        :class="page === 'persetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Upah Kontraktor
-                                    </a>
-                                </li>
-                                @endcan
                                 @can('produksi.upah-kawasan')
                                 <li>
                                     <a href="{{ route('produksi.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'persetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         Upah Kawasan
+                                    </a>
+                                </li>
+                                @endcan
+                                @can('produksi.upah-kontraktor')
+                                <li>
+                                    <a href="{{ route('produksi.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'persetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Upah Kontraktor
                                     </a>
                                 </li>
                                 @endcan

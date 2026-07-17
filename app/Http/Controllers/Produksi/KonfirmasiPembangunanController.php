@@ -51,6 +51,7 @@ class KonfirmasiPembangunanController extends Controller
     {
         $validated = $request->validate([
             'pengawas_id' => 'required|integer|exists:users,id',
+            'spv_id' => 'required|integer|exists:users,id',
             'qc_container_id' => 'required|exists:master_qc_container,id',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
@@ -73,6 +74,7 @@ class KonfirmasiPembangunanController extends Controller
             $pembangunan = $pengajuan->pembangunanUnit;
             $pembangunan->update([
                 'pengawas_id' => $validated['pengawas_id'],
+                'spv_id' => $validated['spv_id'],
                 'tanggal_mulai' => $validated['tanggal_mulai'],
                 'tanggal_selesai' => $validated['tanggal_selesai'],
                 'qc_container_id' => $validated['qc_container_id'],

@@ -28,6 +28,17 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">SPV Drafting, Teknis & Estimasi</label>
+                        <select name="spv_id" required id="selectSpv"
+                            class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-all">
+                            <option value="">-- Pilih SPV --</option>
+                            @foreach ($allSpv as $spv)
+                                <option value="{{ $spv->id }}">{{ $spv->nama_lengkap }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Pengawas Unit</label>
                         <select name="pengawas_id" required id="selectPengawas"
                             class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-all">
