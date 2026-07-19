@@ -11,14 +11,17 @@
 
         {{-- Alert Success --}}
         @if (session('success'))
-            <div class="flex p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
-                role="alert">
-                <svg class="flex-shrink-0 inline w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
-                </svg>
-                <span class="font-medium">{{ session('success') }}</span>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: '{{ session('success') }}',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                });
+            </script>
         @endif
 
         <div class="space-y-5 sm:space-y-6">
@@ -35,8 +38,16 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table id="table-review-kpi" class="min-w-full">
+                @if ($reviews->isEmpty())
+                    <div class="py-16 text-center">
+                        <svg class="mx-auto mb-3 w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-gray-400 dark:text-gray-500 italic text-sm">Tidak ada penilaian yang memerlukan review.</p>
+                    </div>
+                @else
+                <div class="max-w-full overflow-x-auto custom-scrollbar">
+                    <table id="table-review-kpi" class="min-w-full" style="min-width: 680px;">
                         <thead>
                             <tr class="text-left border-b border-gray-200 dark:border-gray-800">
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Karyawan &
@@ -52,7 +63,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($reviews as $kpi)
+                            @foreach ($reviews as $kpi)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] border-b dark:border-gray-800">
                                     <td class="py-4 px-4 align-top">
                                         <div class="text-sm font-bold text-gray-800 dark:text-white">
@@ -91,29 +102,30 @@
                                         </td>
                                     @endcan
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="py-12 text-center">
-                                        <p class="text-gray-400 italic text-sm">Tidak ada penilaian yang memerlukan review.
-                                        </p>
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
+                @endif
             </div>
         </div>
     </div>
 
 
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const tableElement = document.getElementById("table-review-kpi");
             if (tableElement && typeof simpleDatatables !== 'undefined') {
                 new simpleDatatables.DataTable(tableElement, {
                     searchable: true,
-                    perPage: 10
+                    perPage: 10,
+                    labels: {
+                        placeholder: "Cari...",
+                        searchTitle: "Cari di dalam tabel",
+                        perPage: "data per halaman",
+                        noRows: "Tidak ada data ditemukan",
+                        info: "Menampilkan {start} sampai {end} dari {rows} data",
+                    }
                 });
             }
         });

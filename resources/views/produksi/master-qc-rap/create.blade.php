@@ -143,7 +143,7 @@
                             </svg>
                         </template>
 
-                        <span x-text="isSubmitting ? 'Sedang Menyimpan...' : 'Simpan Master QC & RAP'"></span>
+                        <span x-text="isSubmitting ? 'Sedang Menyimpan...' : 'Simpan'"></span>
                     </button>
                 </div>
             </div>

@@ -105,7 +105,7 @@ class KpiReviewController extends Controller
 
     public function sendNotif($id)
     {
-        $kpiUser = KpiUser::with(['user', 'details'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details'])->findOrFail($id);
 
         $buatRequest = KpiReviewRequest::create([
             'kpi_user_id' => $id

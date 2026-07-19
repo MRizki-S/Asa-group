@@ -11,14 +11,16 @@
 
         {{-- Alert Error --}}
         @if ($errors->any())
-            <div class="flex p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                role="alert">
-                <ul class="list-disc list-inside text-xs">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        html: `<ul class="text-left list-disc list-inside text-sm">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         <div class="space-y-5 sm:space-y-6">
@@ -116,8 +118,8 @@
                     </div>
                 </form>
 
-                <div class="overflow-x-auto">
-                    <table id="table-user-kpi" class="min-w-full">
+                <div class="max-w-full overflow-x-auto custom-scrollbar">
+                    <table id="table-user-kpi" class="min-w-full" style="min-width: 900px;">
                         <thead>
                             <tr class="text-left border-b border-gray-200 dark:border-gray-800">
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Nama Lengkap</th>
@@ -281,14 +283,21 @@
     </form>
 
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const tableElement = document.getElementById("table-user-kpi");
             if (tableElement) {
                 new simpleDatatables.DataTable(tableElement, {
                     searchable: true,
                     sortable: true,
                     fixedHeight: false,
-                    perPage: 10
+                    perPage: 10,
+                    labels: {
+                        placeholder: "Cari...",
+                        searchTitle: "Cari di dalam tabel",
+                        perPage: "data per halaman",
+                        noRows: "Tidak ada data ditemukan",
+                        info: "Menampilkan {start} sampai {end} dari {rows} data",
+                    }
                 });
             }
         });

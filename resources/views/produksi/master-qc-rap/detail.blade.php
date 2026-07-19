@@ -12,13 +12,9 @@
         <div class="mb-6 flex justify-between items-center">
             <h2 class="text-xl font-bold text-gray-800 dark:text-white">Review Master QC & RAP</h2>
             <div class="flex gap-3">
-                <button onclick="window.print()"
-                    class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
-                    Cetak Detail
-                </button>
                 <a href="{{ route('produksi.masterQcRap.edit', $container->id) }}"
                     class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                    Edit Data
+                    Edit
                 </a>
             </div>
         </div>
@@ -61,22 +57,20 @@
                         class="flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors bg-white dark:bg-gray-800">
                         <div class="flex items-center gap-4">
                             <div
-                                class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
+                                class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center font-bold text-xs">
                                 {{ $qc->qc_ke }}
                             </div>
                             <div>
                                 <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ $qc->nama_qc }}</h4>
-                                <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $qc->tugas->count() }}
-                                    Tugas</p>
+                                <p class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $qc->tugas->count() }} Tugas</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-6">
-                            <div class="hidden md:flex gap-4 text-right">
-                                <div>
-                                    <p class="text-[9px] text-gray-400 uppercase">Sub-Total Upah</p>
-                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-300">Rp
-                                        {{ number_format($qc->rapUpah->sum('nominal_standar'), 0, ',', '.') }},00</p>
-                                </div>
+                            <div class="text-right">
+                                <p class="text-[9px] text-gray-400 uppercase">Sub-Total Upah</p>
+                                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                    Rp {{ number_format($qc->rapUpah->sum('nominal_standar'), 0, ',', '.') }},00
+                                </p>
                             </div>
                             <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
                                 :class="isOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor"
@@ -92,18 +86,13 @@
 
                             {{-- A. DAFTAR TUGAS --}}
                             <div>
-                                <p
-                                    class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Daftar Checklist Tugas
+                                <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">
+                                    Daftar Checklist Tugas
                                 </p>
                                 <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 ml-3">
                                     @foreach ($qc->tugas as $tugas)
                                         <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                            <svg class="w-4 h-4 text-green-500 mt-0.5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 13l4 4L19 7" />
-                                            </svg>
+                                            <span class="text-gray-400 mt-1 select-none">•</span>
                                             {{ $tugas->tugas }}
                                         </li>
                                     @endforeach
@@ -113,40 +102,32 @@
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 {{-- B. RAP BAHAN PER QC --}}
                                 <div class="space-y-3">
-                                    <p
-                                        class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Rencana Anggaran Bahan
+                                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                                        Rencana Anggaran Bahan
                                     </p>
-                                    <div
-                                        class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-transparent">
+                                    <div class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-transparent">
                                         <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
                                             <table class="w-full text-xs text-left border-collapse">
-                                                <thead
-                                                    class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-500 uppercase shadow-sm">
+                                                <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800 text-gray-500 uppercase shadow-sm">
                                                     <tr>
                                                         <th class="px-4 py-2 bg-gray-50 dark:bg-gray-800">Barang</th>
-                                                        <th class="px-4 py-2 text-center bg-gray-50 dark:bg-gray-800">Qty
-                                                        </th>
+                                                        <th class="px-4 py-2 text-center bg-gray-50 dark:bg-gray-800">Qty</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
                                                     @forelse($qc->rapBahan as $bahan)
-                                                        <tr
-                                                            class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                                                             <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">
                                                                 {{ $bahan->barang->nama_barang ?? '-' }}
                                                             </td>
-                                                            <td
-                                                                class="px-4 py-2.5 text-center font-bold text-gray-900 dark:text-white">
+                                                            <td class="px-4 py-2.5 text-center font-bold text-gray-900 dark:text-white">
                                                                 {{ str_replace('.', ',', (float) $bahan->jumlah_kebutuhan_standar) }}
-                                                                <span
-                                                                    class="text-[10px] font-medium text-gray-500">{{ $bahan->satuan->nama ?? '-' }}</span>
+                                                                <span class="text-[10px] font-medium text-gray-500">{{ $bahan->satuan->nama ?? '-' }}</span>
                                                             </td>
                                                         </tr>
                                                     @empty
                                                         <tr>
-                                                            <td colspan="2"
-                                                                class="px-4 py-8 text-center text-gray-400 italic">
+                                                            <td colspan="2" class="px-4 py-8 text-center text-gray-400 italic">
                                                                 Tidak ada bahan.
                                                             </td>
                                                         </tr>
@@ -178,13 +159,12 @@
 
                                 {{-- C. RAP UPAH PER QC --}}
                                 <div class="space-y-3">
-                                    <p
-                                        class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Rencana Anggaran Upah
+                                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                                        Rencana Anggaran Upah
                                     </p>
-                                    <div class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                    <div class="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden bg-white dark:bg-transparent">
                                         <table class="w-full text-xs text-left">
-                                            <thead class="bg-gray-50 dark:bg-gray-700/30 text-gray-500 uppercase">
+                                            <thead class="bg-gray-50 dark:bg-gray-750 text-gray-500 uppercase">
                                                 <tr>
                                                     <th class="px-4 py-2">Pekerjaan</th>
                                                     <th class="px-4 py-2 text-right">Nominal</th>
@@ -195,26 +175,21 @@
                                                     <tr>
                                                         <td class="px-4 py-2.5 text-gray-700 dark:text-gray-300">
                                                             {{ $upah->masterUpah->nama_upah }}</td>
-                                                        <td
-                                                            class="px-4 py-2.5 text-right font-bold text-blue-600 dark:text-blue-400">
+                                                        <td class="px-4 py-2.5 text-right font-bold text-blue-600 dark:text-blue-400">
                                                             Rp {{ number_format($upah->nominal_standar, 0, ',', '.') }},00
                                                         </td>
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="2"
-                                                            class="px-4 py-4 text-center text-gray-400 italic">Tidak ada
-                                                            upah.</td>
+                                                        <td colspan="2" class="px-4 py-4 text-center text-gray-400 italic">Tidak ada upah.</td>
                                                     </tr>
                                                 @endforelse
                                             </tbody>
-                                            <tfoot
-                                                class="bg-amber-50/30 dark:bg-amber-900/10 font-bold border-t dark:border-gray-700">
+                                            <tfoot class="bg-gray-50/50 dark:bg-gray-750 font-bold border-t dark:border-gray-700">
                                                 <tr>
-                                                    <td
-                                                        class="px-4 py-2 text-gray-600 dark:text-gray-400 uppercase text-[9px]">
+                                                    <td class="px-4 py-2 text-gray-600 dark:text-gray-400 uppercase text-[9px]">
                                                         Sub-Total Upah QC</td>
-                                                    <td class="px-4 py-2 text-right text-amber-700 dark:text-amber-400">Rp
+                                                    <td class="px-4 py-2 text-right text-gray-800 dark:text-gray-300">Rp
                                                         {{ number_format($qc->rapUpah->sum('nominal_standar'), 0, ',', '.') }},00
                                                     </td>
                                                 </tr>
@@ -230,27 +205,14 @@
             @endforeach
         </div>
 
-        {{-- RINGKASAN TOTAL AKHIR (Versi Slim & Elegant) --}}
-        <div
-            class="rounded-2xl border border-gray-200 bg-white p-2 shadow-sm transition-all dark:border-gray-700 dark:bg-gray-800">
+        {{-- RINGKASAN TOTAL AKHIR --}}
+        <div class="rounded-2xl border border-gray-200 bg-gray-50/30 p-2 shadow-sm transition-all dark:border-gray-700 dark:bg-white/[0.02]">
             <div class="flex flex-col items-center justify-between gap-4 rounded-xl px-5 py-4 md:flex-row">
-
-                <div class="flex items-center gap-4">
-                    {{-- Icon Container Slim --}}
-                    <div
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 dark:bg-blue-500">
-                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-
-                    <div>
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                            Total Anggaran
-                        </h3>
-                        <p class="text-[10px] text-gray-400 dark:text-gray-500">Estimasi akumulasi upah QC</p>
-                    </div>
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                        Total Anggaran
+                    </h3>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">Estimasi akumulasi upah QC</p>
                 </div>
 
                 {{-- Price Display Slim --}}
@@ -270,7 +232,7 @@
                 <svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Kembali ke Daftar Master
+                Kembali
             </a>
         </div>
     </div>

@@ -86,7 +86,7 @@
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto">
+                        <div class="max-w-full overflow-x-auto custom-scrollbar">
                             <table class="min-w-full">
                                 @php
                                     $tipePerhitungan = $komponen->komponen->tipe_perhitungan;

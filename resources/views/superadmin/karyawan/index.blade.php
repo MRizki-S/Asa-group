@@ -14,40 +14,34 @@
 
         {{-- Alert Error Validasi --}}
         @if ($errors->any())
-            <div class="flex p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                role="alert">
-                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                </svg>
-                <div>
-                    <span class="font-medium">Terjadi kesalahan:</span>
-                    <ul class="mt-1.5 list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        html: `<ul class="text-left list-disc list-inside text-sm">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         {{-- Alert Success --}}
         @if (session('success'))
-            <div class="flex p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
-                role="alert">
-                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                </svg>
-                <div>
-                    <span class="font-medium">Berhasil!</span> {{ session('success') }}
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: '{{ session('success') }}',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                });
+            </script>
         @endif
 
-        <div class="space-y-5 sm:space-y-6">
+        <div class="space-y-5 sm:space-y-6 mt-6">
             <div
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
@@ -56,15 +50,15 @@
                     </h3>
 
                     <a href="{{ route('superadmin.karyawan.create') }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Karyawan
+                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                        + Tambah
                     </a>
                 </div>
 
                 {{-- Filter Section --}}
                 <form method="GET" action="{{ route('superadmin.karyawan.index') }}"
                     class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <h3 class="text-sm text-gray-500 whitespace-nowrap">Filter UBS:</h3>
+                    <h3 class="text-sm text-gray-500 whitespace-nowrap font-medium">Filter UBS:</h3>
                     <div class="w-full sm:min-w-[200px] sm:w-auto">
                         <select name="ubs_id" id="selectUbs"
                             class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2.5 text-gray-700 dark:text-white outline-none focus:ring-1 focus:ring-blue-500">
@@ -79,17 +73,18 @@
                     </div>
                     <div class="flex gap-2">
                         <button type="submit"
-                            class="flex-1 sm:flex-none px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                            class="flex-1 sm:flex-none px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
                             Terapkan
                         </button>
                         <a href="{{ route('superadmin.karyawan.index') }}"
-                            class="flex-1 sm:flex-none px-4 py-2 text-sm text-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition">
+                            class="flex-1 sm:flex-none px-4 py-2 text-sm text-center font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                             Reset
                         </a>
                     </div>
                 </form>
 
-                <table id="table-karyawan">
+                <div class="max-w-full overflow-x-auto custom-scrollbar">
+                    <table id="table-karyawan" class="min-w-full" style="min-width: 700px;">
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Nama</th>
@@ -140,6 +135,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

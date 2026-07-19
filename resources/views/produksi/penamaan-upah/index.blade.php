@@ -46,7 +46,7 @@
                                 <span
                                     class="rounded-lg bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                                     x-text="'ID: ' + upah.id"></span>
-                                <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex gap-1">
                                     <button @click="openModal('edit', upah)"
                                         class="p-2 text-gray-400 hover:text-blue-600 transition-colors">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

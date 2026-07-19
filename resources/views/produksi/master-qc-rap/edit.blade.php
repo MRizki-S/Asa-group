@@ -135,23 +135,23 @@
             </div>
 
             {{-- Footer --}}
-            <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+             <div class="flex flex-row gap-3 items-center justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <button type="button" @click="window.location.reload()"
-                    class="px-6 py-2.5 text-sm font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition flex items-center">
-                    <svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="px-4 py-2.5 text-sm font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition flex items-center justify-center">
+                    <svg class="w-4 h-4 me-2 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    Reset (Muat Ulang)
+                    Reset
                 </button>
-                <div class="flex gap-3">
+                <div class="flex flex-row gap-3">
                     <button type="button" onclick="window.location.href='{{ route('produksi.masterQcRap.index') }}'"
-                        class="px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm font-semibold">
+                        class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm font-semibold text-center">
                         Batal
                     </button>
                     <button type="submit"
-                        class="px-10 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg">
-                        Update Master QC & RAP
+                        class="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg text-center">
+                        Update
                     </button>
                 </div>
             </div>

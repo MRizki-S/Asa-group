@@ -15,23 +15,29 @@
 
         <!-- Alert Error -->
         @if (session('error'))
-            <div class="flex p-4 mb-6 text-sm text-red-800 rounded-2xl bg-red-50 dark:bg-gray-800 dark:text-red-400 border border-red-100 dark:border-red-900">
-                <span class="font-bold mr-2">Error!</span> {{ session('error') }}
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: '{{ session('error') }}',
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         @if ($errors->any())
-            <div class="flex p-4 mb-6 text-sm text-red-800 rounded-2xl bg-red-50 dark:bg-gray-800 dark:text-red-400 border border-red-100 dark:border-red-900"
-                role="alert">
-                <div>
-                    <span class="font-bold">Gagal menyimpan data:</span>
-                    <ul class="mt-1.5 list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menyimpan Data',
+                        html: `<ul class="text-left list-disc list-inside text-sm">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
@@ -145,7 +151,7 @@
                     </button>
                     <button type="submit"
                         class="px-10 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none transition-all">
-                        Perbarui Karyawan
+                        Perbarui
                     </button>
                 </div>
             </form>

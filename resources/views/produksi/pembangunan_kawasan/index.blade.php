@@ -18,9 +18,29 @@
     @include('partials.breadcrumb', ['breadcrumbs' => [['label' => 'Pembangunan Kawasan', 'url' => route('produksi.pembangunanKawasan.index')]]])
 
     @if(session('success'))
-        <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-gray-800 dark:text-green-400">
-            {{ session('success') }}
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+        </script>
+    @endif
+    @if(session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: '{{ session('error') }}',
+                    showConfirmButton: true
+                });
+            });
+        </script>
     @endif
 
     <div class="mb-6 mt-6">

@@ -47,17 +47,17 @@
                     @can('etalase.blok.create')
                         <a href="{{ route('produksi.masterQcRap.create') }}"
                             class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            + Tambah QC & RAP
+                            + Tambah
                         </a>
                     @endcan
                 </div>
 
                 <form method="GET" action="{{ route('produksi.masterQcRap.index') }}"
-                    class="mb-4 flex items-center gap-3">
+                    class="mb-4 flex flex-wrap items-center gap-3">
                     <h3 class="text-sm text-gray-500 dark:text-white/90">Filter -</h3>
-
+ 
                     <!-- Select Type -->
-                    <div>
+                    <div class="w-full sm:w-64">
                         <select name="typeFil" id="selectType"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                             dark:bg-gray-600 dark:text-white">
@@ -79,90 +79,135 @@
                             });
                         });
                     </script>
-
-                    <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        Terapkan
-                    </button>
-
-                    <a href="{{ route('produksi.masterQcRap.index') }}"
-                        class="px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300">
-                        Reset
-                    </a>
+ 
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button type="submit" class="flex-grow sm:flex-none px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-center">
+                            Terapkan
+                        </button>
+                        <a href="{{ route('produksi.masterQcRap.index') }}"
+                            class="flex-grow sm:flex-none px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300 text-center">
+                            Reset
+                        </a>
+                    </div>
                 </form>
-                <table id="table-qc">
-                    <thead>
-                        <tr>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                Type Unit
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Nama QC
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Jumlah Langkah QC
-                            </th>
-                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                Dibuat Pada
-                            </th>
-                            {{-- @canany(['etalase.blok.update', ' etalase.blok.delete']) --}}
+                <!-- Desktop Table View -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table id="table-qc" class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                                    Type Unit
+                                </th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    Nama QC
+                                </th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    Jumlah Langkah QC
+                                </th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    Dibuat Pada
+                                </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Aksi
                                 </th>
-                            {{-- @endcanany --}}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($allQcContainer as $item)
-                            <tr>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->type->nama_type }}</td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->nama_container }}</td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->urutan->count() }}</td>
-                                <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $item->created_at->format('d M Y H:i:s') }}</td>
-
-                                {{-- @canany(['produksi.qc-urutan.update', 'produksi.qc-urutan.delete']) --}}
-                                <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-                                    {{-- @can('produksi.qc-urutan.update') --}}
-                                    <a href="{{ route('produksi.masterQcRap.show', $item->id) }}"
-                                        class="btn-edit inline-flex items-center gap-1
-                                    text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
-                                    dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
-                                    px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                    focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
-                                    active:scale-95">
-                                        Detail
-                                    </a>
-                                    <a href="{{ route('produksi.masterQcRap.edit', $item) }}"
-                                        class="btn-edit inline-flex items-center gap-1
-                                    text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
-                                    dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
-                                    px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                    focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
-                                    active:scale-95">
-                                        Edit
-                                    </a>
-                                    {{-- @endcan --}}
-
-                                    {{-- @can('produksi.qc-urutan.delete') --}}
-                                    <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST"
-                                        class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="delete-btn px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                                            Delete
-                                        </button>
-                                    </form>
-                                    {{-- @endcan --}}
-                                </td>
-                                {{-- @endcanany --}}
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($allQcContainer as $item)
+                                <tr>
+                                    <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                        {{ $item->type->nama_type }}</td>
+                                    <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                        {{ $item->nama_container }}</td>
+                                    <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                        {{ $item->urutan->count() }}</td>
+                                    <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                        {{ $item->created_at->format('d M Y H:i:s') }}</td>
+                                    <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                        <a href="{{ route('produksi.masterQcRap.show', $item->id) }}"
+                                            class="btn-edit inline-flex items-center gap-1
+                                        text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
+                                        dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
+                                        px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                        focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
+                                        active:scale-95">
+                                            Detail
+                                        </a>
+                                        <a href="{{ route('produksi.masterQcRap.edit', $item) }}"
+                                            class="btn-edit inline-flex items-center gap-1
+                                        text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
+                                        dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
+                                        px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                        focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
+                                        active:scale-95">
+                                            Edit
+                                        </a>
+                                        <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST"
+                                            class="delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                class="delete-btn px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="block md:hidden space-y-4">
+                    @forelse ($allQcContainer as $item)
+                        <div class="flex flex-col justify-between h-full bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
+                            <div>
+                                <div class="flex items-center justify-between gap-3 mb-3">
+                                    <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                        Type {{ $item->type->nama_type }}
+                                    </span>
+                                </div>
+                                <h4 class="text-base font-bold text-gray-800 dark:text-white mb-4">
+                                    {{ $item->nama_container }}
+                                </h4>
+                                <div class="space-y-2 text-xs mb-4">
+                                    <div class="flex justify-between border-b border-gray-100 dark:border-gray-700/50 pb-1.5">
+                                        <span class="text-gray-400">Jumlah Langkah:</span>
+                                        <span class="text-gray-700 dark:text-gray-300 font-medium">{{ $item->urutan->count() }} Langkah</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400">Dibuat Pada:</span>
+                                        <span class="text-gray-700 dark:text-gray-300 font-medium">{{ $item->created_at->format('d M Y H:i') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2">
+                                <a href="{{ route('produksi.masterQcRap.show', $item->id) }}"
+                                    class="flex-grow text-center text-xs font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 px-2.5 py-2.5 rounded-lg transition-colors border border-blue-100 dark:border-blue-800 shadow-sm">
+                                    Detail
+                                </a>
+                                <a href="{{ route('produksi.masterQcRap.edit', $item) }}"
+                                    class="flex-grow text-center text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 px-2.5 py-2.5 rounded-lg transition-colors border border-yellow-100 dark:border-yellow-800 shadow-sm">
+                                    Edit
+                                </a>
+                                <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST"
+                                    class="delete-form flex-grow">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button"
+                                        class="delete-btn w-full text-center text-xs font-semibold text-white bg-red-600 hover:bg-red-750 px-2.5 py-2.5 rounded-lg transition-colors">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-8 text-center text-gray-400 text-sm">
+                            Tidak ada data Master QC & RAP.
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 

@@ -27,17 +27,21 @@
                     $data.updateUrl(selected, tab);
                 ">
 
-                <div class="grid grid-cols-12 gap-4 items-center w-full mr-4">
-                    <div class="col-span-12 md:col-span-4 flex items-center gap-3">
+                <div class="flex flex-col gap-2 w-full mr-3">
+                    {{-- Baris 1: Nomor + Nama + Chevron --}}
+                    <div class="flex items-center gap-3">
                         <div
-                            class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs shadow-md">
+                            class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs shadow-md">
                             {{ $index + 1 }}
                         </div>
-                        <h4 class="font-bold text-gray-700 dark:text-gray-200 truncate">{{ $qc->nama_qc }}</h4>
+                        <h4 class="flex-1 font-bold text-gray-700 dark:text-gray-200 truncate text-sm">{{ $qc->nama_qc }}</h4>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-300 text-gray-400 flex-shrink-0"
+                            :class="selected === {{ $index }} ? 'rotate-180' : ''"></i>
                     </div>
 
-                    <div class="col-span-10 md:col-span-7 flex items-center gap-3">
-                        <div class="flex-1 h-2 bg-gray-100 rounded-full dark:bg-gray-700 overflow-hidden">
+                    {{-- Baris 2: Progress Bar --}}
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1.5 bg-gray-100 rounded-full dark:bg-gray-700 overflow-hidden">
                             @php
                                 $initialBarColor = 'bg-blue-600';
                                 $qcTasks = $qc->pembangunanUnitQcTask;
@@ -53,12 +57,7 @@
                                 style="width: {{ $qc->persentase }}%"></div>
                         </div>
                         <span id="text-qc-{{ $qc->id }}"
-                            class="text-xs font-bold text-blue-600 min-w-[35px] text-right">{{ $qc->persentase }}%</span>
-                    </div>
-
-                    <div class="col-span-2 md:col-span-1 flex justify-end text-gray-700">
-                        <i class="fa-solid fa-chevron-down transition-transform duration-300"
-                            :class="selected === {{ $index }} ? 'rotate-180' : ''"></i>
+                            class="text-xs font-bold text-blue-600 min-w-[30px] text-right">{{ $qc->persentase }}%</span>
                     </div>
                 </div>
             </div>
@@ -66,23 +65,23 @@
             {{-- Konten Accordion --}}
             <div x-show="selected === {{ $index }}" x-collapse x-cloak>
                 <div class="border-t border-gray-100 dark:border-gray-800">
-                    <div class="flex border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
+                    <div class="flex border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 overflow-x-auto">
                         <button @click="tab = 'tasks'; $data.updateUrl({{ $index }}, 'tasks')"
                             :class="tab === 'tasks' ? 'border-blue-600 text-blue-600 bg-white dark:bg-transparent' :
-                                'border-transparent text-gray-700'"
-                            class="flex-1 py-3 text-[10px] font-bold border-b-2 uppercase tracking-widest transition-all">
-                            Daftar Tugas
+                                'border-transparent text-gray-500 dark:text-gray-400'"
+                            class="flex-1 min-w-[80px] py-3 px-2 text-[10px] font-bold border-b-2 uppercase tracking-wider transition-all whitespace-nowrap">
+                            Tugas
                         </button>
                         <button @click="tab = 'bahan'; $data.updateUrl({{ $index }}, 'bahan')"
                             :class="tab === 'bahan' ? 'border-blue-600 text-blue-600 bg-white dark:bg-transparent' :
-                                'border-transparent text-gray-700'"
-                            class="flex-1 py-3 text-[10px] font-bold border-b-2 uppercase tracking-widest transition-all">
+                                'border-transparent text-gray-500 dark:text-gray-400'"
+                            class="flex-1 min-w-[80px] py-3 px-2 text-[10px] font-bold border-b-2 uppercase tracking-wider transition-all whitespace-nowrap">
                             Bahan
                         </button>
                         <button @click="tab = 'upah'; $data.updateUrl({{ $index }}, 'upah')"
                             :class="tab === 'upah' ? 'border-blue-600 text-blue-600 bg-white dark:bg-transparent' :
-                                'border-transparent text-gray-700'"
-                            class="flex-1 py-3 text-[10px] font-bold border-b-2 uppercase tracking-widest transition-all">
+                                'border-transparent text-gray-500 dark:text-gray-400'"
+                            class="flex-1 min-w-[80px] py-3 px-2 text-[10px] font-bold border-b-2 uppercase tracking-wider transition-all whitespace-nowrap">
                             Upah
                         </button>
                     </div>

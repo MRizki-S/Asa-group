@@ -15,12 +15,12 @@
         <form action="{{ route('produksi.projectBaru.update', $project->id) }}" method="POST">
             @csrf
             @method('PUT')
-            <div class="space-y-4">
-                <div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
                     <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Project <span class="text-red-500">*</span></label>
                     <input type="text" name="nama" value="{{ $project->nama }}" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 </div>
-                
+
                 <div>
                     <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Pengawas Unit</label>
                     <select name="pengawas_id" id="selectPengawas" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
@@ -62,9 +62,9 @@
                     </div>
                 </div>
 
-                <div class="flex gap-2 pt-2">
-                    <button type="submit" class="flex-1 rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Update Project</button>
-                    <a href="{{ route('produksi.projectBaru.index') }}" class="flex-1 rounded-lg bg-gray-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">Batal</a>
+                <div class="md:col-span-2 flex flex-row justify-end gap-3 pt-2">
+                    <a href="{{ route('produksi.projectBaru.index') }}" class="w-1/2 sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm text-center">Batal</a>
+                    <button type="submit" class="w-1/2 sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm text-center">Update</button>
                 </div>
             </div>
         </form>

@@ -124,11 +124,11 @@
                             <div
                                 class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl">
                                 <span class="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Barang
-                                    Tambahan (Luar RAP)</span>
+                                    Luar RAP</span>
                                 <button type="button"
                                     @click="addAdditionalItem(); $nextTick(() => initSelect2(itemsAdditional.length - 1))"
                                     class="text-[10px] font-bold px-3 py-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition shadow-sm">
-                                    + TAMBAH BARIS
+                                    + TAMBAH
                                 </button>
                             </div>
 
@@ -208,7 +208,7 @@
                             <i class="fa-solid"
                                 :class="showAdditional ? 'fa-minus-circle' : 'fa-plus-circle text-xs'"></i>
                             <span class="text-[10px] font-black uppercase tracking-wider"
-                                x-text="showAdditional ? 'Sembunyikan Luar RAP' : 'Tambah Barang Luar RAP'"></span>
+                                x-text="showAdditional ? 'Sembunyikan Luar RAP' : 'Barang Luar RAP'"></span>
                         </button>
 
                         <div class="flex gap-3">
@@ -217,7 +217,7 @@
                             <button type="submit"
                                 :disabled="loadingRequest || (!itemsToOrder.some(i => i.checked) && itemsAdditional.length === 0)"
                                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-50">
-                                <span x-text="loadingRequest ? 'Loading...' : 'Kirim Order'"></span>
+                                <span x-text="loadingRequest ? 'Loading...' : 'Order'"></span>
                             </button>
                         </div>
                     </div>

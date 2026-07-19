@@ -14,40 +14,40 @@
 
         {{-- Alert Error Validasi --}}
         @if ($errors->any())
-            <div class="flex p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                role="alert">
-                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                </svg>
-                <div>
-                    <span class="font-medium">Terjadi kesalahan:</span>
-                    <ul class="mt-1.5 list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        html: `
+                            <ul class="text-left list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        `,
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         {{-- Alert Success --}}
         @if (session('success'))
-            <div class="flex p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
-                role="alert">
-                <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                </svg>
-                <div>
-                    <span class="font-medium">Berhasil!</span> {{ session('success') }}
-                </div>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: '{{ session('success') }}',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                });
+            </script>
         @endif
 
-        <div class="space-y-5 sm:space-y-6">
+        <div class="space-y-5 sm:space-y-6 mt-6">
             <div
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
@@ -56,12 +56,13 @@
                     </h3>
 
                     <a href="{{ route('superadmin.devisi.create') }}"
-                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        + Tambah Devisi
+                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                        + Tambah
                     </a>
                 </div>
 
-                <table id="table-devisi">
+                <div class="max-w-full overflow-x-auto custom-scrollbar">
+                    <table id="table-devisi" class="min-w-full" style="min-width: 600px;">
                     <thead>
                         <tr>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
@@ -131,6 +132,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
 
             </div>
         </div>

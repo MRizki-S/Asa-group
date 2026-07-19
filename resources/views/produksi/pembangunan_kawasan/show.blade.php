@@ -69,65 +69,89 @@
 
 
     <!-- Header Info -->
-    <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 mb-6 flex flex-wrap gap-6 justify-between items-center">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ $data->nama }}</h2>
-            <div class="text-sm text-gray-500 dark:text-gray-400 space-y-1">
-                <p>Perumahan: <span class="font-medium text-gray-900 dark:text-white">{{ $data->perumahan->nama_perumahaan ?? '-' }}</span></p>
-                <p>Pengawas: <span class="font-medium text-gray-900 dark:text-white">{{ $data->pengawas->nama_lengkap ?? '-' }}</span></p>
-                <p>Tanggal: <span class="font-medium text-gray-900 dark:text-white">{{ $data->tanggal_mulai ? \Carbon\Carbon::parse($data->tanggal_mulai)->format('d M Y') : '-' }} s/d {{ $data->tanggal_selesai ? \Carbon\Carbon::parse($data->tanggal_selesai)->format('d M Y') : '-' }}</span></p>
-                <p>Status: <span class="font-bold uppercase 
-                    {{ $data->status_pembangunan == 'proses' ? 'text-blue-600' : 'text-green-600' }}">{{ $data->status_pembangunan }}</span></p>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-sm mb-6 p-5">
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
+
+            {{-- Kiri: Identitas --}}
+            <div class="flex-1 space-y-3">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white leading-tight">{{ $data->nama }}</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span><i class="fa-solid fa-location-dot me-1"></i>{{ $data->perumahan->nama_perumahaan ?? '-' }}</span>
+                        <span class="text-gray-300 dark:text-gray-600">|</span>
+                        <span><i class="fa-solid fa-user-gear me-1"></i><span class="font-semibold text-gray-600 dark:text-gray-300">Pengawas:</span> {{ $data->pengawas->nama_lengkap ?? '-' }}</span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {{-- Status --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
+                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase
+                            {{ $data->status_pembangunan === 'selesai' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' }}">
+                            {{ $data->status_pembangunan }}
+                        </span>
+                    </div>
+                    {{-- Tanggal Mulai --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tgl Mulai</p>
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-200">{{ $data->tanggal_mulai ? \Carbon\Carbon::parse($data->tanggal_mulai)->format('d M Y') : '-' }}</p>
+                    </div>
+                    {{-- Tanggal Selesai --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tgl Selesai</p>
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-200">{{ $data->tanggal_selesai ? \Carbon\Carbon::parse($data->tanggal_selesai)->format('d M Y') : '-' }}</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="flex flex-col gap-4 items-end">
-            @if ($data->status_pembangunan !== 'selesai')
-            <form action="{{ route('produksi.pembangunanKawasan.update', $data->id) }}" method="POST"
-                @submit.prevent="
-                    Swal.fire({
-                        title: 'Konfirmasi',
-                        text: 'Apakah Anda yakin ingin menyelesaikan pembangunan kawasan ini?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#059669',
-                        confirmButtonText: 'Ya, Selesaikan',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $el.submit();
-                        }
-                    })
-                ">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="status_pembangunan" value="selesai">
-                <button type="submit" class="inline-flex items-center gap-1.5 bg-green-600 text-white text-sm px-4 py-2.5 rounded-lg hover:bg-green-700 font-bold shadow-sm transition active:scale-95">
-                    <i class="fa-solid fa-circle-check"></i> Selesaikan
-                </button>
-            </form>
-            @endif
-            <div class="flex flex-wrap gap-2 justify-end">
-                <a href="{{ route('produksi.pembangunanKawasan.laporanTermin.export', $data->id) }}" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-all duration-200">
-                    <i class="fa-solid fa-file-excel"></i> Export Excel
+
+            {{-- Kanan: Aksi --}}
+            <div class="flex flex-row lg:flex-col items-center lg:items-end gap-2 shrink-0">
+                @if ($data->status_pembangunan !== 'selesai')
+                <form action="{{ route('produksi.pembangunanKawasan.update', $data->id) }}" method="POST"
+                    @submit.prevent="
+                        Swal.fire({
+                            title: 'Konfirmasi',
+                            text: 'Apakah Anda yakin ingin menyelesaikan pembangunan kawasan ini?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#059669',
+                            confirmButtonText: 'Ya, Selesaikan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) { $el.submit(); }
+                        })
+                    ">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="status_pembangunan" value="selesai">
+                    <button type="submit" class="inline-flex items-center gap-1.5 bg-green-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-green-700 shadow-sm transition-all active:scale-95">
+                        <i class="fa-solid fa-circle-check"></i> Selesaikan
+                    </button>
+                </form>
+                @endif
+                <a href="{{ route('produksi.pembangunanKawasan.laporanTermin.export', $data->id) }}"
+                    class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
+                    <i class="fa-solid fa-file-excel text-green-600"></i> Export Excel
                 </a>
             </div>
         </div>
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
-            <li class="me-2">
-                <button @click="tab = 'order'" :class="tab === 'order' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'" class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group">
-                    <i class="fa-solid fa-box mr-2"></i> Order Barang
-                </button>
-            </li>
-            <li class="me-2">
-                <button @click="tab = 'upah'" :class="tab === 'upah' ? 'text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'" class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group">
-                    <i class="fa-solid fa-money-bill-wave mr-2"></i> Pengajuan Upah
-                </button>
-            </li>
-        </ul>
+    <div class="mb-6 overflow-x-auto">
+        <div class="flex border-b border-gray-200 dark:border-gray-700 min-w-max">
+            <button @click="tab = 'order'"
+                :class="tab === 'order' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
+                <i class="fa-solid fa-box"></i> Order Barang
+            </button>
+            <button @click="tab = 'upah'"
+                :class="tab === 'upah' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
+                <i class="fa-solid fa-money-bill-wave"></i> Pengajuan Upah
+            </button>
+        </div>
     </div>
 
     <!-- Tab Content: Order Barang -->
@@ -143,10 +167,10 @@
                     <input type="hidden" name="pembangunan_kawasan_id" value="{{ $data->id }}">
                     
                     <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Catatan Tambahan</label>
-                                <textarea name="catatan" rows="2" class="bg-white block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                                <textarea name="catatan" rows="4" class="bg-white block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
                             </div>
                             <div>
                                 <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Jenis Order <span class="text-red-500">*</span></label>
@@ -205,7 +229,9 @@
                             <div x-show="itemsAdditional.length === 0" class="text-sm text-gray-500 text-center py-4 italic">Belum ada barang ditambahkan.</div>
                         </div>
 
-                        <button type="submit" x-show="itemsAdditional.length > 0" class="w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-4">Kirim Order</button>
+                        <div x-show="itemsAdditional.length > 0" class="flex justify-end mt-4">
+                            <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">Kirim Order</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -225,50 +251,52 @@
                         @if($data->orders && $data->orders->count() > 0)
                         @foreach($data->orders->sortByDesc('created_at') as $order)
                         <div x-data="{ open: false }" class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-transparent">
-                            <div @click="open = !open" class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
-                                <div class="flex flex-col gap-1 w-1/2">
-                                    <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
-                                        {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
-                                    </p>
-                                    <div class="flex items-center gap-2">
-                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
-                                            {{ $order->nomor_order }}
+                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
+                                {{-- Baris 1: Tanggal + Nomor Order --}}
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex flex-col gap-0.5 min-w-0">
+                                        <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
+                                            {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
                                         </p>
-                                        @if($order->returns && $order->returns->count() > 0)
-                                            <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Ada Retur</span>
-                                        @endif
+                                        <div class="flex flex-wrap items-center gap-1.5">
+                                            <p class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
+                                                {{ $order->nomor_order }}
+                                            </p>
+                                            @if($order->returns && $order->returns->count() > 0)
+                                                <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter whitespace-nowrap">Ada Retur</span>
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex items-center justify-end gap-4 w-1/2">
-                                    <div class="flex flex-col items-center gap-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
-                                            {{ $order->jenis_order }}
-                                        </span>
-                                        <span class="text-[9px] text-gray-400 font-medium">{{ $order->details->count() }} Item</span>
-                                    </div>
-                                    <div class="flex flex-col items-center gap-1 w-20">
-                                        @php
-                                            $statusMap = [
-                                                'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
-                                                'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                                'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
-                                                'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
-                                                'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
-                                            ];
-                                            $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
-                                        @endphp
-                                        <span class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                            {{ str_replace('_', ' ', $order->status_order) }}
-                                        </span>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
                                     </svg>
+                                </div>
+                                {{-- Baris 2: Badge Jenis + Jumlah Item + Badge Status --}}
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
+                                        {{ $order->jenis_order }}
+                                    </span>
+                                    @php
+                                        $statusMap = [
+                                            'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
+                                            'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                            'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
+                                            'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
+                                            'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                        ];
+                                        $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                        {{ str_replace('_', ' ', $order->status_order) }}
+                                    </span>
                                 </div>
                             </div>
                             
                             <div x-show="open" x-collapse x-cloak class="bg-gray-50/50 dark:bg-gray-900/40 p-4 border-t border-gray-100 dark:border-gray-800">
-                                <h5 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Detail Item Barang</h5>
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Detail Item Barang</h5>
+                                    <span class="text-[9px] font-black text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{{ $order->details->count() }} Item</span>
+                                </div>
                                 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-3">
                                     <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
                                         <table class="w-full text-left border-collapse">
@@ -361,17 +389,17 @@
 
     <!-- Tab Content: Pengajuan Upah -->
     <div x-show="tab === 'upah'" style="display: none;">
-        <div class="grid grid-cols-1 xl:grid-cols-10 gap-6">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             
             @if ($data->status_pembangunan !== 'selesai')
             <!-- Kiri: Form Pengajuan Upah -->
-            <div class="xl:col-span-3 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Pengajuan Upah</h3>
                 <form action="{{ route('produksi.pembangunanKawasan.upahStore') }}" method="POST">
                     @csrf
                     <input type="hidden" name="pembangunan_kawasan_id" value="{{ $data->id }}">
                     
-                    <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Upah <span class="text-red-500">*</span></label>
                             <select name="nama_upah" required class="select2 block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" style="width: 100%;" x-init="$(document).ready(function() { $($el).select2({ theme: 'bootstrap4', width: '100%' }); });">
@@ -397,16 +425,18 @@
                             <input type="hidden" name="nominal_diajukan" :value="nominal_raw">
                             <input type="text" x-model="nominal_display" @input="nominal_raw = parseNumber(nominal_display); nominal_display = formatRupiah(nominal_raw)" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         </div>
-                        <div>
+                        <div class="md:col-span-2">
                             <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Catatan Pengawas</label>
-                            <textarea name="catatan_pengawas" rows="2" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                            <textarea name="catatan_pengawas" rows="4" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
                         </div>
-                        <button type="submit" class="w-full rounded-lg bg-green-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 mt-4">Kirim Pengajuan</button>
+                        <div class="md:col-span-2 flex justify-end">
+                            <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition shadow-sm">Kirim Pengajuan</button>
+                        </div>
                     </div>
                 </form>
             </div>
             @else
-            <div class="xl:col-span-3 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-800/50 p-5 shadow-sm dark:border-gray-700 text-center flex flex-col items-center justify-center min-h-[250px]">
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-800/50 p-5 shadow-sm dark:border-gray-700 text-center flex flex-col items-center justify-center min-h-[250px]">
                 <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-3"></i>
                 <h3 class="font-bold text-gray-900 dark:text-white mb-1">Pembangunan Selesai</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Kawasan ini sudah berstatus selesai. Tidak dapat mengajukan upah lagi.</p>
@@ -414,37 +444,37 @@
             @endif
 
             <!-- Kanan: Riwayat Pengajuan Upah -->
-            <div class="xl:col-span-7 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex-none">Riwayat Pengajuan Upah</h3>
                 <div class="relative flex-1 min-h-[300px]">
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if($data->pengajuanUpah && $data->pengajuanUpah->count() > 0)
                         @foreach($data->pengajuanUpah->sortByDesc('created_at') as $u)
                         <div x-data="{ open: false }" class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-transparent">
-                            <div @click="open = !open" class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
-                                <div class="flex flex-col gap-1 w-1/2">
-                                    <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
-                                        {{ \Carbon\Carbon::parse($u->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
-                                    </p>
-                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
-                                        {{ $u->nama_upah }}
-                                    </p>
-                                </div>
-                                <div class="flex items-center justify-end gap-4 w-1/2">
-                                    <div class="text-right">
-                                        <p class="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-0.5">Nominal</p>
-                                        <p class="text-xs font-black text-gray-800 dark:text-white font-mono">
-                                            Rp {{ number_format($u->nominal_diajukan, 0, ',', '.') }}
+                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
+                                {{-- Baris 1: Tanggal + Nama Upah --}}
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex flex-col gap-0.5 min-w-0">
+                                        <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
+                                            {{ \Carbon\Carbon::parse($u->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
+                                        </p>
+                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
+                                            {{ $u->nama_upah }}
                                         </p>
                                     </div>
-                                    <div class="flex flex-col items-center gap-1 w-24">
-                                        <span class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $u->status_style ?? 'bg-gray-50 text-gray-500 border-gray-100' }}">
-                                            {{ $u->status_label ?? str_replace('_', ' ', $u->status_pengajuan) }}
-                                        </span>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-400 transition-transform duration-300" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
                                     </svg>
+                                </div>
+                                {{-- Baris 2: Nominal + Badge Status --}}
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-black text-gray-800 dark:text-white font-mono">
+                                        Rp {{ number_format($u->nominal_diajukan, 0, ',', '.') }}
+                                    </span>
+                                    <span class="text-gray-300 dark:text-gray-600 text-xs">·</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $u->status_style ?? 'bg-gray-50 text-gray-500 border-gray-100' }}">
+                                        {{ $u->status_label ?? str_replace('_', ' ', $u->status_pengajuan) }}
+                                    </span>
                                 </div>
                             </div>
 

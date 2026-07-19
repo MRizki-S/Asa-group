@@ -11,14 +11,16 @@
 
         {{-- Alert Error --}}
         @if ($errors->any())
-            <div class="flex p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                role="alert">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        html: `<ul class="text-left list-disc list-inside text-sm">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         <div class="space-y-5 sm:space-y-6">
@@ -30,11 +32,11 @@
                     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-base font-medium text-gray-800 dark:text-white/90">List Master Komponen KPI</h3>
                         <a href="{{ route('kpi.komponen.create') }}"
-                            class="inline-flex items-center justify-center gap-1 w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                            class="inline-flex items-center justify-center gap-1 w-full sm:w-auto px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Komponen
+                            + Tambah
                         </a>
                     </div>
                 @endcan
@@ -302,6 +304,13 @@
                         sortable: true,
                         fixedHeight: false,
                         perPage: 10,
+                        labels: {
+                            placeholder: "Cari...",
+                            searchTitle: "Cari di dalam tabel",
+                            perPage: "data per halaman",
+                            noRows: "Tidak ada data ditemukan",
+                            info: "Menampilkan {start} sampai {end} dari {rows} data",
+                        }
                     });
                 }
             }

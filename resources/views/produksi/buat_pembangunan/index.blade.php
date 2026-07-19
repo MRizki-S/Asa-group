@@ -8,14 +8,29 @@
     @include('partials.breadcrumb', ['breadcrumbs' => [['label' => 'Buat Pembangunan Kawasan', 'url' => route('produksi.buatPembangunanKawasan.index')]]])
 
     @if(session('success'))
-        <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-gray-800 dark:text-green-400">
-            {{ session('success') }}
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+        </script>
     @endif
     @if(session('error'))
-        <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-gray-800 dark:text-red-400">
-            {{ session('error') }}
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: '{{ session('error') }}',
+                    showConfirmButton: true
+                });
+            });
+        </script>
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
@@ -91,7 +106,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Simpan Pembangunan</button>
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm text-center">Simpan Pembangunan</button>
                     </div>
                 </form>
             </div>
@@ -102,7 +117,7 @@
             <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Daftar Pembangunan Kawasan</h3>
                 <div class="overflow-x-auto">
-                    <table id="table-pembangunan-kawasan" class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                    <table id="table-pembangunan-kawasan" class="w-full text-left text-sm text-gray-500 dark:text-gray-400" style="min-width: 680px;">
                         <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <th class="px-6 py-3">Nama</th>
@@ -129,13 +144,13 @@
                                         @if($p->status_pembangunan === 'pending')
                                             <form action="{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}" method="POST" class="inline confirm-process-form">
                                                 @csrf
-                                                <button type="button" class="btn-process rounded bg-green-500 px-3 py-1 text-xs font-bold text-white hover:bg-green-600">Proses</button>
+                                                <button type="button" class="btn-process inline-flex items-center justify-center text-xs font-semibold text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-800/30 dark:text-green-300 px-2.5 py-1.5 rounded-md transition-all duration-200 focus:outline-none active:scale-95">Proses</button>
                                             </form>
-                                            <a href="{{ route('produksi.buatPembangunanKawasan.edit', $p->id) }}" class="inline-flex items-center justify-center rounded bg-yellow-500 px-3 py-1 text-xs font-bold text-white hover:bg-yellow-600">Edit</a>
+                                            <a href="{{ route('produksi.buatPembangunanKawasan.edit', $p->id) }}" class="inline-flex items-center justify-center text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800/30 dark:text-yellow-300 px-2.5 py-1.5 rounded-md transition-all duration-200 focus:outline-none active:scale-95">Edit</a>
                                             <form action="{{ route('produksi.buatPembangunanKawasan.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn-delete rounded bg-red-500 px-3 py-1 text-xs font-bold text-white hover:bg-red-600">Hapus</button>
+                                                <button type="button" class="btn-delete inline-flex items-center justify-center text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 px-2.5 py-1.5 rounded-md transition-all duration-200 focus:outline-none active:scale-95">Hapus</button>
                                             </form>
                                         @else
                                             <span class="text-xs italic text-gray-400">Tidak ada aksi</span>

@@ -65,11 +65,11 @@
                             'text-gray-500 hover:text-gray-700'"
                         class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase">Pending</button>
                     <button @click="filterStatus = 'dibangun'; currentPage = 1"
-                        :class="filterStatus === 'dibangun' ? 'bg-white shadow text-green-600' :
+                        :class="filterStatus === 'dibangun' ? 'bg-white shadow text-blue-600' :
                             'text-gray-500 hover:text-gray-700'"
                         class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase">Dibangun</button>
                     <button @click="filterStatus = 'selesai'; currentPage = 1"
-                        :class="filterStatus === 'selesai' ? 'bg-white shadow text-blue-600' :
+                        :class="filterStatus === 'selesai' ? 'bg-white shadow text-green-600' :
                             'text-gray-500 hover:text-gray-700'"
                         class="px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase">Selesai</button>
                 </div>
@@ -86,8 +86,8 @@
                             <span
                                 :class="{
                                     'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': item.status === 'pending',
-                                    'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': item.status === 'dibangun',
-                                    'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': item.status === 'selesai'
+                                    'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': item.status === 'dibangun',
+                                    'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': item.status === 'selesai'
                                 }"
                                 class="rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
                                 x-text="item.status"></span>

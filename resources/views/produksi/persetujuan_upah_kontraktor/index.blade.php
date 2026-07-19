@@ -74,8 +74,8 @@
                 </div>
 
                 {{-- Table --}}
-                <div class="max-w-full overflow-x-auto">
-                    <table id="table-upah" class="min-w-full">
+                <div class="max-w-full overflow-x-auto custom-scrollbar">
+                    <table id="table-upah" class="min-w-full" style="min-width: 1000px;">
                         <thead>
                             <tr>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Proyek / Pekerjaan

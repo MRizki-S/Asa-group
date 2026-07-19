@@ -11,14 +11,16 @@
 
         {{-- Alert Error Server Side --}}
         @if ($errors->any())
-            <div class="flex p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-                role="alert">
-                <ul class="list-disc list-inside text-xs font-medium">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        html: `<ul class="text-left list-disc list-inside text-sm">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>`,
+                        showConfirmButton: true
+                    });
+                });
+            </script>
         @endif
 
         <form action="{{ route('kpi.user.store') }}" method="POST">

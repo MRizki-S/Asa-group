@@ -39,7 +39,7 @@
                 </div>
 
                 <div x-show="openAccordions[qIndex]" x-collapse>
-                    <div class="p-5 border-t border-gray-200 dark:border-gray-700 overflow-x-auto">
+                    <div class="p-5 border-t border-gray-100 dark:border-gray-700/50">
                         <div class="flex justify-end mb-4">
                             <button type="button" @click="addUpah(qIndex)"
                                 class="px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs hover:bg-yellow-700 shadow-sm transition flex items-center gap-2">
@@ -47,28 +47,29 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
-                                Tambah Upah
+                                Upah
                             </button>
                         </div>
 
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-white">
-                                <tr>
-                                    <th class="px-4 py-3 border-b dark:border-gray-600">Tipe Upah</th>
-                                    <th class="px-4 py-3 border-b dark:border-gray-600">Nominal (Rp)</th>
-                                    <th class="px-4 py-3 text-center border-b dark:border-gray-600">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="(upah, uIndex) in upahGroups" :key="uIndex">
-                                    <template x-if="upah.urutan_idx == qIndex">
-                                        <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-                                            <input type="hidden" :name="`upah[${uIndex}][urutan_idx]`"
-                                                :value="qIndex">
-                                            <td class="px-2 py-3 w-[40%]">
-                                                <select :name="`upah[${uIndex}][master_upah_id]`"
-                                                    x-model="upah.master_upah_id" x-select2="upah.master_upah_id"
-                                                    class="w-full p-2 bg-white dark:bg-gray-700 ...">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left" style="min-width: 520px;">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-white">
+                                    <tr>
+                                        <th class="px-4 py-3 border-b dark:border-gray-700" style="min-width: 220px;">Tipe Upah</th>
+                                        <th class="px-4 py-3 border-b dark:border-gray-700" style="min-width: 180px;">Nominal (Rp)</th>
+                                        <th class="px-4 py-3 text-center border-b dark:border-gray-700" style="min-width: 60px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(upah, uIndex) in upahGroups" :key="uIndex">
+                                        <template x-if="upah.urutan_idx == qIndex">
+                                            <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700/50">
+                                                <input type="hidden" :name="`upah[${uIndex}][urutan_idx]`"
+                                                    :value="qIndex">
+                                                <td class="px-2 py-3" style="min-width: 220px;">
+                                                    <select :name="`upah[${uIndex}][master_upah_id]`"
+                                                        x-model="upah.master_upah_id" x-select2="upah.master_upah_id"
+                                                        class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg">
                                                     <option value="">-- Pilih --</option>
                                                     @foreach ($allUpah ?? [] as $u)
                                                         <option value="{{ $u->id }}" {{-- Logic: Jika ID upah ini sudah ada di upahGroups (tapi bukan baris ini sendiri), maka disable --}}
@@ -80,16 +81,16 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td class="px-2 py-3">
+                                            <td class="px-2 py-3" style="min-width: 180px;">
                                                 <input type="hidden" :name="`upah[${uIndex}][nominal_standar]`"
                                                     :value="upah.nominal_standar">
 
                                                 <input type="text" x-bind:value="formatRupiah(upah.nominal_standar)"
                                                     @input="upah.nominal_standar = parseNumber($event.target.value)"
                                                     placeholder="0"
-                                                    class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg text-left font-mono">
+                                                    class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg text-left font-mono">
                                             </td>
-                                            <td class="px-2 py-3 text-center">
+                                            <td class="px-2 py-3 text-center" style="min-width: 60px;">
                                                 <button type="button" @click="removeUpah(uIndex)"
                                                     class="text-red-500 hover:text-red-700 transition">
                                                     <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor"
@@ -104,6 +105,7 @@
                                 </template>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
             </div>

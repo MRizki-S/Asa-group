@@ -3,157 +3,212 @@
 @section('pageActive', 'PengajuanPembangunan')
 
 @section('content')
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
-    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
-        <div x-data="{ pageName: 'Edit Pembangunan Unit' }">
-            @include('partials.breadcrumb')
-        </div>
+    @include('partials.breadcrumb', ['breadcrumbs' => [
+        ['label' => 'Permintaan Dibangun', 'url' => route('produksi.pengajuanPembangunanUnit.index')],
+        ['label' => 'Edit Pembangunan', 'url' => '']
+    ]])
 
-        <form action="{{ route('produksi.pengajuanPembangunanUnit.update', $pembangunan->id) }}" method="POST">
-            @csrf
-            @method('PUT')
+    @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: '{{ session('success') }}', showConfirmButton: false, timer: 2000 });
+            });
+        </script>
+    @endif
+    @if(session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: '{{ session('error') }}', showConfirmButton: true });
+            });
+        </script>
+    @endif
 
-            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+    {{-- Header Info Card --}}
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-sm mb-6 p-5 mt-6">
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
 
-                <div class="px-5 py-4 sm:px-6 sm:py-5">
-                    <h3
-                        class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 border-b-2 border-gray-100 dark:border-gray-800">
-                        Lokasi & Pengawas
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Perumahaan</label>
-                            <input type="text" readonly value="{{ $pembangunan->perumahaan->nama_perumahaan ?? 'N/A' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Tahap</label>
-                            <input type="text" readonly value="{{ $pembangunan->tahap->nama_tahap ?? 'N/A' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Unit</label>
-                            <input type="text" readonly value="{{ $pembangunan->unit->nama_unit ?? 'N/A' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">SPV Drafting, Teknis & Estimasi</label>
-                            <input type="text" readonly value="{{ $pembangunan->spv->nama_lengkap ?? '-' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Pengawas</label>
-                            <select name="pengawas_id" required id="selectPengawas"
-                                class="w-full text-gray-800 bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white">
-                                <option value="">Pilih Pengawas</option>
-                                @foreach ($allPengawas as $user)
-                                    <option value="{{ $user->id }}"
-                                        {{ $pembangunan->pengawas_id == $user->id ? 'selected' : '' }}>
-                                        {{ $user->nama_lengkap }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <script>
-                                $(document).ready(function() {
-                                    $('#selectPengawas').select2({
-                                        placeholder: "-- Pilih Pengawas --",
-                                        theme: 'bootstrap4',
-                                        allowClear: true,
-                                        width: '100%'
-                                    });
-                                });
-                            </script>
-                        </div>
-                    </div>
-
-                    <h3
-                        class="text-base font-medium text-gray-800 dark:text-white/90 mb-4 mt-8 border-b-2 border-gray-100 dark:border-gray-800">
-                        Detail Pembangunan & QC
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Master QC Container</label>
-                            <input type="text" readonly value="{{ $pembangunan->qcContainer->nama_container ?? '-' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Tanggal Mulai <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative" x-data="{
-                                simpan: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('Y-m-d') }}'
-                            }">
-                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
-                                        viewBox="0 0 20 20">
-                                        <path
-                                            d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-                                    </svg>
-                                </div>
-
-                                <input type="text" x-init="flatpickr($el, {
-                                    dateFormat: 'd-m-Y',
-                                    defaultDate: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d-m-Y') }}',
-                                    onChange: (selectedDates, dateStr, instance) => {
-                                        simpan = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                    }
-                                })"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
-                                    placeholder="Pilih tanggal mulai">
-
-                                <input type="hidden" name="tanggal_mulai" x-model="simpan">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Estimasi Selesai <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative" x-data="{
-                                simpan: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('Y-m-d') }}'
-                            }">
-                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
-                                        viewBox="0 0 20 20">
-                                        <path
-                                            d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-                                    </svg>
-                                </div>
-
-                                <input type="text" x-init="flatpickr($el, {
-                                    dateFormat: 'd-m-Y',
-                                    defaultDate: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d-m-Y') }}',
-                                    onChange: (selectedDates, dateStr, instance) => {
-                                        simpan = instance.formatDate(selectedDates[0], 'Y-m-d');
-                                    }
-                                })"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
-                                    placeholder="Pilih tanggal selesai">
-
-                                <input type="hidden" name="tanggal_selesai" x-model="simpan">
-                            </div>
-                        </div>
-                    </div>
+            {{-- Kiri: Identitas --}}
+            <div class="flex-1 space-y-3">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white leading-tight">
+                        {{ $pembangunan->unit->nama_unit ?? 'Unit Tidak Diketahui' }}
+                    </h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span><i class="fa-solid fa-location-dot me-1"></i>{{ $pembangunan->perumahaan->nama_perumahaan ?? '-' }}</span>
+                        <span class="text-gray-300 dark:text-gray-600">|</span>
+                        <span><i class="fa-solid fa-layer-group me-1"></i><span class="font-semibold text-gray-600 dark:text-gray-300">Tahap:</span> {{ $pembangunan->tahap->nama_tahap ?? '-' }}</span>
+                    </p>
                 </div>
 
-                <div class="flex justify-end px-6 pb-6 gap-2">
-                    <button type="button"
-                        onclick="window.location.href='{{ route('produksi.pengajuanPembangunanUnit.index') }}'"
-                        class="px-10 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Batal</button>
-                    <button type="submit"
-                        class="px-10 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-md">Simpan
-                        Perubahan</button>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {{-- Status --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
+                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase
+                            {{ $pembangunan->status_pengajuan === 'selesai' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' :
+                               ($pembangunan->status_pengajuan === 'dibangun' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+                               'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400') }}">
+                            {{ $pembangunan->status_pengajuan }}
+                        </span>
+                    </div>
+                    {{-- QC Container --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">QC</p>
+                        <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 truncate">{{ $pembangunan->qcContainer->nama_container ?? '-' }}</p>
+                    </div>
+                    {{-- Tgl Mulai --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tgl Mulai</p>
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-200">{{ $pembangunan->tanggal_mulai ? \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d M Y') : '-' }}</p>
+                    </div>
+                    {{-- Tgl Selesai --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Est. Selesai</p>
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-200">{{ $pembangunan->tanggal_selesai ? \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d M Y') : '-' }}</p>
+                    </div>
                 </div>
             </div>
-        </form>
+
+            {{-- Kanan: Meta info --}}
+            <div class="flex flex-col gap-2 shrink-0 text-right">
+                <div class="text-xs text-gray-400 dark:text-gray-500">
+                    <p class="font-semibold text-gray-500 dark:text-gray-400">SPV</p>
+                    <p class="text-gray-700 dark:text-gray-300 font-medium">{{ $pembangunan->spv->nama_lengkap ?? '-' }}</p>
+                </div>
+                <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    <p class="font-semibold text-gray-500 dark:text-gray-400">Pengawas</p>
+                    <p class="text-gray-700 dark:text-gray-300 font-medium">{{ $pembangunan->pengawas->nama_lengkap ?? '-' }}</p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    {{-- Form Edit --}}
+    <form action="{{ route('produksi.pengajuanPembangunanUnit.update', $pembangunan->id) }}" method="POST">
+        @csrf
+        @method('PUT')
+
+        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-sm mb-6 p-5">
+            <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+                Lokasi &amp; Pengawas
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Perumahan</label>
+                    <input type="text" readonly value="{{ $pembangunan->perumahaan->nama_perumahaan ?? 'N/A' }}"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Tahap</label>
+                    <input type="text" readonly value="{{ $pembangunan->tahap->nama_tahap ?? 'N/A' }}"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Unit</label>
+                    <input type="text" readonly value="{{ $pembangunan->unit->nama_unit ?? 'N/A' }}"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">SPV Drafting, Teknis &amp; Estimasi</label>
+                    <input type="text" readonly value="{{ $pembangunan->spv->nama_lengkap ?? '-' }}"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Pengawas</label>
+                    <select name="pengawas_id" required id="selectPengawas"
+                        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        <option value="">Pilih Pengawas</option>
+                        @foreach ($allPengawas as $user)
+                            <option value="{{ $user->id }}" {{ $pembangunan->pengawas_id == $user->id ? 'selected' : '' }}>
+                                {{ $user->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <script>
+                        $(document).ready(function() {
+                            $('#selectPengawas').select2({
+                                placeholder: "-- Pilih Pengawas --",
+                                theme: 'bootstrap4',
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-sm mb-6 p-5">
+            <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+                Detail Pembangunan &amp; QC
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Master QC Container</label>
+                    <input type="text" readonly value="{{ $pembangunan->qcContainer->nama_container ?? '-' }}"
+                        class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
+                </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Tanggal Mulai <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative" x-data="{ simpan: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('Y-m-d') }}' }">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" /></svg>
+                        </div>
+                        <input type="text" x-init="flatpickr($el, {
+                            dateFormat: 'd-m-Y',
+                            defaultDate: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d-m-Y') }}',
+                            onChange: (selectedDates, dateStr, instance) => { simpan = instance.formatDate(selectedDates[0], 'Y-m-d'); }
+                        })"
+                            class="w-full pl-10 pr-3 py-2.5 text-gray-700 rounded-lg border border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+                            placeholder="Pilih Tanggal Mulai">
+                        <input type="hidden" name="tanggal_mulai" x-model="simpan">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Estimasi Selesai <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative" x-data="{ simpan: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('Y-m-d') }}' }">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" /></svg>
+                        </div>
+                        <input type="text" x-init="flatpickr($el, {
+                            dateFormat: 'd-m-Y',
+                            defaultDate: '{{ \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d-m-Y') }}',
+                            onChange: (selectedDates, dateStr, instance) => { simpan = instance.formatDate(selectedDates[0], 'Y-m-d'); }
+                        })"
+                            class="w-full pl-10 pr-3 py-2.5 text-gray-700 rounded-lg border border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none"
+                            placeholder="Pilih Tanggal Selesai">
+                        <input type="hidden" name="tanggal_selesai" x-model="simpan">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tombol Aksi --}}
+        <div class="flex justify-end gap-3">
+            <a href="{{ route('produksi.pengajuanPembangunanUnit.index') }}"
+                class="inline-flex items-center justify-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+                Batal
+            </a>
+            <button type="submit"
+                class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                Simpan Perubahan
+            </button>
+        </div>
+    </form>
+</div>
 @endsection
