@@ -21,4 +21,14 @@ class PembangunanKawasanBarangReturnDetail extends Model
     {
         return $this->belongsTo(PembangunanKawasanBarangOrderDetail::class, 'order_detail_id');
     }
+
+    public function barang()
+    {
+        return $this->belongsTo(MasterBarang::class, 'barang_id');
+    }
+
+    public function satuanModel()
+    {
+        return $this->belongsTo(MasterSatuan::class, 'satuan_id');
+    }
 }

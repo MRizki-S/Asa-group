@@ -35,7 +35,7 @@ class PembangunanUnitBarangReturnController extends Controller
     {
         $qc = PembangunanUnitQc::findOrFail($qcId);
 
-        // Aggregate all confirmed order-details for this QC
+        // Aggregate all confirmed order-details for this QC grouped STRICTLY by barang_id
         $details = PembangunanUnitBarangOrderDetail::query()
             ->join('pembangunan_unit_barang_order as o', 'o.id', '=', 'pembangunan_unit_barang_order_detail.order_id')
             ->where('o.pembangunan_unit_qc_id', $qcId)
@@ -43,34 +43,13 @@ class PembangunanUnitBarangReturnController extends Controller
             ->where('pembangunan_unit_barang_order_detail.konfirmasi', true)
             ->select([
                 'pembangunan_unit_barang_order_detail.barang_id',
-                'pembangunan_unit_barang_order_detail.nama_barang',
-                'pembangunan_unit_barang_order_detail.satuan_id',
-                'pembangunan_unit_barang_order_detail.satuan',
-                DB::raw('SUM(pembangunan_unit_barang_order_detail.jumlah_input) as total_diterima'),
+                DB::raw('MAX(pembangunan_unit_barang_order_detail.nama_barang) as nama_barang'),
                 DB::raw('SUM(pembangunan_unit_barang_order_detail.jumlah_base) as total_diterima_base'),
             ])
-            ->groupBy(
-                'pembangunan_unit_barang_order_detail.barang_id',
-                'pembangunan_unit_barang_order_detail.nama_barang',
-                'pembangunan_unit_barang_order_detail.satuan_id',
-                'pembangunan_unit_barang_order_detail.satuan',
-            )
+            ->groupBy('pembangunan_unit_barang_order_detail.barang_id')
             ->get();
 
-        // Sum up already-returned base quantities for each barang from this QC's returns
-        $returned = PembangunanUnitBarangReturnDetail::query()
-            ->join('pembangunan_unit_barang_return as r', 'r.id', '=', 'pembangunan_unit_barang_return_detail.return_id')
-            ->where('r.pembangunan_unit_qc_id', $qcId)
-            ->whereIn('r.status', ['diajukan', 'diproses', 'selesai'])  // exclude only tolak
-            ->select([
-                'pembangunan_unit_barang_return_detail.barang_id',
-                DB::raw('SUM(pembangunan_unit_barang_return_detail.jumlah_input) as total_returned'),
-                DB::raw('SUM(pembangunan_unit_barang_return_detail.jumlah_base) as total_returned_base'),
-            ])
-            ->groupBy('pembangunan_unit_barang_return_detail.barang_id')
-            ->pluck('total_returned', 'barang_id')
-            ->toArray();
-
+        // Sum up already-returned base quantities for each barang from this QC's returs
         $returnedBase = PembangunanUnitBarangReturnDetail::query()
             ->join('pembangunan_unit_barang_return as r', 'r.id', '=', 'pembangunan_unit_barang_return_detail.return_id')
             ->where('r.pembangunan_unit_qc_id', $qcId)
@@ -83,27 +62,49 @@ class PembangunanUnitBarangReturnController extends Controller
             ->pluck('total_returned_base', 'barang_id')
             ->toArray();
 
-        $items = $details->map(function ($d) use ($returned, $returnedBase) {
-            $totalDiterima    = (float) $d->total_diterima;
+        $items = $details->map(function ($d) use ($returnedBase) {
             $totalDiterimaBase = (float) $d->total_diterima_base;
-            $sudahReturn      = (float) ($returned[$d->barang_id] ?? 0);
-            $sudahReturnBase  = (float) ($returnedBase[$d->barang_id] ?? 0);
-            $sisaBase         = max(0, $totalDiterimaBase - $sudahReturnBase);
+            $sudahReturBase    = (float) ($returnedBase[$d->barang_id] ?? 0);
+            $sisaBase           = max(0, $totalDiterimaBase - $sudahReturBase);
+
+            $masterBarang = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan'])->find($d->barang_id);
+            $baseSatuanNama = $masterBarang?->baseUnit?->nama ?? 'Unit';
+            $baseSatuanId   = $masterBarang?->base_unit_id;
+
+            $satuanOptions = [];
+            if ($baseSatuanId) {
+                $satuanOptions[] = [
+                    'satuan_id'        => $baseSatuanId,
+                    'nama_satuan'      => $baseSatuanNama,
+                    'konversi_ke_base' => 1.0,
+                    'is_base'          => true,
+                ];
+            }
+
+            if ($masterBarang?->satuanKonversi) {
+                foreach ($masterBarang->satuanKonversi as $konv) {
+                    if ($konv->satuan_id != $baseSatuanId && $konv->satuan) {
+                        $satuanOptions[] = [
+                            'satuan_id'        => $konv->satuan_id,
+                            'nama_satuan'      => $konv->satuan->nama,
+                            'konversi_ke_base' => (float) $konv->konversi_ke_base,
+                            'is_base'          => false,
+                        ];
+                    }
+                }
+            }
 
             return [
-                'barang_id'          => $d->barang_id,
-                'nama_barang'        => $d->nama_barang,
-                'satuan_id'          => $d->satuan_id,
-                'satuan'             => $d->satuan,
-                'total_diterima'     => $totalDiterima,
-                'total_diterima_base'=> $totalDiterimaBase,
-                'sudah_return'       => $sudahReturn,
-                'sudah_return_base'  => $sudahReturnBase,
-                'sisa_return_base'   => $sisaBase,
-                // sisa in display satuan (based on the default satuan faktor)
-                'sisa_return'        => $totalDiterima - $sudahReturn,
+                'barang_id'           => $d->barang_id,
+                'nama_barang'         => $masterBarang->nama_barang ?? $d->nama_barang,
+                'base_satuan_id'      => $baseSatuanId,
+                'base_satuan_nama'    => $baseSatuanNama,
+                'total_diterima_base' => $totalDiterimaBase,
+                'sudah_retur_base'    => $sudahReturBase,
+                'sisa_retur_base'     => $sisaBase,
+                'satuan_options'      => $satuanOptions,
             ];
-        })->filter(fn($i) => $i['sisa_return_base'] > 0.0001)->values();
+        })->filter(fn($i) => $i['sisa_retur_base'] > 0.0001)->values();
 
         return response()->json([
             'qc'    => ['id' => $qc->id, 'nama' => 'Ke - ' . $qc->qc_urutan_ke . ' (' . ($qc->nama_qc ?? $qc->masterQc->nama_qc ?? 'QC') . ')'],
@@ -187,12 +188,19 @@ class PembangunanUnitBarangReturnController extends Controller
                 }
                 $nomorReturn = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
 
+                $tanggalReturn = $request->tanggal_return;
+                if ($tanggalReturn && strlen($tanggalReturn) <= 10) {
+                    $tanggalReturn = $tanggalReturn . ' ' . now()->format('H:i:s');
+                } else if (!$tanggalReturn) {
+                    $tanggalReturn = now();
+                }
+
                 // Create Return Header
                 $return = PembangunanUnitBarangReturn::create([
                     'nomor_return'           => $nomorReturn,
                     'pembangunan_unit_id'    => $request->pembangunan_unit_id,
                     'pembangunan_unit_qc_id' => $qcId,
-                    'tanggal_return'         => $request->tanggal_return,
+                    'tanggal_return'         => $tanggalReturn,
                     'catatan'                => $request->catatan,
                     'status'                 => 'diproses',
                     'created_by'             => Auth::id(),

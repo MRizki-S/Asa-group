@@ -2,7 +2,7 @@
 
     {{-- Tabel Order Bahan --}}
     @php
-        $orders = \App\Models\PembangunanUnitBarangOrder::with('details.barang')
+        $orders = \App\Models\PembangunanUnitBarangOrder::with(['details.barang', 'user', 'accBy'])
             ->where('pembangunan_unit_qc_id', $qc->id)
             ->latest()
             ->get();
@@ -30,11 +30,6 @@
             @if ($qc->pembangunanUnitRapBahan->count() > 0 && !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']))
                 <button @click="prepareOrder({{ json_encode($qc->pembangunanUnitRapBahan) }}, {{ $qc->id }})"
                     class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
                     Order Barang
                 </button>
             @endif
@@ -42,7 +37,7 @@
                 <button @click="prepareReturn({{ $qc->id }}, '{{ $qcNama }}')"
                     class="px-4 py-2 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 shadow-sm transition-all uppercase flex items-center gap-2">
                     <i class="fa-solid fa-rotate-left text-xs"></i>
-                    Return Barang
+                    Retur Barang
                 </button>
             @endif
         </div>
@@ -86,12 +81,6 @@
                                     <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
                                         {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                                     </p>
-                                    {{-- Badge jika ada retur di salah satu item --}}
-                                    @if ($order->details->where('jumlah_return', '>', 0)->count() > 0)
-                                        <span
-                                            class="bg-orange-100 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Ada
-                                            Retur</span>
-                                    @endif
                                 </div>
                             </td>
                             <td class="px-4 py-4 text-xs text-center">
@@ -166,7 +155,6 @@
                                                                     $isOver = $baseOrder - $baseRap > 0.001;
 
                                                                     $isRap = (bool) $det->rapBahan;
-                                                                    $isReturned = $det->jumlah_return > 0;
                                                                 @endphp
 
                                                                 <tr
@@ -176,20 +164,6 @@
                                                                             class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
                                                                             {{ $det->nama_barang ?? '-' }}
                                                                         </p>
-                                                                        {{-- Badge Retur & Alasan --}}
-                                                                        @if ($isReturned)
-                                                                            <div
-                                                                                class="mt-2 p-2 bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 rounded-lg">
-                                                                                <p
-                                                                                    class="text-[10px] text-orange-700 dark:text-orange-400 font-bold flex items-center gap-1">
-                                                                                    <i
-                                                                                        class="fa-solid fa-triangle-exclamation"></i>
-                                                                                    Retur:
-                                                                                    {{ (float) $det->jumlah_return }}
-                                                                                    {{ $det->satuan }}
-                                                                                </p>
-                                                                            </div>
-                                                                        @endif
                                                                         @if ($det->alasan_permintaan_tidak_sesuai_rap)
                                                                             <p
                                                                                 class="text-[9px] text-red-500 italic mt-1">
@@ -245,6 +219,26 @@
                                                 </div>
                                             </div>
 
+                                            <div class="p-3 bg-gray-50/80 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-700/60 space-y-2 text-xs">
+                                                <div class="flex justify-between items-center text-[10px]">
+                                                    <span class="text-gray-400 font-medium">Diajukan Oleh:</span>
+                                                    <span class="font-bold text-gray-700 dark:text-gray-200">
+                                                        {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->user->username ?? 'Pengawas' }}
+                                                    </span>
+                                                </div>
+                                                @if (in_array($order->status_order, ['selesai', 'ditolak']))
+                                                    <div class="flex justify-between items-center text-[10px] border-t border-gray-100 dark:border-gray-700 pt-1.5">
+                                                        <span class="text-gray-400 font-medium">Dikonfirmasi Oleh:</span>
+                                                        <span class="font-bold text-gray-700 dark:text-gray-200">
+                                                            {{ $order->accBy->nama_lengkap ?? $order->accBy->name ?? $order->accBy->username ?? 'Petugas Gudang' }}
+                                                            @if ($order->tanggal_selesai)
+                                                                <span class="text-[9px] text-gray-400 font-normal">({{ \Carbon\Carbon::parse($order->tanggal_selesai)->translatedFormat('d M Y, H:i') }})</span>
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            </div>
+
 
                                              @if ($order->status_order == 'diproses')
                                                   <div class="pt-2 flex justify-end">
@@ -276,4 +270,188 @@
             <h5 class="text-xs font-bold text-gray-600 dark:text-gray-300">Belum Ada Riwayat Order</h5>
         </div>
     @endif
+
+    {{-- Tabel Riwayat Retur Barang --}}
+    @php
+        $returns = \App\Models\PembangunanUnitBarangReturn::with(['details.barang', 'createdBy', 'accBy'])
+            ->where('pembangunan_unit_qc_id', $qc->id)
+            ->latest()
+            ->get();
+    @endphp
+
+    <div class="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+        {{-- Header Section --}}
+        <div class="flex items-center gap-3 px-1">
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Riwayat Retur Barang</h4>
+            <span class="bg-red-100 text-red-600 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                {{ $returns->count() }} Total
+            </span>
+        </div>
+
+        @if ($returns->count() > 0)
+            <div class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 dark:bg-gray-800/50">
+                        <tr>
+                            <th class="w-10 px-4 py-3"></th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">No Retur</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Item</th>
+                            <th class="w-40 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+
+                    @foreach ($returns as $ret)
+                        <tbody x-data="{ open: false }" class="border-t border-gray-100 dark:border-gray-800">
+                            <tr @click="open = !open" class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+                                <td class="px-4 py-4 text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-3 h-3 text-gray-400 transition-transform duration-300 mx-auto"
+                                        :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
+                                        {{ \Carbon\Carbon::parse($ret->tanggal_return)->translatedFormat('d M Y, H:i') }}
+                                    </p>
+                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
+                                        {{ $ret->nomor_return }}
+                                    </p>
+                                </td>
+                                <td class="px-4 py-4 text-xs text-center">
+                                    <span class="text-[10px] text-gray-400 font-medium">
+                                        {{ $ret->details->count() }} Item
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 text-center">
+                                    @php
+                                        $retStatusMap = [
+                                            'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                            'selesai' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                            'ditolak' => 'bg-red-50 text-red-600 border-red-100',
+                                            'draft' => 'bg-gray-50 text-gray-600 border-gray-100',
+                                        ];
+                                        $retStyle = $retStatusMap[$ret->status] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $retStyle }}">
+                                        {{ $ret->status }}
+                                    </span>
+                                </td>
+                            </tr>
+
+                            {{-- Accordion Detail Retur --}}
+                            <tr x-show="open" x-cloak>
+                                <td colspan="4" class="p-0 border-none bg-gray-50/50 dark:bg-gray-900/40">
+                                    <div x-show="open" x-collapse class="px-10 py-6 border-t border-gray-100 dark:border-gray-800">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            {{-- Daftar Item Barang Retur --}}
+                                            <div class="space-y-4">
+                                                <h5 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                                    Detail Item Barang Retur
+                                                </h5>
+                                                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                                                    <div class="max-h-[350px] overflow-auto custom-scrollbar">
+                                                        <table class="w-full text-left border-collapse">
+                                                            <thead class="bg-gray-50/80 dark:bg-gray-700/50 sticky top-0 z-10 backdrop-blur-sm">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-[9px] font-bold text-gray-400 uppercase border-b border-gray-100 dark:border-gray-700">Nama Barang</th>
+                                                                    <th class="px-3 py-2 text-[9px] font-bold text-gray-400 uppercase text-right border-b border-gray-100 dark:border-gray-700">Jumlah Retur</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                                                @foreach ($ret->details as $rdet)
+                                                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                                                        <td class="px-3 py-3">
+                                                                            <p class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
+                                                                                {{ $rdet->nama_barang ?? '-' }}
+                                                                            </p>
+                                                                            @if ($rdet->keterangan)
+                                                                                <p class="text-[9px] text-gray-400 italic mt-0.5">
+                                                                                    Ket: {{ $rdet->keterangan }}
+                                                                                </p>
+                                                                            @endif
+                                                                            @if ($ret->status === 'selesai')
+                                                                                <div class="flex items-center gap-1.5 mt-1.5">
+                                                                                    <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                                                                                        Layak: {{ (float)$rdet->jumlah_layak_base }}
+                                                                                    </span>
+                                                                                    @if ($rdet->jumlah_rusak_base > 0)
+                                                                                        <span class="text-[8px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">
+                                                                                            Rusak: {{ (float)$rdet->jumlah_rusak_base }}
+                                                                                        </span>
+                                                                                    @endif
+                                                                                </div>
+                                                                            @endif
+                                                                        </td>
+                                                                        <td class="px-3 py-3 text-right align-top">
+                                                                            <p class="text-[11px] font-black text-gray-800 dark:text-white">
+                                                                                {{ (float)$rdet->jumlah_input }}
+                                                                                <span class="text-[9px] font-medium text-gray-400">{{ $rdet->satuan }}</span>
+                                                                            </p>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Catatan & Metadata --}}
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <h5 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                                                        Catatan Retur
+                                                    </h5>
+                                                    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm min-h-[60px]">
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400 italic leading-relaxed">
+                                                            "{{ $ret->catatan ?? 'Tidak ada catatan retur.' }}"
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="p-3 bg-gray-50/80 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-700/60 space-y-2 text-xs">
+                                                    <div class="flex justify-between items-center text-[10px]">
+                                                        <span class="text-gray-400 font-medium">Diajukan Oleh:</span>
+                                                        <span class="font-bold text-gray-700 dark:text-gray-200">
+                                                            {{ $ret->createdBy->nama_lengkap ?? $ret->createdBy->name ?? '-' }}
+                                                        </span>
+                                                    </div>
+                                                    @if (in_array($ret->status, ['selesai', 'ditolak']) && $ret->accBy)
+                                                        <div class="flex justify-between items-center text-[10px] border-t border-gray-100 dark:border-gray-700 pt-1.5">
+                                                            <span class="text-gray-400 font-medium">Dikonfirmasi Oleh:</span>
+                                                            <span class="font-bold text-gray-700 dark:text-gray-200">
+                                                                {{ $ret->accBy->nama_lengkap ?? $ret->accBy->name ?? '-' }}
+                                                                @if ($ret->acc_at)
+                                                                    <span class="text-[9px] text-gray-400 font-normal">({{ \Carbon\Carbon::parse($ret->acc_at)->translatedFormat('d M Y, H:i') }})</span>
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+
+                                                @if ($ret->status === 'ditolak' && $ret->alasan_tolak)
+                                                    <div class="p-3 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-800/50">
+                                                        <p class="text-[9px] font-black text-red-500 uppercase tracking-wider mb-1">Alasan Penolakan Gudang:</p>
+                                                        <p class="text-xs text-red-700 dark:text-red-300 italic">"{{ $ret->alasan_tolak }}"</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    @endforeach
+                </table>
+            </div>
+        @else
+            <div class="py-10 flex flex-col items-center justify-center border border-dashed border-gray-100 dark:border-gray-800 rounded-2xl bg-gray-50/20">
+                <i class="fa-solid fa-rotate-left text-gray-300 text-xl mb-2"></i>
+                <p class="text-xs font-bold text-gray-400">Belum Ada Riwayat Retur Barang</p>
+            </div>
+        @endif
+    </div>
 </div>

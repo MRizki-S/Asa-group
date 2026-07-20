@@ -30,14 +30,14 @@
         $pembangunanItem = $order->kawasan;
         $perumahaanLabel = $pembangunanItem?->perumahan?->nama_perumahaan ?? '-';
         $tahapLabel = 'Kawasan';
-        $unitLabel = $pembangunanItem?->nama_pembangunan ?? '-';
+        $unitLabel = $pembangunanItem?->nama ?? $pembangunanItem?->nama_pembangunan ?? '-';
         $qcLabel = 'Kawasan / Umum';
         $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
     } elseif ($category === 'pembangunan_proyek_mangoon') {
         $pembangunanItem = $order->proyek;
         $perumahaanLabel = 'Proyek Luar';
         $tahapLabel = 'Proyek';
-        $unitLabel = $pembangunanItem?->nama ?? '-';
+        $unitLabel = $pembangunanItem?->nama_project ?? $pembangunanItem?->nama ?? '-';
         $qcLabel = 'Proyek / Umum';
         $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
     }
@@ -115,51 +115,106 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perumahan</label>
-                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $perumahaanLabel }}
+            @if ($category === 'pembangunan_unit')
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perumahan</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $perumahaanLabel }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tahap</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $tahapLabel }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit / Lokasi</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $unitLabel }}
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tahap</label>
-                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $tahapLabel }}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Keterangan / QC</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $qcLabel }}
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Unit / Lokasi</label>
-                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $unitLabel }}
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $pengawasLabel }}
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Keterangan / QC</label>
-                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $qcLabel }}
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Diajukan Oleh</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->pembuat->nama_lengkap ?? '-' }}
+                        </div>
                     </div>
                 </div>
+            @elseif ($category === 'pembangunan_kawasan')
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perumahan</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $perumahaanLabel }}
+                        </div>
+                    </div>
 
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas</label>
-                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $pengawasLabel }}
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Kawasan</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 font-semibold">
+                            {{ $unitLabel }}
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Diajukan Oleh</label>
-                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->pembuat->nama_lengkap ?? '-' }}
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas Kawasan</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $pengawasLabel }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Diajukan Oleh</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->pembuat->nama_lengkap ?? '-' }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Proyek</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 font-semibold">
+                            {{ $unitLabel }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas Proyek</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $pengawasLabel }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Diajukan Oleh</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->pembuat->nama_lengkap ?? '-' }}
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             @if ($order->catatan)
                 <div class="mt-4">

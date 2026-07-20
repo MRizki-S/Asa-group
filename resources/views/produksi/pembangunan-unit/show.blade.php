@@ -72,45 +72,53 @@
             return barang ? barang.available_satuan : [];
         },
 
+        formatQty(val) {
+            if (!val || isNaN(val)) return 0;
+            return Math.round(val * 1000) / 1000;
+        },
+
         onReturnBarangChange(index, barangId) {
             const item = this.returnItems[index];
             const summary = this.returnSummary.find(s => s.barang_id == barangId);
             if (!summary) return;
-            // Set barang meta from summary
+
             item.barang_id = parseInt(barangId);
             item.nama_barang = summary.nama_barang;
-            item.total_diterima = summary.total_diterima;
-            item.sudah_return = summary.sudah_return;
-            item.sisa_return = summary.sisa_return;
-            item.sisa_return_base = summary.sisa_return_base;
-            // Default satuan from summary
-            item.satuan_id = summary.satuan_id;
-            item.satuan_display = summary.satuan;
-            item.satuan_selected_nama = summary.satuan;
-            item.faktor = 1; // will recalculate
-            item.max_jumlah_input = summary.sisa_return;
+            item.total_diterima_base = summary.total_diterima_base;
+            item.sudah_retur_base = summary.sudah_retur_base;
+            item.sisa_retur_base = summary.sisa_retur_base;
+            item.base_satuan_nama = summary.base_satuan_nama;
+            item.satuan_options = summary.satuan_options || [];
+
+            item.satuan_id = summary.base_satuan_id;
+            item.satuan_selected_nama = summary.base_satuan_nama;
+            item.faktor = 1;
+
+            this.recalculateReturnItemDisplay(index);
             item.jumlah_input = 0;
-            // Try find faktor from allBarang
-            const barang = this.allBarang.find(b => b.id == barangId);
-            if (barang) {
-                const defSat = barang.available_satuan.find(s => s.id == summary.satuan_id);
-                if (defSat) {
-                    item.faktor = defSat.faktor;
-                }
-            }
         },
 
         onReturnSatuanChange(index) {
             const item = this.returnItems[index];
-            const barang = this.allBarang.find(b => b.id == item.barang_id);
-            if (!barang) return;
-            const sat = barang.available_satuan.find(s => s.id == item.satuan_id);
+            if (!item.satuan_options) return;
+            const sat = item.satuan_options.find(s => s.satuan_id == item.satuan_id);
             if (!sat) return;
-            item.faktor = sat.faktor;
-            item.satuan_selected_nama = sat.nama;
-            // Recalculate max in new satuan
-            item.max_jumlah_input = item.sisa_return_base / sat.faktor;
+
+            item.faktor = sat.konversi_ke_base || 1;
+            item.satuan_selected_nama = sat.nama_satuan;
+
+            this.recalculateReturnItemDisplay(index);
             item.jumlah_input = 0;
+        },
+
+        recalculateReturnItemDisplay(index) {
+            const item = this.returnItems[index];
+            const faktor = item.faktor > 0 ? item.faktor : 1;
+
+            item.total_diterima_display = this.formatQty(item.total_diterima_base / faktor);
+            item.sudah_retur_display = this.formatQty(item.sudah_retur_base / faktor);
+            item.sisa_retur_display = this.formatQty(item.sisa_retur_base / faktor);
+            item.max_jumlah_input = item.sisa_retur_display;
         },
 
         addReturnItem() {
@@ -118,15 +126,18 @@
                 barang_id: null,
                 nama_barang: '',
                 satuan_id: null,
-                satuan_display: '',
                 satuan_selected_nama: '',
+                satuan_options: [],
                 faktor: 1,
                 jumlah_input: 0,
                 max_jumlah_input: 0,
-                total_diterima: 0,
-                sudah_return: 0,
-                sisa_return: 0,
-                sisa_return_base: 0,
+                total_diterima_base: 0,
+                sudah_retur_base: 0,
+                sisa_retur_base: 0,
+                total_diterima_display: 0,
+                sudah_retur_display: 0,
+                sisa_retur_display: 0,
+                base_satuan_nama: '',
                 keterangan: '',
             });
             const index = this.returnItems.length - 1;

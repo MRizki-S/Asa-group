@@ -1661,7 +1661,7 @@
                                     Retur Barang
                                 </li>
                                 <li>
-                                    <a href="{{ route('under-development') }}"
+                                    <a href="{{ route('gudang.returnBarang.unit.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-2"
                                         :class="page === 'BarangReturnUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
@@ -1669,7 +1669,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('under-development') }}"
+                                    <a href="{{ route('gudang.returnBarang.kawasan.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-2"
                                         :class="page === 'BarangReturnKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
@@ -1677,7 +1677,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('under-development') }}"
+                                    <a href="{{ route('gudang.returnBarang.proyek.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-2"
                                         :class="page === 'BarangReturnProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>

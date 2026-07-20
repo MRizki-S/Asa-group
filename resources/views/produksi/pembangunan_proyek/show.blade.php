@@ -14,23 +14,73 @@
     },
     itemsAdditional: [],
     filterType: 'stock',
-    allBarang: {{ json_encode($allBarang) }},
-    openReturnModal: false,
-    returnItems: [],
-    returnOrderId: null,
     openCancelOrderModal: false,
     cancelOrderActionUrl: '',
     openCancelUpahModal: false,
     cancelUpahActionUrl: '',
 
-    prepareReturn(orderId, items) {
-        this.returnOrderId = orderId;
-        this.returnItems = items.map(i => ({
-            ...i,
-            retur: i.retur ? parseFloat(i.retur) : 0,
-            keterangan: i.keterangan || ''
-        }));
-        this.openReturnModal = true;
+    allBarang: {{ json_encode($allBarang) }},
+    returnableBarang: {{ json_encode($returnableBarang) }},
+    returnProyekItems: [],
+    addReturnProyekItem() {
+        this.returnProyekItems.push({
+            barang_id: '',
+            nama_barang: '',
+            jumlah_input: 0,
+            satuan_id: '',
+            satuan_options: [],
+            total_diterima_base: 0,
+            sudah_retur_base: 0,
+            sisa_retur_base: 0,
+            diterima_disp: 0,
+            sudah_retur_disp: 0,
+            sisa_retur_disp: 0,
+            satuan_nama: '',
+            keterangan: ''
+        });
+    },
+    removeReturnProyekItem(index) {
+        this.returnProyekItems.splice(index, 1);
+    },
+    updateReturnProyekBarang(index, e) {
+        let val = e && e.target ? e.target.value : e;
+        this.returnProyekItems[index].barang_id = val;
+        let selected = this.returnableBarang.find(b => b.barang_id == val);
+        if (selected) {
+            this.returnProyekItems[index].nama_barang = selected.nama_barang;
+            this.returnProyekItems[index].satuan_options = selected.satuan_options;
+            this.returnProyekItems[index].total_diterima_base = selected.total_diterima_base;
+            this.returnProyekItems[index].sudah_retur_base = selected.sudah_retur_base;
+            this.returnProyekItems[index].sisa_retur_base = selected.sisa_retur_base;
+
+            if (selected.satuan_options && selected.satuan_options.length > 0) {
+                this.returnProyekItems[index].satuan_id = selected.satuan_options[0].satuan_id;
+            } else {
+                this.returnProyekItems[index].satuan_id = '';
+            }
+            this.recalculateReturnProyekItem(index);
+        }
+    },
+    updateReturnProyekSatuan(index) {
+        this.recalculateReturnProyekItem(index);
+    },
+    recalculateReturnProyekItem(index) {
+        let item = this.returnProyekItems[index];
+        let opt = item.satuan_options ? item.satuan_options.find(s => s.satuan_id == item.satuan_id) : null;
+        let faktor = opt ? parseFloat(opt.konversi_ke_base) : 1.0;
+        if (faktor <= 0) faktor = 1.0;
+
+        item.satuan_nama = opt ? opt.nama_satuan : '';
+        item.diterima_disp = Math.round((item.total_diterima_base / faktor) * 1000) / 1000;
+        item.sudah_retur_disp = Math.round((item.sudah_retur_base / faktor) * 1000) / 1000;
+        item.sisa_retur_disp = Math.max(0, Math.round((item.sisa_retur_base / faktor) * 1000) / 1000);
+
+        if (item.jumlah_input > item.sisa_retur_disp || item.jumlah_input <= 0) {
+            item.jumlah_input = item.sisa_retur_disp;
+        }
+    },
+    isBarangSelectedInReturn(currentIndex, barangId) {
+        return this.returnProyekItems.some((item, idx) => idx !== currentIndex && item.barang_id == barangId);
     },
 
     addAdditionalItem() {
@@ -149,6 +199,11 @@
                 class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
                 <i class="fa-solid fa-money-bill-wave"></i> Pengajuan Upah
             </button>
+            <button @click="tab = 'retur'"
+                :class="tab === 'retur' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
+                <i class="fa-solid fa-rotate-left"></i> Retur Barang
+            </button>
         </div>
     </div>
 
@@ -260,9 +315,6 @@
                                             <p class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
                                                 {{ $order->nomor_order }}
                                             </p>
-                                            @if($order->returns && $order->returns->count() > 0)
-                                                <span class="bg-orange-100 text-orange-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter whitespace-nowrap">Ada Retur</span>
-                                            @endif
                                         </div>
                                     </div>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -335,32 +387,7 @@
                                 </div>
                                 @endif
 
-                                @if ($order->status_order == 'selesai' || $order->status_order == 'pengembalian')
-                                    @php
-                                        $lastReturn = $order->returns->last();
-                                        $returnItemsForModal = $order->details->map(function ($d) use ($lastReturn) {
-                                            $rd = $lastReturn ? $lastReturn->details->where('order_detail_id', $d->id)->first() : null;
-                                            return [
-                                                'id'         => $d->id,
-                                                'nama'       => $d->nama_barang,
-                                                'jumlah'     => $d->jumlah_input,
-                                                'satuan'     => $d->satuanModel->nama_satuan ?? $d->satuan,
-                                                'retur'      => $rd ? (float) $rd->jumlah_return : 0,
-                                                'keterangan' => $rd ? $rd->keterangan_return : '',
-                                            ];
-                                        });
-                                    @endphp
-                                    @if ($data->status_pembangunan !== 'selesai')
-                                    <div class="pt-4">
-                                        <button type="button"
-                                            @click="prepareReturn({{ $order->id }}, {{ $returnItemsForModal->toJson() }})"
-                                            class="w-full py-2.5 text-[10px] font-black bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl uppercase border border-gray-200 dark:border-gray-700 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
-                                            <i class="fa-solid fa-rotate-left"></i>
-                                            {{ $order->status_order == 'pengembalian' ? 'Tambah / Perbarui Retur' : 'Ajukan Pengembalian' }}
-                                        </button>
-                                    </div>
-                                    @endif
-                                @endif
+
 
                                 @if ($order->status_order == 'diproses')
                                     <div class="pt-4 flex justify-end">
@@ -595,73 +622,231 @@
         </div>
     </div>
 
-    <!-- Modal Return Barang -->
-    <template x-teleport="body">
-        <div x-show="openReturnModal"
-            class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px]" x-cloak>
-            <div @click.away="openReturnModal = false"
-                class="bg-white dark:bg-gray-900 rounded-2xl max-w-3xl w-full shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col max-h-[90vh]">
-                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Ajukan Retur Barang</h3>
-                        <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Order ID: #<span x-text="returnOrderId"></span></p>
-                    </div>
-                    <button @click="openReturnModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-                <form action="{{ route('produksi.pembangunanProyek.returnStore') }}" method="POST" class="flex-1 flex flex-col overflow-hidden">
+    <!-- Tab Content: Retur Barang -->
+    <div x-show="tab === 'retur'" style="display: none;">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            @if ($data->status_pembangunan !== 'selesai')
+            <!-- Kiri (50%): Form Buat Retur Barang -->
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Retur Barang</h3>
+                <form action="{{ route('produksi.pembangunanProyek.returnStore') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="order_id" :value="returnOrderId">
-                    <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 p-4 rounded-xl flex gap-3">
-                            <i class="fa-solid fa-circle-info text-amber-500 mt-0.5 text-lg"></i>
-                            <p class="text-sm text-amber-700 dark:text-amber-400 leading-relaxed">
-                                Masukkan jumlah barang yang <strong>rusak atau ingin dikembalikan</strong>. Pastikan jumlah tidak melebihi total barang yang diterima.
-                            </p>
+                    <input type="hidden" name="pembangunan_proyek_id" value="{{ $data->id }}">
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Catatan Retur</label>
+                            <textarea name="catatan" rows="3" placeholder="Contoh: Sisa material proyek gedung/mangoon..."
+                                class="bg-white block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
                         </div>
-                        <div class="space-y-4">
-                            <template x-for="(item, index) in returnItems" :key="index">
-                                <div class="p-5 border border-gray-100 dark:border-gray-800 rounded-xl bg-gray-50/30 dark:bg-white/[0.02] space-y-4">
-                                    <div class="flex items-center justify-between gap-4">
-                                        <div class="flex-1">
-                                            <p class="text-base font-bold text-gray-700 dark:text-gray-200" x-text="item.nama"></p>
-                                            <p class="text-xs text-gray-500 mt-1.5">
-                                                Diterima: <span class="font-mono font-medium text-gray-700 dark:text-gray-300" x-text="parseFloat(item.jumlah)"></span>
-                                                <span x-text="item.satuan"></span>
-                                            </p>
+
+                        <!-- Dynamic Items Retur -->
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-sm text-gray-900 dark:text-white">Daftar Barang Retur</h4>
+                                <button type="button" @click="addReturnProyekItem()" class="text-sm text-blue-600 hover:underline"><i class="fa-solid fa-plus"></i> Tambah Item</button>
+                            </div>
+
+                            <div class="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                <template x-for="(item, index) in returnProyekItems" :key="index">
+                                    <div class="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mb-3 space-y-3 relative">
+                                        <button type="button" @click="removeReturnProyekItem(index)" class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-500 hover:bg-red-200 transition-colors font-bold text-xs" title="Hapus Barang">X</button>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Barang</label>
+                                            <select :name="'items['+index+'][barang_id]'" 
+                                                class="select2-dynamic block w-full rounded border-gray-300 bg-white text-xs text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500" 
+                                                required
+                                                x-init="$nextTick(() => { 
+                                                    $($el).select2({theme: 'bootstrap4', width: '100%'})
+                                                    .on('change', (e) => { updateReturnProyekBarang(index, e); }); 
+                                                })">
+                                                <option value="">-- Pilih Barang Order --</option>
+                                                @foreach($returnableBarang as $rb)
+                                                    <option value="{{ $rb['barang_id'] }}">{{ $rb['nama_barang'] }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
-                                        <div class="w-40">
-                                            <label class="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase mb-1.5">Jumlah Retur</label>
-                                            <div class="relative group">
-                                                <input type="hidden" :name="'returns[' + index + '][order_detail_id]'" :value="item.id">
-                                                <input type="number" step="any" :name="'returns[' + index + '][jumlah_return]'" x-model.number="item.retur" :max="item.jumlah" min="0"
-                                                    :class="item.retur > 0 ? 'border-orange-400 dark:border-orange-500/50 text-orange-600 bg-orange-50/30' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800'"
-                                                    class="w-full p-2.5 pr-12 text-sm font-mono font-bold border rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
-                                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 group-hover:text-gray-500" x-text="item.satuan"></span>
+
+                                        <!-- Live Info Badge Diterima, Sudah Retur, Sisa Retur -->
+                                        <template x-if="item.barang_id">
+                                            <div class="p-2.5 bg-blue-50/60 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-lg text-xs space-y-1">
+                                                <div class="flex flex-wrap items-center justify-between text-[11px] gap-2 font-semibold">
+                                                    <span class="text-blue-800 dark:text-blue-300">Diterima: <strong class="font-bold" x-text="item.diterima_disp"></strong> <span x-text="item.satuan_nama"></span></span>
+                                                    <span class="text-amber-800 dark:text-amber-300">Sudah Retur: <strong class="font-bold" x-text="item.sudah_retur_disp"></strong> <span x-text="item.satuan_nama"></span></span>
+                                                    <span class="text-emerald-800 dark:text-emerald-300">Sisa Maks: <strong class="font-bold" x-text="item.sisa_retur_disp"></strong> <span x-text="item.satuan_nama"></span></span>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Satuan</label>
+                                                <select :name="'items['+index+'][satuan_id]'" x-model="item.satuan_id" @change="updateReturnProyekSatuan(index)" required class="block w-full rounded border-gray-300 bg-white text-xs text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+                                                    <template x-for="s in item.satuan_options" :key="s.satuan_id">
+                                                        <option :value="s.satuan_id" x-text="s.nama_satuan"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Retur</label>
+                                                <input type="number" step="any" min="0.001" :max="item.sisa_retur_disp" :name="'items['+index+'][jumlah_input]'" x-model.number="item.jumlah_input" required class="block w-full rounded border-gray-300 bg-white text-xs font-bold text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
                                             </div>
                                         </div>
+                                        <div class="mt-2">
+                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan / Alasan Item</label>
+                                            <input type="text" :name="'items['+index+'][keterangan]'" x-model="item.keterangan" placeholder="Contoh: Sisa pengerjaan / Rusak / Bengkok..." class="block w-full rounded border-gray-300 bg-white text-xs text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
                                     </div>
-                                    <div x-show="item.retur > 0" x-transition>
-                                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1.5">Alasan / Detail Kerusakan</label>
-                                        <textarea :name="'returns[' + index + '][keterangan]'" x-model="item.keterangan" rows="2"
-                                            class="w-full p-3 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-red-500/10 outline-none placeholder:text-gray-400"
-                                            placeholder="Contoh: Keramik pecah di pojok, Semen membatu, dll..."></textarea>
-                                    </div>
+                                </template>
+                            </div>
+                            
+                            @if(count($returnableBarang) === 0)
+                                <div class="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-700 text-center font-medium mt-2">
+                                    Belum ada barang yang selesai diorder/diterima dari gudang untuk dilakukan retur.
                                 </div>
-                            </template>
+                            @endif
+                            
+                            <div x-show="returnProyekItems.length === 0" class="text-sm text-gray-500 text-center py-4 italic">Belum ada barang retur ditambahkan.</div>
                         </div>
-                    </div>
-                    <div class="p-6 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
-                        <button type="button" @click="openReturnModal = false" class="px-6 py-2.5 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors uppercase">Batal</button>
-                        <button type="submit" class="px-6 py-2.5 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 uppercase">
-                            Kirim Pengajuan Retur
-                        </button>
+
+                        <div x-show="returnProyekItems.length > 0" class="flex justify-end mt-4">
+                            <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition shadow-sm">Kirim Retur Barang</button>
+                        </div>
                     </div>
                 </form>
             </div>
+            @else
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-800/50 p-5 shadow-sm dark:border-gray-700 text-center flex flex-col items-center justify-center min-h-[300px]">
+                <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-3"></i>
+                <h3 class="font-bold text-gray-900 dark:text-white mb-1">Pembangunan Selesai</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Proyek ini sudah berstatus selesai. Tidak dapat membuat pengajuan retur barang lagi.</p>
+            </div>
+            @endif
+
+            <!-- Kanan (50%): Riwayat Retur Barang (Accordion layout) -->
+            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">
+                <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex-none">Riwayat Retur Barang</h3>
+                <div class="relative flex-1 min-h-[300px]">
+                    <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
+                        @if(isset($returns) && $returns->count() > 0)
+                        @foreach($returns as $ret)
+                        <div x-data="{ open: false }" class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-transparent">
+                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
+                                {{-- Baris 1: Tanggal + Nomor Retur --}}
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex flex-col gap-0.5 min-w-0">
+                                        <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
+                                            {{ \Carbon\Carbon::parse($ret->tanggal_return ?? $ret->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
+                                        </p>
+                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
+                                            {{ $ret->nomor_return ?? ('RTN-MGN-' . str_pad($ret->id, 5, '0', STR_PAD_LEFT)) }}
+                                        </p>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                                {{-- Baris 2: Badge Status --}}
+                                <div class="flex flex-wrap items-center gap-2">
+                                    @php
+                                        $statusMap = [
+                                            'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                            'selesai'  => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                            'ditolak'  => 'bg-red-50 text-red-600 border-red-100',
+                                        ];
+                                        $style = $statusMap[$ret->status] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                        $label = [
+                                            'diproses' => 'Menunggu',
+                                            'selesai'  => 'Selesai',
+                                            'ditolak'  => 'Ditolak',
+                                        ][$ret->status] ?? strtoupper($ret->status);
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                        {{ $label }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div x-show="open" x-collapse x-cloak class="bg-gray-50/50 dark:bg-gray-900/40 p-4 border-t border-gray-100 dark:border-gray-800">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Detail Item Retur</h5>
+                                    <span class="text-[9px] font-black text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">{{ $ret->details->count() }} Item</span>
+                                </div>
+                                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-3">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead class="bg-gray-50 dark:bg-gray-700/50">
+                                            <tr>
+                                                <th class="px-3 py-2 font-bold text-gray-500">Barang</th>
+                                                <th class="px-3 py-2 font-bold text-gray-500 text-center">Retur</th>
+                                                @if ($ret->status === 'selesai')
+                                                    <th class="px-3 py-2 font-bold text-emerald-600 text-center">Layak</th>
+                                                    <th class="px-3 py-2 font-bold text-red-600 text-center">Rusak</th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                            @foreach ($ret->details as $rDet)
+                                                <tr>
+                                                    <td class="px-3 py-2">
+                                                        <p class="font-bold text-gray-800 dark:text-white leading-tight">
+                                                            {{ $rDet->nama_barang ?? $rDet->barang?->nama_barang ?? '-' }}
+                                                        </p>
+                                                        @if ($rDet->keterangan)
+                                                            <p class="text-[10px] text-gray-400 dark:text-gray-400 italic mt-0.5">
+                                                                Ket: {{ $rDet->keterangan }}
+                                                            </p>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-3 py-2 text-center font-bold text-gray-900 dark:text-white">
+                                                        {{ (float)$rDet->jumlah_input }} {{ $rDet->satuan }}
+                                                    </td>
+                                                    @if ($ret->status === 'selesai')
+                                                        <td class="px-3 py-2 text-center font-bold text-emerald-600">
+                                                            {{ (float)$rDet->jumlah_layak_base }} {{ $rDet->barang?->baseUnit?->nama ?? '' }}
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center font-bold text-red-600">
+                                                            {{ (float)$rDet->jumlah_rusak_base }} {{ $rDet->barang?->baseUnit?->nama ?? '' }}
+                                                        </td>
+                                                    @endif
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                @if ($ret->catatan)
+                                    <div class="p-2.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-lg text-xs text-yellow-800 dark:text-yellow-200 mb-2">
+                                        <span class="font-bold">Catatan:</span> {{ $ret->catatan }}
+                                    </div>
+                                @endif
+
+                                @if ($ret->status === 'ditolak' && $ret->alasan_tolak)
+                                    <div class="p-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/50 rounded-lg text-xs text-red-800 dark:text-red-200 mb-2">
+                                        <span class="font-bold">Alasan Ditolak:</span> {{ $ret->alasan_tolak }}
+                                    </div>
+                                @endif
+
+                                <div class="flex items-center justify-between text-[10px] text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
+                                    <span>Diajukan: <strong class="text-gray-600 dark:text-gray-300">{{ $ret->createdBy?->nama_lengkap ?? $ret->createdBy?->name ?? 'Pengawas' }}</strong></span>
+                                    @if ($ret->status !== 'diproses' && $ret->accBy)
+                                        <span>ACC: <strong class="text-gray-600 dark:text-gray-300">{{ $ret->accBy?->nama_lengkap ?? $ret->accBy?->name ?? '-' }}</strong></span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                        @else
+                        <div class="text-center py-8 text-sm text-gray-400">Belum ada riwayat retur barang</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </template>
+    </div>
+
+
 
     <!-- Modal Konfirmasi Batal Order -->
     <template x-teleport="body">

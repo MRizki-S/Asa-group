@@ -8,6 +8,9 @@ use App\Models\MasterUpah;
 use App\Models\PembangunanKawasan;
 use App\Models\PembangunanKawasanBarangOrder;
 use App\Models\PembangunanKawasanBarangOrderDetail;
+use App\Models\PembangunanKawasanBarangReturn;
+use App\Models\PembangunanKawasanBarangReturnDetail;
+use App\Models\BarangSatuanKonversi;
 use App\Models\PembangunanKawasanUpahPengajuan;
 use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
@@ -117,6 +120,83 @@ class PembangunanKawasanController extends Controller
     {
         $data = PembangunanKawasan::with(['perumahan', 'pengawas', 'orders.details.barang', 'orders.details.satuanModel', 'pengajuanUpah'])->findOrFail($id);
         
+        $returns = PembangunanKawasanBarangReturn::with(['details.barang.baseUnit', 'details.satuanModel', 'createdBy', 'accBy'])
+            ->where('pembangunan_kawasan_id', $id)
+            ->latest()
+            ->get();
+
+        // Calculate received vs returned per barang for this kawasan
+        $orderedDetails = PembangunanKawasanBarangOrderDetail::query()
+            ->join('pembangunan_kawasan_barang_order as o', 'o.id', '=', 'pembangunan_kawasan_barang_order_detail.order_id')
+            ->where('o.pembangunan_kawasan_id', $id)
+            ->where('o.status_order', 'selesai')
+            ->select([
+                'pembangunan_kawasan_barang_order_detail.barang_id',
+                DB::raw('MAX(pembangunan_kawasan_barang_order_detail.nama_barang) as nama_barang'),
+                DB::raw('SUM(pembangunan_kawasan_barang_order_detail.jumlah_base) as total_diterima_base'),
+            ])
+            ->groupBy('pembangunan_kawasan_barang_order_detail.barang_id')
+            ->get();
+
+        $returnedBaseMap = PembangunanKawasanBarangReturnDetail::query()
+            ->join('pembangunan_kawasan_barang_returns as r', 'r.id', '=', 'pembangunan_kawasan_barang_return_details.return_id')
+            ->where('r.pembangunan_kawasan_id', $id)
+            ->whereIn('r.status', ['diproses', 'selesai'])
+            ->select([
+                'pembangunan_kawasan_barang_return_details.barang_id',
+                DB::raw('SUM(pembangunan_kawasan_barang_return_details.jumlah_base) as total_returned_base'),
+            ])
+            ->groupBy('pembangunan_kawasan_barang_return_details.barang_id')
+            ->pluck('total_returned_base', 'barang_id')
+            ->toArray();
+
+        $returnableBarang = $orderedDetails->map(function ($d) use ($returnedBaseMap) {
+            $totalDiterimaBase = (float) $d->total_diterima_base;
+            $sudahReturBase    = (float) ($returnedBaseMap[$d->barang_id] ?? 0);
+            $sisaBase          = max(0, $totalDiterimaBase - $sudahReturBase);
+
+            if ($sisaBase <= 0.0001) {
+                return null;
+            }
+
+            $masterBarang = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan'])->find($d->barang_id);
+            $baseSatuanNama = $masterBarang?->baseUnit?->nama ?? 'Unit';
+            $baseSatuanId   = $masterBarang?->base_unit_id;
+
+            $satuanOptions = [];
+            if ($baseSatuanId) {
+                $satuanOptions[] = [
+                    'satuan_id'        => $baseSatuanId,
+                    'nama_satuan'      => $baseSatuanNama,
+                    'konversi_ke_base' => 1.0,
+                    'is_base'          => true,
+                ];
+            }
+
+            if ($masterBarang?->satuanKonversi) {
+                foreach ($masterBarang->satuanKonversi as $konv) {
+                    if ($konv->satuan_id != $baseSatuanId && $konv->satuan) {
+                        $satuanOptions[] = [
+                            'satuan_id'        => $konv->satuan_id,
+                            'nama_satuan'      => $konv->satuan->nama,
+                            'konversi_ke_base' => (float) $konv->konversi_ke_base,
+                            'is_base'          => false,
+                        ];
+                    }
+                }
+            }
+
+            return [
+                'barang_id'           => $d->barang_id,
+                'nama_barang'         => $masterBarang->nama_barang ?? $d->nama_barang,
+                'total_diterima_base' => $totalDiterimaBase,
+                'sudah_retur_base'    => $sudahReturBase,
+                'sisa_retur_base'     => $sisaBase,
+                'base_satuan_nama'    => $baseSatuanNama,
+                'satuan_options'      => $satuanOptions,
+            ];
+        })->filter()->values();
+
         $allBarang = MasterBarang::with(['satuanKonversi.satuan'])
             ->select('id', 'kode_barang', 'nama_barang', 'is_stock')
             ->get()
@@ -139,7 +219,7 @@ class PembangunanKawasanController extends Controller
 
         $penamaanUpah = MasterUpah::all();
 
-        return view('produksi.pembangunan_kawasan.show', compact('data', 'allBarang', 'penamaanUpah'));
+        return view('produksi.pembangunan_kawasan.show', compact('data', 'allBarang', 'penamaanUpah', 'returns', 'returnableBarang'));
     }
 
     public function update(Request $request, $id)
@@ -248,58 +328,80 @@ class PembangunanKawasanController extends Controller
     public function returnStore(Request $request)
     {
         $request->validate([
-            'order_id' => 'required|exists:pembangunan_kawasan_barang_order,id',
-            'returns' => 'required|array',
-            'returns.*.order_detail_id' => 'required|exists:pembangunan_kawasan_barang_order_detail,id',
-            'returns.*.jumlah_return' => 'required|numeric|min:0',
-            'returns.*.keterangan' => 'nullable|string'
+            'pembangunan_kawasan_id' => 'required|exists:pembangunan_kawasan,id',
+            'catatan' => 'nullable|string',
+            'items' => 'required|array',
+            'items.*.barang_id' => 'required|exists:master_barang,id',
+            'items.*.satuan_id' => 'required|exists:master_satuan,id',
+            'items.*.jumlah_input' => 'required|numeric|min:0.001',
+            'items.*.keterangan' => 'nullable|string'
         ]);
 
-        $order = PembangunanKawasanBarangOrder::findOrFail($request->order_id);
-        $kawasan = PembangunanKawasan::findOrFail($order->pembangunan_kawasan_id);
+        $kawasan = PembangunanKawasan::findOrFail($request->pembangunan_kawasan_id);
         if ($kawasan->status_pembangunan === 'selesai') {
             return redirect()->back()->with('error', 'Kawasan ini sudah selesai, tidak dapat melakukan retur barang.');
         }
-        
-        $returnRequest = \App\Models\PembangunanKawasanBarangReturn::firstOrCreate(
-            ['order_id' => $order->id],
-            [
-                'pembangunan_kawasan_id' => $order->pembangunan_kawasan_id,
-                'tanggal_diajukan' => now(),
-                'status' => 'pending',
-                'diajukan_oleh' => Auth::id()
-            ]
-        );
 
-        foreach ($request->returns as $ret) {
-            if ($ret['jumlah_return'] > 0) {
-                $orderDetail = PembangunanKawasanBarangOrderDetail::find($ret['order_detail_id']);
-                
-                \App\Models\PembangunanKawasanBarangReturnDetail::updateOrCreate(
-                    [
-                        'return_id' => $returnRequest->id,
-                        'order_detail_id' => $ret['order_detail_id']
-                    ],
-                    [
-                        'barang_id' => $orderDetail->barang_id,
-                        'jumlah_return' => $ret['jumlah_return'],
-                        'satuan' => $orderDetail->satuan,
-                        'keterangan_return' => $ret['keterangan']
-                    ]
-                );
+        try {
+            DB::beginTransaction();
+
+            $datePrefix = 'RTN-KWS-' . now()->format('Ymd') . '-';
+            $lastReturn = PembangunanKawasanBarangReturn::where('nomor_return', 'like', $datePrefix . '%')
+                ->orderBy('nomor_return', 'desc')
+                ->lockForUpdate()
+                ->first();
+
+            $seq = 1;
+            if ($lastReturn) {
+                $seq = (int)substr($lastReturn->nomor_return, strlen($datePrefix)) + 1;
             }
-        }
+            $nomorReturn = $datePrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
 
-        if ($order->status_order !== 'pengembalian') {
-            $order->update(['status_order' => 'pengembalian']);
-        }
+            $lastOrder = PembangunanKawasanBarangOrder::where('pembangunan_kawasan_id', $kawasan->id)->where('status_order', 'selesai')->latest()->first();
 
-        $kawasan = PembangunanKawasan::find($order->pembangunan_kawasan_id);
-        if ($kawasan) {
+            $returnRequest = PembangunanKawasanBarangReturn::create([
+                'pembangunan_kawasan_id' => $kawasan->id,
+                'order_id' => $lastOrder?->id,
+                'nomor_return' => $nomorReturn,
+                'tanggal_return' => now(),
+                'tanggal_diajukan' => now(),
+                'catatan' => $request->catatan,
+                'status' => 'diproses',
+                'diajukan_oleh' => Auth::id()
+            ]);
+
+            foreach ($request->items as $item) {
+                if ((float)$item['jumlah_input'] > 0) {
+                    $barang = MasterBarang::find($item['barang_id']);
+                    $satuan = \App\Models\MasterSatuan::find($item['satuan_id']);
+                    $konversi = BarangSatuanKonversi::where('barang_id', $item['barang_id'])
+                        ->where('satuan_id', $item['satuan_id'])->first();
+                    $jumlahBase = $konversi ? ($item['jumlah_input'] * $konversi->konversi_ke_base) : $item['jumlah_input'];
+
+                    PembangunanKawasanBarangReturnDetail::create([
+                        'return_id' => $returnRequest->id,
+                        'order_detail_id' => null,
+                        'barang_id' => $item['barang_id'],
+                        'satuan_id' => $item['satuan_id'],
+                        'satuan' => $satuan->nama ?? '',
+                        'nama_barang' => $barang->nama_barang ?? '',
+                        'jumlah_input' => $item['jumlah_input'],
+                        'jumlah_base' => $jumlahBase,
+                        'jumlah_return' => $item['jumlah_input'],
+                        'keterangan' => $item['keterangan'] ?? null,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
             $this->sendGroupNotificationReturn($kawasan, $returnRequest);
-        }
 
-        return redirect()->back()->with('success', 'Pengajuan retur barang berhasil disimpan');
+            return redirect()->back()->with('success', 'Pengajuan retur barang kawasan berhasil disimpan');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan retur: ' . $e->getMessage());
+        }
     }
 
     public function upahStore(Request $request)

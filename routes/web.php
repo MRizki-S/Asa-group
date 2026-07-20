@@ -525,7 +525,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
 
     // Barang Rakitan > Produksi Rakitan
     Route::resource('/produksi-rakitan', ProduksiRakitanController::class)->names('gudang.produksiRakitan');
-    
+
     // Tambah Nota Masuk
     Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
     Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
@@ -554,8 +554,29 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/permintaan-barang', [PermintaanBarangController::class, 'index'])->name('gudang.permintaanBarang.index');
     Route::get('/permintaan-barang/riwayat', [PermintaanBarangController::class, 'history'])->name('gudang.permintaanBarang.history');
     Route::patch('/permintaan-barang/pembangunan-unit/{id}/acc', [PermintaanBarangPembangunanUnitController::class, 'accBarangOrder'])->name('gudang.permintaanBarang.pembangunanUnit.acc');
+    Route::patch('/permintaan-barang/pembangunan-unit/return/{id}/acc', [PermintaanBarangPembangunanUnitController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanUnit.accReturn');
+    Route::patch('/permintaan-barang/pembangunan-unit/return/{id}/reject', [PermintaanBarangPembangunanUnitController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanUnit.rejectReturn');
     Route::patch('/permintaan-barang/{id}/acc', [PermintaanBarangController::class, 'acc'])->name('gudang.permintaanBarang.acc');
     Route::get('/permintaan-barang/{id}', [PermintaanBarangController::class, 'show'])->name('gudang.permintaanBarang.show');
+
+    // Retur Barang Unit (Gudang)
+    Route::get('/return-barang/unit', [PermintaanBarangPembangunanUnitController::class, 'indexReturn'])->name('gudang.returnBarang.unit.index');
+    Route::get('/return-barang/unit/riwayat', [PermintaanBarangPembangunanUnitController::class, 'historyReturn'])->name('gudang.returnBarang.unit.history');
+    Route::get('/return-barang/unit/{id}', [PermintaanBarangPembangunanUnitController::class, 'showReturn'])->name('gudang.returnBarang.unit.show');
+
+    // Retur Barang Kawasan (Gudang)
+    Route::get('/return-barang/kawasan', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'indexReturn'])->name('gudang.returnBarang.kawasan.index');
+    Route::get('/return-barang/kawasan/riwayat', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'historyReturn'])->name('gudang.returnBarang.kawasan.history');
+    Route::get('/return-barang/kawasan/{id}', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'showReturn'])->name('gudang.returnBarang.kawasan.show');
+    Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.accReturn');
+    Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.rejectReturn');
+
+    // Retur Barang Proyek Mangoon (Gudang)
+    Route::get('/return-barang/proyek', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'indexReturn'])->name('gudang.returnBarang.proyek.index');
+    Route::get('/return-barang/proyek/riwayat', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'historyReturn'])->name('gudang.returnBarang.proyek.history');
+    Route::get('/return-barang/proyek/{id}', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'showReturn'])->name('gudang.returnBarang.proyek.show');
+    Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.accReturn');
+    Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.rejectReturn');
 });
 
 // keuangan Group

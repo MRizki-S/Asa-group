@@ -22,9 +22,14 @@ class PembangunanProyekBarangReturn extends Model
         return $this->belongsTo(PembangunanProyekBarangOrder::class, 'order_id');
     }
 
-    public function pembuat()
+    public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'diajukan_oleh');
+    }
+
+    public function accBy()
+    {
+        return $this->belongsTo(User::class, 'acc_by');
     }
 
     public function details()

@@ -19,7 +19,8 @@ class PembangunanUnitBarangOrder extends Model
         'tanggal_diajukan',
         'status_order',
         'tanggal_selesai',
-        'created_by'
+        'created_by',
+        'acc_by',
     ];
 
     protected $casts = [
@@ -35,6 +36,11 @@ class PembangunanUnitBarangOrder extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function accBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'acc_by');
     }
 
     public function pembangunanUnit(): BelongsTo
