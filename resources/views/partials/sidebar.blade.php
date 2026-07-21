@@ -1205,6 +1205,38 @@
                         </li>
                         @endif
 
+
+                        <!-- Upah Harian Tukang -->
+                        @if(auth()->user()->hasRole(['Staff Keuangan', 'Superadmin']))
+                        <li>
+                            <a href="#" @click.prevent="selected = (selected === 'upahHarianTukangKeuangan' ? '':'upahHarianTukangKeuangan')"
+                                class="menu-item group"
+                                :class="(selected === 'upahHarianTukangKeuangan') || (page === 'DaftarPengajuanUpahKeuangan') ? 'menu-item-active' : 'menu-item-inactive'">
+                                <svg :class="(selected === 'upahHarianTukangKeuangan') || (page === 'DaftarPengajuanUpahKeuangan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                    class="w-6 h-6 size-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <title>worker-daily-wage</title>
+                                    <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                </svg>
+                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Upah Harian Tukang</span>
+                                <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                    :class="[(selected === 'upahHarianTukangKeuangan') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                    width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </a>
+                            <div class="overflow-hidden transform translate" :class="(selected === 'upahHarianTukangKeuangan') ? 'block' : 'hidden'">
+                                <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                    <li>
+                                        <a href="#" class="menu-dropdown-item group"
+                                            :class="page === 'DaftarPengajuanUpahKeuangan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                            Daftar Pengajuan
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        @endif
+
                     </ul>
                 </div>
                 <!-- Menu Group - Keuangan -->
@@ -1689,6 +1721,196 @@
                         <!-- Dropdown Menu End -->
                     </li>
                     <!-- Menu Item Material Proyek-->
+
+
+                     <!-- Menu Group Item Upah Harian Tukang -->
+                    <li>
+                        <a href="#"
+                            @click.prevent="selected = (selected === 'BarangRakitanGroup' ? '':'BarangRakitanGroup')"
+                            class="menu-item group"
+                            :class="(selected === 'BarangRakitanGroup') || (page === 'KomposisiRakitan' || page === 'ProduksiRakitan') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'BarangRakitanGroup') ||
+                                (page === 'KomposisiRakitan' ||
+                                    page === 'ProduksiRakitan') ?
+                                'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" class="size-6">
+                                <title>assembly-line</title>
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 7.5 12 3l8 4.5-8 4.5L4 7.5Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 12l8 4.5 8-4.5M4 16.5l8 4.5 8-4.5M8.5 5.1l8 4.5M15.5 5.1l-8 4.5" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Barang Rakitan
+                            </span>
+
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'BarangRakitanGroup') ? 'menu-item-arrow-active' :
+                                    'menu-item-arrow-inactive',
+                                    sidebarToggle ? 'lg:hidden' : ''
+                                ]"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+
+                        <!-- Dropdown Menu Start -->
+                        <div class="overflow-hidden transform translate"
+                            :class="(selected === 'BarangRakitanGroup') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                class="flex flex-col mt-2 menu-dropdown pl-9">
+
+                                <!-- Komposisi Rakitan -->
+                                <li>
+                                    <a href="{{ route('gudang.komposisiRakitan.index') }}"
+                                        class="menu-dropdown-item group flex items-center gap-3"
+                                        :class="page === 'KomposisiRakitan' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            :class="(selected === 'BarangRakitanGroup') ||
+                                            (page === 'KomposisiRakitan') ?
+                                            'menu-item-icon-active' :
+                                            'menu-item-icon-inactive'"
+                                            width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <title>recipe-composition</title>
+                                            <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="1.5">
+                                                <path d="M8 4h8M8 8h8M8 12h5" />
+                                                <path d="M5 4h.01M5 8h.01M5 12h.01" />
+                                                <path d="M4 20h16" />
+                                                <path d="M7 17h10l-2-4H9l-2 4Z" />
+                                            </g>
+                                        </svg>
+                                        Komposisi Rakitan
+                                    </a>
+                                </li>
+
+                                <!-- Produksi Rakitan -->
+                                <li>
+                                    <a href="{{ route('gudang.produksiRakitan.index') }}"
+                                        class="menu-dropdown-item group flex items-center"
+                                        :class="page === 'ProduksiRakitan' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <title>production-assembly</title>
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M3 17h4l2-4h6l2 4h4" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M6 17v3h12v-3M8 13V8l4-3 4 3v5M10 10h4" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4 7h3m10 0h3M4 11h2m12 0h2" />
+                                        </svg>
+                                        Produksi Rakitan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- Dropdown Menu End -->
+                    </li>
+                    <!-- Upah Harian Tukang -->
+
+                    <!-- Menu Group Item Upah Harian Tukang -->
+                    <li>
+                        <a href="#"
+                            @click.prevent="selected = (selected === 'UpahHarianTukangGroup' ? '':'UpahHarianTukangGroup')"
+                            class="menu-item group"
+                            :class="(selected === 'UpahHarianTukangGroup') || (page === 'MasterTukangHarian' || page === 'DaftarPengajuanUpah') ? 'menu-item-active' :
+                            'menu-item-inactive'">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'UpahHarianTukangGroup') ||
+                                (page === 'MasterTukangHarian' ||
+                                    page === 'DaftarPengajuanUpah') ?
+                                'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" class="size-6">
+                                <title>worker-daily-wage</title>
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4.501 20.118a7.5 7.5 0 0 1 14.998 0M12 14.25v3m0 0h1.5m-1.5 0h-1.5" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12.75h6M9 15.75h3" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Upah Harian Tukang
+                            </span>
+
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'UpahHarianTukangGroup') ? 'menu-item-arrow-active' :
+                                    'menu-item-arrow-inactive',
+                                    sidebarToggle ? 'lg:hidden' : ''
+                                ]"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+
+                        <!-- Dropdown Menu Start -->
+                        <div class="overflow-hidden transform translate"
+                            :class="(selected === 'UpahHarianTukangGroup') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                class="flex flex-col mt-2 menu-dropdown pl-9">
+
+                                <!-- Master Tukang -->
+                                <li>
+                                    <a href="#"
+                                        class="menu-dropdown-item group flex items-center gap-3"
+                                        :class="page === 'MasterTukangHarian' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            :class="(selected === 'UpahHarianTukangGroup') ||
+                                            (page === 'MasterTukangHarian') ?
+                                            'menu-item-icon-active' :
+                                            'menu-item-icon-inactive'"
+                                            width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <title>master-tukang</title>
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                                        </svg>
+                                        Master Tukang
+                                    </a>
+                                </li>
+
+                                <!-- Daftar Pengajuan Upah -->
+                                <li>
+                                    <a href="#"
+                                        class="menu-dropdown-item group flex items-center gap-3"
+                                        :class="page === 'DaftarPengajuanUpah' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            :class="(selected === 'UpahHarianTukangGroup') ||
+                                            (page === 'DaftarPengajuanUpah') ?
+                                            'menu-item-icon-active' :
+                                            'menu-item-icon-inactive'"
+                                            class="w-6 h-6 shrink-0"
+                                            width="24" height="24" viewBox="1 1 22 22" fill="currentColor">
+                                            <title>daftar-pengajuan-upah</title>
+                                            <path d="M5.5 7a2.5 2.5 0 1 1 5 0a2.5 2.5 0 0 1-5 0M8 3a4 4 0 1 0 0 8a4 4 0 0 0 0-8m7.5 5a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0M17 5a3 3 0 1 0 0 6a3 3 0 0 0 0-6m-5.25 8c.301 0 .588.06.851.166a2.5 2.5 0 0 0-1.393 1.334H4.25a.75.75 0 0 0-.75.75v.257l.007.08c.007.074.023.188.055.329c.066.281.198.656.459 1.029C4.514 17.65 5.578 18.5 8 18.5c1.407 0 2.355-.287 3-.665v1.661c-.791.312-1.777.504-3 .504c-2.828 0-4.39-1.025-5.208-2.195a4.5 4.5 0 0 1-.778-2.07A3 3 0 0 1 2 15.529v-.278A2.25 2.25 0 0 1 4.25 13zm.25 2.5a1.5 1.5 0 0 1 1.5-1.5h8a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-8a1.5 1.5 0 0 1-1.5-1.5zm1 .5v1a2 2 0 0 0 2-2h-1a1 1 0 0 1-1 1m9 1v-1a1 1 0 0 1-1-1h-1a2 2 0 0 0 2 2m-2 3h1a1 1 0 0 1 1-1v-1a2 2 0 0 0-2 2m-7-2v1a1 1 0 0 1 1 1h1a2 2 0 0 0-2-2m4.5 1.25a1.75 1.75 0 1 0 0-3.5a1.75 1.75 0 0 0 0 3.5" />
+                                        </svg>
+                                        Daftar Pengajuan Upah
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- Dropdown Menu End -->
+                    </li>
+                    <!-- Menu Item Upah Harian Tukang -->
+
+
                 </ul>
             </div>
             <!-- Gudang -  Group -->
