@@ -277,15 +277,16 @@ class PembangunanUnitBarangReturnController extends Controller
         $namaTahap    = $unit->tahap->nama_tahap ?? '-';
         $namaUnit     = $unit->nama_unit ?? '-';
         $pengaju      = Auth::user()->nama_lengkap ?? Auth::user()->name;
-        $groupId      = env('FONNTE_ID_ORDER_BARANG_ABM');
+        $groupId      = env('FONNTE_ID_RETURN_BARANG_UNIT', env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
 
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.retur_barang', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_unit.retur_barang', [
             'tipe'          => 'Unit',
             'namaPerumahan' => $namaPerumahan,
             'namaTahap'     => $namaTahap,
             'namaUnit'      => $namaUnit,
+            'namaQc'        => $return->qc->nama_qc ?? null,
             'pengaju'       => $pengaju,
             'tanggal'       => now()->format('d/m/Y H:i') . ' WIB',
             'return'        => $return,

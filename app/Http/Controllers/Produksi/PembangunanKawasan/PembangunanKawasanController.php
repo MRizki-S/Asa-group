@@ -31,13 +31,14 @@ class PembangunanKawasanController extends Controller
         $kawasan->loadMissing(['pengawas', 'perumahan']);
         $order->loadMissing(['details']);
 
-        $groupId = env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN');
+        $groupId = env('FONNTE_ID_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM'));
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.order_barang', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.order_barang', [
             'tipe' => 'Kawasan',
             'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
-            'namaArea' => $kawasan->nama ?? '-',
+            'namaKawasan' => $kawasan->nama ?? '-',
+            'pengawas' => $kawasan->pengawas?->nama_lengkap ?? $kawasan->pengawas?->name ?? '-',
             'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'order' => $order
@@ -54,13 +55,13 @@ class PembangunanKawasanController extends Controller
         $kawasan->loadMissing(['pengawas', 'perumahan']);
         $return->loadMissing(['details.orderDetail']);
 
-        $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_KAWASAN');
+        $groupId = env('FONNTE_ID_RETURN_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM'));
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.retur_barang', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.retur_barang', [
             'tipe' => 'Kawasan',
             'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
-            'namaArea' => $kawasan->nama ?? '-',
+            'namaKawasan' => $kawasan->nama ?? '-',
             'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'return' => $return
@@ -465,10 +466,10 @@ class PembangunanKawasanController extends Controller
         $groupId = env('FONNTE_ID_GROUP_BATAL_ORDER_BARANG_KAWASAN');
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.batal_order_barang_kawasan', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.batal_order_barang', [
             'tipe' => 'Kawasan',
             'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
-            'namaArea' => $kawasan->nama ?? '-',
+            'namaKawasan' => $kawasan->nama ?? '-',
             'pembatal' => Auth::user()->nama_lengkap ?? Auth::user()->name,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'order' => $order

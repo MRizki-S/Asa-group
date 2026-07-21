@@ -34,15 +34,16 @@ class PembangunanUnitOrderBarangController extends Controller
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $groupId = env('FONNTE_ID_ORDER_BARANG_ABM');
+        $groupId = env('FONNTE_ID_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
 
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.order_barang', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_unit.order_barang', [
             'tipe' => 'Unit',
             'namaPerumahan' => $namaPerumahan,
             'namaTahap' => $namaTahap,
             'namaUnit' => $namaUnit,
+            'namaQc' => $order->qc->nama_qc ?? null,
             'pengaju' => $pengaju,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'order' => $order
@@ -218,7 +219,7 @@ class PembangunanUnitOrderBarangController extends Controller
 
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.batal_order_barang_unit', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_unit.batal_order_barang', [
             'tipe' => 'Unit',
             'namaPerumahan' => $namaPerumahan,
             'namaTahap' => $namaTahap,

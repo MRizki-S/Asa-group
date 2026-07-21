@@ -31,12 +31,13 @@ class PembangunanProyekController extends Controller
         $project->loadMissing(['pengawas']);
         $order->loadMissing(['details']);
 
-        $groupId = env('FONNTE_ID_GROUP_ORDER_BARANG_PROYEK');
+        $groupId = env('FONNTE_ID_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM'));
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.order_barang', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_proyek.order_barang', [
             'tipe' => 'Proyek',
-            'namaArea' => $project->nama ?? '-',
+            'namaProyek' => $project->nama_project ?? $project->nama ?? '-',
+            'pengawas' => $project->pengawas?->nama_lengkap ?? $project->pengawas?->name ?? '-',
             'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'order' => $order
@@ -53,12 +54,12 @@ class PembangunanProyekController extends Controller
         $project->loadMissing(['pengawas']);
         $return->loadMissing(['details.orderDetail']);
 
-        $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_PROYEK');
+        $groupId = env('FONNTE_ID_RETURN_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM'));
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.retur_barang', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_proyek.retur_barang', [
             'tipe' => 'Proyek',
-            'namaArea' => $project->nama ?? '-',
+            'namaProyek' => $project->nama_project ?? $project->nama ?? '-',
             'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'return' => $return
@@ -463,9 +464,9 @@ class PembangunanProyekController extends Controller
         $groupId = env('FONNTE_ID_GROUP_BATAL_ORDER_BARANG_PROYEK');
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.batal_order_barang_proyek', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_proyek.batal_order_barang', [
             'tipe' => 'Proyek',
-            'namaArea' => $project->nama ?? '-',
+            'namaProyek' => $project->nama_project ?? $project->nama ?? '-',
             'pembatal' => Auth::user()->nama_lengkap ?? Auth::user()->name,
             'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             'order' => $order

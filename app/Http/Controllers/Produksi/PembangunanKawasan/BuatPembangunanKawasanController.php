@@ -24,7 +24,7 @@ class BuatPembangunanKawasanController extends Controller
         $groupId = env('FONNTE_ID_GROUP_PROSES_KAWASAN');
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.proses_kawasan', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.proses_kawasan', [
             'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
             'namaKawasan'   => $kawasan->nama ?? '-',
             'namaPengawas'  => $kawasan->pengawas->nama_lengkap ?? '-',

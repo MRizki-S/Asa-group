@@ -279,11 +279,31 @@ class PermintaanBarangController extends Controller
 
             // Kirim notifikasi WA setelah transaksi berhasil commit
             $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
-            $nomorOrder = $order->nomor_order ?? ('REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT));
-            $message = "✅ Orderan barang dengan No. Order *{$nomorOrder}* telah dikonfirmasi oleh Pihak Gudang (*{$adminName}*).";
-            $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM');
-            if (!empty($targetGroup)) {
-                $this->notification->sendWhatsApp($targetGroup, $message);
+            if ($category === 'pembangunan_kawasan') {
+                $targetGroup = env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                if (!empty($targetGroup)) {
+                    $order->loadMissing(['kawasan.perumahan', 'details']);
+                    $message = view('notifications.whatsapp.pembangunan_kawasan.acc_order_barang', [
+                        'order' => $order,
+                        'namaPerumahan' => $order->kawasan?->perumahan?->nama_perumahaan ?? '-',
+                        'namaKawasan' => $order->kawasan?->nama ?? '-',
+                        'adminGudang' => $adminName,
+                        'tanggalAcc' => now()->format('d/m/Y H:i') . ' WIB',
+                    ])->render();
+                    $this->notification->sendWhatsApp($targetGroup, $message);
+                }
+            } else {
+                $targetGroup = env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_PROYEK', env('FONNTE_ID_GROUP_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                if (!empty($targetGroup)) {
+                    $order->loadMissing(['proyek', 'details']);
+                    $message = view('notifications.whatsapp.pembangunan_proyek.acc_order_barang', [
+                        'order' => $order,
+                        'namaProyek' => $order->proyek?->nama_project ?? $order->proyek?->nama ?? '-',
+                        'adminGudang' => $adminName,
+                        'tanggalAcc' => now()->format('d/m/Y H:i') . ' WIB',
+                    ])->render();
+                    $this->notification->sendWhatsApp($targetGroup, $message);
+                }
             }
         } catch (\Exception $e) {
             return back()

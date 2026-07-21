@@ -31,7 +31,7 @@ class KonfirmasiPembangunanController extends Controller
 
         $groupId = env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN');
 
-        $messageGroup = view('notifications.whatsapp.konfirmasi_pembangunan', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_unit.konfirmasi_pembangunan', [
             'namaPerumahan' => $namaPerumahan,
             'namaTahap' => $unit->tahap->nama_tahap ?? '-',
             'namaUnit' => $unit->nama_unit ?? '-',

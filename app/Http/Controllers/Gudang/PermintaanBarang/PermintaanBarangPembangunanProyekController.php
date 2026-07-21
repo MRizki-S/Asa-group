@@ -17,8 +17,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Services\NotificationPribadiService;
+
 class PermintaanBarangPembangunanProyekController extends Controller
 {
+    protected NotificationPribadiService $notification;
+
+    public function __construct(NotificationPribadiService $notification)
+    {
+        $this->notification = $notification;
+    }
     public function indexReturn(Request $request)
     {
         $status = $request->get('status', 'diproses');
@@ -396,6 +404,19 @@ class PermintaanBarangPembangunanProyekController extends Controller
                     'acc_at' => now(),
                 ]);
             });
+
+            // Kirim notifikasi WA
+            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $targetGroup = env('FONNTE_ID_GROUP_ACC_RETUR_BARANG_PROYEK', env('FONNTE_ID_GROUP_RETUR_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_proyek.acc_retur_barang', [
+                    'return' => $return,
+                    'namaProyek' => $return->proyek?->nama_project ?? $return->proyek?->nama ?? '-',
+                    'adminGudang' => $adminName,
+                    'tanggalAcc' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal ACC retur barang proyek: ' . $e->getMessage());
         }
@@ -405,7 +426,7 @@ class PermintaanBarangPembangunanProyekController extends Controller
 
     public function rejectBarangReturn(Request $request, $id)
     {
-        $return = PembangunanProyekBarangReturn::findOrFail($id);
+        $return = PembangunanProyekBarangReturn::with('proyek')->findOrFail($id);
 
         if ($return->status !== 'diproses') {
             return back()->with('error', 'Status pengajuan retur barang ini tidak dapat ditolak.');
@@ -421,6 +442,19 @@ class PermintaanBarangPembangunanProyekController extends Controller
             'acc_by' => Auth::id(),
             'acc_at' => now(),
         ]);
+
+        $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+        $targetGroup = env('FONNTE_ID_GROUP_TOLAK_RETUR_BARANG_PROYEK', env('FONNTE_ID_GROUP_RETUR_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+        if (!empty($targetGroup)) {
+            $message = view('notifications.whatsapp.pembangunan_proyek.tolak_retur_barang', [
+                'return' => $return,
+                'namaProyek' => $return->proyek?->nama_project ?? $return->proyek?->nama ?? '-',
+                'adminGudang' => $adminName,
+                'alasanTolak' => $request->alasan_tolak,
+                'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            ])->render();
+            $this->notification->sendWhatsApp($targetGroup, $message);
+        }
 
         return back()->with('success', 'Pengajuan retur barang proyek telah ditolak.');
     }

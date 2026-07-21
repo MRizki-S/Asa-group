@@ -153,7 +153,7 @@ class PermintaanDibangunController extends Controller
         $namaUnit = $unit->nama_unit ?? '-';
         $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $messageGroup = view('notifications.whatsapp.permintaan_dibangun', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_unit.permintaan_dibangun', [
             'namaPerumahan' => $namaPerumahan,
             'namaTahap' => $namaTahap,
             'namaUnit' => $namaUnit,
@@ -246,7 +246,7 @@ class PermintaanDibangunController extends Controller
 
             $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
             if ($pembangunan) {
-                $this->sendCancelNotification($pembangunan);
+                $this->sendGroupNotificationBatal($pembangunan);
 
                 $unit = $pembangunan->unit;
                 if ($unit) {
@@ -266,12 +266,9 @@ class PermintaanDibangunController extends Controller
         }
     }
 
-    public function sendCancelNotification($pembangunan)
+    private function sendGroupNotificationBatal(PembangunanUnit $pembangunan)
     {
-        if (!$pembangunan) return;
-
-        $pembangunan->load(['unit.tahap.perumahaan']);
-
+        $pembangunan->loadMissing(['unit.tahap.perumahaan']);
         $unit = $pembangunan->unit;
         if (!$unit) return;
 
@@ -282,7 +279,7 @@ class PermintaanDibangunController extends Controller
 
         $groupId = env('FONNTE_ID_GROUP_BATAL_PERMINTAAN_DIBANGUN');
 
-        $messageGroup = view('notifications.whatsapp.batal_permintaan_dibangun', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_unit.batal_permintaan_dibangun', [
             'namaPerumahan' => $namaPerumahan,
             'namaTahap' => $namaTahap,
             'namaUnit' => $namaUnit,

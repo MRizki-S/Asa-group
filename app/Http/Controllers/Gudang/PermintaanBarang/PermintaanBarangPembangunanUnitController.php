@@ -54,10 +54,21 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
             // Kirim notifikasi WA setelah transaksi berhasil commit
             $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
-            $nomorOrder = $order->nomor_order ?? ('REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT));
-            $message = "✅ Orderan barang dengan No. Order *{$nomorOrder}* telah dikonfirmasi oleh Pihak Gudang (*{$adminName}*).";
-            $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM');
+            $unit = $order->pembangunanUnit?->unit;
+            $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
+            $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
+            $namaUnit = $unit?->nama_unit ?? '-';
+
+            $targetGroup = env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
             if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_unit.acc_order_barang', [
+                    'order' => $order,
+                    'namaPerumahan' => $namaPerumahan,
+                    'namaTahap' => $namaTahap,
+                    'namaUnit' => $namaUnit,
+                    'adminGudang' => $adminName,
+                    'tanggalAcc' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
                 $this->notification->sendWhatsApp($targetGroup, $message);
             }
         } catch (\Exception $e) {
@@ -550,6 +561,26 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     'acc_at' => now(),
                 ]);
             });
+
+            // Kirim notifikasi WA setelah transaction commit
+            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $unit = $return->pembangunanUnit?->unit;
+            $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
+            $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
+            $namaUnit = $unit?->nama_unit ?? '-';
+
+            $targetGroup = env('FONNTE_ID_GROUP_ACC_RETUR_BARANG_UNIT', env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_unit.acc_retur_barang', [
+                    'return' => $return,
+                    'namaPerumahan' => $namaPerumahan,
+                    'namaTahap' => $namaTahap,
+                    'namaUnit' => $namaUnit,
+                    'adminGudang' => $adminName,
+                    'tanggalAcc' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal ACC retur barang: ' . $e->getMessage());
         }
@@ -644,6 +675,26 @@ class PermintaanBarangPembangunanUnitController extends Controller
             'acc_by' => Auth::id(),
             'acc_at' => now(),
         ]);
+
+        $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+        $unit = $return->pembangunanUnit?->unit;
+        $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
+        $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
+        $namaUnit = $unit?->nama_unit ?? '-';
+
+        $targetGroup = env('FONNTE_ID_GROUP_TOLAK_RETUR_BARANG_UNIT', env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
+        if (!empty($targetGroup)) {
+            $message = view('notifications.whatsapp.pembangunan_unit.tolak_retur_barang', [
+                'return' => $return,
+                'namaPerumahan' => $namaPerumahan,
+                'namaTahap' => $namaTahap,
+                'namaUnit' => $namaUnit,
+                'adminGudang' => $adminName,
+                'alasanTolak' => $request->alasan_tolak,
+                'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            ])->render();
+            $this->notification->sendWhatsApp($targetGroup, $message);
+        }
 
         return back()->with('success', 'Pengajuan retur barang berhasil ditolak.');
     }

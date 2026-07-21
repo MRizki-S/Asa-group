@@ -24,7 +24,7 @@ class BuatPembangunanProyekController extends Controller
         $groupId = env('FONNTE_ID_GROUP_PROSES_PROYEK');
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.proses_proyek', [
+        $messageGroup = view('notifications.whatsapp.pembangunan_proyek.proses_proyek', [
             'namaProyek'   => $project->nama ?? '-',
             'namaPengawas' => $project->pengawas->nama_lengkap ?? '-',
             'tanggal'      => now()->format('d/m/Y H:i') . ' WIB',
