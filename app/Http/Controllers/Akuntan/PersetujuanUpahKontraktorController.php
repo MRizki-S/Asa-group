@@ -29,7 +29,7 @@ class PersetujuanUpahKontraktorController extends Controller
             'allUpahPengajuan' => $allUpahPengajuan,
             'filter'           => $filter,
             'breadcrumbs'      => [
-                ['label' => 'Persetujuan Upah Kontraktor', 'url' => route('akuntan.persetujuanUpahKontraktor.index')]
+                ['label' => 'Persetujuan Upah Pemb. Proyek', 'url' => route('akuntan.persetujuanUpahKontraktor.index')]
             ],
         ]);
     }

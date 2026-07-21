@@ -7,83 +7,109 @@
             <div>
                 <h2 class="text-xl font-bold text-gray-800 dark:text-white">Laporan Perbandingan Upah Proyek</h2>
                 <p class="text-sm text-gray-500">Proyek: <span
-                        class="font-bold text-blue-600 uppercase">{{ $proyek->nama ?? '-' }}</span></p>
+                        class="font-bold text-blue-600 dark:text-blue-400 uppercase">{{ $proyek->nama ?? '-' }}</span></p>
             </div>
             <div class="flex gap-2">
                 <a href="{{ url()->previous() }}"
-                    class="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-50 transition uppercase">
-                    Kembali </a>
-            </div>
-        </div>
-
-        {{-- Ringkasan Total --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl">
-                <p class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Total Request (Diajukan)</p>
-                <p class="text-xl font-bold text-gray-800 dark:text-white">Rp
-                    {{ number_format($laporan['total_request'], 0, ',', '.') }}</p>
-            </div>
-            <div
-                class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl">
-                <p class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Total
-                    Realisasi</p>
-                <p class="text-xl font-bold text-gray-800 dark:text-white">Rp
-                    {{ number_format($laporan['total_real'], 0, ',', '.') }}</p>
-            </div>
-            @php $selisihTotal = $laporan['total_request'] - $laporan['total_real']; @endphp
-            <div
-                class="p-4 {{ $selisihTotal < 0 ? 'bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-800' : 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700' }} rounded-2xl border">
-                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Sisa / Over Request</p>
-                <p class="text-xl font-bold {{ $selisihTotal < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-white' }}">
-                    Rp {{ number_format($selisihTotal, 0, ',', '.') }}
-                </p>
+                    class="inline-flex items-center px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition uppercase shadow-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Kembali
+                </a>
             </div>
         </div>
 
         {{-- Detail --}}
         <div class="space-y-6">
-            <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
-                <div class="px-5 py-3 bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                    <h4 class="text-xs font-black text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                        Rincian Pekerjaan</h4>
-                    <div class="text-right">
-                        <span class="text-[10px] text-gray-400 uppercase font-bold">Subtotal Realisasi:</span>
-                        <span class="text-sm font-bold text-blue-600 ms-2">Rp
-                            {{ number_format($laporan['total_real'], 0, ',', '.') }}</span>
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 bg-gray-50/70 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <h4 class="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
+                        Rincian Pekerjaan Upah Proyek
+                    </h4>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Subtotal Realisasi:</span>
+                        <span class="text-sm font-bold font-mono text-blue-600 dark:text-blue-400">Rp
+                            {{ number_format($laporan['total_real'] ?? 0, 0, ',', '.') }}</span>
                     </div>
                 </div>
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter border-b border-gray-50 dark:border-gray-700">
-                            <th class="px-5 py-3">Nama Pekerjaan</th>
-                            <th class="px-5 py-3 text-right">Request (Diajukan)</th>
-                            <th class="px-5 py-3 text-right">Realisasi</th>
-                            <th class="px-5 py-3 text-right">Selisih</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-                        @forelse ($laporan['details'] as $detail)
-                            @php $selisih = $detail['nominal_request'] - $detail['nominal_real']; @endphp
-                            <tr class="text-sm hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
-                                <td class="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
-                                    {{ $detail['nama_upah'] }}</td>
-                                <td class="px-5 py-3 text-right font-mono text-gray-500">Rp
-                                    {{ number_format($detail['nominal_request'], 0, ',', '.') }}</td>
-                                <td class="px-5 py-3 text-right font-mono font-bold text-gray-800 dark:text-white">Rp
-                                    {{ number_format($detail['nominal_real'], 0, ',', '.') }}</td>
-                                <td class="px-5 py-3 text-right font-mono font-bold {{ $selisih < 0 ? 'text-red-500' : 'text-emerald-500' }}">
-                                    {{ $selisih < 0 ? '-' : '+' }} Rp {{ number_format(abs($selisih), 0, ',', '.') }}
-                                </td>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" style="min-width: 650px;">
+                        <thead>
+                            <tr class="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50/30 dark:bg-gray-800/30 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
+                                <th class="px-6 py-3.5 w-[40%]">Nama Pekerjaan</th>
+                                <th class="px-6 py-3.5 text-right">Request (Diajukan)</th>
+                                <th class="px-6 py-3.5 text-right">Realisasi</th>
+                                <th class="px-6 py-3.5 text-right">Selisih</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-5 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                                    Belum ada data upah.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
+                            @forelse ($laporan['details'] ?? [] as $detail)
+                                @php $selisih = $detail['nominal_request'] - $detail['nominal_real']; @endphp
+                                <tr class="text-sm hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                                    <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">
+                                        {{ $detail['nama_upah'] }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono text-gray-500 dark:text-gray-400">
+                                        Rp {{ number_format($detail['nominal_request'], 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold text-gray-900 dark:text-white">
+                                        Rp {{ number_format($detail['nominal_real'], 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-mono font-bold {{ $selisih < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                                        {{ $selisih < 0 ? '-' : '+' }} Rp {{ number_format(abs($selisih), 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                                        Belum ada data upah.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Receipt-style Total Summary Footer --}}
+        @php
+            $totalRequest = $laporan['total_request'] ?? 0;
+            $totalReal = $laporan['total_real'] ?? 0;
+            $selisihTotal = $totalRequest - $totalReal;
+        @endphp
+        <div class="mt-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4 mb-4">
+                <div class="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Ringkasan Finansial Upah Proyek</h3>
+                    <p class="text-xs text-gray-500">Total akumulasi nominal pengajuan request, realisasi upah terbayar, dan selisih</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 dark:text-gray-400 font-medium">Total Nominal Request (Diajukan)</span>
+                    <span class="font-mono font-semibold text-gray-800 dark:text-gray-200">Rp {{ number_format($totalRequest, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 dark:text-gray-400 font-medium">Total Realisasi Upah (Terbayar)</span>
+                    <span class="font-mono font-semibold text-gray-800 dark:text-gray-200">Rp {{ number_format($totalReal, 0, ',', '.') }}</span>
+                </div>
+                
+                <div class="pt-4 mt-3 border-t-2 border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center text-base font-bold">
+                    <span class="text-gray-900 dark:text-white uppercase tracking-wider">
+                        Total Selisih
+                    </span>
+                    <span class="text-xl font-bold font-mono {{ $selisihTotal < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                        {{ $selisihTotal < 0 ? '-' : '+' }} Rp {{ number_format(abs($selisihTotal), 0, ',', '.') }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>

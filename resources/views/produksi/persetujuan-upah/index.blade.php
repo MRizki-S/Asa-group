@@ -42,7 +42,7 @@
         }
     }">
 
-        <div x-data="{ pageName: 'Persetujuan Upah' }">
+        <div x-data="{ pageName: 'Persetujuan Upah Pemb. Unit' }">
             @include('partials.breadcrumb')
         </div>
         <div class="space-y-5 sm:space-y-6">
@@ -52,7 +52,7 @@
                 {{-- Header & Filter --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Daftar Pengajuan Upah Unit
+                        Daftar Pengajuan Upah Pemb. Unit
                     </h3>
 
                     {{-- Filter Dropdown --}}

@@ -1143,19 +1143,19 @@
                                     <li>
                                         <a href="{{ route('manager.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'managerPersetujuanUpahProperti' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Properti
+                                            Upah Pemb. Unit
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('manager.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'managerPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Kawasan
+                                            Upah Pemb. Kawasan
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('manager.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'managerPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Kontraktor
+                                            Upah Pemb. Proyek
                                         </a>
                                     </li>
                                 </ul>
@@ -1185,19 +1185,19 @@
                                     <li>
                                         <a href="{{ route('akuntan.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'akuntanPersetujuanUpahProperti' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Properti
+                                            Upah Pemb. Unit
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('akuntan.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'akuntanPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Kawasan
+                                            Upah Pemb. Kawasan
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('akuntan.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'akuntanPersetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                            Upah Kontraktor
+                                            Upah Pemb. Proyek
                                         </a>
                                     </li>
                                 </ul>
@@ -2094,7 +2094,7 @@
                                 <li>
                                     <a href="{{ route('produksi.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'persetujuanUpah' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Upah Properti
+                                        Upah Pemb. Unit
                                     </a>
                                 </li>
                                 @endcan
@@ -2102,7 +2102,7 @@
                                 <li>
                                     <a href="{{ route('produksi.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'persetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Upah Kawasan
+                                        Upah Pemb. Kawasan
                                     </a>
                                 </li>
                                 @endcan
@@ -2110,7 +2110,7 @@
                                 <li>
                                     <a href="{{ route('produksi.persetujuanUpahKontraktor.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'persetujuanUpahKontraktor' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Upah Kontraktor
+                                        Upah Pemb. Proyek
                                     </a>
                                 </li>
                                 @endcan

@@ -30,7 +30,7 @@ class PersetujuanUpahKawasanController extends Controller
             'allUpahPengajuan' => $allUpahPengajuan,
             'filter'           => $filter,
             'breadcrumbs'      => [
-                ['label' => 'Persetujuan Upah Kawasan', 'url' => route('produksi.persetujuanUpahKawasan.index')]
+                ['label' => 'Persetujuan Upah Pemb. Kawasan', 'url' => route('produksi.persetujuanUpahKawasan.index')]
             ],
         ]);
     }

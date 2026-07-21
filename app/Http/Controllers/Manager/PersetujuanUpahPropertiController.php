@@ -42,7 +42,7 @@ class PersetujuanUpahPropertiController extends Controller
             'allUpahPengajuan' => $allUpahPengajuan,
             'filter'           => $filter,
             'breadcrumbs'      => [
-                ['label' => 'Persetujuan Upah Properti', 'url' => route('manager.persetujuanUpahProperti.index')]
+                ['label' => 'Persetujuan Upah Pemb. Unit', 'url' => route('manager.persetujuanUpahProperti.index')]
             ],
         ]);
     }
