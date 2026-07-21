@@ -18,7 +18,7 @@
 </style>
 
 <!-- ===== Main Content Start ===== -->
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-init="$dispatch('sidebar-minimize')">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
     <!-- Breadcrumb Start -->
     <div x-data="{ pageName: 'StokBarangGudang' }">

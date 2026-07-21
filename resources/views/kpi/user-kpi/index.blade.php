@@ -33,13 +33,13 @@
                         @can('kpi.kpi-user.export')
                             <button type="button" id="btnExportModal"
                                 class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition shadow-sm">
-                                Export Excel
+                                Export
                             </button>
                         @endcan
                         @can('kpi.kpi-user.create')
                             <a href="{{ route('kpi.user.create') }}"
                                 class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                                + Penilaian Baru
+                                +Penilaian
                             </a>
                         @endcan
                     </div>

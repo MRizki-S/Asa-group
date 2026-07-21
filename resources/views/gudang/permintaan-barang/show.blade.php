@@ -72,8 +72,7 @@
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
-    x-data="{ openAccModal: false, accSubmitting: false }"
-    x-init="$dispatch('sidebar-minimize')">
+    x-data="{ openAccModal: false, accSubmitting: false }">
 
     <div x-data="{ pageName: 'Detail Permintaan Barang' }">
         @include('partials.breadcrumb')
@@ -233,20 +232,20 @@
                 Barang yang Diminta
             </h3>
 
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse border border-gray-300">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full border-collapse border border-gray-300" style="min-width: 750px;">
                     <thead class="bg-gray-100 dark:bg-gray-800">
                         <tr>
-                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 w-[28%]">Barang</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Jumlah</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Jumlah Base</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Konfirmasi</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 min-w-[250px]">Barang</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah Base</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Konfirmasi</th>
                             @if ($order->jenis_order !== 'direct')
-                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                     Stock Saat Ini {{ $ubsCode ? '(' . $ubsCode . ')' : '' }}
                                 </th>
                             @endif
-                            <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">Harga Total</th>
+                            <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Harga Total</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -30,7 +30,7 @@
     {{-- Tabel Pengajuan --}}
     @if ($qc->pembangunanUnitUpahPengajuan->count() > 0)
         <div
-            class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+            class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800/40">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>

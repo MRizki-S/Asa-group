@@ -81,8 +81,7 @@
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit / Pekerjaan
                                 </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tahap QC</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Budget RAP</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Akumulasi Real</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Budget & Akumulasi</th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Nominal Diajukan</th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Status
                                 </th>
@@ -116,11 +115,15 @@
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-right font-mono text-xs font-semibold text-gray-500">
-                                        Rp {{ number_format($item->rapUpah->nominal_standar ?? 0, 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-4 py-4 text-right font-mono text-xs font-semibold text-gray-500">
-                                        Rp {{ number_format($item->cumulative_requested ?? 0, 0, ',', '.') }}
+                                    <td class="px-4 py-4 text-right font-mono">
+                                        <div class="flex flex-col items-end leading-tight">
+                                            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                <span class="text-[9px] text-gray-400 font-normal uppercase mr-1">RAP:</span>Rp {{ number_format($item->rapUpah->nominal_standar ?? 0, 0, ',', '.') }}
+                                            </span>
+                                            <span class="text-[11px] font-medium text-blue-600 dark:text-blue-400 mt-0.5">
+                                                <span class="text-[9px] text-blue-400/80 font-normal uppercase mr-1">Akum:</span>Rp {{ number_format($item->cumulative_requested ?? 0, 0, ',', '.') }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-4 text-right font-mono font-bold text-xs text-gray-700 dark:text-white">
                                         <div class="flex flex-col items-end">

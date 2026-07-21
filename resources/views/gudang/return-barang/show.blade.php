@@ -254,18 +254,18 @@
                     Barang yang Diretur ({{ $return->details->count() }} Item)
                 </h3>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse border border-gray-300">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full border-collapse border border-gray-300" style="min-width: 750px;">
                         <thead class="bg-gray-100 dark:bg-gray-800">
                             <tr>
-                                <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 w-[25%]">Barang</th>
-                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200">Jumlah Retur</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 min-w-[220px]">Barang</th>
+                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah Retur</th>
                                 @if ($return->status === 'diproses')
-                                    <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 w-[150px]">Pilih Satuan</th>
+                                    <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap w-[150px]">Pilih Satuan</th>
                                 @endif
-                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-emerald-700 dark:text-emerald-400 w-[150px]">Barang Layak</th>
-                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-red-700 dark:text-red-400 w-[150px]">Barang Rusak</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Keterangan</th>
+                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap w-[150px]">Barang Layak</th>
+                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-red-700 dark:text-red-400 whitespace-nowrap w-[150px]">Barang Rusak</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>

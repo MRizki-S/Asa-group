@@ -79,9 +79,8 @@
                         Reset
                     </a>
                 </form>
-            </div>
-
-            <table id="table-permintaanBarang">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table id="table-permintaanBarang" class="min-w-full" style="min-width: 800px;">
                 <thead>
                     <tr>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No Order</th>

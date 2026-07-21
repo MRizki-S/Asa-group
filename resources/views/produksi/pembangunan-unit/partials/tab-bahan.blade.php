@@ -46,7 +46,7 @@
     {{-- Tabel Order Bahan --}}
     @if ($orders->count() > 0)
         <div
-            class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+            class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800/40">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
@@ -227,14 +227,16 @@
                                                     </span>
                                                 </div>
                                                 @if (in_array($order->status_order, ['selesai', 'ditolak']))
-                                                    <div class="flex justify-between items-center text-[10px] border-t border-gray-100 dark:border-gray-700 pt-1.5">
-                                                        <span class="text-gray-400 font-medium">Dikonfirmasi Oleh:</span>
-                                                        <span class="font-bold text-gray-700 dark:text-gray-200">
-                                                            {{ $order->accBy->nama_lengkap ?? $order->accBy->name ?? $order->accBy->username ?? 'Petugas Gudang' }}
+                                                    <div class="flex justify-between items-start text-[10px] border-t border-gray-100 dark:border-gray-700 pt-1.5">
+                                                        <span class="text-gray-400 font-medium shrink-0">Dikonfirmasi Oleh:</span>
+                                                        <div class="text-right">
+                                                            <span class="font-bold text-gray-700 dark:text-gray-200 block">
+                                                                {{ $order->accBy->nama_lengkap ?? $order->accBy->name ?? $order->accBy->username ?? 'Petugas Gudang' }}
+                                                            </span>
                                                             @if ($order->tanggal_selesai)
-                                                                <span class="text-[9px] text-gray-400 font-normal">({{ \Carbon\Carbon::parse($order->tanggal_selesai)->translatedFormat('d M Y, H:i') }})</span>
+                                                                <span class="text-[9px] text-gray-400 font-normal block mt-0.5">({{ \Carbon\Carbon::parse($order->tanggal_selesai)->translatedFormat('d M Y, H:i') }})</span>
                                                             @endif
-                                                        </span>
+                                                        </div>
                                                     </div>
                                                 @endif
                                             </div>
@@ -289,7 +291,7 @@
         </div>
 
         @if ($returns->count() > 0)
-            <div class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-transparent">
+            <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800/40">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-gray-50 dark:bg-gray-800/50">
                         <tr>
@@ -420,14 +422,16 @@
                                                         </span>
                                                     </div>
                                                     @if (in_array($ret->status, ['selesai', 'ditolak']) && $ret->accBy)
-                                                        <div class="flex justify-between items-center text-[10px] border-t border-gray-100 dark:border-gray-700 pt-1.5">
-                                                            <span class="text-gray-400 font-medium">Dikonfirmasi Oleh:</span>
-                                                            <span class="font-bold text-gray-700 dark:text-gray-200">
-                                                                {{ $ret->accBy->nama_lengkap ?? $ret->accBy->name ?? '-' }}
+                                                        <div class="flex justify-between items-start text-[10px] border-t border-gray-100 dark:border-gray-700 pt-1.5">
+                                                            <span class="text-gray-400 font-medium shrink-0">Dikonfirmasi Oleh:</span>
+                                                            <div class="text-right">
+                                                                <span class="font-bold text-gray-700 dark:text-gray-200 block">
+                                                                    {{ $ret->accBy->nama_lengkap ?? $ret->accBy->name ?? '-' }}
+                                                                </span>
                                                                 @if ($ret->acc_at)
-                                                                    <span class="text-[9px] text-gray-400 font-normal">({{ \Carbon\Carbon::parse($ret->acc_at)->translatedFormat('d M Y, H:i') }})</span>
+                                                                    <span class="text-[9px] text-gray-400 font-normal block mt-0.5">({{ \Carbon\Carbon::parse($ret->acc_at)->translatedFormat('d M Y, H:i') }})</span>
                                                                 @endif
-                                                            </span>
+                                                            </div>
                                                         </div>
                                                     @endif
                                                 </div>

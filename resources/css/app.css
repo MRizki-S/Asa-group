@@ -175,102 +175,128 @@
    ============================================================= */
 
 /* Trigger */
-.dark .select2-container--bootstrap4 .select2-selection--single {
-    background-color: #111827 !important;
-    border-color: #374151 !important;
+.dark .select2-container--bootstrap4 .select2-selection--single,
+.dark .select2-container--default .select2-selection--single,
+.dark .select2-container .select2-selection--single {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
 }
 
 .dark .select2-container--bootstrap4.select2-container--focus .select2-selection--single,
-.dark .select2-container--bootstrap4.select2-container--open .select2-selection--single {
+.dark .select2-container--bootstrap4.select2-container--open .select2-selection--single,
+.dark .select2-container--default.select2-container--focus .select2-selection--single,
+.dark .select2-container--default.select2-container--open .select2-selection--single {
     border-color: #2563eb !important;
 }
 
 /* Text */
-.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-    color: rgba(255, 255, 255, 0.8) !important;
+.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+.dark .select2-container--default .select2-selection--single .select2-selection__rendered,
+.dark .select2-container .select2-selection--single .select2-selection__rendered {
+    color: #ffffff !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder {
-    color: #6b7280 !important;
+.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder,
+.dark .select2-container--default .select2-selection--single .select2-selection__placeholder,
+.dark .select2-container .select2-selection--single .select2-selection__placeholder {
+    color: #9ca3af !important;
 }
 
 /* Arrow */
-.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b {
-    border-color: #6b7280 transparent transparent transparent !important;
+.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b,
+.dark .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #9ca3af transparent transparent transparent !important;
 }
 
-.dark .select2-container--bootstrap4.select2-container--open .select2-selection--single .select2-selection__arrow b {
-    border-color: transparent transparent #6b7280 transparent !important;
+.dark .select2-container--bootstrap4.select2-container--open .select2-selection--single .select2-selection__arrow b,
+.dark .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #9ca3af transparent !important;
 }
 
 /* Clear button */
-.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__clear {
-    color: #6b7280 !important;
+.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__clear,
+.dark .select2-container--default .select2-selection--single .select2-selection__clear {
+    color: #9ca3af !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__clear:hover {
+.dark .select2-container--bootstrap4 .select2-selection--single .select2-selection__clear:hover,
+.dark .select2-container--default .select2-selection--single .select2-selection__clear:hover {
     color: #f87171 !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-selection--multiple {
-    background-color: #111827 !important;
-    border-color: #374151 !important;
+.dark .select2-container--bootstrap4 .select2-selection--multiple,
+.dark .select2-container--default .select2-selection--multiple,
+.dark .select2-container .select2-selection--multiple {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
+.dark .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice,
+.dark .select2-container--default .select2-selection--multiple .select2-selection__choice {
     background-color: #1e3a5f !important;
     border-color: #3b82f6 !important;
     color: #93c5fd !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice__remove {
+.dark .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice__remove,
+.dark .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     color: #f87171 !important;
 }
 
 /* Dropdown panel */
-.dark .select2-container--bootstrap4 .select2-dropdown {
+.dark .select2-container--bootstrap4 .select2-dropdown,
+.dark .select2-container--default .select2-dropdown,
+.dark .select2-container .select2-dropdown {
     background-color: #1f2937 !important;
     border-color: #374151 !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Search */
-.dark .select2-container--bootstrap4 .select2-search--dropdown {
+.dark .select2-container--bootstrap4 .select2-search--dropdown,
+.dark .select2-container--default .select2-search--dropdown {
     background-color: #1f2937 !important;
     border-bottom-color: #374151 !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field {
-    background-color: #111827 !important;
-    border-color: #374151 !important;
-    color: rgba(255, 255, 255, 0.8) !important;
+.dark .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field,
+.dark .select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field:focus {
+.dark .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field:focus,
+.dark .select2-container--default .select2-search--dropdown .select2-search__field:focus {
     border-color: #2563eb !important;
 }
 
 /* Options */
-.dark .select2-container--bootstrap4 .select2-results__options {
+.dark .select2-container--bootstrap4 .select2-results__options,
+.dark .select2-container--default .select2-results__options {
     background-color: #1f2937 !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-results__option {
+.dark .select2-container--bootstrap4 .select2-results__option,
+.dark .select2-container--default .select2-results__option {
     color: #d1d5db !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-results__option--highlighted {
+.dark .select2-container--bootstrap4 .select2-results__option--highlighted,
+.dark .select2-container--default .select2-results__option--highlighted {
     background-color: #1e3a5f !important;
     color: #93c5fd !important;
 }
 
-.dark .select2-container--bootstrap4 .select2-results__option[aria-selected="true"] {
+.dark .select2-container--bootstrap4 .select2-results__option[aria-selected="true"],
+.dark .select2-container--default .select2-results__option[aria-selected="true"] {
     background-color: #1e3a5f !important;
     color: #60a5fa !important;
 }
 
 /* No results message */
-.dark .select2-container--bootstrap4 .select2-results__message {
+.dark .select2-container--bootstrap4 .select2-results__message,
+.dark .select2-container--default .select2-results__message {
     color: #6b7280 !important;
     background-color: #1f2937 !important;
 }
@@ -292,3 +318,21 @@
         background-color: #374151 !important;
         color: #6b7280 !important;
     }
+
+/* =============================================================
+   SIMPLE DATATABLES RESPONSIVE MOBILE FIX
+   ============================================================= */
+.datatable-container {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+.datatable-table {
+    min-width: 800px !important;
+}
+
+.datatable-table th,
+.datatable-table td {
+    white-space: nowrap !important;
+}

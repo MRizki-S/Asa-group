@@ -105,7 +105,7 @@
                                         </td>
 
                                         {{-- Kolom Harga Realisasi --}}
-                                        <td class="px-6 py-4 text-right font-mono font-bold text-gray-900 dark:text-white">
+                                        <td class="px-6 py-4 text-right font-mono font-bold whitespace-nowrap text-gray-900 dark:text-white">
                                             Rp {{ number_format($detail['harga_real'], 0, ',', '.') }}
                                         </td>
                                     </tr>
@@ -139,9 +139,9 @@
                     </div>
                 @endforeach
                 
-                <div class="pt-4 mt-3 border-t-2 border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center text-base font-bold">
-                    <span class="text-gray-900 dark:text-white uppercase tracking-wider">Total Biaya Keseluruhan</span>
-                    <span class="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">Rp {{ number_format($laporan->sum('total_harga_real'), 0, ',', '.') }}</span>
+                <div class="pt-3 mt-3 border-t-2 border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm font-semibold">
+                    <span class="text-gray-800 dark:text-gray-200">Total Biaya Keseluruhan</span>
+                    <span class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">Rp {{ number_format($laporan->sum('total_harga_real'), 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>

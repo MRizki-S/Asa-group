@@ -3,7 +3,7 @@
 @section('pageActive', 'DaftarBarangRusak')
 
 @section('content')
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-init="$dispatch('sidebar-minimize')">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
     <div x-data="{ pageName: 'TambahBarangRusak' }">
         @include('partials.breadcrumb')
     </div>

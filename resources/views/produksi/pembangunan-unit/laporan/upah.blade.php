@@ -36,26 +36,26 @@
                         <table class="w-full text-left border-collapse" style="min-width: 650px;">
                             <thead>
                                 <tr class="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50/30 dark:bg-gray-800/30 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700">
-                                    <th class="px-6 py-3.5 w-[40%]">Nama Pekerjaan</th>
-                                    <th class="px-6 py-3.5 text-right">Budget RAB</th>
-                                    <th class="px-6 py-3.5 text-right">Realisasi</th>
-                                    <th class="px-6 py-3.5 text-right">Selisih</th>
+                                    <th class="px-5 py-3.5 w-[35%]">Nama Pekerjaan</th>
+                                    <th class="px-5 py-3.5 text-right whitespace-nowrap">Budget RAB</th>
+                                    <th class="px-5 py-3.5 text-right whitespace-nowrap">Realisasi</th>
+                                    <th class="px-5 py-3.5 text-right whitespace-nowrap">Selisih</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
                                 @foreach ($row['details'] as $detail)
                                     @php $selisih = $detail['nominal_rap'] - $detail['nominal_real']; @endphp
-                                    <tr class="text-sm hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors">
-                                        <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">
+                                    <tr class="text-xs md:text-sm hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                                        <td class="px-5 py-3.5 font-medium text-gray-800 dark:text-gray-200">
                                             {{ $detail['nama_upah'] }}
                                         </td>
-                                        <td class="px-6 py-4 text-right font-mono text-gray-500 dark:text-gray-400">
+                                        <td class="px-5 py-3.5 text-right font-mono whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             Rp {{ number_format($detail['nominal_rap'], 0, ',', '.') }}
                                         </td>
-                                        <td class="px-6 py-4 text-right font-mono font-bold text-gray-900 dark:text-white">
+                                        <td class="px-5 py-3.5 text-right font-mono whitespace-nowrap font-bold text-gray-900 dark:text-white">
                                             Rp {{ number_format($detail['nominal_real'], 0, ',', '.') }}
                                         </td>
-                                        <td class="px-6 py-4 text-right font-mono font-bold {{ $selisih < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                                        <td class="px-5 py-3.5 text-right font-mono whitespace-nowrap font-bold {{ $selisih < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
                                             {{ $selisih < 0 ? '-' : '+' }} Rp {{ number_format(abs($selisih), 0, ',', '.') }}
                                         </td>
                                     </tr>
@@ -75,7 +75,7 @@
         @endphp
         <div class="mt-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
             <div class="border-b border-gray-100 dark:border-gray-700 pb-4 mb-4">
-                <h3 class="text-base font-bold text-gray-900 dark:text-white">Ringkasan Finansial Upah Pekerjaan</h3>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">Ringkasan Upah Pekerjaan</h3>
                 <p class="text-xs text-gray-500">Total akumulasi budget RAB, realisasi upah, dan selisih anggaran</p>
             </div>
 
@@ -85,15 +85,13 @@
                     <span class="font-mono font-semibold text-gray-800 dark:text-gray-200">Rp {{ number_format($totalBudgetRap, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-gray-600 dark:text-gray-400 font-medium">Total Realisasi Upah (Terbayar)</span>
+                    <span class="text-gray-600 dark:text-gray-400 font-medium">Total Realisasi Upah</span>
                     <span class="font-mono font-semibold text-gray-800 dark:text-gray-200">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
                 </div>
                 
-                <div class="pt-4 mt-3 border-t-2 border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center text-base font-bold">
-                    <span class="text-gray-900 dark:text-white uppercase tracking-wider">
-                        Total Selisih
-                    </span>
-                    <span class="text-xl font-bold font-mono {{ $selisihTotal < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                <div class="pt-3 mt-3 border-t-2 border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm font-semibold">
+                    <span class="text-gray-800 dark:text-gray-200">Total Selisih</span>
+                    <span class="text-base font-bold font-mono {{ $selisihTotal < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}">
                         {{ $selisihTotal < 0 ? '-' : '+' }} Rp {{ number_format(abs($selisihTotal), 0, ',', '.') }}
                     </span>
                 </div>

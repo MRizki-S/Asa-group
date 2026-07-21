@@ -67,8 +67,8 @@
         </form>
     </div>
 
-    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-white/[0.03] dark:border-gray-800">
-        <table class="w-full text-xs text-left text-gray-700 dark:text-gray-300">
+    <div class="overflow-x-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-white/[0.03] dark:border-gray-800">
+        <table class="w-full text-xs text-left text-gray-700 dark:text-gray-300" style="min-width: 950px;">
             <thead class="uppercase bg-gray-200 border-b border-gray-300 dark:bg-gray-800 dark:border-gray-700">
                 <tr>
                     <th colspan="18" class="px-2 py-2 text-center text-sm font-bold text-gray-800 border-b border-gray-300 bg-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600">

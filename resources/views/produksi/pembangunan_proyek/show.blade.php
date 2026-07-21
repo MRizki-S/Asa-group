@@ -187,22 +187,25 @@
     </div>
 
     <!-- Tabs -->
-    <div class="mb-6 overflow-x-auto">
-        <div class="flex border-b border-gray-200 dark:border-gray-700 min-w-max">
+    <div class="mb-6">
+        <div class="flex border-b border-gray-200 dark:border-gray-700 w-full">
             <button @click="tab = 'order'"
                 :class="tab === 'order' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
-                <i class="fa-solid fa-box"></i> Order Barang
+                class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
+                <i class="fa-solid fa-box text-xs sm:text-sm"></i>
+                <span class="leading-tight">Order<br class="sm:hidden"> Barang</span>
             </button>
             <button @click="tab = 'upah'"
                 :class="tab === 'upah' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
-                <i class="fa-solid fa-money-bill-wave"></i> Pengajuan Upah
+                class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
+                <i class="fa-solid fa-money-bill-wave text-xs sm:text-sm"></i>
+                <span class="leading-tight">Pengajuan<br class="sm:hidden"> Upah</span>
             </button>
             <button @click="tab = 'retur'"
                 :class="tab === 'retur' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                class="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold border-b-2 uppercase tracking-wider transition-all">
-                <i class="fa-solid fa-rotate-left"></i> Retur Barang
+                class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
+                <i class="fa-solid fa-rotate-left text-xs sm:text-sm"></i>
+                <span class="leading-tight">Retur<br class="sm:hidden"> Barang</span>
             </button>
         </div>
     </div>
@@ -303,8 +306,8 @@
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if($data->orders && $data->orders->count() > 0)
                         @foreach($data->orders->sortByDesc('created_at') as $order)
-                        <div x-data="{ open: false }" class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-transparent">
-                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
+                        <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
+                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
                                 {{-- Baris 1: Tanggal + Nomor Order --}}
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex flex-col gap-0.5 min-w-0">
@@ -475,8 +478,8 @@
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if($data->pengajuanUpah && $data->pengajuanUpah->count() > 0)
                         @foreach($data->pengajuanUpah->sortByDesc('created_at') as $u)
-                        <div x-data="{ open: false }" class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-transparent">
-                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
+                        <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
+                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
                                 {{-- Baris 1: Tanggal + Nama Upah --}}
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex flex-col gap-0.5 min-w-0">
@@ -731,8 +734,8 @@
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if(isset($returns) && $returns->count() > 0)
                         @foreach($returns as $ret)
-                        <div x-data="{ open: false }" class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-transparent">
-                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800">
+                        <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
+                            <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
                                 {{-- Baris 1: Tanggal + Nomor Retur --}}
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex flex-col gap-0.5 min-w-0">

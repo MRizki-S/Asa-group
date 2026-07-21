@@ -43,7 +43,7 @@
                     <div
                         class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden shadow-sm">
                         <div
-                            class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                            class="bg-gray-50 dark:bg-gray-900/50 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                             <div>
                                 <h3 class="font-bold text-gray-800 dark:text-white">{{ $komponen->nama_komponen }}</h3>
                                 <p class="text-[10px] text-gray-500 font-medium italic">Bobot: {{ $komponen->bobot }}% |
@@ -51,7 +51,7 @@
                             </div>
                             @if ($komponen->nilai_tetap)
                                 <span
-                                    class="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-[10px] font-bold text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
+                                    class="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-[10px] font-bold text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 w-fit">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
                                         fill="currentColor">
                                         <path fill-rule="evenodd"
@@ -61,7 +61,7 @@
                                     DINILAI MANAGER
                                 </span>
                             @endif
-                            <div class="flex gap-7">
+                            <div class="flex gap-4 sm:gap-7">
                                 <div class="text-right">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Kepatuhan</span>
                                     <span class="text-base font-black text-blue-600"
@@ -74,7 +74,7 @@
                                         x-text="results[{{ $komponen->id }}]?.skor ?? {{ (float) $komponen->skor }}">
                                     </span>
                                 </div>
-                                <div class="text-right border-l pl-6 border-gray-200 dark:border-gray-700">
+                                <div class="text-right border-l pl-4 sm:pl-6 border-gray-200 dark:border-gray-700">
                                     <span class="text-[10px] text-orange-500 uppercase font-bold block">Nilai</span>
                                     <span class="text-base font-black text-orange-600"
                                         x-text="results[{{ $komponen->id }}]?.nilaiAkhir ?? {{ (float) $komponen->nilai_akhir }}">
@@ -84,7 +84,7 @@
                         </div>
 
                         <div class="max-w-full overflow-x-auto custom-scrollbar">
-                            <table class="min-w-full">
+                            <table class="w-full border-collapse" style="min-width: 850px;">
                                 @php
                                     $tipePerhitungan = $komponen->komponen->tipe_perhitungan;
                                     $mode = $modeMapping[$tipePerhitungan] ?? 'range';
@@ -92,23 +92,23 @@
                                 <thead
                                     class="bg-gray-50/50 dark:bg-white/[0.01] border-b border-gray-200 dark:border-gray-800">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase w-16">
+                                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase w-12 shrink-0">
                                             No</th>
-                                        <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Jenis
+                                        <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase min-w-[320px]">Jenis
                                             Data / Task</th>
                                         @if ($mode != 'select')
                                             <th
-                                                class="px-6 py-3 text-center text-[10px] font-bold text-gray-400 uppercase {{ $komponen->komponen->tipe_perhitungan == 'DEVIASI_BUDGET' ? 'w-60' : 'w-40' }}">
+                                                class="px-6 py-3 text-center text-[10px] font-bold text-gray-400 uppercase whitespace-nowrap {{ $komponen->komponen->tipe_perhitungan == 'DEVIASI_BUDGET' ? 'w-60' : 'w-40' }}">
                                                 {{ $komponen->komponen->label_total }}</th>
                                         @endif
                                         <th
-                                            class="px-6 py-3 text-center text-[10px] font-bold text-gray-400 uppercase
+                                            class="px-6 py-3 text-center text-[10px] font-bold text-gray-400 uppercase whitespace-nowrap
     {{ $komponen->komponen->tipe_perhitungan == 'DEVIASI_BUDGET' ? 'w-60' : ($mode == 'select' ? 'w-80' : 'w-40') }}">
                                             {{ $komponen->komponen->label_tercapai }}
                                         </th>
                                         @if ($mode != 'select')
                                             <th
-                                                class="px-6 py-3 text-center text-[10px] font-bold text-gray-400 uppercase w-40">
+                                                class="px-6 py-3 text-center text-[10px] font-bold text-gray-400 uppercase whitespace-nowrap w-40">
                                                 {{ $komponen->komponen->label_tidak_tercapai }}</th>
                                         @endif
                                     </tr>
@@ -116,8 +116,8 @@
                                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                                     @foreach ($komponen->tasks as $index => $task)
                                         <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors">
-                                            <td class="px-6 py-4 text-xs text-gray-400">{{ $index + 1 }}</td>
-                                            <td class="px-6 py-4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            <td class="px-4 py-4 text-xs text-gray-400">{{ $index + 1 }}</td>
+                                            <td class="px-6 py-4 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[320px] leading-relaxed">
                                                 {{ $task->nama_task }}</td>
 
                                             @if ($mode != 'select')
