@@ -57,7 +57,7 @@ class PembangunanUnit extends Model
 
     public function pembangunanUnitQc()
     {
-        return $this->hasMany(PembangunanUnitQc::class);
+        return $this->hasMany(PembangunanUnitQc::class)->orderBy('is_servis', 'asc')->orderBy('id', 'asc');
     }
 
     public function pembangunanUnitRapBahan()
@@ -86,7 +86,7 @@ class PembangunanUnit extends Model
 
     public function getTotalProgresAttribute()
     {
-        $qcs = $this->pembangunanUnitQc;
+        $qcs = $this->pembangunanUnitQc->where('is_servis', false);
         if ($qcs->count() == 0) return 0;
 
         $totalPersen = 0;

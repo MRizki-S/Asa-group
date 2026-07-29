@@ -4,7 +4,7 @@
 
     <div @click.away="openRequest = false"
         class="relative w-full transition-all duration-300 p-4 flex flex-col h-[95vh] max-h-[95vh]"
-        :class="showAdditional ? 'max-w-4xl' : 'max-w-xl'">
+        :class="showAdditional && itemsToOrder.length > 0 ? 'max-w-4xl' : 'max-w-xl'">
 
         <div
             class="relative bg-white rounded-xl shadow-xl dark:bg-gray-800 overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col h-full">
@@ -21,25 +21,25 @@
 
             <form @submit.prevent="submitRequest" class="flex-1 flex flex-col min-h-0 overflow-hidden">
 
-                <div class="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+                <div class="flex-1 overflow-y-auto p-5 pb-28 space-y-4 custom-scrollbar">
 
                     <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl gap-1">
                         <button type="button"
-                            @click="filterType = 'stock'; itemsToOrder.forEach(i => i.checked = false); itemsAdditional = []; showAdditional = false"
+                            @click="filterType = 'stock'; itemsToOrder.forEach(i => i.checked = false); itemsAdditional = []; showAdditional = true; addAdditionalItem()"
                             :class="filterType === 'stock' ? 'bg-white shadow-sm text-blue-600 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'"
                             class="flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all">Barang
                             Stock</button>
                         <button type="button"
-                            @click="filterType = 'direct'; itemsToOrder.forEach(i => i.checked = false); itemsAdditional = []; showAdditional = false"
+                            @click="filterType = 'direct'; itemsToOrder.forEach(i => i.checked = false); itemsAdditional = []; showAdditional = true; addAdditionalItem()"
                             :class="filterType === 'direct' ? 'bg-white shadow-sm text-amber-600 dark:bg-gray-700 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'"
                             class="flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all">Barang
                             Direct</button>
                     </div>
 
                     <div class="grid grid-cols-1 gap-6 transition-all duration-300"
-                        :class="showAdditional ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
+                        :class="showAdditional && itemsToOrder.length > 0 ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
 
-                        <div class="md:space-y-3" :class="showAdditional ? 'md:border-r md:pr-4' : ''">
+                        <div x-show="itemsToOrder.length > 0" class="md:space-y-3" :class="showAdditional ? 'md:border-r md:pr-4' : ''">
                             <div
                                 class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl">
                                 <label class="flex items-center gap-2 cursor-pointer group">
@@ -200,8 +200,8 @@
                             class="w-full px-3 py-1.5 text-xs border border-amber-200 dark:border-amber-800 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[50px] shadow-sm"></textarea>
                     </div>
 
-                    <div class="flex items-center justify-between">
-                        <button type="button"
+                    <div class="flex items-center" :class="itemsToOrder.length > 0 ? 'justify-between' : 'justify-end'">
+                        <button type="button" x-show="itemsToOrder.length > 0"
                             @click="showAdditional = !showAdditional; if(showAdditional && itemsAdditional.length === 0) addAdditionalItem()"
                             class="flex items-center gap-2 px-3 py-2 rounded-lg transition-all"
                             :class="showAdditional ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'">

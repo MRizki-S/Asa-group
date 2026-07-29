@@ -126,6 +126,32 @@
 
             {{-- Action Buttons --}}
             <div class="flex justify-end items-center gap-2">
+                {{-- Mulai / Lihat Servis Button --}}
+                @php
+                    $existingServis = $data->pembangunanUnitQc->where('is_servis', true)->first();
+                    $servisIdx = $existingServis ? $data->pembangunanUnitQc->search(fn($q) => $q->id === $existingServis->id) : null;
+                @endphp
+                @if(auth()->user()->hasRole(['Superadmin', 'Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR']))
+                    @if($existingServis)
+                        <button type="button" @click="goToServis({{ $servisIdx }})"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
+                            <i class="fa-solid fa-wrench text-amber-500"></i>
+                            <span>Lihat Servis</span>
+                        </button>
+                    @else
+                        <form id="form-create-servis" action="{{ route('produksi.pembangunanUnit.createServis', $data->id) }}" method="POST"
+                            x-show="totalProgress >= 100 && ['selesai', 'selesai dengan catatan'].includes(unitStatus) && statusST === 'siap_serah_terima'"
+                            x-cloak>
+                            @csrf
+                            <button type="button" @click="promptCreateServis()"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
+                                <i class="fa-solid fa-wrench text-blue-500"></i>
+                                <span>Mulai Servis</span>
+                            </button>
+                        </form>
+                    @endif
+                @endif
+
                 {{-- Laporan Termin Button --}}
                 <a href="{{ route('produksi.pembangunanUnit.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">

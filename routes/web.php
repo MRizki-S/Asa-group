@@ -657,6 +657,9 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
             ->name('produksi.pembangunanUnit.upahStore');
         Route::delete('pembangunan-unit/upah-pengajuan/{id}', [PembangunanUnitPengajuanUpahController::class, 'destroy'])
             ->name('produksi.pembangunanUnit.upahDestroy');
+
+        Route::post('pembangunan-unit/{id}/create-servis', [PembangunanUnitController::class, 'createServis'])
+            ->name('produksi.pembangunanUnit.createServis');
     });
 
     // Persetujuan Upah (Shared across properti/kontraktor/kawasan approvals)

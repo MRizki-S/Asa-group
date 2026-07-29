@@ -233,6 +233,33 @@
             window.history.replaceState({}, '', url);
         },
 
+        async promptCreateServis() {
+            const result = await Swal.fire({
+                title: 'Mulai Servis?',
+                text: 'Apakah Anda yakin ingin memulai sesi Servis untuk unit ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563EB',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Ya, Mulai Servis',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                const form = document.getElementById('form-create-servis');
+                if (form) form.submit();
+            }
+        },
+
+        goToServis(servisIndex) {
+            window.dispatchEvent(new CustomEvent('open-qc', { detail: servisIndex }));
+            this.updateUrl(servisIndex, 'bahan');
+            this.$nextTick(() => {
+                const el = document.getElementById('qc-card-' + servisIndex);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        },
+
         async updateStatusST(newVal) {
             if (this.statusST === newVal) return;
 
@@ -546,6 +573,17 @@
                 (this.filterType === 'stock' ? b.is_stock : !b.is_stock) &&
                 !allBlockedIds.includes(b.id.toString())
             );
+        },
+
+        prepareServisOrder(qcId) {
+            this.selectedQcId = qcId;
+            this.filterType = 'stock';
+            this.catatanGlobal = '';
+            this.itemsToOrder = [];
+            this.itemsAdditional = [];
+            this.showAdditional = true;
+            this.addAdditionalItem();
+            this.openRequest = true;
         }
     }">
 

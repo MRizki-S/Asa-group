@@ -8,6 +8,7 @@ use App\Models\MasterBarang;
 use App\Models\PembangunanUnit;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\PembangunanUnitBarangOrderDetail;
+use App\Models\PembangunanUnitQc;
 use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -76,17 +77,16 @@ class PembangunanUnitOrderBarangController extends Controller
 
             $pembangunanUnit = PembangunanUnit::findOrFail($request->pembangunan_unit_id);
 
-            if (in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
-                throw new \Exception('Unit ini sudah selesai dibangun, tidak dapat melakukan order barang.');
+            $pembangunanUnitQc = PembangunanUnitQc::where('id', $request->pembangunan_unit_qc_id)
+                ->where('pembangunan_unit_id', $pembangunanUnit->id)
+                ->first();
+
+            if (!$pembangunanUnitQc) {
+                throw new \Exception('QC tidak sesuai dengan pembangunan unit yang dipilih.');
             }
 
-            $qcBelongsToUnit = DB::table('pembangunan_unit_qc')
-                ->where('id', $request->pembangunan_unit_qc_id)
-                ->where('pembangunan_unit_id', $pembangunanUnit->id)
-                ->exists();
-
-            if (!$qcBelongsToUnit) {
-                throw new \Exception('QC tidak sesuai dengan pembangunan unit yang dipilih.');
+            if (in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan']) && !$pembangunanUnitQc->is_servis) {
+                throw new \Exception('Unit ini sudah selesai dibangun, tidak dapat melakukan order barang.');
             }
 
             $datePrefix = 'ORD-UNT-' . now()->format('Ymd') . '-';

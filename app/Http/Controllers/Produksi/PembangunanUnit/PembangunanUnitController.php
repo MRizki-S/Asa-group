@@ -105,7 +105,22 @@ class PembangunanUnitController extends Controller
      */
     public function show(string $id)
     {
-        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'spv', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang'])->findOrFail($id);
+        $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'spv', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang', 'pembangunanUnitQc.orders'])->findOrFail($id);
+
+        // Filter status visibilitas QC Servis untuk non-Staff Mutu / Superadmin:
+        // Role lain hanya melihat QC Servis jika QC Servis tersebut sudah memiliki order barang.
+        $user = Auth::user();
+        $isMutuOrAdmin = $user && ($user->hasRole('Superadmin') || $user->hasRole('Staff Mutu (QC) ADL') || $user->hasRole('Staff Mutu (QC) LHR'));
+
+        if (!$isMutuOrAdmin) {
+            $filteredQc = $data->pembangunanUnitQc->filter(function ($qc) {
+                if ($qc->is_servis) {
+                    return $qc->orders->count() > 0;
+                }
+                return true;
+            });
+            $data->setRelation('pembangunanUnitQc', $filteredQc->values());
+        }
 
         // Get already ordered base quantities per RAP item
         $orderedQuantities = \App\Models\PembangunanUnitBarangOrderDetail::query()
@@ -171,6 +186,38 @@ class PembangunanUnitController extends Controller
             'allBarang' => $allBarang,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')], ['label' => 'Detail ' . $data->unit->nama_unit, 'url' => '#']],
         ]);
+    }
+
+    public function createServis($id)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['Superadmin', 'Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR'])) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk membuat servis unit.');
+        }
+
+        $pembangunanUnit = PembangunanUnit::findOrFail($id);
+
+        if ($pembangunanUnit->total_progres < 100 || !in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan']) || !in_array($pembangunanUnit->status_serah_terima, ['siap_serah_terima', 'siap_lpa'])) {
+            return redirect()->back()->with('error', 'Servis hanya dapat dibuat jika unit sudah selesai 100%, berstatus Selesai, dan Siap Serah Terima/Siap LPA.');
+        }
+
+        // Cek apakah sudah ada QC servis untuk unit ini
+        $qcServis = \App\Models\PembangunanUnitQc::where('pembangunan_unit_id', $pembangunanUnit->id)
+            ->where('is_servis', true)
+            ->first();
+
+        if (!$qcServis) {
+            \App\Models\PembangunanUnitQc::create([
+                'pembangunan_unit_id' => $pembangunanUnit->id,
+                'master_qc_urutan_id' => null,
+                'qc_urutan_ke' => 0,
+                'nama_qc' => 'SERVIS / PASCA SERAH TERIMA',
+                'is_servis' => true,
+                'tanggal_mulai' => now(),
+            ]);
+        }
+
+        return redirect()->route('produksi.pembangunanUnit.show', ['pembangunan_unit' => $pembangunanUnit->id, 'qc' => 0])->with('success', 'Servis unit berhasil diaktifkan/dibuat!');
     }
 
     public function updateTask(Request $request, $id)

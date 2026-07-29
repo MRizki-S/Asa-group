@@ -29,13 +29,17 @@
                 Lihat Laporan
             </a>
             --}}
-            @if ($qc->pembangunanUnitRapBahan->count() > 0 && !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']))
-                <button @click="prepareOrder({{ json_encode($qc->pembangunanUnitRapBahan) }}, {{ $qc->id }})"
+            @php
+                $canOrderBahan = !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']) || $qc->is_servis;
+            @endphp
+            @if (($qc->pembangunanUnitRapBahan->count() > 0 || $qc->is_servis) && $canOrderBahan)
+                <button @click="{{ $qc->is_servis ? 'prepareServisOrder(' . $qc->id . ')' : 'prepareOrder(' . json_encode($qc->pembangunanUnitRapBahan) . ', ' . $qc->id . ')' }}"
                     class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
-                    Order Barang
+                    <i class="fa-solid fa-box text-xs"></i>
+                    <span>{{ $qc->is_servis ? 'Order Barang Servis' : 'Order Barang' }}</span>
                 </button>
             @endif
-            @if($hasSelesai && !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']))
+            @if($hasSelesai && $canOrderBahan)
                 <button @click="prepareReturn({{ $qc->id }}, '{{ $qcNama }}')"
                     class="px-4 py-2 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 shadow-sm transition-all uppercase flex items-center gap-2">
                     <i class="fa-solid fa-rotate-left text-xs"></i>

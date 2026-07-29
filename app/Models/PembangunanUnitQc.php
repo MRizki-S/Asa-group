@@ -12,9 +12,15 @@ class PembangunanUnitQc extends Model
         'master_qc_urutan_id',
         'qc_urutan_ke',
         'nama_qc',
+        'is_servis',
         'tanggal_mulai',
         'tanggal_selesai'
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(PembangunanUnitBarangOrder::class, 'pembangunan_unit_qc_id');
+    }
 
     public function pembangunanUnit()
     {
