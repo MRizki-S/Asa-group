@@ -9,11 +9,13 @@
         </div>
 
         <div class="flex flex-wrap gap-2 sm:items-center">
+            {{-- 
             <a href="{{ route('produksi.pembangunanUnit.laporanUpah', ['id' => $data->id, 'qcId' => $qc->master_qc_urutan_id]) }}"
                 class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all uppercase flex items-center gap-2">
                 <i class="fa-solid fa-chart-line text-blue-500"></i>
                 Lihat Laporan
             </a>
+            --}}
             @if (!in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']))
                 <button @click="prepareUpah({{ json_encode($qc->pembangunanUnitRapUpah) }}, {{ $qc->id }})"
                     class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">

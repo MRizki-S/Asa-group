@@ -15,7 +15,7 @@ class PenamaanUpahController extends Controller
     {
         $allMasterUpah = MasterUpah::with('rapUpah')->latest()->get();
 
-        return view('Produksi.penamaan-upah.index', [
+        return view('produksi.penamaan-upah.index', [
             'allMasterUpah' => $allMasterUpah,
             'breadcrumbs' => [['label' => 'Penamaan Upah', 'url' => route('produksi.masterUpah.index')]],
         ]);

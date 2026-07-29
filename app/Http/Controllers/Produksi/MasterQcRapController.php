@@ -40,7 +40,7 @@ class MasterQcRapController extends Controller
         $allType = Type::all();
 
         $typeSlug = $request->query('typeFil');
-        return view('Produksi.master-qc-rap.index', [
+        return view('produksi.master-qc-rap.index', [
             'allQcContainer' => $allQcContainer,
             'typeSlug' => $typeSlug,
             'allType' => $allType,
@@ -161,7 +161,7 @@ class MasterQcRapController extends Controller
     {
         $container = MasterQcContainer::with(['type', 'urutan.tugas', 'rapBahan.urutan', 'rapBahan.barang', 'rapBahan.satuan', 'rapUpah.urutan', 'rapUpah.masterUpah'])->findOrFail($id);
 
-        return view('Produksi.master-qc-rap.detail', [
+        return view('produksi.master-qc-rap.detail', [
             'container' => $container,
             'breadcrumbs' => [['label' => 'Master Qc Rap', 'url' => route('produksi.masterQcRap.index')], ['label' => 'Detail', 'url' => route('produksi.masterQcRap.show', $id)]],
         ]);

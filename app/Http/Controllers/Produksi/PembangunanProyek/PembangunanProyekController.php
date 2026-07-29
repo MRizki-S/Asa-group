@@ -73,23 +73,43 @@ class PembangunanProyekController extends Controller
 
     public function index(Request $request)
     {
-        $month = $request->input('month', date('m'));
+        $month = $request->input('month', 'all');
         $year = $request->input('year', date('Y'));
 
         $user = Auth::user();
         $query = PembangunanProyek::with(['pengawas'])
-            ->whereIn('status_pembangunan', ['proses', 'selesai'])
-            ->whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
-            ->latest('created_at');
+            ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
 
         if ($user->hasRole('Pengawas Proyek Mangoon')) {
             $query->where('pengawas_id', $user->id);
         }
 
-        $allPembangunanProyek = $query->get();
+        if ($year !== 'all') {
+            if ($month !== 'all') {
+                $startRange = \Carbon\Carbon::createFromDate((int)$year, (int)$month, 1)->startOfMonth()->toDateTimeString();
+                $endRange   = \Carbon\Carbon::createFromDate((int)$year, (int)$month, 1)->endOfMonth()->toDateTimeString();
+            } else {
+                $startRange = \Carbon\Carbon::createFromDate((int)$year, 1, 1)->startOfYear()->toDateTimeString();
+                $endRange   = \Carbon\Carbon::createFromDate((int)$year, 12, 31)->endOfYear()->toDateTimeString();
+            }
+
+            $query->where(function ($q) use ($startRange, $endRange) {
+                $q->where(function ($sub) use ($endRange) {
+                    $sub->whereNotNull('tanggal_mulai')->where('tanggal_mulai', '<=', $endRange)
+                        ->orWhere(function ($s2) use ($endRange) {
+                            $s2->whereNull('tanggal_mulai')->where('created_at', '<=', $endRange);
+                        });
+                })->where(function ($sub) use ($startRange) {
+                    $sub->whereNull('tanggal_selesai')
+                        ->orWhere('tanggal_selesai', '>=', $startRange);
+                });
+            });
+        }
+
+        $allPembangunanProyek = $query->latest('created_at')->get();
 
         $months = [
+            'all' => 'Semua Bulan',
             '01' => 'Januari',
             '02' => 'Februari',
             '03' => 'Maret',
@@ -103,7 +123,12 @@ class PembangunanProyekController extends Controller
             '11' => 'November',
             '12' => 'Desember',
         ];
-        $years = range(date('Y') - 5, date('Y') + 2);
+
+        $currentYear = (int) date('Y');
+        $years = ['all' => 'Semua Tahun'];
+        for ($y = $currentYear - 5; $y <= $currentYear + 2; $y++) {
+            $years[(string)$y] = (string)$y;
+        }
 
         return view('produksi.pembangunan_proyek.index', [
             'allPembangunanProyek' => $allPembangunanProyek,

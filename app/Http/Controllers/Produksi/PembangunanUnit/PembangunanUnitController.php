@@ -82,7 +82,7 @@ class PembangunanUnitController extends Controller
         $perumahaan = Perumahaan::select('id', 'slug')->where('id', $perumahaanId)->first();
 
         $tahapSlug = $request->query('tahapFil');
-        return view('Produksi.pembangunan-unit.index', [
+        return view('produksi.pembangunan-unit.index', [
             'allPembangunanUnit' => $allPembangunanUnit,
             'perumahaanSlug' => $perumahaan->slug,
             'tahapSlug' => $tahapSlug,
@@ -166,7 +166,7 @@ class PembangunanUnitController extends Controller
                 ];
             });
 
-        return view('Produksi.pembangunan-unit.show', [
+        return view('produksi.pembangunan-unit.show', [
             'data' => $data,
             'allBarang' => $allBarang,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')], ['label' => 'Detail ' . $data->unit->nama_unit, 'url' => '#']],

@@ -1146,6 +1146,7 @@
                                             Upah Pemb. Unit
                                         </a>
                                     </li>
+                                    {{-- 
                                     <li>
                                         <a href="{{ route('manager.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'managerPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1158,6 +1159,7 @@
                                             Upah Pemb. Proyek
                                         </a>
                                     </li>
+                                    --}}
                                 </ul>
                             </div>
                         </li>
@@ -1188,6 +1190,7 @@
                                             Upah Pemb. Unit
                                         </a>
                                     </li>
+                                    {{-- 
                                     <li>
                                         <a href="{{ route('akuntan.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'akuntanPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1200,6 +1203,7 @@
                                             Upah Pemb. Proyek
                                         </a>
                                     </li>
+                                    --}}
                                 </ul>
                             </div>
                         </li>
@@ -2005,6 +2009,7 @@
                                     </a>
                                 </li>
                                 @endcan
+                                {{-- 
                                 @can('produksi.upah-kawasan')
                                 <li>
                                     <a href="{{ route('produksi.persetujuanUpahKawasan.index') }}" class="menu-dropdown-item group"
@@ -2021,6 +2026,7 @@
                                     </a>
                                 </li>
                                 @endcan
+                                --}}
                             </ul>
                         </div>
                     </li>

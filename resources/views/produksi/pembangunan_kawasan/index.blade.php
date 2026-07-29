@@ -63,9 +63,9 @@
                         @endforeach
                     </select>
 
-                    <select name="year" onchange="this.form.submit()" class="text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-3 pr-8 w-28 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all">
-                        @foreach($years as $y)
-                            <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    <select name="year" onchange="this.form.submit()" class="text-gray-700 rounded-lg border border-gray-200 bg-white py-2.5 pl-3 pr-8 w-36 text-sm focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white transition-all">
+                        @foreach($years as $key => $val)
+                            <option value="{{ $key }}" {{ $selectedYear == $key ? 'selected' : '' }}>{{ $val }}</option>
                         @endforeach
                     </select>
                 </form>
@@ -160,7 +160,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('kawasanManager', (initialData) => ({
         allData: initialData,
         searchQuery: '',
-        filterStatus: 'all',
+        filterStatus: 'proses',
         currentPage: 1,
         itemsPerPage: 12,
 
@@ -168,9 +168,10 @@ document.addEventListener('alpine:init', () => {
             return this.allData.filter(item => {
                 const search = this.searchQuery.toLowerCase();
                 const matchesSearch = item.nama.toLowerCase().includes(search) ||
-                                      item.perumahan.toLowerCase().includes(search) ||
+                                      (item.perumahan && item.perumahan.toLowerCase().includes(search)) ||
                                       item.pengawas.toLowerCase().includes(search);
-                const matchesStatus = this.filterStatus === 'all' || item.status === this.filterStatus;
+                const matchesStatus = this.filterStatus === 'all' || 
+                                      (this.filterStatus === 'selesai' ? item.status.startsWith('selesai') : item.status === this.filterStatus);
                 return matchesSearch && matchesStatus;
             });
         },

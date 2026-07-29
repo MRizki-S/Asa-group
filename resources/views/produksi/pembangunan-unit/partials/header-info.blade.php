@@ -113,7 +113,15 @@
 
             {{-- Action Buttons --}}
             <div class="flex gap-2">
-                {{-- Laporan Dropdown --}}
+                {{-- Laporan Termin Button --}}
+                <a href="{{ route('produksi.pembangunanUnit.laporanTermin.export', $data->id) }}"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
+                    <i class="fa-solid fa-file-invoice-dollar text-purple-500"></i>
+                    <span>Laporan Termin</span>
+                </a>
+
+                {{-- 
+                <!-- Laporan Dropdown (Commented Out) -->
                 <div class="relative flex-1" x-data="{ openReportDropdown: false }">
                     <button @click="openReportDropdown = !openReportDropdown"
                         class="w-full inline-flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
@@ -138,6 +146,7 @@
                         </div>
                     </div>
                 </div>
+                --}}
 
                 {{-- Selesaikan --}}
                 @php

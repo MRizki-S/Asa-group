@@ -197,12 +197,14 @@
                 <i class="fa-solid fa-box text-xs sm:text-sm"></i>
                 <span class="leading-tight">Order<br class="sm:hidden"> Barang</span>
             </button>
+            @if(false)
             <button @click="tab = 'upah'"
                 :class="tab === 'upah' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                 class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
                 <i class="fa-solid fa-money-bill-wave text-xs sm:text-sm"></i>
                 <span class="leading-tight">Pengajuan<br class="sm:hidden"> Upah</span>
             </button>
+            @endif
             <button @click="tab = 'retur'"
                 :class="tab === 'retur' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                 class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
@@ -417,6 +419,7 @@
         </div>
     </div>
 
+    @if(false)
     <!-- Tab Content: Pengajuan Upah -->
     <div x-show="tab === 'upah'" style="display: none;">
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -626,6 +629,7 @@
 
         </div>
     </div>
+    @endif
 
     <!-- Tab Content: Retur Barang -->
     <div x-show="tab === 'retur'" style="display: none;">
