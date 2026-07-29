@@ -114,56 +114,52 @@
                                 <td class="px-4 py-4 font-bold text-gray-900 dark:text-white">{{ $p->nama }}</td>
                                 <td class="px-4 py-4">{{ $p->perumahan->nama_perumahaan ?? '-' }}</td>
                                 <td class="px-4 py-4">
-                                    @if($p->periodes->count() > 0)
-                                        <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                                            @foreach($p->periodes as $index => $per)
-                                                <a href="{{ route('produksi.pembangunanKawasan.show', $p->id) }}" class="block p-2 text-xs bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-700 transition cursor-pointer">
-                                                    <div class="flex items-center justify-between font-bold text-gray-800 dark:text-gray-200">
-                                                        <span>Sesi #{{ $p->periodes->count() - $index }}</span>
-                                                        <span class="text-[9px] px-1.5 py-0.5 rounded font-black uppercase {{ $per->status == 'proses' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">{{ $per->status }}</span>
-                                                    </div>
-                                                    <div class="text-[10px] text-gray-500 mt-1">
-                                                        <i class="fa-regular fa-calendar mr-1"></i>
-                                                        {{ $per->tanggal_mulai ? \Carbon\Carbon::parse($per->tanggal_mulai)->format('d M Y') : '-' }} s/d {{ $per->tanggal_selesai ? \Carbon\Carbon::parse($per->tanggal_selesai)->format('d M Y') : 'Sekarang' }}
-                                                    </div>
-                                                    <div class="text-[10px] text-gray-500 mt-0.5">
-                                                        <i class="fa-regular fa-user mr-1"></i>
-                                                        {{ $per->pengawas->nama_lengkap ?? $per->pengawas->name ?? '-' }}
-                                                    </div>
-                                                </a>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <span class="text-xs italic text-gray-400">Belum ada sesi pembangunan</span>
-                                    @endif
+                                     @if($p->periodes->count() > 0)
+                                         <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                             @foreach($p->periodes as $index => $per)
+                                                 <a href="{{ route('produksi.pembangunanKawasan.show', $p->id) }}" class="block p-2 text-xs bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-700 transition cursor-pointer">
+                                                     <div class="flex items-center justify-between font-bold text-gray-800 dark:text-gray-200">
+                                                         <span>{{ $per->tanggal_mulai ? \Carbon\Carbon::parse($per->tanggal_mulai)->format('d M Y') : '-' }} s/d {{ $per->tanggal_selesai ? \Carbon\Carbon::parse($per->tanggal_selesai)->format('d M Y') : 'Sekarang' }}</span>
+                                                         <span class="text-[9px] px-1.5 py-0.5 rounded font-black uppercase {{ $per->status == 'proses' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">{{ $per->status }}</span>
+                                                     </div>
+                                                     <div class="text-[10px] text-gray-500 mt-1">
+                                                         <i class="fa-regular fa-user mr-1"></i>
+                                                         {{ $per->pengawas->nama_lengkap ?? $per->pengawas->name ?? '-' }}
+                                                     </div>
+                                                 </a>
+                                             @endforeach
+                                         </div>
+                                     @else
+                                         <span class="text-xs italic text-gray-400">Belum ada riwayat periode</span>
+                                     @endif
                                 </td>
                                 <td class="px-4 py-4">
-                                    <div class="flex flex-row items-center gap-1.5 flex-wrap">
-                                        @if($p->status_pembangunan === 'pending')
-                                            <button type="button"
-                                                @click="openProcessModal = true; processActionUrl = '{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}'; kawasanNama = '{{ addslashes($p->nama) }}'"
-                                                title="Proses Sesi"
-                                                class="inline-flex items-center gap-1 text-xs font-bold text-white bg-green-600 hover:bg-green-700 px-2 py-1 rounded-md transition shadow-sm">
-                                                <i class="fa-solid fa-play text-[10px]"></i> Proses
-                                            </button>
-                                            <a href="{{ route('produksi.buatPembangunanKawasan.edit', $p->id) }}" title="Edit" class="inline-flex items-center gap-1 text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800/30 dark:text-yellow-300 px-2 py-1 rounded-md transition">
-                                                <i class="fa-solid fa-pen text-[10px]"></i> Edit
-                                            </a>
-                                            <form action="{{ route('produksi.buatPembangunanKawasan.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" title="Hapus" class="btn-delete inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 px-2 py-1 rounded-md transition">
-                                                    <i class="fa-solid fa-trash text-[10px]"></i> Hapus
-                                                </button>
-                                            </form>
-                                        @elseif(in_array($p->status_pembangunan, ['selesai', 'selesai dengan catatan']))
-                                            <button type="button"
-                                                @click="openProcessModal = true; processActionUrl = '{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}'; kawasanNama = '{{ addslashes($p->nama) }}'"
-                                                title="Proses Sesi Baru"
-                                                class="inline-flex items-center gap-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded-md transition shadow-sm">
-                                                <i class="fa-solid fa-rotate-right text-[10px]"></i> Sesi Baru
-                                            </button>
-                                        @else
+                                     <div class="flex flex-row items-center gap-1.5 flex-wrap">
+                                         @if($p->status_pembangunan === 'pending')
+                                             <button type="button"
+                                                 @click="openProcessModal = true; processActionUrl = '{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}'; kawasanNama = '{{ addslashes($p->nama) }}'"
+                                                 title="Proses Pembangunan"
+                                                 class="inline-flex items-center gap-1 text-xs font-bold text-white bg-green-600 hover:bg-green-700 px-2 py-1 rounded-md transition shadow-sm">
+                                                 <i class="fa-solid fa-play text-[10px]"></i> Proses
+                                             </button>
+                                             <a href="{{ route('produksi.buatPembangunanKawasan.edit', $p->id) }}" title="Edit" class="inline-flex items-center gap-1 text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800/30 dark:text-yellow-300 px-2 py-1 rounded-md transition">
+                                                 <i class="fa-solid fa-pen text-[10px]"></i> Edit
+                                             </a>
+                                             <form action="{{ route('produksi.buatPembangunanKawasan.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
+                                                 @csrf
+                                                 @method('DELETE')
+                                                 <button type="button" title="Hapus" class="btn-delete inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 px-2 py-1 rounded-md transition">
+                                                     <i class="fa-solid fa-trash text-[10px]"></i> Hapus
+                                                 </button>
+                                             </form>
+                                         @elseif(in_array($p->status_pembangunan, ['selesai', 'selesai dengan catatan']))
+                                             <button type="button"
+                                                 @click="openProcessModal = true; processActionUrl = '{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}'; kawasanNama = '{{ addslashes($p->nama) }}'"
+                                                 title="Proses Periode Baru"
+                                                 class="inline-flex items-center gap-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded-md transition shadow-sm">
+                                                 <i class="fa-solid fa-rotate-right text-[10px]"></i> Periode Baru
+                                             </button>
+                                         @else
                                             <span class="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1">
                                                 <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                                                 Berjalan
@@ -193,7 +189,7 @@
                     <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 rounded-t-2xl">
                         <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
                             <div>
-                                <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modal-title">Proses Sesi Pembangunan</h3>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modal-title">Proses Periode Pembangunan</h3>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="kawasanNama"></p>
                             </div>
                             <button type="button" @click="openProcessModal = false" class="text-gray-400 hover:text-gray-500">

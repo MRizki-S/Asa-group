@@ -126,7 +126,7 @@
 
                     <div class="flex items-center gap-3 w-full mr-3">
                         <div class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs shadow-md">
-                            <i class="fa-solid fa-wrench text-xs"></i>
+                            S    
                         </div>
                         <h4 class="flex-1 font-bold text-gray-700 dark:text-gray-200 truncate text-sm">Servis</h4>
                         <i class="fa-solid fa-chevron-down transition-transform duration-300 text-gray-400 flex-shrink-0"

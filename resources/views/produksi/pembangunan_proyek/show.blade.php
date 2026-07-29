@@ -210,7 +210,7 @@
             <div class="flex flex-row lg:flex-col items-center lg:items-end gap-2 shrink-0">
                 <a href="{{ route('produksi.pembangunanProyek.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
-                    <i class="fa-solid fa-file-excel text-green-600"></i> Export Excel
+                    <i class="fa-solid fa-file-excel text-green-600"></i> Laporan Termin
                 </a>
             </div>
         </div>

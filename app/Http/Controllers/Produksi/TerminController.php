@@ -479,276 +479,459 @@ class TerminController extends Controller
     public function exportLaporanTerminProyek(string $id)
     {
         $proyek = \App\Models\PembangunanProyek::with([
-            'pengajuanUpah', 'upah', 'orders.details.barang.baseUnit', 'orders.details.satuanModel', 'pembangunanProyekBahan'
+            'pengawas', 'pembangunanProyekBahan'
         ])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Laporan Termin Proyek');
 
-        $styleHeaderTable = [
-            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF305496']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-        ];
-        $styleSubHeaderTable = [
-            'font' => ['bold' => true, 'italic' => true, 'color' => ['argb' => 'FF000000']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF2F2F2']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-        ];
-        $styleBorderAll = ['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]];
+        // Font dasar Arial 10
+        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Arial')->setSize(10);
 
-        $sheet->setCellValue('A1', 'LAPORAN TERMIN PROYEK');
-        $sheet->mergeCells('A1:D1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->setCellValue('A2', 'Proyek');
-        $sheet->setCellValue('B2', ': ' . ($proyek->nama ?? '-'));
-        $sheet->setCellValue('A3', 'Tgl Export');
-        $sheet->setCellValue('B3', ': ' . date('d F Y H:i'));
+        // Styling Definitions
+        $styleHeaderMain = [
+            'font' => ['bold' => true, 'size' => 14, 'color' => ['argb' => 'FF1E293B']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
+        ];
+
+        $styleCategoryHeader = [
+            'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF1E293B']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFE2E8F0']], // Soft Gray
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+        ];
+
+        $styleTableHeader = [
+            'font' => ['bold' => true, 'size' => 9, 'color' => ['argb' => 'FF334155']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF1F5F9']], // Very Light Gray
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+        ];
+
+        $styleBorderThin = [
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+        ];
+
+        $styleSubtotal = [
+            'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F172A']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEF3C7']], // Light Amber
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFCD34D']]],
+        ];
+
+        $bodyFill = [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => ['argb' => 'FFFAFAFA'] // Ultra-light background
+        ];
+
+        $currencyFormat = '"Rp "' . '#,##0';
+
+        // Header Informasi
+        $namaProyek = $proyek->nama ?? '-';
+        $namaPengawas = $proyek->pengawas->nama_lengkap ?? $proyek->pengawas->name ?? '-';
+
+        $sheet->setCellValue('A1', 'LAPORAN TERMIN PEMBANGUNAN PROYEK (KONTRAKTOR)');
+        $sheet->getStyle('A1')->applyFromArray($styleHeaderMain);
+
+        $sheet->setCellValue('A2', "Nama Proyek: {$namaProyek} | Pengawas: {$namaPengawas}");
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF475569'));
+
+        $sheet->setCellValue('A3', 'Tanggal Export: ' . date('d F Y H:i') . ' WIB');
+        $sheet->getStyle('A3')->getFont()->setItalic(true)->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF64748B'));
 
         $row = 5;
+        $totalBahan = 0;
+        $totalUpah = 0;
 
-        // A. UPAH
+        // ==========================================
+        // 1. RINCIAN PEMAKAIAN BAHAN
+        // ==========================================
         $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("A{$row}", '   A. RINCIAN UPAH PEKERJAAN');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubHeaderTable);
+        $sheet->setCellValue("A{$row}", '   1. RINCIAN PEMAKAIAN BAHAN');
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
         $row++;
 
-        $headersUpah = ['NO', 'NAMA PEKERJAAN', 'NOMINAL (Rp)', 'KETERANGAN'];
-        foreach (range('A', 'D') as $index => $col) {
-            $sheet->setCellValue($col . $row, $headersUpah[$index]);
-        }
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleHeaderTable);
-        $row++;
-
-        $realUpah = $proyek->upah;
-        $subTotalRealUpah = 0; $noUpah = 1;
-        foreach ($realUpah as $upah) {
-            $realNominal = (float) $upah->total_nominal;
-            $subTotalRealUpah += $realNominal;
-
-            $sheet->setCellValue("A{$row}", $noUpah++);
-            $sheet->setCellValue("B{$row}", $upah->nama_upah);
-            $sheet->setCellValue("C{$row}", $realNominal);
-            $sheet->setCellValue("D{$row}", '');
-
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll);
-            $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode('#,##0');
-            $row++;
-        }
-
-        $sheet->mergeCells("A{$row}:B{$row}");
-        $sheet->setCellValue("A{$row}", 'SUB TOTAL UPAH');
-        $sheet->setCellValue("C{$row}", $subTotalRealUpah);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
-        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $row += 2;
-
-        // B. BAHAN
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("A{$row}", '   B. RINCIAN PEMAKAIAN BAHAN');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubHeaderTable);
-        $row++;
-
-        $headersBahan = ['NO', 'NAMA BAHAN', 'QTY', 'TOTAL HARGA (Rp)'];
-        foreach (range('A', 'D') as $index => $col) {
-            $sheet->setCellValue($col . $row, $headersBahan[$index]);
-        }
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleHeaderTable);
+        $sheet->setCellValue("A{$row}", 'NO');
+        $sheet->setCellValue("B{$row}", 'NAMA BAHAN');
+        $sheet->setCellValue("C{$row}", 'JUMLAH REAL');
+        $sheet->setCellValue("D{$row}", 'HARGA REAL');
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
         $row++;
 
         $realBahan = $proyek->pembangunanProyekBahan;
-        $allBarangIds = $realBahan->pluck('barang_id')->unique();
+        $realBahanGroup = $realBahan->groupBy('barang_id');
+        $noBahan = 1;
 
-        $subTotalHargaBahan = 0; $noBahan = 1;
-        foreach ($allBarangIds as $barangId) {
-            $realItems = $realBahan->where('barang_id', $barangId);
-            $firstReal = $realItems->first();
+        foreach ($realBahanGroup as $barangId => $rlGroup) {
+            $firstReal = $rlGroup->first();
             $namaBarang = $firstReal ? $firstReal->nama_barang : '-';
+            $qtyReal = $rlGroup->sum('jumlah_pakai');
+            $hargaReal = $rlGroup->sum('harga_total_snapshot');
 
-            $qtyReal = $realItems->sum('jumlah_pakai');
-            $hargaReal = $realItems->sum('harga_total_snapshot');
-            $subTotalHargaBahan += $hargaReal;
+            $totalBahan += $hargaReal;
 
             $sheet->setCellValue("A{$row}", $noBahan++);
             $sheet->setCellValue("B{$row}", $namaBarang);
-            $sheet->setCellValue("C{$row}", $qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '-'));
+            $sheet->setCellValue("C{$row}", $qtyReal > 0 ? (float)$qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '') : '-');
             $sheet->setCellValue("D{$row}", $hargaReal);
 
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll);
-            $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin);
+            $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+            $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             $row++;
         }
 
+        if ($realBahanGroup->isEmpty()) {
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", 'Tidak ada data pemakaian bahan.');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        }
+        $row++; // Spasi antar kategori
+
+        // ==========================================
+        // 2. UPAH HARIAN
+        // ==========================================
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN');
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+        $row++;
+
+        $sheet->setCellValue("A{$row}", 'NO');
+        $sheet->setCellValue("B{$row}", 'KETERANGAN UPAH HARIAN');
+        $sheet->setCellValue("C{$row}", 'JENIS UPAH');
+        $sheet->setCellValue("D{$row}", 'NOMINAL REAL');
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+        $row++;
+
+        // Placeholder Upah Harian proyek
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+        $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $row++;
+        $row += 2; // Spasi sebelum grand total
+
+        // ==========================================
+        // GRAND TOTAL KESELURUHAN PROYEK
+        // ==========================================
         $sheet->mergeCells("A{$row}:C{$row}");
-        $sheet->setCellValue("A{$row}", 'SUB TOTAL BAHAN');
-        $sheet->setCellValue("D{$row}", $subTotalHargaBahan);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI BAHAN');
+        $sheet->setCellValue("D{$row}", $totalBahan);
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $row += 2;
+        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $row++;
 
         $sheet->mergeCells("A{$row}:C{$row}");
-        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI (UPAH + BAHAN)');
-        $sheet->setCellValue("D{$row}", $subTotalRealUpah + $subTotalHargaBahan);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
-        $sheet->getStyle("A{$row}:D{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI UPAH');
+        $sheet->setCellValue("D{$row}", $totalUpah);
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $row++;
 
-        $sheet->getColumnDimension('A')->setWidth(6);
-        $sheet->getColumnDimension('B')->setWidth(50);
-        $sheet->getColumnDimension('C')->setWidth(22);
-        $sheet->getColumnDimension('D')->setWidth(28);
+        $grandTotalFinalStyle = [
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF15803D']], // Dark Emerald Green
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF15803D']]],
+        ];
 
-        $namaProyek = preg_replace('/[^A-Za-z0-9\-]/', '_', $proyek->nama ?? 'Proyek');
-        $filename = "Laporan_Termin_Proyek_{$namaProyek}.xlsx";
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", 'TOTAL BIAYA KESELURUHAN (BAHAN + UPAH)');
+        $sheet->setCellValue("D{$row}", $totalBahan + $totalUpah);
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($grandTotalFinalStyle);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getRowDimension($row)->setRowHeight(24);
+
+        // Pengaturan lebar kolom presisi (4 Kolom: A, B, C, D)
+        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6); // NO
+        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(42); // Nama Bahan / Keterangan
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(22); // Jumlah Real / Jenis Upah
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(28); // Harga Real / Nominal
+
+        $namaProyekClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $proyek->nama ?? 'Proyek');
+        $filename = "Laporan_Termin_Proyek_{$namaProyekClean}.xlsx";
 
         $writer = new Xlsx($spreadsheet);
-        return response()->streamDownload(function () use ($writer) { $writer->save('php://output'); }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'max-age=0',
-        ]);
+        return response()->streamDownload(
+            function () use ($writer) {
+                $writer->save('php://output');
+            },
+            $filename,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0',
+            ]
+        );
     }
 
     public function exportLaporanTerminKawasan(string $id)
     {
         $kawasan = \App\Models\PembangunanKawasan::with([
-            'pengajuanUpah', 'upah', 'orders.details.barang.baseUnit', 'orders.details.satuanModel', 'pembangunanKawasanBahan'
+            'perumahan', 'pengawas', 'periodes', 'pembangunanKawasanBahan'
         ])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Laporan Termin Kawasan');
 
-        $styleHeaderTable = [
-            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF305496']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-        ];
-        $styleSubHeaderTable = [
-            'font' => ['bold' => true, 'italic' => true, 'color' => ['argb' => 'FF000000']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF2F2F2']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-        ];
-        $styleBorderAll = ['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]];
+        // Font dasar Arial 10
+        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Arial')->setSize(10);
 
-        $sheet->setCellValue('A1', 'LAPORAN TERMIN KAWASAN');
-        $sheet->mergeCells('A1:D1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->setCellValue('A2', 'Kawasan');
-        $sheet->setCellValue('B2', ': ' . ($kawasan->nama ?? '-'));
-        $sheet->setCellValue('A3', 'Tgl Export');
-        $sheet->setCellValue('B3', ': ' . date('d F Y H:i'));
+        // Styling Definitions
+        $styleHeaderMain = [
+            'font' => ['bold' => true, 'size' => 14, 'color' => ['argb' => 'FF1E293B']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
+        ];
+
+        $stylePeriodeHeader = [
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A8A']], // Dark Blue
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF1E3A8A']]],
+        ];
+
+        $styleCategoryHeader = [
+            'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF1E293B']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFE2E8F0']], // Soft Gray
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+        ];
+
+        $styleTableHeader = [
+            'font' => ['bold' => true, 'size' => 9, 'color' => ['argb' => 'FF334155']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF1F5F9']], // Very Light Gray
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+        ];
+
+        $styleBorderThin = [
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+        ];
+
+        $styleSubtotal = [
+            'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F172A']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEF3C7']], // Light Amber
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFCD34D']]],
+        ];
+
+        $bodyFill = [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => ['argb' => 'FFFAFAFA'] // Ultra-light background
+        ];
+
+        $currencyFormat = '"Rp "' . '#,##0';
+
+        // Header Informasi
+        $namaPerumahan = $kawasan->perumahan->nama_perumahaan ?? '-';
+        $namaKawasan = $kawasan->nama ?? '-';
+
+        $sheet->setCellValue('A1', 'LAPORAN TERMIN PEMBANGUNAN KAWASAN');
+        $sheet->getStyle('A1')->applyFromArray($styleHeaderMain);
+
+        $sheet->setCellValue('A2', "Perumahan: {$namaPerumahan} | Kawasan: {$namaKawasan}");
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF475569'));
+
+        $sheet->setCellValue('A3', 'Tanggal Export: ' . date('d F Y H:i') . ' WIB');
+        $sheet->getStyle('A3')->getFont()->setItalic(true)->setSize(9)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF64748B'));
 
         $row = 5;
+        $grandTotalBahan = 0;
+        $grandTotalUpah = 0;
 
-        // A. UPAH
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("A{$row}", '   A. RINCIAN UPAH PEKERJAAN');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubHeaderTable);
-        $row++;
+        $periodes = $kawasan->periodes->sortBy('created_at')->values();
 
-        $headersUpah = ['NO', 'NAMA PEKERJAAN', 'NOMINAL (Rp)', 'KETERANGAN'];
-        foreach (range('A', 'D') as $index => $col) {
-            $sheet->setCellValue($col . $row, $headersUpah[$index]);
-        }
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleHeaderTable);
-        $row++;
+        // Loop Per Periode
+        foreach ($periodes as $indexPeriode => $periode) {
+            $tglMulai = $periode->tanggal_mulai ? \Carbon\Carbon::parse($periode->tanggal_mulai)->format('d M Y') : '-';
+            $tglSelesai = $periode->tanggal_selesai ? \Carbon\Carbon::parse($periode->tanggal_selesai)->format('d M Y') : 'Sekarang';
+            $periodeTitle = " {$tglMulai} s/d {$tglSelesai}";
 
-        $realUpah = $kawasan->upah;
-        $subTotalRealUpah = 0; $noUpah = 1;
-        foreach ($realUpah as $upah) {
-            $realNominal = (float) $upah->total_nominal;
-            $subTotalRealUpah += $realNominal;
-
-            $sheet->setCellValue("A{$row}", $noUpah++);
-            $sheet->setCellValue("B{$row}", $upah->nama_upah);
-            $sheet->setCellValue("C{$row}", $realNominal);
-            $sheet->setCellValue("D{$row}", '');
-
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll);
-            $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode('#,##0');
+            // Header Banner Periode
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", $periodeTitle);
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($stylePeriodeHeader);
+            $sheet->getRowDimension($row)->setRowHeight(24);
             $row++;
+
+            $totalPeriodeBahan = 0;
+            $totalPeriodeUpah = 0;
+
+            // ==========================================
+            // 1. RINCIAN PEMAKAIAN BAHAN
+            // ==========================================
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", '   1. RINCIAN PEMAKAIAN BAHAN');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+            $row++;
+
+            $sheet->setCellValue("A{$row}", 'NO');
+            $sheet->setCellValue("B{$row}", 'NAMA BAHAN');
+            $sheet->setCellValue("C{$row}", 'JUMLAH REAL');
+            $sheet->setCellValue("D{$row}", 'HARGA REAL');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+            $row++;
+
+            // Filter bahan kawasan sesuai periode_id (atau tanggal jika periode_id null)
+            $bahanPeriode = $kawasan->pembangunanKawasanBahan->filter(function($item) use ($periode) {
+                if (isset($item->pembangunan_kawasan_periode_id) && $item->pembangunan_kawasan_periode_id) {
+                    return $item->pembangunan_kawasan_periode_id == $periode->id;
+                }
+                $created = \Carbon\Carbon::parse($item->created_at);
+                $pMulai = \Carbon\Carbon::parse($periode->tanggal_mulai);
+                $pSelesai = $periode->tanggal_selesai ? \Carbon\Carbon::parse($periode->tanggal_selesai)->endOfDay() : \Carbon\Carbon::now();
+                return $created->gte($pMulai) && $created->lte($pSelesai);
+            });
+
+            $realBahanGroup = $bahanPeriode->groupBy('barang_id');
+            $noBahan = 1;
+
+            foreach ($realBahanGroup as $barangId => $rlGroup) {
+                $firstReal = $rlGroup->first();
+                $namaBarang = $firstReal ? $firstReal->nama_barang : '-';
+                $qtyReal = $rlGroup->sum('jumlah_pakai');
+                $hargaReal = $rlGroup->sum('harga_total_snapshot');
+
+                $totalPeriodeBahan += $hargaReal;
+
+                $sheet->setCellValue("A{$row}", $noBahan++);
+                $sheet->setCellValue("B{$row}", $namaBarang);
+                $sheet->setCellValue("C{$row}", $qtyReal > 0 ? (float)$qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '') : '-');
+                $sheet->setCellValue("D{$row}", $hargaReal);
+
+                $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin);
+                $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+                $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $row++;
+            }
+
+            if ($realBahanGroup->isEmpty()) {
+                $sheet->mergeCells("A{$row}:D{$row}");
+                $sheet->setCellValue("A{$row}", 'Tidak ada data pemakaian bahan pada periode ini.');
+                $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+                $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $row++;
+            }
+            $row++; // Spasi antar kategori
+
+            // ==========================================
+            // 2. UPAH HARIAN
+            // ==========================================
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+            $row++;
+
+            $sheet->setCellValue("A{$row}", 'NO');
+            $sheet->setCellValue("B{$row}", 'KETERANGAN UPAH HARIAN');
+            $sheet->setCellValue("C{$row}", 'JENIS UPAH');
+            $sheet->setCellValue("D{$row}", 'NOMINAL REAL');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+            $row++;
+
+            // Placeholder Upah Harian kawasan
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+            $row++; // Spasi sebelum subtotal
+
+            // ==========================================
+            // SUBTOTAL PER PERIODE
+            // ==========================================
+            $totalPeriodeOverall = $totalPeriodeBahan + $totalPeriodeUpah;
+            $grandTotalBahan += $totalPeriodeBahan;
+            $grandTotalUpah += $totalPeriodeUpah;
+
+            $sheet->mergeCells("A{$row}:C{$row}");
+            $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI PERIODE (' . $tglMulai . ' s/d ' . $tglSelesai . ')');
+            $sheet->setCellValue("D{$row}", $totalPeriodeOverall);
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+            $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+            $row += 4; // Spasi antar blok Periode
         }
 
-        $sheet->mergeCells("A{$row}:B{$row}");
-        $sheet->setCellValue("A{$row}", 'SUB TOTAL UPAH');
-        $sheet->setCellValue("C{$row}", $subTotalRealUpah);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
-        $sheet->getStyle("C{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        if ($periodes->isEmpty()) {
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", 'Belum ada riwayat periode pembangunan kawasan.');
+            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row += 2;
+        }
+
+        // ==========================================
+        // GRAND TOTAL KESELURUHAN KAWASAN
+        // ==========================================
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI BAHAN');
+        $sheet->setCellValue("D{$row}", $grandTotalBahan);
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $row += 2;
-
-        // B. BAHAN
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("A{$row}", '   B. RINCIAN PEMAKAIAN BAHAN');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubHeaderTable);
+        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
         $row++;
-
-        $headersBahan = ['NO', 'NAMA BAHAN', 'QTY', 'TOTAL HARGA (Rp)'];
-        foreach (range('A', 'D') as $index => $col) {
-            $sheet->setCellValue($col . $row, $headersBahan[$index]);
-        }
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleHeaderTable);
-        $row++;
-
-        $realBahan = $kawasan->pembangunanKawasanBahan;
-        $allBarangIds = $realBahan->pluck('barang_id')->unique();
-
-        $subTotalHargaBahan = 0; $noBahan = 1;
-        foreach ($allBarangIds as $barangId) {
-            $realItems = $realBahan->where('barang_id', $barangId);
-            $firstReal = $realItems->first();
-            $namaBarang = $firstReal ? $firstReal->nama_barang : '-';
-
-            $qtyReal = $realItems->sum('jumlah_pakai');
-            $hargaReal = $realItems->sum('harga_total_snapshot');
-            $subTotalHargaBahan += $hargaReal;
-
-            $sheet->setCellValue("A{$row}", $noBahan++);
-            $sheet->setCellValue("B{$row}", $namaBarang);
-            $sheet->setCellValue("C{$row}", $qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '-'));
-            $sheet->setCellValue("D{$row}", $hargaReal);
-
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll);
-            $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode('#,##0');
-            $row++;
-        }
 
         $sheet->mergeCells("A{$row}:C{$row}");
-        $sheet->setCellValue("A{$row}", 'SUB TOTAL BAHAN');
-        $sheet->setCellValue("D{$row}", $subTotalHargaBahan);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI UPAH');
+        $sheet->setCellValue("D{$row}", $grandTotalUpah);
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $row += 2;
+        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $row++;
+
+        $grandTotalFinalStyle = [
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF15803D']], // Dark Emerald Green
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF15803D']]],
+        ];
 
         $sheet->mergeCells("A{$row}:C{$row}");
-        $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI (UPAH + BAHAN)');
-        $sheet->setCellValue("D{$row}", $subTotalRealUpah + $subTotalHargaBahan);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderAll)->getFont()->setBold(true);
-        $sheet->getStyle("A{$row}:D{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->setCellValue("A{$row}", 'TOTAL BIAYA KESELURUHAN (BAHAN + UPAH)');
+        $sheet->setCellValue("D{$row}", $grandTotalBahan + $grandTotalUpah);
+        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($grandTotalFinalStyle);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getRowDimension($row)->setRowHeight(24);
 
-        $sheet->getColumnDimension('A')->setWidth(6);
-        $sheet->getColumnDimension('B')->setWidth(50);
-        $sheet->getColumnDimension('C')->setWidth(22);
-        $sheet->getColumnDimension('D')->setWidth(28);
+        // Pengaturan lebar kolom presisi (4 Kolom: A, B, C, D)
+        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6); // NO
+        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(42); // Nama Bahan / Keterangan
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(22); // Jumlah Real / Jenis Upah
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(28); // Harga Real / Nominal
 
-        $namaKawasan = preg_replace('/[^A-Za-z0-9\-]/', '_', $kawasan->nama ?? 'Kawasan');
-        $filename = "Laporan_Termin_Kawasan_{$namaKawasan}.xlsx";
+        $namaKawasanClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $kawasan->nama ?? 'Kawasan');
+        $filename = "Laporan_Termin_Kawasan_{$namaKawasanClean}.xlsx";
 
         $writer = new Xlsx($spreadsheet);
-        return response()->streamDownload(function () use ($writer) { $writer->save('php://output'); }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Cache-Control' => 'max-age=0',
-        ]);
+        return response()->streamDownload(
+            function () use ($writer) {
+                $writer->save('php://output');
+            },
+            $filename,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0',
+            ]
+        );
     }
 }

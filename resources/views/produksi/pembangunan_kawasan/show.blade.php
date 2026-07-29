@@ -372,53 +372,49 @@
                         @php $lastSesiSeen = null; @endphp
                         @foreach($data->orders->sortByDesc('created_at') as $order)
                         @php
-                            $orderSesiLabel = null;
                             $currentPeriodeObj = null;
                             if ($data->periodes && $data->periodes->count() > 0) {
                                 $sortedAsc = $data->periodes->sortBy('created_at')->values();
                                 if ($order->pembangunan_kawasan_periode_id) {
                                     foreach ($sortedAsc as $idx => $per) {
                                         if ($per->id == $order->pembangunan_kawasan_periode_id) {
-                                            $orderSesiLabel = 'Sesi #' . ($idx + 1);
                                             $currentPeriodeObj = $per;
                                             break;
                                         }
                                     }
                                 }
-                                if (!$orderSesiLabel) {
+                                if (!$currentPeriodeObj) {
                                     $sortedDesc = $data->periodes->sortByDesc('created_at')->values();
-                                    $totalPeriods = $sortedDesc->count();
                                     $orderTime = \Carbon\Carbon::parse($order->created_at ?? $order->tanggal_diajukan);
-                                    foreach ($sortedDesc as $idx => $per) {
+                                    foreach ($sortedDesc as $per) {
                                         $perCreated = \Carbon\Carbon::parse($per->created_at);
                                         if ($orderTime->gte($perCreated)) {
-                                            $orderSesiLabel = 'Sesi #' . ($totalPeriods - $idx);
                                             $currentPeriodeObj = $per;
                                             break;
                                         }
                                     }
-                                    if (!$orderSesiLabel) {
-                                        $orderSesiLabel = 'Sesi #1';
+                                    if (!$currentPeriodeObj) {
                                         $currentPeriodeObj = $sortedAsc->first();
                                     }
                                 }
                             }
+
+                            $dateText = '';
+                            if ($currentPeriodeObj) {
+                                $tglMulai = $currentPeriodeObj->tanggal_mulai ? \Carbon\Carbon::parse($currentPeriodeObj->tanggal_mulai)->format('d M Y') : '-';
+                                $tglSelesai = $currentPeriodeObj->tanggal_selesai ? \Carbon\Carbon::parse($currentPeriodeObj->tanggal_selesai)->format('d M Y') : 'Sekarang';
+                                $dateText = "$tglMulai s/d $tglSelesai";
+                            }
                         @endphp
 
-                        @if($orderSesiLabel && $lastSesiSeen !== $orderSesiLabel)
+                        @if($dateText && $lastSesiSeen !== $dateText)
                             @php
-                                $lastSesiSeen = $orderSesiLabel;
-                                $dateText = '';
-                                if ($currentPeriodeObj) {
-                                    $tglMulai = $currentPeriodeObj->tanggal_mulai ? \Carbon\Carbon::parse($currentPeriodeObj->tanggal_mulai)->format('d M Y') : '-';
-                                    $tglSelesai = $currentPeriodeObj->tanggal_selesai ? \Carbon\Carbon::parse($currentPeriodeObj->tanggal_selesai)->format('d M Y') : 'Sekarang';
-                                    $dateText = " ($tglMulai s/d $tglSelesai)";
-                                }
+                                $lastSesiSeen = $dateText;
                             @endphp
                             <div class="flex items-center gap-3 my-4">
                                 <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
-                                <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3.5 py-1.5 rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider shadow-sm">
-                                    <i class="fa-solid fa-layer-group mr-1.5"></i> {{ $orderSesiLabel }}{{ $dateText }}
+                                <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3.5 py-1.5 rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                    <i class="fa-regular fa-calendar text-xs"></i> <span>{{ $dateText }}</span>
                                 </span>
                                 <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
                             </div>
@@ -868,53 +864,49 @@
                         @php $lastRetSesiSeen = null; @endphp
                         @foreach($returns as $ret)
                         @php
-                            $returSesiLabel = null;
                             $currentRetPeriodeObj = null;
                             if ($data->periodes && $data->periodes->count() > 0) {
                                 $sortedAsc = $data->periodes->sortBy('created_at')->values();
                                 if ($ret->pembangunan_kawasan_periode_id) {
                                     foreach ($sortedAsc as $idx => $per) {
                                         if ($per->id == $ret->pembangunan_kawasan_periode_id) {
-                                            $returSesiLabel = 'Sesi #' . ($idx + 1);
                                             $currentRetPeriodeObj = $per;
                                             break;
                                         }
                                     }
                                 }
-                                if (!$returSesiLabel) {
+                                if (!$currentRetPeriodeObj) {
                                     $sortedDesc = $data->periodes->sortByDesc('created_at')->values();
-                                    $totalPeriods = $sortedDesc->count();
                                     $returTime = \Carbon\Carbon::parse($ret->created_at ?? $ret->tanggal_return);
-                                    foreach ($sortedDesc as $idx => $per) {
+                                    foreach ($sortedDesc as $per) {
                                         $perCreated = \Carbon\Carbon::parse($per->created_at);
                                         if ($returTime->gte($perCreated)) {
-                                            $returSesiLabel = 'Sesi #' . ($totalPeriods - $idx);
                                             $currentRetPeriodeObj = $per;
                                             break;
                                         }
                                     }
-                                    if (!$returSesiLabel) {
-                                        $returSesiLabel = 'Sesi #1';
+                                    if (!$currentRetPeriodeObj) {
                                         $currentRetPeriodeObj = $sortedAsc->first();
                                     }
                                 }
                             }
+
+                            $dateRetText = '';
+                            if ($currentRetPeriodeObj) {
+                                $tglMulai = $currentRetPeriodeObj->tanggal_mulai ? \Carbon\Carbon::parse($currentRetPeriodeObj->tanggal_mulai)->format('d M Y') : '-';
+                                $tglSelesai = $currentRetPeriodeObj->tanggal_selesai ? \Carbon\Carbon::parse($currentRetPeriodeObj->tanggal_selesai)->format('d M Y') : 'Sekarang';
+                                $dateRetText = "$tglMulai s/d $tglSelesai";
+                            }
                         @endphp
 
-                        @if($returSesiLabel && $lastRetSesiSeen !== $returSesiLabel)
+                        @if($dateRetText && $lastRetSesiSeen !== $dateRetText)
                             @php
-                                $lastRetSesiSeen = $returSesiLabel;
-                                $dateRetText = '';
-                                if ($currentRetPeriodeObj) {
-                                    $tglMulai = $currentRetPeriodeObj->tanggal_mulai ? \Carbon\Carbon::parse($currentRetPeriodeObj->tanggal_mulai)->format('d M Y') : '-';
-                                    $tglSelesai = $currentRetPeriodeObj->tanggal_selesai ? \Carbon\Carbon::parse($currentRetPeriodeObj->tanggal_selesai)->format('d M Y') : 'Sekarang';
-                                    $dateRetText = " ($tglMulai s/d $tglSelesai)";
-                                }
+                                $lastRetSesiSeen = $dateRetText;
                             @endphp
                             <div class="flex items-center gap-3 my-4">
                                 <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
-                                <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3.5 py-1.5 rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider shadow-sm">
-                                    <i class="fa-solid fa-layer-group mr-1.5"></i> {{ $returSesiLabel }}{{ $dateRetText }}
+                                <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3.5 py-1.5 rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                                    <i class="fa-regular fa-calendar text-xs"></i> <span>{{ $dateRetText }}</span>
                                 </span>
                                 <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
                             </div>
