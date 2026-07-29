@@ -12,6 +12,13 @@
             'status' => $p->status_pembangunan,
             'tanggal_mulai' => $p->tanggal_mulai ? \Carbon\Carbon::parse($p->tanggal_mulai)->format('d M Y') : '-',
             'tanggal_selesai' => $p->tanggal_selesai ? \Carbon\Carbon::parse($p->tanggal_selesai)->format('d M Y') : '-',
+            'periodes' => $p->periodes->map(fn($per) => [
+                'id' => $per->id,
+                'pengawas' => $per->pengawas->nama_lengkap ?? $per->pengawas->name ?? '-',
+                'tanggal_mulai' => $per->tanggal_mulai ? \Carbon\Carbon::parse($per->tanggal_mulai)->format('d M Y') : '-',
+                'tanggal_selesai' => $per->tanggal_selesai ? \Carbon\Carbon::parse($per->tanggal_selesai)->format('d M Y') : 'Sekarang',
+                'status' => $per->status,
+            ])->values()->all(),
         ]
     )->toJson() }})">
 
@@ -79,7 +86,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" x-show="pagedData.length > 0">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" x-show="pagedData.length > 0">
         <template x-for="item in pagedData" :key="item.id">
             <div class="group rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all dark:border-gray-700 dark:bg-gray-800">
                 <div class="flex flex-col h-full justify-between">
@@ -96,14 +103,33 @@
                         <h4 class="text-lg font-bold text-gray-800 dark:text-white leading-tight" x-text="item.nama"></h4>
                         <p class="text-xs text-gray-500 mt-1 font-medium" x-text="item.perumahan"></p>
 
-                        <div class="mt-4 space-y-2 border-t border-gray-50 pt-3 dark:border-gray-700">
-                            <div class="flex justify-between text-[11px] items-center">
-                                <span class="text-gray-400">Pengawas:</span>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium" x-text="item.pengawas"></span>
-                            </div>
-                            <div class="flex justify-between text-[11px] items-center">
-                                <span class="text-gray-400">Waktu:</span>
-                                <span class="text-gray-700 dark:text-gray-300 font-medium" x-text="item.tanggal_mulai + ' s.d ' + item.tanggal_selesai"></span>
+                        <div class="mt-4 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <p class="text-[10px] font-black uppercase text-gray-400 mb-2 tracking-wider">Riwayat Periode Pembangunan</p>
+                            <div class="space-y-2 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
+                                <template x-for="(per, idx) in item.periodes" :key="per.id">
+                                    <div class="p-2 text-xs bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-700">
+                                        <div class="flex items-center justify-between font-bold text-gray-800 dark:text-gray-200">
+                                            <span x-text="'Sesi #' + (item.periodes.length - idx)"></span>
+                                            <span class="text-[9px] px-1.5 py-0.5 rounded font-black uppercase"
+                                                :class="{
+                                                    'bg-blue-100 text-blue-700': per.status === 'proses',
+                                                    'bg-green-100 text-green-700': per.status === 'selesai' || per.status === 'selesai dengan catatan'
+                                                }"
+                                                x-text="per.status"></span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-1">
+                                            <i class="fa-regular fa-calendar text-gray-400 mr-1"></i>
+                                            <span x-text="per.tanggal_mulai + ' s/d ' + per.tanggal_selesai"></span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">
+                                            <i class="fa-regular fa-user text-gray-400 mr-1"></i>
+                                            <span x-text="per.pengawas"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template x-if="item.periodes.length === 0">
+                                    <span class="text-xs italic text-gray-400">Belum ada riwayat periode</span>
+                                </template>
                             </div>
                         </div>
                     </div>

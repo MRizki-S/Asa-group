@@ -39,7 +39,7 @@ class BuatPembangunanKawasanController extends Controller
 
     public function index()
     {
-        $kawasans = PembangunanKawasan::latest()->get();
+        $kawasans = PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes.pengawas'])->latest()->get();
         $perumahaans = Perumahaan::all();
         $users = \App\Models\User::role('Pengawas Kawasan')->get();
         return view('produksi.buat_pembangunan.index', compact('kawasans', 'perumahaans', 'users'));
@@ -50,13 +50,13 @@ class BuatPembangunanKawasanController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'perumahaan_id' => 'required|exists:perumahaan,id',
-            'pengawas_id' => 'nullable|exists:users,id',
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date',
-            'catatan' => 'nullable|string'
         ]);
 
-        PembangunanKawasan::create($request->all());
+        PembangunanKawasan::create([
+            'nama' => $request->nama,
+            'perumahaan_id' => $request->perumahaan_id,
+            'status_pembangunan' => 'pending',
+        ]);
 
         return redirect()->back()->with('success', 'Pembangunan kawasan baru berhasil dibuat!');
     }
@@ -82,13 +82,9 @@ class BuatPembangunanKawasanController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'perumahaan_id' => 'required|exists:perumahaan,id',
-            'pengawas_id' => 'nullable|exists:users,id',
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date',
-            'catatan' => 'nullable|string'
         ]);
 
-        $kawasan->update($request->all());
+        $kawasan->update($request->only(['nama', 'perumahaan_id']));
 
         return redirect()->route('produksi.buatPembangunanKawasan.index')->with('success', 'Kawasan berhasil diupdate!');
     }
@@ -103,16 +99,36 @@ class BuatPembangunanKawasanController extends Controller
         return redirect()->route('produksi.buatPembangunanKawasan.index')->with('success', 'Kawasan berhasil dihapus!');
     }
 
-    public function proses($id)
+    public function proses(Request $request, $id)
     {
         $kawasan = PembangunanKawasan::findOrFail($id);
-        if ($kawasan->status_pembangunan !== 'pending') {
-            return redirect()->back()->with('error', 'Kawasan sudah diproses');
+        if ($kawasan->status_pembangunan === 'proses') {
+            return redirect()->back()->with('error', 'Sesi pembangunan untuk kawasan ini sedang berjalan');
         }
 
-        $kawasan->update(['status_pembangunan' => 'proses']);
+        $request->validate([
+            'pengawas_id' => 'required|exists:users,id',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'nullable|date',
+        ]);
+
+        \App\Models\PembangunanKawasanPeriode::create([
+            'pembangunan_kawasan_id' => $kawasan->id,
+            'pengawas_id' => $request->pengawas_id,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'status' => 'proses',
+        ]);
+
+        $kawasan->update([
+            'status_pembangunan' => 'proses',
+            'pengawas_id' => $request->pengawas_id,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+        ]);
+
         $this->sendGroupNotificationProses($kawasan);
 
-        return redirect()->route('produksi.pembangunanKawasan.index')->with('success', 'Kawasan mulai diproses!');
+        return redirect()->route('produksi.buatPembangunanKawasan.index')->with('success', 'Sesi pembangunan kawasan berhasil diproses!');
     }
 }

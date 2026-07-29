@@ -17,6 +17,11 @@ class PembangunanKawasanBarangReturn extends Model
         return $this->belongsTo(PembangunanKawasan::class, 'pembangunan_kawasan_id');
     }
 
+    public function periode()
+    {
+        return $this->belongsTo(PembangunanKawasanPeriode::class, 'pembangunan_kawasan_periode_id');
+    }
+
     public function order()
     {
         return $this->belongsTo(PembangunanKawasanBarangOrder::class, 'order_id');

@@ -22,9 +22,19 @@ class PembangunanKawasanBarangOrder extends Model
         return $this->belongsTo(PembangunanKawasan::class, 'pembangunan_kawasan_id');
     }
 
+    public function periode()
+    {
+        return $this->belongsTo(PembangunanKawasanPeriode::class, 'pembangunan_kawasan_periode_id');
+    }
+
     public function pembuat()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function accUser()
+    {
+        return $this->belongsTo(User::class, 'acc_by');
     }
 
     public function details()

@@ -12,6 +12,7 @@ use App\Models\PembangunanKawasanBarangReturn;
 use App\Models\PembangunanKawasanBarangReturnDetail;
 use App\Models\BarangSatuanKonversi;
 use App\Models\PembangunanKawasanUpahPengajuan;
+use App\Models\PembangunanKawasanPeriode;
 use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +80,7 @@ class PembangunanKawasanController extends Controller
         $year = $request->input('year', date('Y'));
 
         $user = Auth::user();
-        $query = PembangunanKawasan::with(['perumahan', 'pengawas'])
+        $query = PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes.pengawas'])
             ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
 
         if ($user->hasRole('Pengawas Kawasan')) {
@@ -144,18 +145,27 @@ class PembangunanKawasanController extends Controller
 
     public function show($id)
     {
-        $data = PembangunanKawasan::with(['perumahan', 'pengawas', 'orders.details.barang', 'orders.details.satuanModel', 'pengajuanUpah'])->findOrFail($id);
+        $data = PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes.pengawas', 'orders.pembuat', 'orders.accUser', 'orders.details.barang', 'orders.details.satuanModel', 'pengajuanUpah'])->findOrFail($id);
         
         $returns = PembangunanKawasanBarangReturn::with(['details.barang.baseUnit', 'details.satuanModel', 'createdBy', 'accBy'])
             ->where('pembangunan_kawasan_id', $id)
             ->latest()
             ->get();
 
-        // Calculate received vs returned per barang for this kawasan
-        $orderedDetails = PembangunanKawasanBarangOrderDetail::query()
+        $activePeriode = $data->periodes()->where('status', 'proses')->latest()->first();
+        $activePeriodeId = $activePeriode?->id;
+
+        // Calculate received vs returned per barang for the ACTIVE SESSION of this kawasan
+        $orderedDetailsQuery = PembangunanKawasanBarangOrderDetail::query()
             ->join('pembangunan_kawasan_barang_order as o', 'o.id', '=', 'pembangunan_kawasan_barang_order_detail.order_id')
             ->where('o.pembangunan_kawasan_id', $id)
-            ->where('o.status_order', 'selesai')
+            ->where('o.status_order', 'selesai');
+
+        if ($activePeriodeId) {
+            $orderedDetailsQuery->where('o.pembangunan_kawasan_periode_id', $activePeriodeId);
+        }
+
+        $orderedDetails = $orderedDetailsQuery
             ->select([
                 'pembangunan_kawasan_barang_order_detail.barang_id',
                 DB::raw('MAX(pembangunan_kawasan_barang_order_detail.nama_barang) as nama_barang'),
@@ -164,10 +174,16 @@ class PembangunanKawasanController extends Controller
             ->groupBy('pembangunan_kawasan_barang_order_detail.barang_id')
             ->get();
 
-        $returnedBaseMap = PembangunanKawasanBarangReturnDetail::query()
+        $returnedBaseMapQuery = PembangunanKawasanBarangReturnDetail::query()
             ->join('pembangunan_kawasan_barang_returns as r', 'r.id', '=', 'pembangunan_kawasan_barang_return_details.return_id')
             ->where('r.pembangunan_kawasan_id', $id)
-            ->whereIn('r.status', ['diproses', 'selesai'])
+            ->whereIn('r.status', ['diproses', 'selesai']);
+
+        if ($activePeriodeId) {
+            $returnedBaseMapQuery->where('r.pembangunan_kawasan_periode_id', $activePeriodeId);
+        }
+
+        $returnedBaseMap = $returnedBaseMapQuery
             ->select([
                 'pembangunan_kawasan_barang_return_details.barang_id',
                 DB::raw('SUM(pembangunan_kawasan_barang_return_details.jumlah_base) as total_returned_base'),
@@ -257,12 +273,17 @@ class PembangunanKawasanController extends Controller
         }
 
         $request->validate([
-            'status_pembangunan' => 'required|in:proses,selesai',
+            'status_pembangunan' => 'required|in:proses,selesai,selesai dengan catatan',
         ]);
 
         $kawasan->update([
             'status_pembangunan' => $request->status_pembangunan,
         ]);
+
+        $activePeriode = $kawasan->periodes()->where('status', 'proses')->first();
+        if ($activePeriode) {
+            $activePeriode->update(['status' => $request->status_pembangunan]);
+        }
 
         return redirect()->back()->with('success', 'Status kawasan berhasil diperbarui');
     }
@@ -308,9 +329,15 @@ class PembangunanKawasanController extends Controller
             }
             $nomorOrder = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
 
+            $activePeriode = PembangunanKawasanPeriode::where('pembangunan_kawasan_id', $request->pembangunan_kawasan_id)
+                ->where('status', 'proses')
+                ->latest()
+                ->first();
+
             $order = PembangunanKawasanBarangOrder::create([
                 'nomor_order' => $nomorOrder,
                 'pembangunan_kawasan_id' => $request->pembangunan_kawasan_id,
+                'pembangunan_kawasan_periode_id' => $activePeriode?->id,
                 'jenis_order' => $request->jenis_order,
                 'catatan' => $request->catatan,
                 'tanggal_diajukan' => now(),
@@ -385,8 +412,14 @@ class PembangunanKawasanController extends Controller
 
             $lastOrder = PembangunanKawasanBarangOrder::where('pembangunan_kawasan_id', $kawasan->id)->where('status_order', 'selesai')->latest()->first();
 
+            $activePeriode = PembangunanKawasanPeriode::where('pembangunan_kawasan_id', $kawasan->id)
+                ->where('status', 'proses')
+                ->latest()
+                ->first();
+
             $returnRequest = PembangunanKawasanBarangReturn::create([
                 'pembangunan_kawasan_id' => $kawasan->id,
+                'pembangunan_kawasan_periode_id' => $activePeriode?->id,
                 'order_id' => $lastOrder?->id,
                 'nomor_return' => $nomorReturn,
                 'tanggal_return' => now(),

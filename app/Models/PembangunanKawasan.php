@@ -41,4 +41,9 @@ class PembangunanKawasan extends Model
     {
         return $this->hasMany(PembangunanKawasanBahan::class, 'pembangunan_kawasan_id');
     }
+
+    public function periodes()
+    {
+        return $this->hasMany(PembangunanKawasanPeriode::class, 'pembangunan_kawasan_id')->latest('created_at');
+    }
 }

@@ -12,6 +12,27 @@
             window.history.replaceState(null, '', url.toString());
         });
     },
+    kawasanStatus: '{{ $data->status_pembangunan ?? 'proses' }}',
+    confirmChangeKawasanStatus(newStatus) {
+        if (this.kawasanStatus === newStatus) return;
+        Swal.fire({
+            title: 'Konfirmasi Ubah Status',
+            text: `Apakah Anda yakin ingin mengubah status pembangunan kawasan menjadi '${newStatus}'?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563EB',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, Ubah Status',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formElement = document.getElementById('status-kawasan-form-' + newStatus);
+                if (formElement) {
+                    formElement.submit();
+                }
+            }
+        });
+    },
     itemsAdditional: [],
     filterType: 'stock',
     openCancelOrderModal: false,
@@ -116,6 +137,48 @@
         ['label' => $data->nama, 'url' => '']
     ]])
 
+    {{-- Flash notification --}}
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: @json(session('success')),
+                timer: 2500,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
+    </script>
+    @endif
+    @if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: @json(session('error')),
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
+    </script>
+    @endif
+
+    <!-- Hidden Status Update Forms -->
+    <form id="status-kawasan-form-proses" action="{{ route('produksi.pembangunanKawasan.update', $data->id) }}" method="POST" class="hidden">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="status_pembangunan" value="proses">
+    </form>
+    <form id="status-kawasan-form-selesai" action="{{ route('produksi.pembangunanKawasan.update', $data->id) }}" method="POST" class="hidden">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="status_pembangunan" value="selesai">
+    </form>
+
 
 
     <!-- Header Info -->
@@ -134,13 +197,33 @@
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {{-- Status --}}
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
-                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase
-                            {{ $data->status_pembangunan === 'selesai' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' }}">
-                            {{ $data->status_pembangunan }}
-                        </span>
+                    {{-- Status Dropdown --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative" x-data="{ openStatus: false }">
+                        <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Status Pembangunan</p>
+                        <div class="relative">
+                            <button @click="openStatus = !openStatus"
+                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all border border-transparent hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
+                                :class="{
+                                    'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': kawasanStatus === 'proses',
+                                    'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400': kawasanStatus === 'selesai',
+                                    'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': kawasanStatus === 'selesai dengan catatan'
+                                }">
+                                <span x-text="kawasanStatus"></span>
+                                <i class="fa-solid fa-chevron-down text-[8px] transition-transform" :class="openStatus ? 'rotate-180' : ''"></i>
+                            </button>
+                            <div x-show="openStatus" @click.away="openStatus = false" x-transition x-cloak
+                                class="absolute left-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden text-left">
+                                <div class="p-1 space-y-1">
+                                    <template x-for="opt in ['proses', 'selesai']">
+                                        <button @click="confirmChangeKawasanStatus(opt); openStatus = false"
+                                            class="w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                            :class="kawasanStatus === opt ? 'bg-gray-50 text-blue-600 dark:bg-gray-750 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'"
+                                            x-text="opt">
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     {{-- Tanggal Mulai --}}
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
@@ -157,32 +240,9 @@
 
             {{-- Kanan: Aksi --}}
             <div class="flex flex-row lg:flex-col items-center lg:items-end gap-2 shrink-0">
-                @if ($data->status_pembangunan !== 'selesai')
-                <form action="{{ route('produksi.pembangunanKawasan.update', $data->id) }}" method="POST"
-                    @submit.prevent="
-                        Swal.fire({
-                            title: 'Konfirmasi',
-                            text: 'Apakah Anda yakin ingin menyelesaikan pembangunan kawasan ini?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#059669',
-                            confirmButtonText: 'Ya, Selesaikan',
-                            cancelButtonText: 'Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) { $el.submit(); }
-                        })
-                    ">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="status_pembangunan" value="selesai">
-                    <button type="submit" class="inline-flex items-center gap-1.5 bg-green-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-green-700 shadow-sm transition-all active:scale-95">
-                        <i class="fa-solid fa-circle-check"></i> Selesaikan
-                    </button>
-                </form>
-                @endif
                 <a href="{{ route('produksi.pembangunanKawasan.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
-                    <i class="fa-solid fa-file-excel text-green-600"></i> Export Excel
+                    <i class="fa-solid fa-file-excel text-green-600"></i> Laporan Termin
                 </a>
             </div>
         </div>
@@ -309,10 +369,63 @@
                 <div class="relative flex-1 min-h-[300px]">
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if($data->orders && $data->orders->count() > 0)
+                        @php $lastSesiSeen = null; @endphp
                         @foreach($data->orders->sortByDesc('created_at') as $order)
+                        @php
+                            $orderSesiLabel = null;
+                            $currentPeriodeObj = null;
+                            if ($data->periodes && $data->periodes->count() > 0) {
+                                $sortedAsc = $data->periodes->sortBy('created_at')->values();
+                                if ($order->pembangunan_kawasan_periode_id) {
+                                    foreach ($sortedAsc as $idx => $per) {
+                                        if ($per->id == $order->pembangunan_kawasan_periode_id) {
+                                            $orderSesiLabel = 'Sesi #' . ($idx + 1);
+                                            $currentPeriodeObj = $per;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!$orderSesiLabel) {
+                                    $sortedDesc = $data->periodes->sortByDesc('created_at')->values();
+                                    $totalPeriods = $sortedDesc->count();
+                                    $orderTime = \Carbon\Carbon::parse($order->created_at ?? $order->tanggal_diajukan);
+                                    foreach ($sortedDesc as $idx => $per) {
+                                        $perCreated = \Carbon\Carbon::parse($per->created_at);
+                                        if ($orderTime->gte($perCreated)) {
+                                            $orderSesiLabel = 'Sesi #' . ($totalPeriods - $idx);
+                                            $currentPeriodeObj = $per;
+                                            break;
+                                        }
+                                    }
+                                    if (!$orderSesiLabel) {
+                                        $orderSesiLabel = 'Sesi #1';
+                                        $currentPeriodeObj = $sortedAsc->first();
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        @if($orderSesiLabel && $lastSesiSeen !== $orderSesiLabel)
+                            @php
+                                $lastSesiSeen = $orderSesiLabel;
+                                $dateText = '';
+                                if ($currentPeriodeObj) {
+                                    $tglMulai = $currentPeriodeObj->tanggal_mulai ? \Carbon\Carbon::parse($currentPeriodeObj->tanggal_mulai)->format('d M Y') : '-';
+                                    $tglSelesai = $currentPeriodeObj->tanggal_selesai ? \Carbon\Carbon::parse($currentPeriodeObj->tanggal_selesai)->format('d M Y') : 'Sekarang';
+                                    $dateText = " ($tglMulai s/d $tglSelesai)";
+                                }
+                            @endphp
+                            <div class="flex items-center gap-3 my-4">
+                                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                                <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3.5 py-1.5 rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider shadow-sm">
+                                    <i class="fa-solid fa-layer-group mr-1.5"></i> {{ $orderSesiLabel }}{{ $dateText }}
+                                </span>
+                                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                            </div>
+                        @endif
                         <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
                             <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
-                                {{-- Baris 1: Tanggal + Nomor Order --}}
+                                {{-- Baris 1: Tanggal + Nomor Order + Chevron --}}
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex flex-col gap-0.5 min-w-0">
                                         <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
@@ -328,23 +441,25 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </div>
-                                {{-- Baris 2: Badge Jenis + Jumlah Item + Badge Status --}}
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
+                                {{-- Baris 2: Status (Kiri) dan Tipe Stock/Direct (Pojok Kanan Bawah) --}}
+                                <div class="flex items-center justify-between gap-2 pt-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        @php
+                                            $statusMap = [
+                                                'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
+                                                'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                                'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
+                                                'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
+                                                'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                            ];
+                                            $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                        @endphp
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                            {{ str_replace('_', ' ', $order->status_order) }}
+                                        </span>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border shrink-0 {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
                                         {{ $order->jenis_order }}
-                                    </span>
-                                    @php
-                                        $statusMap = [
-                                            'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
-                                            'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                            'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
-                                            'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
-                                            'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
-                                        ];
-                                        $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
-                                    @endphp
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                        {{ str_replace('_', ' ', $order->status_order) }}
                                     </span>
                                 </div>
                             </div>
@@ -393,6 +508,17 @@
                                     {{ $order->catatan }}
                                 </div>
                                 @endif
+
+                                <div class="mt-3 text-[10px] space-y-1 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-lg border border-gray-100 dark:border-gray-700">
+                                    <div>
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">Diajukan oleh:</span>
+                                        {{ $order->pembuat->nama_lengkap ?? $order->pembuat->name ?? $order->pembuat->email ?? '-' }}
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">Dikonfirmasi oleh:</span>
+                                        {{ $order->accUser->nama_lengkap ?? $order->accUser->name ?? $order->accUser->email ?? '-' }}
+                                    </div>
+                                </div>
 
 
 
@@ -739,7 +865,60 @@
                 <div class="relative flex-1 min-h-[300px]">
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if(isset($returns) && $returns->count() > 0)
+                        @php $lastRetSesiSeen = null; @endphp
                         @foreach($returns as $ret)
+                        @php
+                            $returSesiLabel = null;
+                            $currentRetPeriodeObj = null;
+                            if ($data->periodes && $data->periodes->count() > 0) {
+                                $sortedAsc = $data->periodes->sortBy('created_at')->values();
+                                if ($ret->pembangunan_kawasan_periode_id) {
+                                    foreach ($sortedAsc as $idx => $per) {
+                                        if ($per->id == $ret->pembangunan_kawasan_periode_id) {
+                                            $returSesiLabel = 'Sesi #' . ($idx + 1);
+                                            $currentRetPeriodeObj = $per;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!$returSesiLabel) {
+                                    $sortedDesc = $data->periodes->sortByDesc('created_at')->values();
+                                    $totalPeriods = $sortedDesc->count();
+                                    $returTime = \Carbon\Carbon::parse($ret->created_at ?? $ret->tanggal_return);
+                                    foreach ($sortedDesc as $idx => $per) {
+                                        $perCreated = \Carbon\Carbon::parse($per->created_at);
+                                        if ($returTime->gte($perCreated)) {
+                                            $returSesiLabel = 'Sesi #' . ($totalPeriods - $idx);
+                                            $currentRetPeriodeObj = $per;
+                                            break;
+                                        }
+                                    }
+                                    if (!$returSesiLabel) {
+                                        $returSesiLabel = 'Sesi #1';
+                                        $currentRetPeriodeObj = $sortedAsc->first();
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        @if($returSesiLabel && $lastRetSesiSeen !== $returSesiLabel)
+                            @php
+                                $lastRetSesiSeen = $returSesiLabel;
+                                $dateRetText = '';
+                                if ($currentRetPeriodeObj) {
+                                    $tglMulai = $currentRetPeriodeObj->tanggal_mulai ? \Carbon\Carbon::parse($currentRetPeriodeObj->tanggal_mulai)->format('d M Y') : '-';
+                                    $tglSelesai = $currentRetPeriodeObj->tanggal_selesai ? \Carbon\Carbon::parse($currentRetPeriodeObj->tanggal_selesai)->format('d M Y') : 'Sekarang';
+                                    $dateRetText = " ($tglMulai s/d $tglSelesai)";
+                                }
+                            @endphp
+                            <div class="flex items-center gap-3 my-4">
+                                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                                <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3.5 py-1.5 rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider shadow-sm">
+                                    <i class="fa-solid fa-layer-group mr-1.5"></i> {{ $returSesiLabel }}{{ $dateRetText }}
+                                </span>
+                                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                            </div>
+                        @endif
                         <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
                             <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
                                 {{-- Baris 1: Tanggal + Nomor Retur --}}
@@ -836,11 +1015,15 @@
                                     </div>
                                 @endif
 
-                                <div class="flex items-center justify-between text-[10px] text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
-                                    <span>Diajukan: <strong class="text-gray-600 dark:text-gray-300">{{ $ret->createdBy?->nama_lengkap ?? $ret->createdBy?->name ?? 'Pengawas' }}</strong></span>
-                                    @if ($ret->status !== 'diproses' && $ret->accBy)
-                                        <span>ACC: <strong class="text-gray-600 dark:text-gray-300">{{ $ret->accBy?->nama_lengkap ?? $ret->accBy?->name ?? '-' }}</strong></span>
-                                    @endif
+                                <div class="mt-3 text-[10px] space-y-1 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-lg border border-gray-100 dark:border-gray-700">
+                                    <div>
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">Diajukan oleh:</span>
+                                        {{ $ret->createdBy->nama_lengkap ?? $ret->createdBy->name ?? $ret->createdBy->email ?? '-' }}
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">Dikonfirmasi oleh:</span>
+                                        {{ $ret->accBy->nama_lengkap ?? $ret->accBy->name ?? $ret->accBy->email ?? '-' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -939,7 +1122,6 @@
                 </div>
             </div>
         </div>
-    </template>
 </div>
 @endsection
 
@@ -952,6 +1134,7 @@
                 width: '100%'
             });
         }
+
     });
 </script>
 <style>
