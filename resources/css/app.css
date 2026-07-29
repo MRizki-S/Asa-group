@@ -20,44 +20,54 @@
    ============================================================= */
 
 /* ── Trigger / Selection box ─────────────────────────────── */
-.select2-container--bootstrap4 .select2-selection--single {
-    height: 2.5rem !important;
-    padding: 0 0.75rem !important;
+.select2-container--bootstrap4 .select2-selection--single,
+.select2-container--default .select2-selection--single {
+    height: 42px !important;
+    padding: 0 0.625rem !important;
     border-radius: 0.5rem !important;
     border: 1px solid #d1d5db !important;
-    background-color: #ffffff !important;
-    transition: border-color 0.15s ease;
+    background-color: #f9fafb !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     display: flex !important;
     align-items: center !important;
     position: relative !important;
 }
 
 .select2-container--bootstrap4.select2-container--focus .select2-selection--single,
-.select2-container--bootstrap4.select2-container--open .select2-selection--single {
-    border-color: #2563eb !important;
-    box-shadow: none !important;
+.select2-container--bootstrap4.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #3b82f6 !important;
+    background-color: #f9fafb !important;
+    box-shadow: 0 0 0 1px #3b82f6 !important;
     outline: none !important;
 }
 
 /* Rendered text */
-.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-    color: #374151 !important;
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #111827 !important;
     font-size: 0.875rem !important;
-    line-height: 1 !important;
+    line-height: 1.25rem !important;
     padding-left: 0 !important;
     padding-right: 1.5rem !important;
 }
 
 /* Placeholder */
-.select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder {
-    color: #9ca3af !important;
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder,
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #6b7280 !important;
+    font-size: 0.875rem !important;
 }
 
 /* Arrow */
-.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow,
+.select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 100% !important;
     top: 0 !important;
     right: 8px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b {

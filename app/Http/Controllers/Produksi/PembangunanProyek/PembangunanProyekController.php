@@ -255,7 +255,7 @@ class PembangunanProyekController extends Controller
         }
 
         $request->validate([
-            'status_pembangunan' => 'required|in:proses,selesai',
+            'status_pembangunan' => 'required|in:proses,selesai,selesai dengan catatan',
         ]);
 
         $project->update([

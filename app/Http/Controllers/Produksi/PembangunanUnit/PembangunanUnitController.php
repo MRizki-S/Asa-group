@@ -263,10 +263,16 @@ class PembangunanUnitController extends Controller
         $pembangunanUnit = PembangunanUnit::findOrFail($id);
 
         if (in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Pembangunan unit ini sudah selesai, status tidak dapat diubah lagi.'], 422);
+            }
             return redirect()->back()->with('error', 'Pembangunan unit ini sudah selesai, status tidak dapat diubah lagi.');
         }
 
         if ($pembangunanUnit->total_progres < 100) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Progress pembangunan baru ' . $pembangunanUnit->total_progres . '%. Harus 100% untuk bisa diselesaikan.'], 422);
+            }
             return redirect()->back()->with('error', 'Status selesai hanya dapat diaktifkan jika progres pembangunan sudah 100%.');
         }
 
@@ -291,6 +297,14 @@ class PembangunanUnitController extends Controller
         if ($unitTable) {
             $unitTable->update([
                 'status_pembangunan' => 'selesai dibangun'
+            ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'status_pembangunan' => $newStatus,
+                'message' => 'Status pembangunan unit berhasil diperbarui menjadi ' . $newStatus . '.'
             ]);
         }
 

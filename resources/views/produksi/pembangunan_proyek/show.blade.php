@@ -12,6 +12,27 @@
             window.history.replaceState(null, '', url.toString());
         });
     },
+    proyekStatus: '{{ $data->status_pembangunan ?? 'proses' }}',
+    confirmChangeProyekStatus(newStatus) {
+        if (this.proyekStatus === newStatus) return;
+        Swal.fire({
+            title: 'Konfirmasi Ubah Status',
+            text: `Apakah Anda yakin ingin mengubah status pembangunan proyek menjadi '${newStatus}'?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563EB',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, Ubah Status',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formElement = document.getElementById('status-proyek-form-' + newStatus);
+                if (formElement) {
+                    formElement.submit();
+                }
+            }
+        });
+    },
     itemsAdditional: [],
     filterType: 'stock',
     openCancelOrderModal: false,
@@ -116,6 +137,18 @@
         ['label' => $data->nama, 'url' => '']
     ]])
 
+    <!-- Hidden Status Update Forms -->
+    <form id="status-proyek-form-proses" action="{{ route('produksi.pembangunanProyek.update', $data->id) }}" method="POST" class="hidden">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="status_pembangunan" value="proses">
+    </form>
+    <form id="status-proyek-form-selesai" action="{{ route('produksi.pembangunanProyek.update', $data->id) }}" method="POST" class="hidden">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="status_pembangunan" value="selesai">
+    </form>
+
 
 
     <!-- Header Info -->
@@ -132,13 +165,33 @@
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {{-- Status --}}
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
-                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase
-                            {{ $data->status_pembangunan === 'selesai' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' }}">
-                            {{ $data->status_pembangunan }}
-                        </span>
+                    {{-- Status Dropdown --}}
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative" x-data="{ openStatus: false }">
+                        <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Status Pembangunan</p>
+                        <div class="relative">
+                            <button @click="openStatus = !openStatus"
+                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all border border-transparent hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
+                                :class="{
+                                    'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': proyekStatus === 'proses',
+                                    'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400': proyekStatus === 'selesai',
+                                    'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': proyekStatus === 'selesai dengan catatan'
+                                }">
+                                <span x-text="proyekStatus"></span>
+                                <i class="fa-solid fa-chevron-down text-[8px] transition-transform" :class="openStatus ? 'rotate-180' : ''"></i>
+                            </button>
+                            <div x-show="openStatus" @click.away="openStatus = false" x-transition x-cloak
+                                class="absolute left-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden text-left">
+                                <div class="p-1 space-y-1">
+                                    <template x-for="opt in ['proses', 'selesai']">
+                                        <button @click="confirmChangeProyekStatus(opt); openStatus = false"
+                                            class="w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                                            :class="proyekStatus === opt ? 'bg-gray-50 text-blue-600 dark:bg-gray-750 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'"
+                                            x-text="opt">
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     {{-- Tanggal Mulai --}}
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
@@ -155,29 +208,6 @@
 
             {{-- Kanan: Aksi --}}
             <div class="flex flex-row lg:flex-col items-center lg:items-end gap-2 shrink-0">
-                @if ($data->status_pembangunan !== 'selesai')
-                <form action="{{ route('produksi.pembangunanProyek.update', $data->id) }}" method="POST"
-                    @submit.prevent="
-                        Swal.fire({
-                            title: 'Konfirmasi',
-                            text: 'Apakah Anda yakin ingin menyelesaikan pembangunan proyek ini?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#059669',
-                            confirmButtonText: 'Ya, Selesaikan',
-                            cancelButtonText: 'Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) { $el.submit(); }
-                        })
-                    ">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="status_pembangunan" value="selesai">
-                    <button type="submit" class="inline-flex items-center gap-1.5 bg-green-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-green-700 shadow-sm transition-all active:scale-95">
-                        <i class="fa-solid fa-circle-check"></i> Selesaikan
-                    </button>
-                </form>
-                @endif
                 <a href="{{ route('produksi.pembangunanProyek.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
                     <i class="fa-solid fa-file-excel text-green-600"></i> Export Excel
@@ -937,7 +967,6 @@
                 </div>
             </div>
         </div>
-    </template>
 </div>
 @endsection
 

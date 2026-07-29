@@ -234,6 +234,22 @@
         },
 
         async updateStatusST(newVal) {
+            if (this.statusST === newVal) return;
+
+            const label = newVal.replace(/_/g, ' ');
+            const result = await Swal.fire({
+                title: 'Konfirmasi Serah Terima',
+                text: `Apakah Anda yakin ingin mengubah status serah terima menjadi '${label}'?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563EB',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Ya, Ubah Status',
+                cancelButtonText: 'Batal'
+            });
+
+            if (!result.isConfirmed) return;
+
             try {
                 const res = await axios.post('{{ route('produksi.pembangunanUnit.updateSerahTerima', $data->id) }}', {
                     status_serah_terima: newVal
@@ -245,16 +261,79 @@
                     if (res.data.unit_status) {
                         this.unitStatus = res.data.unit_status;
                     }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Status serah terima berhasil diperbarui!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
                 }
             } catch (e) {
                 console.error(e);
-                alert('Gagal memperbarui status.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal memperbarui status serah terima'
+                });
             }
         },
 
+        async updateUnitStatus(newVal) {
+            if (this.unitStatus === newVal) return;
+
+            // Jika mau selesai tapi progress belum 100%, tampilkan error
+            if (newVal === 'selesai' && this.totalProgress < 100) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tidak Dapat Diselesaikan',
+                    text: `Progress pembangunan baru ${this.totalProgress}%. Harus 100% untuk bisa diselesaikan.`,
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            const label = newVal.charAt(0).toUpperCase() + newVal.slice(1);
+            const result = await Swal.fire({
+                title: 'Konfirmasi Status',
+                text: `Apakah Anda yakin ingin mengubah status menjadi '${label}'?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: newVal === 'selesai' ? '#059669' : '#2563EB',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Ya, Ubah Status',
+                cancelButtonText: 'Batal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await axios.patch('{{ route('produksi.pembangunanUnit.update', $data->id) }}', {
+                    status_pembangunan: newVal,
+                    _method: 'PATCH'
+                });
+
+                this.unitStatus = newVal;
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: `Status berhasil diubah menjadi ${label}!`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (e) {
+                console.error(e);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: e.response?.data?.message || 'Gagal memperbarui status pembangunan'
+                });
+            }
+        },
+
+
         prepareUpah(upahArray, qcId) {
             this.selectedQcId = qcId;
-            this.catatanUpah = '';
             this.itemsToPay = upahArray.map(u => {
                 const nominalStandar = Number(u.nominal_standar) || 0;
                 const totalOrderedUpah = Number(u.total_ordered_upah) || 0;

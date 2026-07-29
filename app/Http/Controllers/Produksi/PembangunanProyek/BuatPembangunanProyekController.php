@@ -108,6 +108,6 @@ class BuatPembangunanProyekController extends Controller
         $project->update(['status_pembangunan' => 'proses']);
         $this->sendGroupNotificationProses($project);
 
-        return redirect()->route('produksi.pembangunanProyek.index')->with('success', 'Project mulai diproses!');
+        return redirect()->route('produksi.projectBaru.index')->with('success', 'Project mulai diproses!');
     }
 }
