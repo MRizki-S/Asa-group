@@ -162,7 +162,7 @@ class TerminController extends Controller
         $namaPerumahan = $unit->unit->tahap->perumahaan->nama_perumahaan ?? '-';
         $namaUnit = $unit->unit->nama_unit ?? '-';
 
-        $sheet->setCellValue('A1', 'LAPORAN TERMIN PROYEK & PEMBANGUNAN UNIT');
+        $sheet->setCellValue('A1', 'LAPORAN TERMIN PEMBANGUNAN UNIT');
         $sheet->getStyle('A1')->applyFromArray($styleHeaderMain);
 
         $sheet->setCellValue('A2', "Perumahan: {$namaPerumahan} | Unit: {$namaUnit}");
@@ -372,10 +372,10 @@ class TerminController extends Controller
                 $row++; // Spasi antar kategori
 
                 // ==========================================
-                // 4. UPAH HARIAN (Placeholder Gudang)
+                // 4. UPAH HARIAN
                 // ==========================================
                 $sheet->mergeCells("A{$row}:E{$row}");
-                $sheet->setCellValue("A{$row}", '   4. UPAH HARIAN (GUDANG)');
+                $sheet->setCellValue("A{$row}", '   4. UPAH HARIAN');
                 $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
                 $row++;
 
@@ -387,19 +387,12 @@ class TerminController extends Controller
                 $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
                 $row++;
 
-                // Placeholder Upah Harian dari modul Gudang
-                $sheet->setCellValue("A{$row}", 1);
-                $sheet->setCellValue("B{$row}", 'Total Upah Harian (Gudang)');
-                $sheet->setCellValue("C{$row}", '-');
-                $sheet->setCellValue("D{$row}", 'Harian');
-                $sheet->setCellValue("E{$row}", 0);
-
-                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
+                // Belum ada data upah harian
+                $sheet->mergeCells("A{$row}:E{$row}");
+                $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
+                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
                 $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle("C{$row}:D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-                $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 $row++;
                 $row++; // Spasi sebelum subtotal
             }
