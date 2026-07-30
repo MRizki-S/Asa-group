@@ -23,7 +23,7 @@
             </script>
         @endif
 
-        <form action="{{ route('kpi.user.store') }}" method="POST">
+        <form action="{{ route('kpi.user.store') }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
             @csrf
             <div class="grid grid-cols-1 gap-6">
 
@@ -165,9 +165,10 @@
                     </a>
 
                     <button type="submit"
-                        :disabled="selectedUsers.length === 0 || selectedKomponen.length === 0 || totalBobot != 100"
-                        class="px-10 py-3 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Simpan & Inisialisasi
+                        :disabled="submitting || selectedUsers.length === 0 || selectedKomponen.length === 0 || totalBobot != 100"
+                        :class="(submitting || selectedUsers.length === 0 || selectedKomponen.length === 0 || totalBobot != 100) ? 'opacity-50 cursor-not-allowed' : ''"
+                        class="px-10 py-3 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        <span x-text="submitting ? 'Memproses...' : 'Simpan & Inisialisasi'"></span>
                     </button>
                 </div>
             </div>

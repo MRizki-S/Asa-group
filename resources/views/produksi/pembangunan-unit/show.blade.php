@@ -605,7 +605,7 @@
         <!-- Modal Konfirmasi Batal Order -->
         <template x-teleport="body">
             <div x-show="openCancelOrderModal"
-                class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+                class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80"
                 x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100">
                 <div @click.away="openCancelOrderModal = false" class="relative w-full max-w-md p-4">
@@ -619,27 +619,19 @@
                                 </svg>
                             </button>
                         </div>
-
-                        <form :action="cancelOrderActionUrl" method="POST" class="p-5 space-y-4">
-                            @csrf
-                            @method('DELETE')
-                            
-                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                                Apakah Anda yakin ingin membatalkan order barang ini? Tindakan ini tidak dapat dibatalkan.
-                            </p>
-
-                            <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-600">
-                                <button type="button" @click="openCancelOrderModal = false"
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
-                                    Kembali
-                                </button>
-                                <button type="submit"
-                                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 shadow-sm transition">
-                                    Ya, Batalkan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    </p>
+                    <form :action="cancelOrderActionUrl" method="POST" class="flex justify-center gap-3">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" @click="openCancelOrderModal = false"
+                            class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 text-xs font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700">
+                            Ya, Batalkan
+                        </button>
+                    </form>
                 </div>
             </div>
         </template>
@@ -647,7 +639,7 @@
         <!-- Modal Konfirmasi Batal Upah -->
         <template x-teleport="body">
             <div x-show="openCancelUpahModal"
-                class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+                class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80"
                 x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100">
                 <div @click.away="openCancelUpahModal = false" class="relative w-full max-w-md p-4">

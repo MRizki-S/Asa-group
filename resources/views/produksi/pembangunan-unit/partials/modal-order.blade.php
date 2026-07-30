@@ -1,4 +1,4 @@
-<div x-show="openRequest" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+<div x-show="openRequest" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80"
     x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100">
 
@@ -217,7 +217,7 @@
                             <button type="submit"
                                 :disabled="loadingRequest || (!itemsToOrder.some(i => i.checked) && itemsAdditional.length === 0)"
                                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-50">
-                                <span x-text="loadingRequest ? 'Loading...' : 'Order'"></span>
+                                <span x-text="loadingRequest ? 'Memproses...' : 'Order'"></span>
                             </button>
                         </div>
                     </div>

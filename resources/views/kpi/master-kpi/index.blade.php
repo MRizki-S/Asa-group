@@ -33,9 +33,6 @@
                         <h3 class="text-base font-medium text-gray-800 dark:text-white/90">List Master Komponen KPI</h3>
                         <a href="{{ route('kpi.komponen.create') }}"
                             class="inline-flex items-center justify-center gap-1 w-full sm:w-auto px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
                             + Tambah
                         </a>
                     </div>
@@ -234,7 +231,7 @@
              MODAL TASK LIST
              ============================================================ --}}
         <div x-show="openModal"
-            class="fixed inset-0 z-[99] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm"
+            class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50"
             style="display: none;" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"

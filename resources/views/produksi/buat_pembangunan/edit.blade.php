@@ -12,40 +12,33 @@
 
     <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 mt-6">
         <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Edit Pembangunan Kawasan</h3>
-        <form action="{{ route('produksi.buatPembangunanKawasan.update', $kawasan->id) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Pembangunan <span class="text-red-500">*</span></label>
-                    <input type="text" name="nama" value="{{ $kawasan->nama }}" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                </div>
+            <form action="{{ route('produksi.buatPembangunanKawasan.update', $kawasan->id) }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
+                @csrf
+                @method('PUT')
+                <div class="space-y-4">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Pembangunan <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama" value="{{ old('nama', $kawasan->nama) }}" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="mis. Kawasan Melati Cluster A">
+                    </div>
 
-                <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Perumahan <span class="text-red-500">*</span></label>
-                    <select name="perumahaan_id" id="selectPerumahan" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        <option value="">Pilih Perumahan</option>
-                        @foreach($perumahaans as $perumahan)
-                            <option value="{{ $perumahan->id }}" {{ $kawasan->perumahaan_id == $perumahan->id ? 'selected' : '' }}>{{ $perumahan->nama_perumahaan }}</option>
-                        @endforeach
-                    </select>
-                    <script>
-                        $(document).ready(function() {
-                            $('#selectPerumahan').select2({
-                                placeholder: "Pilih Perumahan",
-                                theme: 'bootstrap4',
-                                width: '100%'
-                            });
-                        });
-                    </script>
-                </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Perumahan <span class="text-red-500">*</span></label>
+                        <select name="perumahaan_id" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            <option value="">Pilih Perumahan</option>
+                            @foreach($perumahaans as $perumahan)
+                                <option value="{{ $perumahan->id }}" {{ old('perumahaan_id', $kawasan->perumahaan_id) == $perumahan->id ? 'selected' : '' }}>{{ $perumahan->nama_perumahaan }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="md:col-span-2 flex flex-row justify-end gap-3 pt-2">
-                    <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="w-1/2 sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm text-center">Batal</a>
-                    <button type="submit" class="w-1/2 sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm text-center">Update</button>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="w-1/2 sm:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 transition shadow-sm text-center">Batal</a>
+                        <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''" class="w-1/2 sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm text-center">
+                            <span x-text="submitting ? 'Memproses...' : 'Update'"></span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
     </div>
 </div>
 @endsection

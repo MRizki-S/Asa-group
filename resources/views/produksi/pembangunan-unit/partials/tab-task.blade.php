@@ -63,7 +63,7 @@
             {{-- MODAL (Pakai Form asli biar return back() kerja) --}}
             <template x-teleport="body">
                 <div x-show="openModalNote"
-                    class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px]"
+                    class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60"
                     x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
                     x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
                     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-cloak>
@@ -71,7 +71,7 @@
                     <div class="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden"
                         @click.away="openModalNote = false">
 
-                        <form action="{{ route('produksi.pembangunanUnit.updateTaskNote', $task->id) }}" method="POST">
+                        <form action="{{ route('produksi.pembangunanUnit.updateTaskNote', $task->id) }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                             @csrf
                             <div class="p-6">
                                 <div class="flex justify-between items-center mb-4">
@@ -83,18 +83,26 @@
                                 </div>
 
                                 <div
-                                    class="mb-4 p-3 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-gray-800">
-                                    <p class="text-[11px] uppercase tracking-wider font-bold text-gray-400 mb-1">Tugas:
-                                    </p>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">{{ $task->tugas }}
-                                    </p>
+                                    class="p-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-xl mb-4">
+                                    <p class="text-xs font-bold text-blue-700 dark:text-blue-400">
+                                        {{ $task->nama_qc }}</p>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                                        {{ $data->unit->nama_unit ?? 'Unit' }}</p>
                                 </div>
 
-                                <textarea name="catatan" rows="5"
-                                    :readonly="['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
-                                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) readonly @endif
-                                    class="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
-                                    placeholder="Tulis catatan atau detail temuan di sini...">{{ $task->catatan }}</textarea>
+                                <label
+                                    class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Pesan
+                                    Catatan</label>
+                                <textarea name="catatan_qc" rows="4"
+                                    x-show="!['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
+                                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) disabled @endif
+                                    class="w-full text-xs rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500 p-3 outline-none"
+                                    placeholder="Tuliskan catatan perbaikan atau kendala di sini...">{!! old('catatan_qc', $task->catatan_qc) !!}</textarea>
+
+                                <div x-show="['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
+                                    class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800 text-xs text-gray-700 dark:text-gray-300 min-h-[80px]">
+                                    {!! old('catatan_qc', $task->catatan_qc) ?: '<span class="text-gray-400 italic">Tidak ada catatan</span>' !!}
+                                </div>
                             </div>
 
                             <div
@@ -104,10 +112,12 @@
                                     BATAL
                                 </button>
                                 <button type="submit"
+                                    :disabled="submitting"
+                                    :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
                                     x-show="!['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
                                     @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) style="display:none;" @endif
                                     class="px-5 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">
-                                    SIMPAN CATATAN
+                                    <span x-text="submitting ? 'MEMPROSES...' : 'SIMPAN CATATAN'"></span>
                                 </button>
                             </div>
                         </form>

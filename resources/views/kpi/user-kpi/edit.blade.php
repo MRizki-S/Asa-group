@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <form action="{{ route('kpi.user.update', $kpiUser->id) }}" method="POST">
+        <form action="{{ route('kpi.user.update', $kpiUser->id) }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
             @csrf @method('PUT')
 
             <div class="space-y-6">
@@ -272,9 +272,9 @@
                             </a>
                         @endcan
                         @can('kpi.kpi-user.update-simpan-nilai')
-                            <button type="submit"
+                            <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
                                 class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                                Simpan Nilai
+                                <span x-text="submitting ? 'Memproses...' : 'Simpan Nilai'"></span>
                             </button>
                         @endcan
                     @else

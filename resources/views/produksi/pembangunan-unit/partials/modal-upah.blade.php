@@ -1,4 +1,4 @@
-<div x-show="openUpahModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+<div x-show="openUpahModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80"
     x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100">
 
@@ -97,7 +97,7 @@
                         class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">Batal</button>
                     <button type="submit" :disabled="loadingUpah || !itemsToPay.some(i => i.checked)"
                         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm transition disabled:opacity-50">
-                        <span x-text="loadingUpah ? 'Loading...' : 'Kirim Pengajuan'"></span>
+                        <span x-text="loadingUpah ? 'Memproses...' : 'Kirim Pengajuan'"></span>
                     </button>
                 </div>
             </form>

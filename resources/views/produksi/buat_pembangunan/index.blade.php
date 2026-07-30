@@ -60,7 +60,7 @@
         <!-- Form Create -->
         <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Pembangunan Kawasan</h3>
-            <form action="{{ route('produksi.buatPembangunanKawasan.store') }}" method="POST">
+            <form action="{{ route('produksi.buatPembangunanKawasan.store') }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -88,7 +88,9 @@
                     </div>
 
                     <div class="md:col-span-2 flex justify-end pt-2">
-                        <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">Simpan Pembangunan</button>
+                        <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                            <span x-text="submitting ? 'Memproses...' : 'Simpan Pembangunan'"></span>
+                        </button>
                     </div>
                 </div>
             </form>
@@ -177,14 +179,14 @@
     </div>
 
     <!-- Modal Proses Sesi Pembangunan -->
-    <div id="modalProcessSesi" x-show="openProcessModal" x-cloak class="fixed inset-0 z-[999999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="modalProcessSesi" x-show="openProcessModal" x-cloak class="fixed inset-0 z-[99999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <!-- Backdrop Overlay -->
-            <div x-show="openProcessModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="openProcessModal = false"></div>
+            <div x-show="openProcessModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/50 transition-opacity" @click="openProcessModal = false"></div>
 
             <!-- Modal Content Card (relative z-10 stays above backdrop) -->
             <div x-show="openProcessModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="relative z-10 w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl text-left overflow-visible shadow-2xl transform transition-all border border-gray-200 dark:border-gray-700">
-                <form :action="processActionUrl" method="POST">
+                <form :action="processActionUrl" method="POST" x-data="{ submittingModal: false }" @submit="if(submittingModal) { $event.preventDefault(); return; }; submittingModal = true">
                     @csrf
                     <div class="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 rounded-t-2xl">
                         <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
@@ -233,7 +235,9 @@
                     </div>
                     <div class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 flex justify-end gap-2 rounded-b-2xl">
                         <button type="button" @click="openProcessModal = false" class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg shadow-sm">Mulai Proses</button>
+                        <button type="submit" :disabled="submittingModal" :class="submittingModal ? 'opacity-50 cursor-not-allowed' : ''" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg shadow-sm">
+                            <span x-text="submittingModal ? 'Memproses...' : 'Mulai Proses'"></span>
+                        </button>
                     </div>
                 </form>
             </div>

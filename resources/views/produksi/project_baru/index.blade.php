@@ -37,7 +37,7 @@
         <!-- Form Create -->
         <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Project Kontraktor Baru</h3>
-            <form action="{{ route('produksi.projectBaru.store') }}" method="POST" id="form-create-project">
+            <form action="{{ route('produksi.projectBaru.store') }}" method="POST" id="form-create-project" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -87,7 +87,9 @@
                     </div>
 
                     <div class="md:col-span-2 flex justify-end pt-2">
-                        <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">Simpan Project</button>
+                        <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                            <span x-text="submitting ? 'Memproses...' : 'Simpan Project'"></span>
+                        </button>
                     </div>
                 </div>
             </form>

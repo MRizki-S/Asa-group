@@ -1,4 +1,4 @@
-<div x-show="isModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+<div x-show="isModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50"
     x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -23,20 +23,19 @@
                 </button>
             </div>
 
-            <form :action="modalAction" method="POST" class="p-4 space-y-4">
+            <form :action="modalAction" method="POST" class="p-4 space-y-4" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                 @csrf
                 <template x-if="modalMode === 'edit'">
                     @method('PUT')
                 </template>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-                        Nama Upah
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                        Nama Upah Pekerjaan <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="nama_upah" x-model="formData.nama" required
-                        placeholder="Contoh: Borongan pondasi"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5
-                            dark:bg-gray-600 dark:border-gray-500 dark:text-white dark:placeholder-gray-400
+                    <input type="text" name="nama_upah" x-model="formData.nama_upah" required
+                        placeholder="Contoh: Pekerjaan Pondasi, Pasang Keramik..."
+                        class="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2.5 
                             focus:ring-blue-600 focus:border-blue-600 outline-none transition">
                 </div>
 
@@ -45,9 +44,9 @@
                         class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition">
                         Batal
                     </button>
-                    <button type="submit"
+                    <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
                         class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-sm transition">
-                        Simpan Data
+                        <span x-text="submitting ? 'Memproses...' : 'Simpan Data'"></span>
                     </button>
                 </div>
             </form>

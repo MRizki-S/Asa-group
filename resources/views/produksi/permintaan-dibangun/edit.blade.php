@@ -88,7 +88,7 @@
     </div>
 
     {{-- Form Edit --}}
-    <form action="{{ route('produksi.pengajuanPembangunanUnit.update', $pembangunan->id) }}" method="POST">
+    <form action="{{ route('produksi.pengajuanPembangunanUnit.update', $pembangunan->id) }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
         @csrf
         @method('PUT')
 
@@ -205,9 +205,9 @@
                 class="inline-flex items-center justify-center px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
                 Batal
             </a>
-            <button type="submit"
+            <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
                 class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
-                Simpan Perubahan
+                <span x-text="submitting ? 'Memproses...' : 'Simpan Perubahan'"></span>
             </button>
         </div>
     </form>

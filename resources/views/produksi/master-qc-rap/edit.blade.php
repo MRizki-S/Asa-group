@@ -60,7 +60,7 @@
             </div>
         @endif
 
-        <form action="{{ route('produksi.masterQcRap.update', $container->id) }}" method="POST">
+        <form action="{{ route('produksi.masterQcRap.update', $container->id) }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
             @csrf
             @method('PUT')
 
@@ -149,9 +149,9 @@
                         class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition shadow-sm font-semibold text-center">
                         Batal
                     </button>
-                    <button type="submit"
+                    <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
                         class="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg text-center">
-                        Update
+                        <span x-text="submitting ? 'Memproses...' : 'Update'"></span>
                     </button>
                 </div>
             </div>

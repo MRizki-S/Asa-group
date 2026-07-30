@@ -1,6 +1,6 @@
 <template x-teleport="body">
     <div x-show="openReturnModal"
-        class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60"
         x-cloak
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 scale-95"

@@ -39,7 +39,8 @@
                         @can('kpi.kpi-user.create')
                             <a href="{{ route('kpi.user.create') }}"
                                 class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                                +Penilaian
+                                +
+                                Penilaian
                             </a>
                         @endcan
                     </div>
@@ -202,7 +203,7 @@
         </div>
     </div>
 
-    <div id="modalExport" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="modalExport" class="fixed inset-0 z-[99999] hidden items-center justify-center bg-black/50 p-4">
         <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md">
 
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">

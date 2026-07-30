@@ -282,7 +282,7 @@
             <!-- Kiri: Form Order Baru -->
             <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Order Barang</h3>
-                <form action="{{ route('produksi.pembangunanKawasan.orderStore') }}" method="POST">
+                <form action="{{ route('produksi.pembangunanKawasan.orderStore') }}" method="POST" x-data="{ submittingOrder: false }" @submit="if(submittingOrder) { $event.preventDefault(); return; }; submittingOrder = true">
                     @csrf
                     <input type="hidden" name="pembangunan_kawasan_id" value="{{ $data->id }}">
                     
@@ -350,7 +350,9 @@
                         </div>
 
                         <div x-show="itemsAdditional.length > 0" class="flex justify-end mt-4">
-                            <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">Kirim Order</button>
+                            <button type="submit" :disabled="submittingOrder" :class="submittingOrder ? 'opacity-50 cursor-not-allowed' : ''" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
+                                <span x-text="submittingOrder ? 'Memproses...' : 'Kirim Order'"></span>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -760,7 +762,7 @@
             <!-- Kiri (50%): Form Buat Retur Barang -->
             <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Retur Barang</h3>
-                <form action="{{ route('produksi.pembangunanKawasan.returnStore') }}" method="POST">
+                <form action="{{ route('produksi.pembangunanKawasan.returnStore') }}" method="POST" x-data="{ submittingRetur: false }" @submit="if(submittingRetur) { $event.preventDefault(); return; }; submittingRetur = true">
                     @csrf
                     <input type="hidden" name="pembangunan_kawasan_id" value="{{ $data->id }}">
 
@@ -842,7 +844,9 @@
                         </div>
 
                         <div x-show="returnKawasanItems.length > 0" class="flex justify-end mt-4">
-                            <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition shadow-sm">Kirim Retur Barang</button>
+                            <button type="submit" :disabled="submittingRetur" :class="submittingRetur ? 'opacity-50 cursor-not-allowed' : ''" class="inline-flex items-center justify-center px-5 py-2.5 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition shadow-sm">
+                                <span x-text="submittingRetur ? 'Memproses...' : 'Kirim Retur Barang'"></span>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -1035,7 +1039,7 @@
     <!-- Modal Konfirmasi Batal Order -->
     <template x-teleport="body">
         <div x-show="openCancelOrderModal"
-            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80"
             x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100">
             <div @click.away="openCancelOrderModal = false" class="relative w-full max-w-md p-4">
@@ -1077,7 +1081,7 @@
     <!-- Modal Konfirmasi Batal Upah -->
     <template x-teleport="body">
         <div x-show="openCancelUpahModal"
-            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 dark:bg-black/80"
             x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100">
             <div @click.away="openCancelUpahModal = false" class="relative w-full max-w-md p-4">
