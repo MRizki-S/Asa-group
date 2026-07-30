@@ -411,6 +411,8 @@
             this.selectedQcId = qcId;
             this.filterType = 'stock';
             this.catatanGlobal = '';
+            this.showAdditional = false;
+            this.itemsAdditional = [];
 
             this.itemsToOrder = bahanArray.map(b => {
                 // Ambil faktor dari database (Sekarang Pcs=1, Dus=16)

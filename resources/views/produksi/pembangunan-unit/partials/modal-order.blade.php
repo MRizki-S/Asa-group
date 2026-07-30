@@ -25,12 +25,12 @@
 
                     <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl gap-1">
                         <button type="button"
-                            @click="filterType = 'stock'; itemsToOrder.forEach(i => i.checked = false); itemsAdditional = []; showAdditional = true; addAdditionalItem()"
+                            @click="filterType = 'stock'; itemsToOrder.forEach(i => i.checked = false)"
                             :class="filterType === 'stock' ? 'bg-white shadow-sm text-blue-600 dark:bg-gray-700 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'"
                             class="flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all">Barang
                             Stock</button>
                         <button type="button"
-                            @click="filterType = 'direct'; itemsToOrder.forEach(i => i.checked = false); itemsAdditional = []; showAdditional = true; addAdditionalItem()"
+                            @click="filterType = 'direct'; itemsToOrder.forEach(i => i.checked = false)"
                             :class="filterType === 'direct' ? 'bg-white shadow-sm text-amber-600 dark:bg-gray-700 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'"
                             class="flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all">Barang
                             Direct</button>
