@@ -422,7 +422,7 @@ class TerminController extends Controller
         $row++;
 
         $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI SERVIS');
+        $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI UPAH HARIAN TUKANG');
         $sheet->setCellValue("E{$row}", 0);
         $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
@@ -728,23 +728,24 @@ class TerminController extends Controller
         // ==========================================
         // 2. UPAH HARIAN
         // ==========================================
-        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->mergeCells("A{$row}:E{$row}");
         $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
         $row++;
 
         $sheet->setCellValue("A{$row}", 'NO');
-        $sheet->setCellValue("B{$row}", 'KETERANGAN UPAH HARIAN');
-        $sheet->setCellValue("C{$row}", 'JENIS UPAH');
-        $sheet->setCellValue("D{$row}", 'NOMINAL REAL');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+        $sheet->setCellValue("B{$row}", 'Nomor Upah Harian');
+        $sheet->setCellValue("C{$row}", 'Periode');
+        $sheet->setCellValue("D{$row}", 'Nominal Upah');
+        $sheet->setCellValue("E{$row}", 'HARGA REAL');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
         $row++;
 
         // Placeholder Upah Harian proyek
-        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->mergeCells("A{$row}:E{$row}");
         $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-        $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+        $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $row++;
 
@@ -963,23 +964,24 @@ class TerminController extends Controller
             // ==========================================
             // 2. UPAH HARIAN
             // ==========================================
-            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->mergeCells("A{$row}:E{$row}");
             $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN');
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
             $row++;
 
             $sheet->setCellValue("A{$row}", 'NO');
-            $sheet->setCellValue("B{$row}", 'KETERANGAN UPAH HARIAN');
-            $sheet->setCellValue("C{$row}", 'JENIS UPAH');
-            $sheet->setCellValue("D{$row}", 'NOMINAL REAL');
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+            $sheet->setCellValue("B{$row}", 'Nomor Upah Harian');
+            $sheet->setCellValue("C{$row}", 'Periode');
+            $sheet->setCellValue("D{$row}", 'Nominal Upah');
+            $sheet->setCellValue("E{$row}", 'HARGA REAL');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
             $row++;
 
             // Placeholder Upah Harian kawasan
-            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->mergeCells("A{$row}:E{$row}");
             $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-            $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row++;
 
