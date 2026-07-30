@@ -725,12 +725,15 @@ class TerminController extends Controller
             $row++;
         }
 
-        // ==========================================
-        // 2. UPAH HARIAN
-        // ==========================================
+        $row += 2;
+
+        // =========================================================================
+        // 2. TABEL AKUMULASI UPAH HARIAN TUKANG (STANDALONE DI ATAS GRAND TOTAL)
+        // =========================================================================
         $sheet->mergeCells("A{$row}:E{$row}");
-        $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
+        $sheet->setCellValue("A{$row}", 'AKUMULASI UPAH HARIAN TUKANG');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleProyekHeader);
+        $sheet->getRowDimension($row)->setRowHeight(24);
         $row++;
 
         $sheet->setCellValue("A{$row}", 'NO');
@@ -749,23 +752,32 @@ class TerminController extends Controller
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $row++;
 
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI UPAH HARIAN TUKANG');
+        $sheet->setCellValue("E{$row}", 0);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row += 3;
+
         // ==========================================
         // GRAND TOTAL KESELURUHAN PROYEK
         // ==========================================
-        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI BAHAN');
-        $sheet->setCellValue("D{$row}", $totalBahan);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
+        $sheet->setCellValue("E{$row}", $totalBahan);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
         $row++;
 
-        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI UPAH');
-        $sheet->setCellValue("D{$row}", $totalUpah);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
+        $sheet->setCellValue("E{$row}", $totalUpah);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
         $row++;
 
         $grandTotalFinalStyle = [
@@ -774,13 +786,13 @@ class TerminController extends Controller
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF15803D']]],
         ];
 
-        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL BIAYA KESELURUHAN (BAHAN + UPAH)');
-        $sheet->setCellValue("D{$row}", $totalBahan + $totalUpah);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($grandTotalFinalStyle);
+        $sheet->setCellValue("E{$row}", $totalBahan + $totalUpah);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($grandTotalFinalStyle);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-        $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getRowDimension($row)->setRowHeight(24);
 
         // Pengaturan lebar kolom presisi (4 Kolom: A, B, C, D)
@@ -962,35 +974,10 @@ class TerminController extends Controller
             }
 
             // ==========================================
-            // 2. UPAH HARIAN
-            // ==========================================
-            $sheet->mergeCells("A{$row}:E{$row}");
-            $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN');
-            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
-            $row++;
-
-            $sheet->setCellValue("A{$row}", 'NO');
-            $sheet->setCellValue("B{$row}", 'Nomor Upah Harian');
-            $sheet->setCellValue("C{$row}", 'Periode');
-            $sheet->setCellValue("D{$row}", 'Nominal Upah');
-            $sheet->setCellValue("E{$row}", 'HARGA REAL');
-            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
-            $row++;
-
-            // Placeholder Upah Harian kawasan
-            $sheet->mergeCells("A{$row}:E{$row}");
-            $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
-            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
-            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $row++;
-
-            // ==========================================
             // SUBTOTAL PER PERIODE
             // ==========================================
-            $totalPeriodeOverall = $totalPeriodeBahan + $totalPeriodeUpah;
+            $totalPeriodeOverall = $totalPeriodeBahan;
             $grandTotalBahan += $totalPeriodeBahan;
-            $grandTotalUpah += $totalPeriodeUpah;
 
             $sheet->mergeCells("A{$row}:C{$row}");
             $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI PERIODE (' . $tglMulai . ' s/d ' . $tglSelesai . ')');
@@ -1000,7 +987,7 @@ class TerminController extends Controller
             $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
             $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-            $row += 4; // Spasi antar blok Periode
+            $row += 3; // Spasi antar blok Periode
         }
 
         if ($periodes->isEmpty()) {
@@ -1008,26 +995,60 @@ class TerminController extends Controller
             $sheet->setCellValue("A{$row}", 'Belum ada riwayat periode pembangunan kawasan.');
             $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $row += 2;
+            $row += 3;
         }
+
+        // =========================================================================
+        // 2. TABEL AKUMULASI UPAH HARIAN TUKANG (STANDALONE DI ATAS GRAND TOTAL)
+        // =========================================================================
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", 'AKUMULASI UPAH HARIAN TUKANG');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($stylePeriodeHeader);
+        $sheet->getRowDimension($row)->setRowHeight(24);
+        $row++;
+
+        $sheet->setCellValue("A{$row}", 'NO');
+        $sheet->setCellValue("B{$row}", 'Nomor Upah Harian');
+        $sheet->setCellValue("C{$row}", 'Periode');
+        $sheet->setCellValue("D{$row}", 'Nominal Upah');
+        $sheet->setCellValue("E{$row}", 'HARGA REAL');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
+        $row++;
+
+        // Placeholder Upah Harian kawasan
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+        $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $row++;
+
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI UPAH HARIAN TUKANG');
+        $sheet->setCellValue("E{$row}", 0);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $row += 3;
 
         // ==========================================
         // GRAND TOTAL KESELURUHAN KAWASAN
         // ==========================================
-        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI BAHAN');
-        $sheet->setCellValue("D{$row}", $grandTotalBahan);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
+        $sheet->setCellValue("E{$row}", $grandTotalBahan);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
         $row++;
 
-        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'GRAND TOTAL REALISASI UPAH');
-        $sheet->setCellValue("D{$row}", $grandTotalUpah);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
+        $sheet->setCellValue("E{$row}", $grandTotalUpah);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
         $row++;
 
         $grandTotalFinalStyle = [
@@ -1036,13 +1057,13 @@ class TerminController extends Controller
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF15803D']]],
         ];
 
-        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'TOTAL BIAYA KESELURUHAN (BAHAN + UPAH)');
-        $sheet->setCellValue("D{$row}", $grandTotalBahan + $grandTotalUpah);
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($grandTotalFinalStyle);
+        $sheet->setCellValue("E{$row}", $grandTotalBahan + $grandTotalUpah);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($grandTotalFinalStyle);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-        $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getRowDimension($row)->setRowHeight(24);
 
         // Pengaturan lebar kolom presisi (4 Kolom: A, B, C, D)
