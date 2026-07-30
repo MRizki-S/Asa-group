@@ -122,38 +122,38 @@ class TerminController extends Controller
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
         ];
 
-        // Soft & clean light borders
-        $lightBorderColor = 'FFCBD5E1'; // Soft Gray (#CBD5E1)
+        // Solid black borders
+        $borderBlackColor = 'FF000000'; // Black (#000000)
 
         $styleQcHeader = [
             'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FFFFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A8A']], // Dark Blue
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF1E3A8A']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleCategoryHeader = [
             'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF1E293B']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFE2E8F0']], // Soft Gray
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $lightBorderColor]]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleTableHeader = [
             'font' => ['bold' => true, 'size' => 9, 'color' => ['argb' => 'FF334155']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF1F5F9']], // Very Light Gray
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $lightBorderColor]]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleBorderThin = [
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $lightBorderColor]]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleSubtotal = [
             'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F172A']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEF3C7']], // Light Amber
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFCD34D']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $currencyFormat = '"Rp "' . '#,##0';
@@ -258,7 +258,6 @@ class TerminController extends Controller
                     $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $row++;
                 }
-                $row++; // Spasi antar kategori
             } else {
                 $rapBahanGroup = collect();
                 $realBahanGroup = $qc->pembangunanUnitBahan->groupBy('barang_id');
@@ -316,7 +315,6 @@ class TerminController extends Controller
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $row++;
             }
-            $row++; // Spasi antar kategori
 
             if (!$qc->is_servis) {
                 // ==========================================
@@ -369,7 +367,6 @@ class TerminController extends Controller
                     $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $row++;
                 }
-                $row++; // Spasi antar kategori
 
                 // ==========================================
                 // 4. UPAH HARIAN
@@ -394,7 +391,6 @@ class TerminController extends Controller
                 $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $row++;
-                $row++; // Spasi sebelum subtotal
             }
 
             // ==========================================
@@ -495,28 +491,31 @@ class TerminController extends Controller
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
         ];
 
+        // Solid black borders
+        $borderBlackColor = 'FF000000';
+
         $styleCategoryHeader = [
             'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF1E293B']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFE2E8F0']], // Soft Gray
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleTableHeader = [
             'font' => ['bold' => true, 'size' => 9, 'color' => ['argb' => 'FF334155']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF1F5F9']], // Very Light Gray
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleBorderThin = [
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleSubtotal = [
             'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F172A']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEF3C7']], // Light Amber
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFCD34D']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $bodyFill = [
@@ -592,7 +591,6 @@ class TerminController extends Controller
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row++;
         }
-        $row++; // Spasi antar kategori
 
         // ==========================================
         // 2. UPAH HARIAN
@@ -616,7 +614,6 @@ class TerminController extends Controller
         $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $row++;
-        $row += 2; // Spasi sebelum grand total
 
         // ==========================================
         // GRAND TOTAL KESELURUHAN PROYEK
@@ -694,35 +691,38 @@ class TerminController extends Controller
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
         ];
 
+        // Solid black borders
+        $borderBlackColor = 'FF000000';
+
         $stylePeriodeHeader = [
             'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FFFFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A8A']], // Dark Blue
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF1E3A8A']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleCategoryHeader = [
             'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF1E293B']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFE2E8F0']], // Soft Gray
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleTableHeader = [
             'font' => ['bold' => true, 'size' => 9, 'color' => ['argb' => 'FF334155']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF1F5F9']], // Very Light Gray
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleBorderThin = [
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $styleSubtotal = [
             'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F172A']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEF3C7']], // Light Amber
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFFCD34D']]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderBlackColor]]],
         ];
 
         $bodyFill = [
@@ -826,7 +826,6 @@ class TerminController extends Controller
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $row++;
             }
-            $row++; // Spasi antar kategori
 
             // ==========================================
             // 2. UPAH HARIAN
@@ -850,7 +849,6 @@ class TerminController extends Controller
             $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row++;
-            $row++; // Spasi sebelum subtotal
 
             // ==========================================
             // SUBTOTAL PER PERIODE

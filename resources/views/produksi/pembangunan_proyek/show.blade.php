@@ -137,6 +137,36 @@
         ['label' => $data->nama, 'url' => '']
     ]])
 
+    {{-- Flash notification --}}
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: @json(session('success')),
+                timer: 2500,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
+    </script>
+    @endif
+    @if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: @json(session('error')),
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
+    </script>
+    @endif
+
     <!-- Hidden Status Update Forms -->
     <form id="status-proyek-form-proses" action="{{ route('produksi.pembangunanProyek.update', $data->id) }}" method="POST" class="hidden">
         @csrf
