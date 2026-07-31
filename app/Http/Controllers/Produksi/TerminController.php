@@ -338,7 +338,7 @@ class TerminController extends Controller
             $sheet->setCellValue("A{$row}", 'NO');
             $sheet->setCellValue("B{$row}", 'NAMA UPAH BORONGAN');
             $sheet->setCellValue("C{$row}", 'NOMINAL RAB');
-            $sheet->setCellValue("D{$row}", 'JENIS UPAH');
+            $sheet->setCellValue("D{$row}", '');
             $sheet->setCellValue("E{$row}", 'NOMINAL REAL');
             $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
             $row++;
@@ -357,11 +357,17 @@ class TerminController extends Controller
                 $sheet->setCellValue("A{$row}", $noUpah++);
                 $sheet->setCellValue("B{$row}", $uName);
                 $sheet->setCellValue("C{$row}", $nomRab > 0 ? $nomRab : 0);
-                $sheet->setCellValue("D{$row}", 'Borongan');
+                $sheet->setCellValue("D{$row}", '');
                 $sheet->setCellValue("E{$row}", $nomReal);
 
                 $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
                 $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+                
+                // Highlight HANYA KOLOM NOMINAL REAL (E) jika nominal real > RAB
+                if ($nomReal > $nomRab && $nomRab > 0) {
+                    $sheet->getStyle("E{$row}")->getFill()->applyFromArray($redFill);
+                }
+
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle("C{$row}:E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
@@ -669,25 +675,26 @@ class TerminController extends Controller
         $totalUpah = 0;
 
         // --- BARIS HEADER PROYEK (WARNA BIRU DONGKER) ---
-        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->mergeCells("A{$row}:E{$row}");
         $sheet->setCellValue("A{$row}", ' PROYEK: ' . strtoupper($namaProyek));
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleProyekHeader);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleProyekHeader);
         $sheet->getRowDimension($row)->setRowHeight(24);
         $row++;
 
         // ==========================================
         // 1. PEMAKAIAN BAHAN
         // ==========================================
-        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->mergeCells("A{$row}:E{$row}");
         $sheet->setCellValue("A{$row}", '   1. PEMAKAIAN BAHAN');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
         $row++;
 
         $sheet->setCellValue("A{$row}", 'NO');
         $sheet->setCellValue("B{$row}", 'NAMA BAHAN');
         $sheet->setCellValue("C{$row}", 'JUMLAH REAL');
-        $sheet->setCellValue("D{$row}", 'HARGA REAL');
-        $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+        $sheet->setCellValue("D{$row}", '');
+        $sheet->setCellValue("E{$row}", 'HARGA REAL');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
         $row++;
 
         $realBahan = $proyek->pembangunanProyekBahan;
@@ -705,22 +712,23 @@ class TerminController extends Controller
             $sheet->setCellValue("A{$row}", $noBahan++);
             $sheet->setCellValue("B{$row}", $namaBarang);
             $sheet->setCellValue("C{$row}", $qtyReal > 0 ? (float)$qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '') : '-');
-            $sheet->setCellValue("D{$row}", $hargaReal);
+            $sheet->setCellValue("D{$row}", '');
+            $sheet->setCellValue("E{$row}", $hargaReal);
 
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin);
-            $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-            $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+            $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             $row++;
         }
 
         if ($realBahanGroup->isEmpty()) {
-            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->mergeCells("A{$row}:E{$row}");
             $sheet->setCellValue("A{$row}", 'Tidak ada data pemakaian bahan.');
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-            $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row++;
         }
@@ -795,11 +803,12 @@ class TerminController extends Controller
         $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getRowDimension($row)->setRowHeight(24);
 
-        // Pengaturan lebar kolom presisi (4 Kolom: A, B, C, D)
-        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6); // NO
-        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(42); // Nama Bahan / Keterangan
-        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(22); // Jumlah Real / Jenis Upah
-        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(28); // Harga Real / Nominal
+        // Pengaturan lebar kolom presisi (5 Kolom: A, B, C, D, E)
+        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6);  // NO
+        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(38); // Nama Bahan / Nomor Upah Harian
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(20); // Jumlah Real / Periode
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(20); // Kolom Kosong / Nominal Upah
+        $sheet->getColumnDimension('E')->setAutoSize(false)->setWidth(28); // HARGA REAL (Diperlebar agar tidak ###)
 
         $namaProyekClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $proyek->nama ?? 'Proyek');
         $filename = "Laporan_Termin_Proyek_{$namaProyekClean}.xlsx";
@@ -904,9 +913,9 @@ class TerminController extends Controller
             $periodeTitle = " {$tglMulai} s/d {$tglSelesai}";
 
             // Header Banner Periode
-            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->mergeCells("A{$row}:E{$row}");
             $sheet->setCellValue("A{$row}", $periodeTitle);
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($stylePeriodeHeader);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($stylePeriodeHeader);
             $sheet->getRowDimension($row)->setRowHeight(24);
             $row++;
 
@@ -916,16 +925,17 @@ class TerminController extends Controller
             // ==========================================
             // 1. PEMAKAIAN BAHAN
             // ==========================================
-            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->mergeCells("A{$row}:E{$row}");
             $sheet->setCellValue("A{$row}", '   1. PEMAKAIAN BAHAN');
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleCategoryHeader);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
             $row++;
 
             $sheet->setCellValue("A{$row}", 'NO');
             $sheet->setCellValue("B{$row}", 'NAMA BAHAN');
             $sheet->setCellValue("C{$row}", 'JUMLAH REAL');
-            $sheet->setCellValue("D{$row}", 'HARGA REAL');
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleTableHeader);
+            $sheet->setCellValue("D{$row}", '');
+            $sheet->setCellValue("E{$row}", 'HARGA REAL');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
             $row++;
 
             // Filter bahan kawasan sesuai periode_id (atau tanggal jika periode_id null)
@@ -953,22 +963,23 @@ class TerminController extends Controller
                 $sheet->setCellValue("A{$row}", $noBahan++);
                 $sheet->setCellValue("B{$row}", $namaBarang);
                 $sheet->setCellValue("C{$row}", $qtyReal > 0 ? (float)$qtyReal . ' ' . ($firstReal ? $firstReal->satuan : '') : '-');
-                $sheet->setCellValue("D{$row}", $hargaReal);
+                $sheet->setCellValue("D{$row}", '');
+                $sheet->setCellValue("E{$row}", $hargaReal);
 
-                $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin);
-                $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
+                $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-                $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+                $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                 $row++;
             }
 
             if ($realBahanGroup->isEmpty()) {
-                $sheet->mergeCells("A{$row}:D{$row}");
+                $sheet->mergeCells("A{$row}:E{$row}");
                 $sheet->setCellValue("A{$row}", 'Tidak ada data pemakaian bahan pada periode ini.');
-                $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-                $sheet->getStyle("A{$row}:D{$row}")->getFill()->applyFromArray($bodyFill);
+                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+                $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
                 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $row++;
             }
@@ -979,13 +990,13 @@ class TerminController extends Controller
             $totalPeriodeOverall = $totalPeriodeBahan;
             $grandTotalBahan += $totalPeriodeBahan;
 
-            $sheet->mergeCells("A{$row}:C{$row}");
+            $sheet->mergeCells("A{$row}:D{$row}");
             $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI PERIODE (' . $tglMulai . ' s/d ' . $tglSelesai . ')');
-            $sheet->setCellValue("D{$row}", $totalPeriodeOverall);
-            $sheet->getStyle("A{$row}:D{$row}")->applyFromArray($styleSubtotal);
+            $sheet->setCellValue("E{$row}", $totalPeriodeOverall);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-            $sheet->getStyle("D{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-            $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+            $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
             $row += 3; // Spasi antar blok Periode
         }
@@ -1066,11 +1077,12 @@ class TerminController extends Controller
         $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getRowDimension($row)->setRowHeight(24);
 
-        // Pengaturan lebar kolom presisi (4 Kolom: A, B, C, D)
-        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6); // NO
-        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(42); // Nama Bahan / Keterangan
-        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(22); // Jumlah Real / Jenis Upah
-        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(28); // Harga Real / Nominal
+        // Pengaturan lebar kolom presisi (5 Kolom: A, B, C, D, E)
+        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6);  // NO
+        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(38); // Nama Bahan / Nomor Upah Harian
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(20); // Jumlah Real / Periode
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(20); // Kolom Kosong / Nominal Upah
+        $sheet->getColumnDimension('E')->setAutoSize(false)->setWidth(28); // HARGA REAL (Diperlebar agar tidak ###)
 
         $namaKawasanClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $kawasan->nama ?? 'Kawasan');
         $filename = "Laporan_Termin_Kawasan_{$namaKawasanClean}.xlsx";

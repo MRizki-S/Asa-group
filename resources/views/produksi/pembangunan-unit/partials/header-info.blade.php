@@ -21,7 +21,7 @@
             </div>
 
             {{-- Status Badges Grid --}}
-            <div class="grid grid-cols-2 gap-3 mt-2 lg:mt-6 max-w-md">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2 lg:mt-6 max-w-xl">
                 {{-- Status Pembangunan --}}
                 <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative"
                     x-data="{ openStatusDD: false }">
@@ -84,6 +84,14 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {{-- Tgl Pembangunan --}}
+                <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 col-span-2 sm:col-span-1">
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Tgl Pembangunan</p>
+                    <p class="text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                        {{ $data->tanggal_mulai ? \Carbon\Carbon::parse($data->tanggal_mulai)->format('d M Y') : '-' }} s/d {{ $data->tanggal_selesai ? \Carbon\Carbon::parse($data->tanggal_selesai)->format('d M Y') : '-' }}
+                    </p>
                 </div>
             </div>
         </div>
