@@ -1,13 +1,13 @@
-✅ *KONFIRMASI ACC PERMINTAAN BAHAN UNIT*
+✅ *KONFIRMASI PERMINTAAN BAHAN UNIT*
 
-Permintaan bahan material unit telah disetujui (ACC) oleh Gudang:
+Permintaan bahan material unit telah disetujui oleh Gudang:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Tahap:* {{ $namaTahap }}
 • *Unit:* {{ $namaUnit }}
 • *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal ACC:* {{ $tanggalAcc }}
+• *Tanggal Disetujui:* {{ $tanggalAcc }}
 
 *Daftar Barang yang Disetujui:*
 @foreach($order->details as $idx => $item)

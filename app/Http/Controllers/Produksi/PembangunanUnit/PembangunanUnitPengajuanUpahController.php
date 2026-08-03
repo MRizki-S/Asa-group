@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PembangunanUnitUpahPengajuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class PembangunanUnitPengajuanUpahController extends Controller
 {
@@ -44,7 +45,19 @@ class PembangunanUnitPengajuanUpahController extends Controller
                     }
                 }
 
+                $tglPrefix = 'UBT-' . now()->format('ymd') . '-';
+                $lastItem = PembangunanUnitUpahPengajuan::where('nomor_pengajuan', 'like', $tglPrefix . '%')
+                    ->orderBy('id', 'desc')
+                    ->first();
+                $seq = 1;
+                if ($lastItem && $lastItem->nomor_pengajuan) {
+                    $lastSeq = (int) substr($lastItem->nomor_pengajuan, strlen($tglPrefix));
+                    $seq = $lastSeq + 1;
+                }
+                $nomorPengajuan = $tglPrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+
                 PembangunanUnitUpahPengajuan::create([
+                    'nomor_pengajuan' => $nomorPengajuan,
                     'pembangunan_unit_id' => $request->pembangunan_unit_id,
                     'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
                     'pembangunan_unit_rap_upah_id' => $item['pembangunan_unit_rap_upah_id'],
@@ -56,6 +69,31 @@ class PembangunanUnitPengajuanUpahController extends Controller
             }
 
             DB::commit();
+
+            // Send WA Notification for new upah pengajuan
+            try {
+                $firstPengajuanId = PembangunanUnitUpahPengajuan::where('pembangunan_unit_id', $request->pembangunan_unit_id)->latest()->value('id');
+                $pengajuanSample = PembangunanUnitUpahPengajuan::with(['pembangunanUnit.unit.tahap.perumahaan', 'pembangunanUnitQc'])->find($firstPengajuanId);
+                if ($pengajuanSample) {
+                    $groupId = env('FONNTE_ID_GROUP_PENGAJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN')));
+                    if ($groupId) {
+                        $unit = $pengajuanSample->pembangunanUnit->unit;
+                        $msg = view('notifications.whatsapp.pembangunan_unit.persetujuan_upah', [
+                            'statusAction' => 'pengajuan',
+                            'pengajuan' => $pengajuanSample,
+                            'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
+                            'namaTahap' => $unit->tahap->nama_tahap ?? '-',
+                            'namaUnit' => $unit->nama_unit ?? '-',
+                            'namaQc' => $pengajuanSample->pembangunanUnitQc->nama_qc ?? '-',
+                            'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Pengawas',
+                            'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
+                        ])->render();
+                        app(\App\Services\NotificationGroupService::class)->send($groupId, $msg);
+                    }
+                }
+            } catch (\Exception $ex) {
+            }
+
             return response()->json(['message' => 'Pengajuan upah berhasil dikirim.']);
         } catch (\Exception $e) {
             DB::rollBack();

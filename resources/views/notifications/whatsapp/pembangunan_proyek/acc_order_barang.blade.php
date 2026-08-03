@@ -1,11 +1,11 @@
-✅ *KONFIRMASI ACC PERMINTAAN BAHAN PROYEK*
+✅ *KONFIRMASI PERMINTAAN BAHAN PROYEK*
 
-Permintaan bahan material proyek telah disetujui (ACC) oleh Gudang:
+Permintaan bahan material proyek telah disetujui oleh Gudang:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}
 • *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal ACC:* {{ $tanggalAcc }}
+• *Tanggal Disetujui:* {{ $tanggalAcc }}
 
 *Daftar Barang yang Disetujui:*
 @foreach($order->details as $idx => $item)

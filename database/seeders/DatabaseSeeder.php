@@ -117,9 +117,5 @@ class DatabaseSeeder extends Seeder
         $this->call([
             KpiIndicatorSeeder::class,
         ]);
-
-        $this->call([
-            TestingSeeder::class
-        ]);
     }
 }

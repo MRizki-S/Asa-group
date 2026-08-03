@@ -1,12 +1,12 @@
-✅ *KONFIRMASI ACC RETUR BAHAN KAWASAN*
+✅ *KONFIRMASI RETUR BAHAN KAWASAN*
 
-Pengajuan retur bahan material kawasan telah disetujui (ACC) oleh Gudang:
+Pengajuan retur bahan material kawasan telah disetujui oleh Gudang:
 
 • *No. Retur:* {{ $return->nomor_return ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal ACC:* {{ $tanggalAcc }}
+• *Tanggal Disetujui:* {{ $tanggalAcc }}
 
 *Rincian Barang Retur:*
 @foreach($return->details as $idx => $item)

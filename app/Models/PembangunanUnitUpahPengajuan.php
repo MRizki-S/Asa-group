@@ -10,6 +10,7 @@ class PembangunanUnitUpahPengajuan extends Model
     protected $table = 'pembangunan_unit_upah_pengajuan';
 
     protected $fillable = [
+        'nomor_pengajuan',
         'pembangunan_unit_id',
         'pembangunan_unit_qc_id',
         'pembangunan_unit_rap_upah_id',

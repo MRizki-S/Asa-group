@@ -24,7 +24,7 @@ class KonfirmasiPembangunanController extends Controller
 
     public function sendAcceptNotification($pembangunan)
     {
-        $pembangunan->load(['unit.tahap.perumahaan', 'pengawas']);
+        $pembangunan->load(['unit.tahap.perumahaan', 'pengawas', 'spv']);
 
         $unit = $pembangunan->unit;
         $namaPerumahan = $unit->tahap->perumahaan->nama_perumahaan ?? '-';
@@ -36,6 +36,7 @@ class KonfirmasiPembangunanController extends Controller
             'namaTahap' => $unit->tahap->nama_tahap ?? '-',
             'namaUnit' => $unit->nama_unit ?? '-',
             'namaPengawas' => $pembangunan->pengawas->nama_lengkap ?? '-',
+            'namaSpv' => $pembangunan->spv->nama_lengkap ?? '-',
             'tanggal' => \Carbon\Carbon::parse($pembangunan->tanggal_mulai)->format('d/m/Y') . ' s/d ' . \Carbon\Carbon::parse($pembangunan->tanggal_selesai)->format('d/m/Y')
         ])->render();
 

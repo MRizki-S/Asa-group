@@ -32,7 +32,7 @@ class PembangunanKawasanController extends Controller
         $kawasan->loadMissing(['pengawas', 'perumahan']);
         $order->loadMissing(['details']);
 
-        $groupId = env('FONNTE_ID_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM'));
+        $groupId = env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
         if (!$groupId) return;
 
         $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.order_barang', [
@@ -56,7 +56,7 @@ class PembangunanKawasanController extends Controller
         $kawasan->loadMissing(['pengawas', 'perumahan']);
         $return->loadMissing(['details.orderDetail']);
 
-        $groupId = env('FONNTE_ID_RETURN_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM'));
+        $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_KAWASAN', env('FONNTE_ID_RETURN_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
         if (!$groupId) return;
 
         $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.retur_barang', [

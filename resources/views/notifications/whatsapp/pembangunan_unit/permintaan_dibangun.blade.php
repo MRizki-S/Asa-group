@@ -1,4 +1,4 @@
-🏗️ *PERMINTAAN PEMBANGUNAN UNIT BARU*
+🏗️ *PERMINTAAN PEMBANGUNAN UNIT*
 
 Terdapat permintaan pembangunan unit baru yang membutuhkan konfirmasi dengan rincian berikut:
 

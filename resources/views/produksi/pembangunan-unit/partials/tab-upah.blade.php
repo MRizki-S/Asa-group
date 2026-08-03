@@ -36,13 +36,11 @@
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
-                        <th class="w-10 px-4 py-3"></th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Detail
-                            Pekerjaan</th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-right tracking-wider">
-                            Nominal</th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">
-                            Status</th>
+                        <th class="w-8 px-3 py-3"></th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">No. Pengajuan</th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Pekerjaan Upah</th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-right tracking-wider">Nominal</th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">Status</th>
                     </tr>
                 </thead>
 
@@ -53,7 +51,7 @@
                         {{-- Baris Utama --}}
                         <tr @click="open = !open"
                             class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
-                            <td class="px-4 py-4 text-center">
+                            <td class="px-3 py-3 text-center">
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     class="w-3 h-3 text-gray-400 transition-transform duration-300 mx-auto"
                                     :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
@@ -62,22 +60,27 @@
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </td>
-                            <td class="px-4 py-4">
-                                <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
-                                    {{ $item->tanggal_diajukan->translatedFormat('d F Y, H:i') }}
-                                </p>
-                                <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black text-blue-700 bg-blue-50 dark:bg-blue-900/40 dark:text-blue-300 font-mono border border-blue-200/60 dark:border-blue-800/50">
+                                    {{ $item->nomor_pengajuan ?? ('UBT-' . \Carbon\Carbon::parse($item->tanggal_diajukan)->format('ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT)) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <p class="text-xs font-bold text-gray-800 dark:text-gray-100">
                                     {{ $item->nama_upah }}
                                 </p>
+                                <p class="text-[9px] text-gray-400 font-medium tracking-wide mt-0.5 flex items-center gap-1">
+                                    {{ $item->tanggal_diajukan->translatedFormat('d M Y, H:i') }}
+                                </p>
                             </td>
-                            <td class="px-4 py-4 text-right">
-                                <p class="text-xs font-black text-gray-800 dark:text-white font-mono">
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <p class="text-xs font-black text-gray-900 dark:text-white font-mono">
                                     Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}
                                 </p>
                             </td>
-                            <td class="px-4 py-4 text-center">
+                            <td class="px-4 py-3 text-center whitespace-nowrap">
                                 <span
-                                    class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $item->status_style }}">
+                                    class="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-black uppercase border {{ $item->status_style }}">
                                     {{ $item->status_label }}
                                 </span>
                             </td>
@@ -85,7 +88,7 @@
 
                         {{-- Baris Detail (Accordion) --}}
                         <tr x-show="open" x-cloak>
-                            <td colspan="4" class="p-0 border-none bg-gray-50/50 dark:bg-gray-900/40">
+                            <td colspan="5" class="p-0 border-none bg-gray-50/50 dark:bg-gray-900/40">
                                 <div x-show="open" x-collapse
                                     class="px-10 py-6 border-t border-gray-100 dark:border-gray-800">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

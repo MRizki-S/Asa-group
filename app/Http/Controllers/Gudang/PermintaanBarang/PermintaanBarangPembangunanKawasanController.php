@@ -303,9 +303,14 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                     ]);
 
                     // 5. Kurangi Termin (pembangunan_kawasan_bahan)
-                    $bahan = PembangunanKawasanBahan::where('pembangunan_kawasan_id', $return->pembangunan_kawasan_id)
-                        ->where('barang_id', $detail->barang_id)
-                        ->first();
+                    $bahanQuery = PembangunanKawasanBahan::where('pembangunan_kawasan_id', $return->pembangunan_kawasan_id)
+                        ->where('barang_id', $detail->barang_id);
+
+                    if ($return->pembangunan_kawasan_periode_id) {
+                        $bahanQuery->where('pembangunan_kawasan_periode_id', $return->pembangunan_kawasan_periode_id);
+                    }
+
+                    $bahan = $bahanQuery->first();
 
                     if ($bahan) {
                         $newJumlahPakai = max(0, (float)$bahan->jumlah_pakai - (float)$detail->jumlah_base);

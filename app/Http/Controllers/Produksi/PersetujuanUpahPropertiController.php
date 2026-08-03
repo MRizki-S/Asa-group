@@ -49,28 +49,70 @@ class PersetujuanUpahPropertiController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id = null)
     {
         $request->validate([
             'action' => 'required|in:approve,reject',
-            'alasan_ditolak' => 'required_if:action,reject'
+            'alasan_ditolak' => 'required_if:action,reject',
+            'ids' => 'nullable|array',
+            'ids.*' => 'integer'
         ]);
 
-        $pengajuan = PembangunanUnitUpahPengajuan::findOrFail($id);
-        $action = $request->action;
-        
-        // Asumsi login sebagai Manager Produksi
-        if ($action === 'approve') {
-            $pengajuan->disetujui_mgr_produksi = now();
-            $pengajuan->status_pengajuan = 'req_mgr_dukungan';
-        } else {
-            $pengajuan->status_pengajuan = 'ditolak_mgr_produksi';
-            $pengajuan->alasan_ditolak = $request->alasan_ditolak;
-            $pengajuan->ditolak_pada = now();
+        $ids = $request->input('ids', []);
+        if (empty($ids) && $id) {
+            $ids = [$id];
         }
 
-        $pengajuan->save();
+        if (empty($ids)) {
+            return back()->with('error', 'Tidak ada pengajuan yang dipilih.');
+        }
 
-        return redirect()->back()->with('success', 'Status pengajuan upah properti berhasil diperbarui.');
+        $pengajuans = PembangunanUnitUpahPengajuan::whereIn('id', $ids)->get();
+        $action = $request->action;
+        $now = now();
+        $roleName = 'Manager Produksi';
+
+        foreach ($pengajuans as $pengajuan) {
+            if ($action === 'approve') {
+                $pengajuan->disetujui_mgr_produksi = $now;
+                $pengajuan->status_pengajuan = 'req_mgr_dukungan';
+            } else {
+                $pengajuan->status_pengajuan = 'ditolak_mgr_produksi';
+                $pengajuan->alasan_ditolak = $request->alasan_ditolak;
+                $pengajuan->ditolak_pada = $now;
+            }
+            $pengajuan->save();
+
+            // Send WA Notification
+            $this->sendWaNotificationResponse($pengajuan, $action === 'approve', $roleName);
+        }
+
+        return redirect()->back()->with('success', 'Status pengajuan upah berhasil diperbarui.');
+    }
+
+    private function sendWaNotificationResponse($pengajuan, bool $isApprove, string $roleName): void
+    {
+        try {
+            $groupId = env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN'));
+            if (!$groupId) return;
+
+            $pengajuan->loadMissing(['pembangunanUnit.unit.tahap.perumahaan']);
+            $unit = $pengajuan->pembangunanUnit->unit ?? null;
+
+            $msg = view('notifications.whatsapp.pembangunan_unit.persetujuan_upah', [
+                'statusAction' => 'konfirmasi',
+                'isApprove' => $isApprove,
+                'pengajuan' => $pengajuan,
+                'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
+                'namaTahap' => $unit->tahap->nama_tahap ?? '-',
+                'namaUnit' => $unit->nama_unit ?? '-',
+                'penyetuju' => Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Manager Produksi',
+                'rolePenyetuju' => $roleName,
+                'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
+            ])->render();
+
+            app(\App\Services\NotificationGroupService::class)->send($groupId, $msg);
+        } catch (\Exception $ex) {
+        }
     }
 }

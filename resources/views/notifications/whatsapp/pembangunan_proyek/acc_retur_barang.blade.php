@@ -1,11 +1,11 @@
-✅ *KONFIRMASI ACC RETUR BAHAN PROYEK*
+✅ *KONFIRMASI RETUR BAHAN PROYEK*
 
-Pengajuan retur bahan material proyek telah disetujui (ACC) oleh Gudang:
+Pengajuan retur bahan material proyek telah disetujui oleh Gudang:
 
 • *No. Retur:* {{ $return->nomor_return ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}
 • *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal ACC:* {{ $tanggalAcc }}
+• *Tanggal Disetujui:* {{ $tanggalAcc }}
 
 *Rincian Barang Retur:*
 @foreach($return->details as $idx => $item)

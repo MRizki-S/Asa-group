@@ -10,6 +10,7 @@ class PembangunanKawasanBahan extends Model
 
     protected $fillable = [
         'pembangunan_kawasan_id',
+        'pembangunan_kawasan_periode_id',
         'barang_id',
         'nama_barang',
         'satuan',
@@ -25,6 +26,11 @@ class PembangunanKawasanBahan extends Model
     public function pembangunanKawasan()
     {
         return $this->belongsTo(PembangunanKawasan::class, 'pembangunan_kawasan_id');
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo(PembangunanKawasanPeriode::class, 'pembangunan_kawasan_periode_id');
     }
 
     public function barang()

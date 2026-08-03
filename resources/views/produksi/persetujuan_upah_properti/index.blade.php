@@ -8,8 +8,20 @@
         showRejectReason: false,
         rejectReason: '',
         selectedItem: null,
+        selectedIds: [],
+        isMultiple: false,
+
         openModal(item) {
             this.selectedItem = item;
+            this.isMultiple = false;
+            this.showRejectReason = false;
+            this.rejectReason = '';
+            this.isModalOpen = true;
+        },
+        openBatchModal() {
+            if (this.selectedIds.length === 0) return;
+            this.selectedItem = null;
+            this.isMultiple = true;
             this.showRejectReason = false;
             this.rejectReason = '';
             this.isModalOpen = true;
@@ -17,28 +29,40 @@
         closeModal() {
             this.isModalOpen = false;
         },
+        toggleSelectAll(e) {
+            if (e.target.checked) {
+                const checkboxes = document.querySelectorAll('.upah-checkbox:not(:disabled)');
+                this.selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            } else {
+                this.selectedIds = [];
+            }
+        },
         confirmAction(type) {
             if (type === 'reject' && !this.rejectReason.trim()) {
-                Swal.fire('Perhatian', 'Alasan penolakan wajib diisi!', 'warning');
+                alert('Alasan penolakan wajib diisi!');
                 return;
             }
-    
-            Swal.fire({
-                title: 'Konfirmasi',
-                text: `Apakah Anda yakin ingin ${type === 'approve' ? 'menyetujui' : 'menolak'} pengajuan ini?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: type === 'approve' ? '#059669' : '#dc2626',
-                confirmButtonText: 'Ya, Proses'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.getElementById('form-action-upah');
-                    form.action = `/produksi/persetujuan-upah-properti/${this.selectedItem.id}`;
-                    document.getElementById('input-action-type').value = type;
-                    document.getElementById('input-alasan-hidden').value = this.rejectReason;
-                    form.submit();
-                }
-            });
+
+            const form = document.getElementById('form-action-upah');
+            const container = document.getElementById('batch-inputs-container');
+            container.innerHTML = '';
+
+            if (this.isMultiple) {
+                form.action = '{{ route('produksi.persetujuanUpahProperti.index') }}/update-status';
+                this.selectedIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = id;
+                    container.appendChild(input);
+                });
+            } else {
+                form.action = `/produksi/persetujuan-upah-properti/${this.selectedItem.id}`;
+            }
+
+            document.getElementById('input-action-type').value = type;
+            document.getElementById('input-alasan-hidden').value = this.rejectReason;
+            form.submit();
         }
     }">
 
@@ -51,9 +75,16 @@
 
                 {{-- Header & Filter --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Daftar Pengajuan Upah Pemb. Unit
-                    </h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+                            Daftar Pengajuan Upah Pemb. Unit
+                        </h3>
+                        <button type="button" x-show="selectedIds.length > 0" x-cloak @click="openBatchModal()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                            <span>PROSES TERPILIH</span>
+                            <span class="bg-white/20 text-white px-1.5 py-0.5 rounded text-[10px]" x-text="selectedIds.length"></span>
+                        </button>
+                    </div>
 
                     {{-- Filter Dropdown --}}
                     <form action="{{ route('produksi.persetujuanUpahProperti.index') }}" method="GET" id="form-filter">
@@ -78,6 +109,10 @@
                     <table id="table-upah" class="min-w-full" style="min-width: 1000px;">
                         <thead>
                             <tr>
+                                <th class="w-10 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                    <input type="checkbox" @change="toggleSelectAll($event)"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit / Pekerjaan
                                 </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tahap QC</th>
@@ -91,20 +126,34 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach ($allUpahPengajuan as $item)
+                                @php
+                                    $isFinal =
+                                        $item->status_pengajuan === 'disetujui' ||
+                                        $item->status_pengajuan === 'ditolak_mgr_produksi' ||
+                                        $item->disetujui_mgr_produksi !== null;
+                                @endphp
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.01]">
-                                    <td class="px-4 py-4">
-                                        <div class="flex flex-col leading-tight">
-                                            <span class="text-[9px] text-gray-500 mb-0.5">
-                                                {{ \Carbon\Carbon::parse($item->tanggal_diajukan)->format('d M Y, H:i') }}
-                                            </span>
-                                            <span class="font-bold text-gray-900 dark:text-white uppercase">
-                                                {{ $item->pembangunanUnit->unit->nama_unit ?? '-' }}
-                                            </span>
-                                            <span class="text-[10px] text-blue-600 font-bold uppercase mt-1">
-                                                {{ $item->nama_upah }}
-                                            </span>
-                                        </div>
+                                    <td class="px-4 py-4 text-center">
+                                        <input type="checkbox" value="{{ $item->id }}" x-model.number="selectedIds"
+                                            class="upah-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            {{ $isFinal ? 'disabled' : '' }}>
                                     </td>
+                                    <td class="px-4 py-4">
+                                         <div class="flex flex-col leading-tight">
+                                             <span class="text-[10px] font-black text-blue-600 font-mono mb-0.5">
+                                                 {{ $item->nomor_pengajuan ?? ('UBT-' . \Carbon\Carbon::parse($item->tanggal_diajukan)->format('ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT)) }}
+                                             </span>
+                                             <span class="text-[9px] text-gray-500 mb-0.5">
+                                                 {{ \Carbon\Carbon::parse($item->tanggal_diajukan)->format('d M Y, H:i') }}
+                                             </span>
+                                             <span class="font-bold text-gray-900 dark:text-white uppercase">
+                                                 {{ $item->pembangunanUnit->unit->nama_unit ?? '-' }}
+                                             </span>
+                                             <span class="text-[10px] text-emerald-600 font-bold uppercase mt-1">
+                                                 {{ $item->nama_upah }}
+                                             </span>
+                                         </div>
+                                     </td>
                                     <td class="px-4 py-4 uppercase">
                                         <div class="text-[10px]">
                                             <p class="font-medium text-gray-700 dark:text-gray-300">
@@ -156,13 +205,6 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-4 text-center">
-                                        @php
-                                            $isFinal =
-                                                $item->status_pengajuan === 'disetujui' ||
-                                                $item->status_pengajuan === 'ditolak_mgr_produksi' ||
-                                                $item->disetujui_mgr_produksi !== null;
-                                        @endphp
-
                                         <div class="flex flex-wrap items-center justify-center gap-1.5">
                                             @if (!$isFinal)
                                                 <button type="button"
@@ -215,6 +257,7 @@
             @method('PATCH')
             <input type="hidden" name="action" id="input-action-type">
             <input type="hidden" name="alasan_ditolak" id="input-alasan-hidden">
+            <div id="batch-inputs-container"></div>
         </form>
     </div>
 

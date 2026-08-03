@@ -1,12 +1,12 @@
-✅ *KONFIRMASI ACC PERMINTAAN BAHAN KAWASAN*
+✅ *KONFIRMASI PERMINTAAN BAHAN KAWASAN*
 
-Permintaan bahan material kawasan telah disetujui (ACC) oleh Gudang:
+Permintaan bahan material kawasan telah disetujui oleh Gudang:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal ACC:* {{ $tanggalAcc }}
+• *Tanggal Disetujui:* {{ $tanggalAcc }}
 
 *Daftar Barang yang Disetujui:*
 @foreach($order->details as $idx => $item)

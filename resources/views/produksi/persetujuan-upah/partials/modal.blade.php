@@ -19,33 +19,47 @@
             </div>
 
             <div class="p-4 space-y-4">
-                <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
-                    <p class="text-sm font-bold text-blue-800 dark:text-blue-300"
-                        x-text="'Unit: ' + selectedItem?.unit_nama"></p>
-                    <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1"
-                        x-text="selectedItem?.upah_nama"></p>
-                </div>
+                <template x-if="!isMultiple">
+                    <div class="space-y-4">
+                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
+                            <p class="text-sm font-bold text-blue-800 dark:text-blue-300"
+                                x-text="'Unit: ' + selectedItem?.unit_nama"></p>
+                            <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1"
+                                x-text="selectedItem?.upah_nama"></p>
+                        </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Pengawas Unit</label>
-                        <p class="text-sm font-semibold text-gray-700 dark:text-gray-200"
-                            x-text="selectedItem?.pengawas"></p>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 text-right">Nominal
-                            Diajukan</label>
-                        <p class="text-sm font-bold text-emerald-600 text-right" x-text="selectedItem?.nominal"></p>
-                    </div>
-                </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Pengawas Unit</label>
+                                <p class="text-sm font-semibold text-gray-700 dark:text-gray-200"
+                                    x-text="selectedItem?.pengawas"></p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 text-right">Nominal
+                                    Diajukan</label>
+                                <p class="text-sm font-bold text-emerald-600 text-right" x-text="selectedItem?.nominal"></p>
+                            </div>
+                        </div>
 
-                <div class="pt-2">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Catatan Pengawas</label>
-                    <div
-                        class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600 italic text-xs text-gray-600 dark:text-gray-400">
-                        <span x-text="selectedItem?.catatan || 'Tidak ada catatan lampiran'"></span>
+                        <div class="pt-2">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Catatan Pengawas</label>
+                            <div
+                                class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600 italic text-xs text-gray-600 dark:text-gray-400">
+                                <span x-text="selectedItem?.catatan || 'Tidak ada catatan lampiran'"></span>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </template>
+
+                <template x-if="isMultiple">
+                    <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
+                        <p class="text-sm font-bold text-blue-800 dark:text-blue-300"
+                            x-text="selectedIds.length + ' Pengajuan Upah Dipilih'"></p>
+                        <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1">
+                            Aksi persetujuan/penolakan akan diterapkan untuk seluruh pengajuan yang tercentang.
+                        </p>
+                    </div>
+                </template>
 
                 <div x-show="showRejectReason" x-transition class="pt-2">
                     <label class="block text-[10px] font-bold text-red-500 uppercase mb-1">Alasan Penolakan <span

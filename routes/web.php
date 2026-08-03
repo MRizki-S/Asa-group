@@ -715,18 +715,21 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     });
 
     // Persetujuan Upah Spesifik
+    Route::patch('persetujuan-upah-properti/update-status', [PersetujuanUpahPropertiController::class, 'update'])->middleware('can:produksi.upah-properti');
     Route::resource('persetujuan-upah-properti', PersetujuanUpahPropertiController::class)->middleware('can:produksi.upah-properti')->only(['index', 'update'])->names('produksi.persetujuanUpahProperti');
     Route::resource('persetujuan-upah-kontraktor', PersetujuanUpahKontraktorController::class)->middleware('can:produksi.upah-kontraktor')->only(['index', 'update'])->names('produksi.persetujuanUpahKontraktor');
     Route::resource('persetujuan-upah-kawasan', PersetujuanUpahKawasanController::class)->middleware('can:produksi.upah-kawasan')->only(['index', 'update'])->names('produksi.persetujuanUpahKawasan');
 });
 
 Route::middleware('auth')->prefix('manager')->group(function () {
+    Route::patch('persetujuan-upah-properti/update-status', [App\Http\Controllers\Manager\PersetujuanUpahPropertiController::class, 'update']);
     Route::resource('persetujuan-upah-properti', App\Http\Controllers\Manager\PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('manager.persetujuanUpahProperti');
     Route::resource('persetujuan-upah-kontraktor', App\Http\Controllers\Manager\PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('manager.persetujuanUpahKontraktor');
     Route::resource('persetujuan-upah-kawasan', App\Http\Controllers\Manager\PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('manager.persetujuanUpahKawasan');
 });
 
 Route::middleware('auth')->prefix('akuntan')->group(function () {
+    Route::patch('persetujuan-upah-properti/update-status', [App\Http\Controllers\Akuntan\PersetujuanUpahPropertiController::class, 'update']);
     Route::resource('persetujuan-upah-properti', App\Http\Controllers\Akuntan\PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahProperti');
     Route::resource('persetujuan-upah-kontraktor', App\Http\Controllers\Akuntan\PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahKontraktor');
     Route::resource('persetujuan-upah-kawasan', App\Http\Controllers\Akuntan\PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahKawasan');

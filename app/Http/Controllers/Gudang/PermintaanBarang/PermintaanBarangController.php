@@ -527,7 +527,10 @@ class PermintaanBarangController extends Controller
         $baseUnitName = $detail->barang?->baseUnit?->nama ?? ($detail->satuanModel?->nama ?? ($detail->satuan ?? '-'));
 
         if ($category === 'pembangunan_kawasan') {
+            $periodeId = $order->pembangunan_kawasan_periode_id;
+
             $bahan = PembangunanKawasanBahan::where('pembangunan_kawasan_id', $order->pembangunan_kawasan_id)
+                ->where('pembangunan_kawasan_periode_id', $periodeId)
                 ->where('barang_id', $detail->barang_id)
                 ->first();
 
@@ -541,6 +544,7 @@ class PermintaanBarangController extends Controller
 
             PembangunanKawasanBahan::create([
                 'pembangunan_kawasan_id' => $order->pembangunan_kawasan_id,
+                'pembangunan_kawasan_periode_id' => $periodeId,
                 'barang_id' => $detail->barang_id,
                 'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
                 'satuan' => $baseUnitName,

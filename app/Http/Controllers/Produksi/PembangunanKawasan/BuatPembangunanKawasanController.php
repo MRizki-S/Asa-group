@@ -17,18 +17,22 @@ class BuatPembangunanKawasanController extends Controller
         $this->notificationGroup = $notificationGroup;
     }
 
-    protected function sendGroupNotificationProses(PembangunanKawasan $kawasan)
+    protected function sendGroupNotificationProses(PembangunanKawasan $kawasan, $periode = null)
     {
         $kawasan->loadMissing(['pengawas', 'perumahan']);
 
-        $groupId = env('FONNTE_ID_GROUP_PROSES_KAWASAN');
+        $groupId = env('FONNTE_ID_GROUP_PERIODE_KAWASAN', env('FONNTE_ID_GROUP_PROSES_KAWASAN'));
         if (!$groupId) return;
 
-        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.proses_kawasan', [
-            'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
-            'namaKawasan'   => $kawasan->nama ?? '-',
-            'namaPengawas'  => $kawasan->pengawas->nama_lengkap ?? '-',
-            'tanggal'       => now()->format('d/m/Y H:i') . ' WIB',
+        $tglMulai = $periode && $periode->tanggal_mulai ? \Carbon\Carbon::parse($periode->tanggal_mulai)->format('d/m/Y') : ($kawasan->tanggal_mulai ? \Carbon\Carbon::parse($kawasan->tanggal_mulai)->format('d/m/Y') : '-');
+        $tglSelesai = $periode && $periode->tanggal_selesai ? \Carbon\Carbon::parse($periode->tanggal_selesai)->format('d/m/Y') : ($kawasan->tanggal_selesai ? \Carbon\Carbon::parse($kawasan->tanggal_selesai)->format('d/m/Y') : 'Sampai Selesai');
+
+        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.periode_kawasan', [
+            'namaPerumahan'  => $kawasan->perumahan->nama_perumahaan ?? '-',
+            'namaKawasan'    => $kawasan->nama ?? '-',
+            'namaPengawas'   => $periode->pengawas->nama_lengkap ?? $kawasan->pengawas->nama_lengkap ?? '-',
+            'tanggalMulai'   => $tglMulai,
+            'tanggalSelesai' => $tglSelesai,
         ])->render();
 
         try {
@@ -112,7 +116,7 @@ class BuatPembangunanKawasanController extends Controller
             'tanggal_selesai' => 'nullable|date',
         ]);
 
-        \App\Models\PembangunanKawasanPeriode::create([
+        $periode = \App\Models\PembangunanKawasanPeriode::create([
             'pembangunan_kawasan_id' => $kawasan->id,
             'pengawas_id' => $request->pengawas_id,
             'tanggal_mulai' => $request->tanggal_mulai,
@@ -127,7 +131,7 @@ class BuatPembangunanKawasanController extends Controller
             'tanggal_selesai' => $request->tanggal_selesai,
         ]);
 
-        $this->sendGroupNotificationProses($kawasan);
+        $this->sendGroupNotificationProses($kawasan, $periode);
 
         return redirect()->route('produksi.buatPembangunanKawasan.index')->with('success', 'Sesi pembangunan kawasan berhasil diproses!');
     }

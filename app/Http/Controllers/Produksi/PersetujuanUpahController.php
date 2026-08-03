@@ -50,58 +50,102 @@ class PersetujuanUpahController extends Controller
     }
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id = null)
     {
         $request->validate([
             'action' => 'required|in:approve,reject',
-            'alasan_ditolak' => 'required_if:action,reject'
+            'alasan_ditolak' => 'required_if:action,reject',
+            'ids' => 'nullable|array',
+            'ids.*' => 'integer'
         ]);
 
-        $pengajuan = PembangunanUnitUpahPengajuan::findOrFail($id);
+        $ids = $request->input('ids', []);
+        if (empty($ids) && $id) {
+            $ids = [$id];
+        }
+
+        if (empty($ids)) {
+            return back()->with('error', 'Tidak ada pengajuan yang dipilih.');
+        }
+
+        $pengajuans = PembangunanUnitUpahPengajuan::whereIn('id', $ids)->get();
         $action = $request->action;
         $now = now();
+        $roleName = Auth::user()->roles->pluck('name')->first() ?? 'Pemeriksa';
 
-        if ($action === 'reject') {
-            $statusDitolak = match ($pengajuan->status_pengajuan) {
-                'req_mgr_produksi' => 'ditolak_mgr_produksi',
-                'req_mgr_dukungan' => 'ditolak_mgr_dukungan',
-                'req_akuntan'      => 'ditolak_akuntan',
-                default            => $pengajuan->status_pengajuan
-            };
+        foreach ($pengajuans as $pengajuan) {
+            if ($action === 'reject') {
+                $statusDitolak = match ($pengajuan->status_pengajuan) {
+                    'req_mgr_produksi' => 'ditolak_mgr_produksi',
+                    'req_mgr_dukungan' => 'ditolak_mgr_dukungan',
+                    'req_akuntan'      => 'ditolak_akuntan',
+                    default            => $pengajuan->status_pengajuan
+                };
 
-            $pengajuan->update([
-                'status_pengajuan' => $statusDitolak,
-                'alasan_ditolak'   => $request->alasan_ditolak,
-                'ditolak_pada'     => $now
-            ]);
+                $pengajuan->update([
+                    'status_pengajuan' => $statusDitolak,
+                    'alasan_ditolak'   => $request->alasan_ditolak,
+                    'ditolak_pada'     => $now
+                ]);
 
-            return back()->with('success', 'Pengajuan berhasil ditolak.');
+                $this->sendWaNotificationResponse($pengajuan, false, $roleName);
+            } elseif ($action === 'approve') {
+                $updateData = [];
+                $isFinalApproval = false;
+
+                if ($pengajuan->status_pengajuan === 'req_mgr_produksi') {
+                    $updateData = ['status_pengajuan' => 'req_mgr_dukungan', 'disetujui_mgr_produksi' => $now];
+                } elseif ($pengajuan->status_pengajuan === 'req_mgr_dukungan') {
+                    $updateData = ['status_pengajuan' => 'req_akuntan', 'disetujui_mgr_dukungan' => $now];
+                } elseif ($pengajuan->status_pengajuan === 'req_akuntan') {
+                    $updateData = ['status_pengajuan' => 'disetujui', 'disetujui_akuntan' => $now];
+                    $isFinalApproval = true;
+                }
+
+                $pengajuan->update($updateData);
+                if ($isFinalApproval) {
+                    PembangunanUnitUpah::create([
+                        'pembangunan_unit_id'          => $pengajuan->pembangunan_unit_id,
+                        'pembangunan_unit_qc_id'       => $pengajuan->pembangunan_unit_qc_id,
+                        'pembangunan_unit_rap_upah_id' => $pengajuan->pembangunan_unit_rap_upah_id,
+                        'nama_upah'                    => $pengajuan->nama_upah,
+                        'total_nominal'                => $pengajuan->nominal_diajukan,
+                    ]);
+                }
+
+                $this->sendWaNotificationResponse($pengajuan, true, $roleName);
+            }
         }
 
-        if ($action === 'approve') {
-            $updateData = [];
-            $isFinalApproval = false;
-            if ($pengajuan->status_pengajuan === 'req_mgr_produksi') {
-                $updateData = ['status_pengajuan' => 'req_mgr_dukungan', 'disetujui_mgr_produksi' => $now];
-            } elseif ($pengajuan->status_pengajuan === 'req_mgr_dukungan') {
-                $updateData = ['status_pengajuan' => 'req_akuntan', 'disetujui_mgr_dukungan' => $now];
-            } elseif ($pengajuan->status_pengajuan === 'req_akuntan') {
-                $updateData = ['status_pengajuan' => 'disetujui', 'disetujui_akuntan' => $now];
-                $isFinalApproval = true;
-            }
+        $msgText = count($ids) > 1 ? 'Beberapa pengajuan upah' : 'Pengajuan upah';
+        $actText = $action === 'approve' ? 'berhasil disetujui.' : 'berhasil ditolak.';
+        return back()->with('success', "{$msgText} {$actText}");
+    }
 
-            $pengajuan->update($updateData);
-            if ($isFinalApproval) {
-                PembangunanUnitUpah::create([
-                    'pembangunan_unit_id'          => $pengajuan->pembangunan_unit_id,
-                    'pembangunan_unit_qc_id'       => $pengajuan->pembangunan_unit_qc_id,
-                    'pembangunan_unit_rap_upah_id' => $pengajuan->pembangunan_unit_rap_upah_id,
-                    'nama_upah'                    => $pengajuan->nama_upah,
-                    'total_nominal'                => $pengajuan->nominal_diajukan,
-                ]);
-            }
+    private function sendWaNotificationResponse($pengajuan, bool $isApprove, string $roleName): void
+    {
+        try {
+            $groupId = env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN'));
+            if (!$groupId) return;
 
-            return back()->with('success', 'Pengajuan berhasil disetujui.');
+            $pengajuan->loadMissing(['pembangunanUnit.unit.tahap.perumahaan']);
+            $unit = $pengajuan->pembangunanUnit->unit ?? null;
+
+            $msg = view('notifications.whatsapp.pembangunan_unit.persetujuan_upah', [
+                'statusAction' => 'konfirmasi',
+                'isApprove' => $isApprove,
+                'pengajuan' => $pengajuan,
+                'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
+                'namaTahap' => $unit->tahap->nama_tahap ?? '-',
+                'namaUnit' => $unit->nama_unit ?? '-',
+                'penyetuju' => Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Pemeriksa',
+                'rolePenyetuju' => $roleName,
+                'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
+            ])->render();
+
+            app(\App\Services\NotificationGroupService::class)->send($groupId, $msg);
+        } catch (\Exception $ex) {
         }
     }
+}
 }

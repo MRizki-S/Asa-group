@@ -19,26 +19,15 @@
         },
         confirmAction(type) {
             if (type === 'reject' && !this.rejectReason.trim()) {
-                Swal.fire('Perhatian', 'Alasan penolakan wajib diisi!', 'warning');
+                alert('Alasan penolakan wajib diisi!');
                 return;
             }
-    
-            Swal.fire({
-                title: 'Konfirmasi',
-                text: `Apakah Anda yakin ingin ${type === 'approve' ? 'menyetujui' : 'menolak'} pengajuan ini?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: type === 'approve' ? '#059669' : '#dc2626',
-                confirmButtonText: 'Ya, Proses'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.getElementById('form-action-upah');
-                    form.action = `/akuntan/persetujuan-upah-kontraktor/${this.selectedItem.id}`;
-                    document.getElementById('input-action-type').value = type;
-                    document.getElementById('input-alasan-hidden').value = this.rejectReason;
-                    form.submit();
-                }
-            });
+
+            const form = document.getElementById('form-action-upah');
+            form.action = `/akuntan/persetujuan-upah-kontraktor/${this.selectedItem.id}`;
+            document.getElementById('input-action-type').value = type;
+            document.getElementById('input-alasan-hidden').value = this.rejectReason;
+            form.submit();
         }
     }">
 

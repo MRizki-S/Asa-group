@@ -1,13 +1,13 @@
-✅ *KONFIRMASI ACC RETUR BAHAN UNIT*
+✅ *KONFIRMASI RETUR BAHAN UNIT*
 
-Pengajuan retur bahan material unit telah disetujui (ACC) oleh Gudang:
+Pengajuan retur bahan material unit telah disetujui oleh Gudang:
 
 • *No. Retur:* {{ $return->nomor_return ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Tahap:* {{ $namaTahap }}
 • *Unit:* {{ $namaUnit }}
 • *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal ACC:* {{ $tanggalAcc }}
+• *Tanggal Disetujui:* {{ $tanggalAcc }}
 
 *Rincian Barang Retur:*
 @foreach($return->details as $idx => $item)
