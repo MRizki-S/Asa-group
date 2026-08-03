@@ -20,6 +20,7 @@ Alpine.start();
 // === Flatpickr & Dropzone ===
 import flatpickr from "flatpickr";
 import Dropzone from "dropzone";
+window.flatpickr = flatpickr;
 
 // === ApexCharts & FullCalendar ===
 import ApexCharts from "apexcharts";

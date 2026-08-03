@@ -13,26 +13,29 @@ use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
 use App\Http\Controllers\FeeAgenController;
+use App\Http\Controllers\Gudang\BarangRusakController;
 use App\Http\Controllers\Gudang\DaftarNotaMasukController;
 use App\Http\Controllers\Gudang\DraftNotaMasukController;
-use App\Http\Controllers\Gudang\BarangRusakController;
 use App\Http\Controllers\Gudang\KomposisiRakitanController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
+use App\Http\Controllers\Gudang\MasterTukangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
+use App\Http\Controllers\Gudang\PengajuanUpahHarianTukangController;
 use App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangController;
 use App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanUnitController;
 use App\Http\Controllers\Gudang\ProduksiRakitanController;
 use App\Http\Controllers\Gudang\StockBarangController;
-
 use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
 use App\Http\Controllers\Gudang\TransferStockBarangController;
 use App\Http\Controllers\Keuangan\AkunKeuanganController;
 use App\Http\Controllers\Keuangan\BukuBesarController;
+use App\Http\Controllers\Keuangan\DaftarUpahHarianTukangKeuanganController;
 use App\Http\Controllers\Keuangan\KategoriAkunKeuanganController;
 use App\Http\Controllers\Keuangan\LaporanJurnalController;
 use App\Http\Controllers\Keuangan\NeracaSaldoController;
 use App\Http\Controllers\Keuangan\PeriodeKeuanganController;
+use App\Http\Controllers\Keuangan\RiwayatUpahHarianTukangController;
 use App\Http\Controllers\Keuangan\TransaksiJurnalController;
 use App\Http\Controllers\Kpi\KpiDashboardController;
 use App\Http\Controllers\Kpi\KpiExportController;
@@ -64,26 +67,25 @@ use App\Http\Controllers\Marketing\TargetPenjualanController;
 use App\Http\Controllers\PerumahaanSelectController;
 use App\Http\Controllers\Produksi\KonfirmasiPembangunanController;
 use App\Http\Controllers\Produksi\MasterQcRapController;
+use App\Http\Controllers\Produksi\PembangunanKawasan\BuatPembangunanKawasanController;
+use App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanController;
+use App\Http\Controllers\Produksi\PembangunanProyek\BuatPembangunanProyekController;
+use App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekController;
+use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitBarangReturnController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitOrderBarangController;
-use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitBarangReturnController;
 use App\Http\Controllers\Produksi\PembangunanUnit\PembangunanUnitPengajuanUpahController;
 use App\Http\Controllers\Produksi\PenamaanUpahController;
 use App\Http\Controllers\Produksi\PermintaanDibangunController;
 use App\Http\Controllers\Produksi\PersetujuanUpahController;
-use App\Http\Controllers\Produksi\TerminController;
-
-use App\Http\Controllers\Produksi\PembangunanProyek\BuatPembangunanProyekController;
-use App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekController;
-use App\Http\Controllers\Produksi\PembangunanKawasan\BuatPembangunanKawasanController;
-use App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanController;
-use App\Http\Controllers\Produksi\PersetujuanUpahPropertiController;
-use App\Http\Controllers\Produksi\PersetujuanUpahKontraktorController;
 use App\Http\Controllers\Produksi\PersetujuanUpahKawasanController;
+use App\Http\Controllers\Produksi\PersetujuanUpahKontraktorController;
+use App\Http\Controllers\Produksi\PersetujuanUpahPropertiController;
+use App\Http\Controllers\Produksi\TerminController;
 use App\Http\Controllers\Superadmin\AkunKaryawanController;
-use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use App\Http\Controllers\Superadmin\DevisiController;
 use App\Http\Controllers\Superadmin\KaryawanController;
+use App\Http\Controllers\Superadmin\RoleHakAksesController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -577,6 +579,34 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/return-barang/proyek/{id}', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'showReturn'])->name('gudang.returnBarang.proyek.show');
     Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.accReturn');
     Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.rejectReturn');
+
+    // Master Tukang Harian
+    Route::get('/master-tukang-harian', [MasterTukangController::class, 'index'])->name('gudang.masterTukang.index');
+    Route::get('/master-tukang-harian/create', [MasterTukangController::class, 'create'])->name('gudang.masterTukang.create');
+    Route::post('/master-tukang-harian', [MasterTukangController::class, 'store'])->name('gudang.masterTukang.store');
+    Route::get('/master-tukang-harian/{id}/edit', [MasterTukangController::class, 'edit'])->name('gudang.masterTukang.edit');
+    Route::put('/master-tukang-harian/{id}', [MasterTukangController::class, 'update'])->name('gudang.masterTukang.update');
+    Route::delete('/master-tukang-harian/{id}', [MasterTukangController::class, 'destroy'])->name('gudang.masterTukang.destroy');
+
+    // Pengajuan Upah Harian Tukang dari sisi gudang
+    Route::get('/pengajuan-upahharian-tukang', [PengajuanUpahHarianTukangController::class, 'index'])->name('gudang.pengajuanUpahHarianTukang.index');
+    Route::get('/pengajuan-upahharian-tukang-mangoon', [PengajuanUpahHarianTukangController::class, 'indexMangoon'])->name('gudang.pengajuanUpahHarianTukang.indexMangoon');
+    Route::get('/pengajuan-upahharian-tukang/create', [PengajuanUpahHarianTukangController::class, 'create'])->name('gudang.pengajuanUpahHarianTukang.create');
+    Route::get('/pengajuan-upahharian-tukang-mangoon/create', [PengajuanUpahHarianTukangController::class, 'createMangoon'])->name('gudang.pengajuanUpahHarianTukang.createMangoon');
+    Route::post('/pengajuan-upahharian-tukang/store-draft', [PengajuanUpahHarianTukangController::class, 'storeDraft'])->name('gudang.pengajuanUpahHarianTukang.storeDraft');
+    Route::post('/pengajuan-upahharian-tukang-mangoon/store-draft', [PengajuanUpahHarianTukangController::class, 'storeDraftMangoon'])->name('gudang.pengajuanUpahHarianTukang.storeDraftMangoon');
+    Route::get('/pengajuan-upahharian-tukang/{id}/edit', [PengajuanUpahHarianTukangController::class, 'edit'])->name('gudang.pengajuanUpahHarianTukang.edit');
+    Route::get('/pengajuan-upahharian-tukang-mangoon/{id}/edit', [PengajuanUpahHarianTukangController::class, 'editMangoon'])->name('gudang.pengajuanUpahHarianTukang.editMangoon');
+    Route::put('/pengajuan-upahharian-tukang/{id}/draft', [PengajuanUpahHarianTukangController::class, 'updateDraft'])->name('gudang.pengajuanUpahHarianTukang.updateDraft');
+    Route::put('/pengajuan-upahharian-tukang-mangoon/{id}/draft', [PengajuanUpahHarianTukangController::class, 'updateDraftMangoon'])->name('gudang.pengajuanUpahHarianTukang.updateDraftMangoon');
+    Route::put('/pengajuan-upahharian-tukang/{id}/submit', [PengajuanUpahHarianTukangController::class, 'submit'])->name('gudang.pengajuanUpahHarianTukang.submitDraft');
+    Route::put('/pengajuan-upahharian-tukang-mangoon/{id}/submit', [PengajuanUpahHarianTukangController::class, 'submitMangoon'])->name('gudang.pengajuanUpahHarianTukang.submitDraftMangoon');
+    Route::delete('/pengajuan-upahharian-tukang/{id}', [PengajuanUpahHarianTukangController::class, 'destroy'])->name('gudang.pengajuanUpahHarianTukang.destroy');
+    Route::delete('/pengajuan-upahharian-tukang-mangoon/{id}', [PengajuanUpahHarianTukangController::class, 'destroyMangoon'])->name('gudang.pengajuanUpahHarianTukang.destroyMangoon');
+    Route::get('/pengajuan-upahharian-tukang/{id}/detail', [PengajuanUpahHarianTukangController::class, 'detail'])->name('gudang.pengajuanUpahHarianTukang.detail');
+    Route::get('/pengajuan-upahharian-tukang-mangoon/{id}/detail', [PengajuanUpahHarianTukangController::class, 'detailMangoon'])->name('gudang.pengajuanUpahHarianTukang.detailMangoon');
+    Route::post('/pengajuan-upahharian-tukang/{id}/cancel', [PengajuanUpahHarianTukangController::class, 'cancel'])->name('gudang.pengajuanUpahHarianTukang.cancel');
+    Route::post('/pengajuan-upahharian-tukang-mangoon/{id}/cancel', [PengajuanUpahHarianTukangController::class, 'cancelMangoon'])->name('gudang.pengajuanUpahHarianTukang.cancelMangoon');
 });
 
 // keuangan Group
@@ -616,6 +646,24 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
         Route::get('/neraca-saldo/export-excel', [NeracaSaldoController::class, 'exportExcel'])->name('keuangan.neracaSaldo.exportExcel');
         Route::get('/neraca-saldo/export-pdf', [NeracaSaldoController::class, 'exportPdf'])->name('keuangan.neracaSaldo.exportPdf');
     });
+
+    // Upah harian tukang - keuangan
+    Route::prefix('/upahHarian')->group(function () {
+
+        // daftar pengajuan upah harian tukang
+        Route::get('/', [DaftarUpahHarianTukangKeuanganController::class, 'index'])->name('keuangan.daftarUpahHarian.index');
+        Route::get('/{id}/detail', [DaftarUpahHarianTukangKeuanganController::class, 'detail'])->name('keuangan.daftarUpahHarian.detail');
+        Route::post('/{id}/update-bon', [DaftarUpahHarianTukangKeuanganController::class, 'updateBon'])->name('keuangan.daftarUpahHarian.updateBon');
+        // Route acc dari pengajuan upah harian tukang
+        Route::patch('/{upahHarianTukang}/approve',[DaftarUpahHarianTukangKeuanganController::class, 'accPengajuan'])->name('keuangan.daftarUpahHarian.accPengajuan');
+        // route untuk expor detail dari pengajuan upah harian export
+        Route::get('/export-excel', [DaftarUpahHarianTukangKeuanganController::class, 'exportExcel'])->name('keuangan.daftarUpahHarian.exportExcel');
+
+        // Daftar Riwayat upah harian tukang
+        Route::get('/riwayat', [RiwayatUpahHarianTukangController::class, 'index'])->name('keuangan.riwayatUpahHarian.index');
+        Route::get('/riwayat/{id}/detail', [RiwayatUpahHarianTukangController::class, 'detail'])->name('keuangan.riwayatUpahHarian.detail');
+    });
+
 });
 
 // Produksi

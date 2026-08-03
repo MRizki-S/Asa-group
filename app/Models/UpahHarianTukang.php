@@ -10,6 +10,7 @@ class UpahHarianTukang extends Model
 
     protected $fillable = [
         'nomor_upah_harian',
+        'jenis_referensi',
         'tanggal_mulai',
         'tanggal_selesai',
         'status',
@@ -38,6 +39,17 @@ class UpahHarianTukang extends Model
     {
         return $this->hasMany(
             UpahHarianTukangDetail::class,
+            'upah_harian_tukang_id'
+        );
+    }
+
+    /**
+     * Rekap per-tukang (total normal, lembur, diterima).
+     */
+    public function rekap()
+    {
+        return $this->hasMany(
+            UpahHarianTukangRekap::class,
             'upah_harian_tukang_id'
         );
     }
