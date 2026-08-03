@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,6 +14,11 @@ return new class extends Migration
             $table->id();
 
             $table->string('nomor_upah_harian')->unique();
+
+            $table->enum('jenis_referensi', [
+                'perumahan',
+                'mangoon',
+            ]);
 
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
@@ -42,6 +46,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('status');
+            $table->index('jenis_referensi');
+
             $table->index([
                 'tanggal_mulai',
                 'tanggal_selesai'

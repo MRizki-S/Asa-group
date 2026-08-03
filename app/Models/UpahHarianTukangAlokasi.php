@@ -64,6 +64,17 @@ class UpahHarianTukangAlokasi extends Model
         );
     }
 
+    /**
+     * Termin Upah Harian Pembangunan Proyek.
+     */
+    public function pembangunanProyekTerminUpahHarian()
+    {
+        return $this->hasMany(
+            PembangunanProyekTerminUpahHarian::class,
+            'upah_harian_tukang_alokasi_id'
+        );
+    }
+
     // helper 
     public function pembangunanUnit()
     {
@@ -83,11 +94,13 @@ class UpahHarianTukangAlokasi extends Model
         return PembangunanKawasan::find($this->referensi_id);
     }
 
+    // helper
     public function getReferensi()
     {
         return match ($this->referensi_jenis) {
             'pembangunan_unit' => $this->pembangunanUnit(),
             'pembangunan_kawasan' => $this->pembangunanKawasan(),
+            'pembangunan_proyek' => $this->pembangunanProyek(),
             default => null,
         };
     }

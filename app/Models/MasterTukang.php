@@ -11,6 +11,7 @@ class MasterTukang extends Model
     protected $fillable = [
         'kode',
         'nama_tukang',
+        'jenis_referensi',
         'gaji_harian_default',
         'jam_kerja_default',
         'status',

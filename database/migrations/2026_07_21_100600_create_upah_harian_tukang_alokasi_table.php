@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->enum('referensi_jenis', [
                 'pembangunan_unit',
                 'pembangunan_kawasan',
+                'pembangunan_proyek',
             ]);
 
             // ID mengikuti referensi_jenis
