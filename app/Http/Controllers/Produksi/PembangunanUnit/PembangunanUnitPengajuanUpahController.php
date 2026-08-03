@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Produksi\PembangunanUnit;
 
 use App\Http\Controllers\Controller;
+use App\Models\PembangunanUnitRapUpah;
 use App\Models\PembangunanUnitUpahPengajuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,15 +29,27 @@ class PembangunanUnitPengajuanUpahController extends Controller
         try {
             DB::beginTransaction();
 
+            $createdIds = [];
+            $tglPrefix = 'UBT-' . now()->format('ymd') . '-';
+            $lastItem = PembangunanUnitUpahPengajuan::where('nomor_pengajuan', 'like', $tglPrefix . '%')
+                ->orderBy('id', 'desc')
+                ->first();
+            $seq = 1;
+            if ($lastItem && $lastItem->nomor_pengajuan) {
+                $lastSeq = (int) substr($lastItem->nomor_pengajuan, strlen($tglPrefix));
+                $seq = $lastSeq + 1;
+            }
+
             foreach ($request->items as $item) {
-                $rapUpah = \App\Models\PembangunanUnitRapUpah::findOrFail($item['pembangunan_unit_rap_upah_id']);
+                $rapUpah = PembangunanUnitRapUpah::findOrFail($item['pembangunan_unit_rap_upah_id']);
+                $newNominal = (float) $item['nominal_pengajuan'];
 
                 // Calculate cumulative wages already requested (excluding rejected)
-                $alreadyRequested = PembangunanUnitUpahPengajuan::where('pembangunan_unit_rap_upah_id', $rapUpah->id)
+                $alreadyRequested = PembangunanUnitUpahPengajuan::where('pembangunan_unit_id', $request->pembangunan_unit_id)
+                    ->where('pembangunan_unit_rap_upah_id', $rapUpah->id)
                     ->whereNull('ditolak_pada')
                     ->sum('nominal_diajukan');
 
-                $newNominal = (float) $item['nominal_pengajuan'];
                 $limit = (float) $rapUpah->nominal_standar;
 
                 if (($alreadyRequested + $newNominal) > ($limit + 0.01)) {
@@ -45,18 +58,9 @@ class PembangunanUnitPengajuanUpahController extends Controller
                     }
                 }
 
-                $tglPrefix = 'UBT-' . now()->format('ymd') . '-';
-                $lastItem = PembangunanUnitUpahPengajuan::where('nomor_pengajuan', 'like', $tglPrefix . '%')
-                    ->orderBy('id', 'desc')
-                    ->first();
-                $seq = 1;
-                if ($lastItem && $lastItem->nomor_pengajuan) {
-                    $lastSeq = (int) substr($lastItem->nomor_pengajuan, strlen($tglPrefix));
-                    $seq = $lastSeq + 1;
-                }
-                $nomorPengajuan = $tglPrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+                $nomorPengajuan = $tglPrefix . str_pad($seq++, 4, '0', STR_PAD_LEFT);
 
-                PembangunanUnitUpahPengajuan::create([
+                $created = PembangunanUnitUpahPengajuan::create([
                     'nomor_pengajuan' => $nomorPengajuan,
                     'pembangunan_unit_id' => $request->pembangunan_unit_id,
                     'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
@@ -66,25 +70,24 @@ class PembangunanUnitPengajuanUpahController extends Controller
                     'catatan_pengawas' => $item['catatan_pengawas'] ?? null,
                     'tanggal_diajukan' => now(),
                 ]);
+
+                $createdIds[] = $created->id;
             }
 
             DB::commit();
 
-            // Send WA Notification for new upah pengajuan
+            // Send WA Notification for new upah pengajuan (Combined into 1 single message)
             try {
-                $firstPengajuanId = PembangunanUnitUpahPengajuan::where('pembangunan_unit_id', $request->pembangunan_unit_id)->latest()->value('id');
-                $pengajuanSample = PembangunanUnitUpahPengajuan::with(['pembangunanUnit.unit.tahap.perumahaan', 'pembangunanUnitQc'])->find($firstPengajuanId);
-                if ($pengajuanSample) {
+                $allCreated = PembangunanUnitUpahPengajuan::with(['pembangunanUnit.unit.tahap.perumahaan', 'pembangunanUnitQc'])
+                    ->whereIn('id', $createdIds)
+                    ->get();
+
+                if ($allCreated->isNotEmpty()) {
                     $groupId = env('FONNTE_ID_GROUP_PENGAJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN')));
                     if ($groupId) {
-                        $unit = $pengajuanSample->pembangunanUnit->unit;
                         $msg = view('notifications.whatsapp.pembangunan_unit.persetujuan_upah', [
                             'statusAction' => 'pengajuan',
-                            'pengajuan' => $pengajuanSample,
-                            'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
-                            'namaTahap' => $unit->tahap->nama_tahap ?? '-',
-                            'namaUnit' => $unit->nama_unit ?? '-',
-                            'namaQc' => $pengajuanSample->pembangunanUnitQc->nama_qc ?? '-',
+                            'items' => $allCreated,
                             'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Pengawas',
                             'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
                         ])->render();

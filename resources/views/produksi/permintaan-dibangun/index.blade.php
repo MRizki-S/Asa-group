@@ -263,26 +263,24 @@
                     this.selectedItem = item;
                     this.isModalOpen = true;
                     this.$nextTick(() => {
-                        const modalContainer = $('#selectSpv').closest('.fixed');
+                        const modalContainer = $('#selectPengawas').closest('.fixed');
 
-                        if ($('#selectSpv').hasClass("select2-hidden-accessible")) {
-                            $('#selectSpv').select2('destroy');
+                        if ($('#selectSpv').length) {
+                            if ($('#selectSpv').hasClass("select2-hidden-accessible")) {
+                                $('#selectSpv').select2('destroy');
+                            }
+                            $('#selectSpv').select2({
+                                placeholder: "-- Pilih SPV --",
+                                theme: 'bootstrap4',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: modalContainer
+                            }).val('').trigger('change');
                         }
+
                         if ($('#selectPengawas').hasClass("select2-hidden-accessible")) {
                             $('#selectPengawas').select2('destroy');
                         }
-                        if ($('#selectQC').hasClass("select2-hidden-accessible")) {
-                            $('#selectQC').select2('destroy');
-                        }
-
-                        $('#selectSpv').select2({
-                            placeholder: "-- Pilih SPV --",
-                            theme: 'bootstrap4',
-                            allowClear: true,
-                            width: '100%',
-                            dropdownParent: modalContainer
-                        }).val('').trigger('change');
-
                         $('#selectPengawas').select2({
                             placeholder: "-- Pilih Pengawas --",
                             theme: 'bootstrap4',
@@ -291,6 +289,9 @@
                             dropdownParent: modalContainer
                         }).val('').trigger('change');
 
+                        if ($('#selectQC').hasClass("select2-hidden-accessible")) {
+                            $('#selectQC').select2('destroy');
+                        }
                         $('#selectQC').select2({
                             placeholder: "-- Pilih QC --",
                             theme: 'bootstrap4',

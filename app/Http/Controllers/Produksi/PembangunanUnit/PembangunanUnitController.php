@@ -34,9 +34,10 @@ class PembangunanUnitController extends Controller
 
     public function index(Request $request)
     {
-        $perumahaanId = $this->currentPerumahaanId();
-
         $user = Auth::user();
+        $perumahaanId = $this->currentPerumahaanId();
+        $isStaffMutu = $user->hasRole(['Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR']);
+
         if ($user->hasRole('Pengawas Unit')) {
             $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
                 ->where('perumahaan_id', $perumahaanId)
@@ -48,6 +49,12 @@ class PembangunanUnitController extends Controller
                 ->where('perumahaan_id', $perumahaanId)
                 ->where('spv_id', $user->id)
                 ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
+                ->latest('created_at');
+        } elseif ($isStaffMutu) {
+            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
+                ->where('perumahaan_id', $perumahaanId)
+                ->whereIn('status_pembangunan', ['selesai', 'selesai dengan catatan'])
+                ->where('status_serah_terima', 'siap_serah_terima')
                 ->latest('created_at');
         } else {
             $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
@@ -61,6 +68,13 @@ class PembangunanUnitController extends Controller
             $query->whereHas('tahap', function ($q) use ($slugTahap) {
                 $q->where('slug', $slugTahap);
             });
+        }
+
+        if (!$isStaffMutu && $request->filled('statusFil')) {
+            $statusFil = $request->input('statusFil');
+            if ($statusFil !== 'all') {
+                $query->where('status_pembangunan', $statusFil);
+            }
         }
 
         $allPembangunanUnit = $query->get()->map(function ($unit) {
@@ -79,13 +93,22 @@ class PembangunanUnitController extends Controller
             return $unit;
         });
 
+        if ($isStaffMutu) {
+            $allPembangunanUnit = $allPembangunanUnit->filter(function ($unit) {
+                return $unit->total_progres >= 100;
+            })->values();
+        }
+
         $perumahaan = Perumahaan::select('id', 'slug')->where('id', $perumahaanId)->first();
 
         $tahapSlug = $request->query('tahapFil');
+        $statusFil = $request->query('statusFil', 'all');
+
         return view('produksi.pembangunan-unit.index', [
             'allPembangunanUnit' => $allPembangunanUnit,
             'perumahaanSlug' => $perumahaan->slug,
             'tahapSlug' => $tahapSlug,
+            'statusFil' => $statusFil,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')]],
         ]);
     }

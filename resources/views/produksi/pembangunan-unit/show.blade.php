@@ -402,7 +402,7 @@
                 });
                 location.reload(); // Setelah reload, URL parameter akan menjaga tab tetap terbuka
             } catch (error) {
-                alert('Gagal mengirim pengajuan upah.');
+                alert(error.response?.data?.message || 'Gagal mengirim pengajuan upah.');
             } finally {
                 this.loadingUpah = false;
             }

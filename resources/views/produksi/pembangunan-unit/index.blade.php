@@ -84,6 +84,28 @@
                         </script>
                     </div>
 
+                    @unless(auth()->user()->hasRole(['Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR']))
+                        <!-- Select Status Pembangunan -->
+                        <div class="w-full sm:w-64">
+                            <select name="statusFil" id="selectStatusFil"
+                                class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white">
+                                <option value="all" {{ ($statusFil ?? 'all') === 'all' ? 'selected' : '' }}>Semua Status</option>
+                                <option value="proses" {{ ($statusFil ?? '') === 'proses' ? 'selected' : '' }}>Proses</option>
+                                <option value="selesai" {{ ($statusFil ?? '') === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            </select>
+                            <script>
+                                $(document).ready(function() {
+                                    $('#selectStatusFil').select2({
+                                        placeholder: "Semua Status",
+                                        theme: 'bootstrap4',
+                                        allowClear: false,
+                                        width: '100%'
+                                    });
+                                });
+                            </script>
+                        </div>
+                    @endunless
+
                     <div class="flex gap-2 w-full sm:w-auto">
                         <button type="submit"
                             class="flex-grow sm:flex-none px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-center">

@@ -42,15 +42,46 @@ class PermintaanDibangunController extends Controller
             ->where('perumahaan_id', $this->currentPerumahaanId());
 
         if ($user->hasRole('SPV Drafting, Teknis & Estimasi')) {
-            $query->whereHas('pembangunanUnit', function ($q) use ($user) {
-                $q->where('spv_id', $user->id);
+            $query->where(function ($q) use ($user) {
+                $q->where('status_pengajuan', 'pending')
+                  ->orWhereHas('pembangunanUnit', function ($sub) use ($user) {
+                      $sub->where('spv_id', $user->id);
+                  });
+            });
+        } elseif ($user->hasRole('Pengawas Unit')) {
+            $query->where(function ($q) use ($user) {
+                $q->where('status_pengajuan', 'pending')
+                  ->orWhereHas('pembangunanUnit', function ($sub) use ($user) {
+                      $sub->where('pengawas_id', $user->id);
+                  });
             });
         }
 
         $allPengajuan = $query->latest()->get();
 
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
-        $allSpv = User::select('id', 'nama_lengkap')->role('SPV Drafting, Teknis & Estimasi')->orderBy('nama_lengkap', 'asc')->get();
+        $currentPerumId = $this->currentPerumahaanId();
+
+        $allPengawas = User::select('id', 'nama_lengkap')
+            ->role('Pengawas Unit')
+            ->where(function ($q) use ($currentPerumId) {
+                $q->whereNull('perumahaan_id');
+                if ($currentPerumId) {
+                    $q->orWhere('perumahaan_id', $currentPerumId);
+                }
+            })
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+
+        $allSpv = User::select('id', 'nama_lengkap')
+            ->role('SPV Drafting, Teknis & Estimasi')
+            ->where(function ($q) use ($currentPerumId) {
+                $q->whereNull('perumahaan_id');
+                if ($currentPerumId) {
+                    $q->orWhere('perumahaan_id', $currentPerumId);
+                }
+            })
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
 
         $allQcContainer = MasterQcContainer::all();
 

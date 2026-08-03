@@ -41,11 +41,27 @@ class BuatPembangunanKawasanController extends Controller
         }
     }
 
+    protected function currentPerumahaanId()
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        return $user->is_global ? session('current_perumahaan_id', null) : $user->perumahaan_id;
+    }
+
     public function index()
     {
         $kawasans = PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes.pengawas'])->latest()->get();
         $perumahaans = Perumahaan::all();
-        $users = \App\Models\User::role('Pengawas Kawasan')->get();
+
+        $currentPerumId = $this->currentPerumahaanId();
+        $users = \App\Models\User::role('Pengawas Kawasan')
+            ->where(function ($q) use ($currentPerumId) {
+                $q->whereNull('perumahaan_id');
+                if ($currentPerumId) {
+                    $q->orWhere('perumahaan_id', $currentPerumId);
+                }
+            })
+            ->get();
+
         return view('produksi.buat_pembangunan.index', compact('kawasans', 'perumahaans', 'users'));
     }
 
@@ -72,7 +88,17 @@ class BuatPembangunanKawasanController extends Controller
             abort(403, 'Hanya kawasan pending yang dapat diedit');
         }
         $perumahaans = Perumahaan::all();
-        $users = \App\Models\User::role('Pengawas Kawasan')->get();
+
+        $currentPerumId = $this->currentPerumahaanId();
+        $users = \App\Models\User::role('Pengawas Kawasan')
+            ->where(function ($q) use ($currentPerumId) {
+                $q->whereNull('perumahaan_id');
+                if ($currentPerumId) {
+                    $q->orWhere('perumahaan_id', $currentPerumId);
+                }
+            })
+            ->get();
+
         return view('produksi.buat_pembangunan.edit', compact('kawasan', 'perumahaans', 'users'));
     }
 

@@ -73,6 +73,7 @@ class PersetujuanUpahController extends Controller
         $now = now();
         $roleName = Auth::user()->roles->pluck('name')->first() ?? 'Pemeriksa';
 
+        $processedItems = collect();
         foreach ($pengajuans as $pengajuan) {
             if ($action === 'reject') {
                 $statusDitolak = match ($pengajuan->status_pengajuan) {
@@ -87,8 +88,6 @@ class PersetujuanUpahController extends Controller
                     'alasan_ditolak'   => $request->alasan_ditolak,
                     'ditolak_pada'     => $now
                 ]);
-
-                $this->sendWaNotificationResponse($pengajuan, false, $roleName);
             } elseif ($action === 'approve') {
                 $updateData = [];
                 $isFinalApproval = false;
@@ -112,9 +111,12 @@ class PersetujuanUpahController extends Controller
                         'total_nominal'                => $pengajuan->nominal_diajukan,
                     ]);
                 }
-
-                $this->sendWaNotificationResponse($pengajuan, true, $roleName);
             }
+            $processedItems->push($pengajuan);
+        }
+
+        if ($processedItems->isNotEmpty()) {
+            $this->sendWaNotificationResponseBulk($processedItems, $action === 'approve', $roleName);
         }
 
         $msgText = count($ids) > 1 ? 'Beberapa pengajuan upah' : 'Pengajuan upah';
@@ -122,22 +124,18 @@ class PersetujuanUpahController extends Controller
         return back()->with('success', "{$msgText} {$actText}");
     }
 
-    private function sendWaNotificationResponse($pengajuan, bool $isApprove, string $roleName): void
+    private function sendWaNotificationResponseBulk($pengajuans, bool $isApprove, string $roleName): void
     {
         try {
             $groupId = env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN'));
             if (!$groupId) return;
 
-            $pengajuan->loadMissing(['pembangunanUnit.unit.tahap.perumahaan']);
-            $unit = $pengajuan->pembangunanUnit->unit ?? null;
+            $pengajuans->load(['pembangunanUnit.unit.tahap.perumahaan', 'pembangunanUnitQc']);
 
             $msg = view('notifications.whatsapp.pembangunan_unit.persetujuan_upah', [
                 'statusAction' => 'konfirmasi',
                 'isApprove' => $isApprove,
-                'pengajuan' => $pengajuan,
-                'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
-                'namaTahap' => $unit->tahap->nama_tahap ?? '-',
-                'namaUnit' => $unit->nama_unit ?? '-',
+                'items' => $pengajuans,
                 'penyetuju' => Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Pemeriksa',
                 'rolePenyetuju' => $roleName,
                 'tanggal' => now()->format('d/m/Y H:i') . ' WIB'
@@ -145,7 +143,7 @@ class PersetujuanUpahController extends Controller
 
             app(\App\Services\NotificationGroupService::class)->send($groupId, $msg);
         } catch (\Exception $ex) {
+            \Illuminate\Support\Facades\Log::error('WA Upah Exception: ' . $ex->getMessage());
         }
     }
-}
 }

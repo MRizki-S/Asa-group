@@ -48,7 +48,7 @@
             container.innerHTML = '';
 
             if (this.isMultiple) {
-                form.action = '{{ route('produksi.persetujuanUpahProperti.index') }}/update-status';
+                form.action = '{{ route('produksi.persetujuanUpahProperti.update', '0') }}';
                 this.selectedIds.forEach(id => {
                     const input = document.createElement('input');
                     input.type = 'hidden';
@@ -58,6 +58,11 @@
                 });
             } else {
                 form.action = `/produksi/persetujuan-upah-properti/${this.selectedItem.id}`;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = this.selectedItem.id;
+                container.appendChild(input);
             }
 
             document.getElementById('input-action-type').value = type;
