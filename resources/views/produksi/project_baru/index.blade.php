@@ -39,14 +39,14 @@
             <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Project Kontraktor Baru</h3>
             <form action="{{ route('produksi.projectBaru.store') }}" method="POST" id="form-create-project" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ simpanMulai: '{{ date('Y-m-d') }}', simpanSelesai: '', endPickerProject: null }">
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Project <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Nama Project <span class="text-red-500">*</span></label>
                         <input type="text" name="nama" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                     </div>
 
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Pengawas Proyek Mangoon</label>
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Pengawas Proyek Mangoon</label>
                         <select name="pengawas_id" id="selectPengawas" class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                             <option value="">Pilih Pengawas</option>
                             @foreach($users as $user)
@@ -66,23 +66,23 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Tanggal Mulai</label>
-                        <div class="relative" x-data="{ simpan: '{{ date('Y-m-d') }}' }">
+                        <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                                 <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0 2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" /></svg>
                             </div>
-                            <input type="text" x-init="flatpickr($el, { dateFormat: 'd-m-Y', defaultDate: '{{ date('d-m-Y') }}', onChange: (selectedDates, dateStr, instance) => { simpan = instance.formatDate(selectedDates[0], 'Y-m-d'); } })" class="w-full pl-10 pr-3 py-2 text-gray-700 rounded-lg border border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none" placeholder="Pilih Tanggal Mulai">
-                            <input type="hidden" name="tanggal_mulai" x-model="simpan">
+                            <input type="text" x-init="flatpickr($el, { dateFormat: 'd-m-Y', defaultDate: '{{ date('d-m-Y') }}', onChange: (selectedDates, dateStr, instance) => { simpanMulai = instance.formatDate(selectedDates[0], 'Y-m-d'); if(endPickerProject) { endPickerProject.set('minDate', selectedDates[0]); } } })" class="w-full pl-10 pr-3 py-2 text-gray-700 rounded-lg border border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none" placeholder="Pilih Tanggal Mulai">
+                            <input type="hidden" name="tanggal_mulai" x-model="simpanMulai">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Tanggal Selesai</label>
-                        <div class="relative" x-data="{ simpan: '' }">
+                        <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                                 <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0 2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" /></svg>
                             </div>
-                            <input type="text" x-init="flatpickr($el, { dateFormat: 'd-m-Y', onChange: (selectedDates, dateStr, instance) => { simpan = instance.formatDate(selectedDates[0], 'Y-m-d'); } })" class="w-full pl-10 pr-3 py-2 text-gray-700 rounded-lg border border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none" placeholder="Pilih Tanggal Selesai">
-                            <input type="hidden" name="tanggal_selesai" x-model="simpan">
+                            <input type="text" x-init="endPickerProject = flatpickr($el, { dateFormat: 'd-m-Y', minDate: '{{ date('d-m-Y') }}', onChange: (selectedDates, dateStr, instance) => { simpanSelesai = instance.formatDate(selectedDates[0], 'Y-m-d'); } })" class="w-full pl-10 pr-3 py-2 text-gray-700 rounded-lg border border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white outline-none" placeholder="Pilih Tanggal Selesai">
+                            <input type="hidden" name="tanggal_selesai" x-model="simpanSelesai">
                         </div>
                     </div>
 
@@ -92,7 +92,7 @@
                         </button>
                     </div>
                 </div>
-            </form>
+                </form>
         </div>
 
         <!-- Tabel -->

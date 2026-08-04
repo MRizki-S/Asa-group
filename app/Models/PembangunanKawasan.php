@@ -46,4 +46,9 @@ class PembangunanKawasan extends Model
     {
         return $this->hasMany(PembangunanKawasanPeriode::class, 'pembangunan_kawasan_id')->latest('created_at');
     }
+
+    public function terminUpahHarian()
+    {
+        return $this->hasMany(PembangunanKawasanTerminUpahHarian::class, 'pembangunan_kawasan_id');
+    }
 }

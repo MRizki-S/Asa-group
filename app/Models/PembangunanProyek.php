@@ -36,4 +36,9 @@ class PembangunanProyek extends Model
     {
         return $this->hasMany(PembangunanProyekBahan::class, 'pembangunan_proyek_id');
     }
+
+    public function terminUpahHarian()
+    {
+        return $this->hasMany(PembangunanProyekTerminUpahHarian::class, 'pembangunan_proyek_id');
+    }
 }

@@ -107,6 +107,8 @@ class TerminController extends Controller
             'pembangunanUnitQc.pembangunanUnitUpah',
             'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
             'pembangunanUnitQc.pembangunanUnitBahan.barang',
+            'terminUpahHarian.alokasi.detail.pengajuan',
+            'terminUpahHarian.tukang',
         ])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
@@ -419,17 +421,57 @@ class TerminController extends Controller
         $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
         $row++;
 
-        // Untuk sementara data upah harian kosong
-        $sheet->mergeCells("A{$row}:E{$row}");
-        $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-        $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
-        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $row++;
+        $upahHarianList = $unit->terminUpahHarian;
+        $totalUpahHarian = 0;
+        $noUpahHarian = 1;
+
+        // Kelompokkan berdasarkan pengajuan induk upah harian
+        $groupedUpahHarian = $upahHarianList->groupBy(function ($item) {
+            return $item->alokasi->detail->pengajuan->id ?? ('item_' . $item->id);
+        });
+
+        foreach ($groupedUpahHarian as $group) {
+            $first = $group->first();
+            $pengajuan = $first->alokasi->detail->pengajuan ?? null;
+
+            $noPengajuan = $pengajuan->nomor_upah_harian ?? '-';
+            $tglMulai = $pengajuan->tanggal_mulai ? $pengajuan->tanggal_mulai->format('d M Y') : ($first->tanggal ? \Carbon\Carbon::parse($first->tanggal)->format('d M Y') : '-');
+            $tglSelesai = $pengajuan->tanggal_selesai ? $pengajuan->tanggal_selesai->format('d M Y') : ($first->tanggal ? \Carbon\Carbon::parse($first->tanggal)->format('d M Y') : '-');
+            $periodeText = ($tglMulai === $tglSelesai) ? $tglMulai : "{$tglMulai} s/d {$tglSelesai}";
+
+            $sumNominal = $group->sum('nominal');
+            $totalUpahHarian += $sumNominal;
+
+            $sheet->setCellValue("A{$row}", $noUpahHarian++);
+            $sheet->setCellValue("B{$row}", $noPengajuan);
+            $sheet->setCellValue("C{$row}", $periodeText);
+            $sheet->setCellValue("D{$row}", $sumNominal);
+            $sheet->setCellValue("E{$row}", $sumNominal);
+
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("D{$row}:E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+            $sheet->getStyle("D{$row}:E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $row++;
+        }
+
+        if ($groupedUpahHarian->isEmpty()) {
+            $sheet->mergeCells("A{$row}:E{$row}");
+            $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        }
+
+        $grandTotalUpah += $totalUpahHarian;
 
         $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI UPAH HARIAN TUKANG');
-        $sheet->setCellValue("E{$row}", 0);
+        $sheet->setCellValue("E{$row}", $totalUpahHarian);
         $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
@@ -570,11 +612,11 @@ class TerminController extends Controller
         $sheet->getRowDimension($row)->setRowHeight(24);
 
         // Pengaturan lebar kolom presisi (Fit & Rapi)
-        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6); // Kolom NO ringkas & fit
-        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(38); // Nama Bahan / Upah
-        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(20); // Jumlah RAB
-        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(20); // Jumlah Real / Jenis Upah
-        $sheet->getColumnDimension('E')->setAutoSize(false)->setWidth(25); // Harga Real / Nominal
+        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6);  // Kolom NO ringkas & fit
+        $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(38); // Nama Bahan / Nomor Upah Harian
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(30); // Periode (Fit untuk "04 Aug 2026 s/d 10 Aug 2026")
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(25); // Nominal Upah / Jumlah Real
+        $sheet->getColumnDimension('E')->setAutoSize(false)->setWidth(28); // Harga Real / Nominal Final
 
         $namaUnitClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $unit->unit->nama_unit ?? 'Unit');
         $filename = "Laporan_Termin_Per_QC_{$namaUnitClean}.xlsx";
@@ -599,7 +641,10 @@ class TerminController extends Controller
     public function exportLaporanTerminProyek(string $id)
     {
         $proyek = \App\Models\PembangunanProyek::with([
-            'pengawas', 'pembangunanProyekBahan'
+            'pengawas',
+            'pembangunanProyekBahan',
+            'terminUpahHarian.alokasi.detail.pengajuan',
+            'terminUpahHarian.tukang',
         ])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
@@ -752,17 +797,56 @@ class TerminController extends Controller
         $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
         $row++;
 
-        // Placeholder Upah Harian proyek
-        $sheet->mergeCells("A{$row}:E{$row}");
-        $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-        $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
-        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $row++;
+        $upahHarianList = $proyek->terminUpahHarian;
+        $totalUpahHarian = 0;
+        $noUpahHarian = 1;
+
+        $groupedUpahHarian = $upahHarianList->groupBy(function ($item) {
+            return $item->alokasi->detail->pengajuan->id ?? ('item_' . $item->id);
+        });
+
+        foreach ($groupedUpahHarian as $group) {
+            $first = $group->first();
+            $pengajuan = $first->alokasi->detail->pengajuan ?? null;
+
+            $noPengajuan = $pengajuan->nomor_upah_harian ?? '-';
+            $tglMulai = $pengajuan->tanggal_mulai ? $pengajuan->tanggal_mulai->format('d M Y') : ($first->tanggal ? \Carbon\Carbon::parse($first->tanggal)->format('d M Y') : '-');
+            $tglSelesai = $pengajuan->tanggal_selesai ? $pengajuan->tanggal_selesai->format('d M Y') : ($first->tanggal ? \Carbon\Carbon::parse($first->tanggal)->format('d M Y') : '-');
+            $periodeText = ($tglMulai === $tglSelesai) ? $tglMulai : "{$tglMulai} s/d {$tglSelesai}";
+
+            $sumNominal = $group->sum('nominal');
+            $totalUpahHarian += $sumNominal;
+
+            $sheet->setCellValue("A{$row}", $noUpahHarian++);
+            $sheet->setCellValue("B{$row}", $noPengajuan);
+            $sheet->setCellValue("C{$row}", $periodeText);
+            $sheet->setCellValue("D{$row}", $sumNominal);
+            $sheet->setCellValue("E{$row}", $sumNominal);
+
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("D{$row}:E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+            $sheet->getStyle("D{$row}:E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            $row++;
+        }
+
+        if ($groupedUpahHarian->isEmpty()) {
+            $sheet->mergeCells("A{$row}:E{$row}");
+            $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+            $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+            $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        }
+
+        $totalUpah += $totalUpahHarian;
 
         $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI UPAH HARIAN TUKANG');
-        $sheet->setCellValue("E{$row}", 0);
+        $sheet->setCellValue("E{$row}", $totalUpahHarian);
         $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
         $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
@@ -806,8 +890,8 @@ class TerminController extends Controller
         // Pengaturan lebar kolom presisi (5 Kolom: A, B, C, D, E)
         $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6);  // NO
         $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(38); // Nama Bahan / Nomor Upah Harian
-        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(20); // Jumlah Real / Periode
-        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(20); // Kolom Kosong / Nominal Upah
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(30); // Periode (Fit untuk rentang tanggal "04 Aug 2026 s/d 10 Aug 2026")
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(25); // Nominal Upah
         $sheet->getColumnDimension('E')->setAutoSize(false)->setWidth(28); // HARGA REAL (Diperlebar agar tidak ###)
 
         $namaProyekClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $proyek->nama ?? 'Proyek');
@@ -830,7 +914,12 @@ class TerminController extends Controller
     public function exportLaporanTerminKawasan(string $id)
     {
         $kawasan = \App\Models\PembangunanKawasan::with([
-            'perumahan', 'pengawas', 'periodes', 'pembangunanKawasanBahan'
+            'perumahan',
+            'pengawas',
+            'periodes',
+            'pembangunanKawasanBahan',
+            'terminUpahHarian.alokasi.detail.pengajuan',
+            'terminUpahHarian.tukang',
         ])->findOrFail($id);
 
         $spreadsheet = new Spreadsheet();
@@ -985,10 +1074,77 @@ class TerminController extends Controller
             }
 
             // ==========================================
+            // 2. UPAH HARIAN TUKANG PERIODE
+            // ==========================================
+            $sheet->mergeCells("A{$row}:E{$row}");
+            $sheet->setCellValue("A{$row}", '   2. UPAH HARIAN TUKANG');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleCategoryHeader);
+            $row++;
+
+            $sheet->setCellValue("A{$row}", 'NO');
+            $sheet->setCellValue("B{$row}", 'Nomor Upah Harian');
+            $sheet->setCellValue("C{$row}", 'Periode');
+            $sheet->setCellValue("D{$row}", 'Nominal Upah');
+            $sheet->setCellValue("E{$row}", 'HARGA REAL');
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
+            $row++;
+
+            // Filter upah harian kawasan sesuai periode tanggal
+            $upahPeriode = $kawasan->terminUpahHarian->filter(function($item) use ($periode) {
+                $itemDate = \Carbon\Carbon::parse($item->tanggal);
+                $pMulai = \Carbon\Carbon::parse($periode->tanggal_mulai);
+                $pSelesai = $periode->tanggal_selesai ? \Carbon\Carbon::parse($periode->tanggal_selesai)->endOfDay() : \Carbon\Carbon::now();
+                return $itemDate->gte($pMulai) && $itemDate->lte($pSelesai);
+            });
+
+            $groupedUpahPeriode = $upahPeriode->groupBy(function ($item) {
+                return $item->alokasi->detail->pengajuan->id ?? ('item_' . $item->id);
+            });
+
+            $noUpahPeriode = 1;
+            foreach ($groupedUpahPeriode as $group) {
+                $first = $group->first();
+                $pengajuan = $first->alokasi->detail->pengajuan ?? null;
+
+                $noPengajuan = $pengajuan->nomor_upah_harian ?? '-';
+                $tMulai = $pengajuan->tanggal_mulai ? $pengajuan->tanggal_mulai->format('d M Y') : ($first->tanggal ? \Carbon\Carbon::parse($first->tanggal)->format('d M Y') : '-');
+                $tSelesai = $pengajuan->tanggal_selesai ? $pengajuan->tanggal_selesai->format('d M Y') : ($first->tanggal ? \Carbon\Carbon::parse($first->tanggal)->format('d M Y') : '-');
+                $periodeText = ($tMulai === $tSelesai) ? $tMulai : "{$tMulai} s/d {$tSelesai}";
+
+                $sumNominal = $group->sum('nominal');
+                $totalPeriodeUpah += $sumNominal;
+
+                $sheet->setCellValue("A{$row}", $noUpahPeriode++);
+                $sheet->setCellValue("B{$row}", $noPengajuan);
+                $sheet->setCellValue("C{$row}", $periodeText);
+                $sheet->setCellValue("D{$row}", $sumNominal);
+                $sheet->setCellValue("E{$row}", $sumNominal);
+
+                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin);
+                $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("D{$row}:E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
+                $sheet->getStyle("D{$row}:E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $row++;
+            }
+
+            if ($groupedUpahPeriode->isEmpty()) {
+                $sheet->mergeCells("A{$row}:E{$row}");
+                $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian pada periode ini.');
+                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
+                $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
+                $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $row++;
+            }
+
+            // ==========================================
             // SUBTOTAL PER PERIODE
             // ==========================================
-            $totalPeriodeOverall = $totalPeriodeBahan;
+            $totalPeriodeOverall = $totalPeriodeBahan + $totalPeriodeUpah;
             $grandTotalBahan += $totalPeriodeBahan;
+            $grandTotalUpah += $totalPeriodeUpah;
 
             $sheet->mergeCells("A{$row}:D{$row}");
             $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI PERIODE (' . $tglMulai . ' s/d ' . $tglSelesai . ')');
@@ -1008,40 +1164,6 @@ class TerminController extends Controller
             $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row += 3;
         }
-
-        // =========================================================================
-        // 2. TABEL AKUMULASI UPAH HARIAN TUKANG (STANDALONE DI ATAS GRAND TOTAL)
-        // =========================================================================
-        $sheet->mergeCells("A{$row}:E{$row}");
-        $sheet->setCellValue("A{$row}", 'AKUMULASI UPAH HARIAN TUKANG');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($stylePeriodeHeader);
-        $sheet->getRowDimension($row)->setRowHeight(24);
-        $row++;
-
-        $sheet->setCellValue("A{$row}", 'NO');
-        $sheet->setCellValue("B{$row}", 'Nomor Upah Harian');
-        $sheet->setCellValue("C{$row}", 'Periode');
-        $sheet->setCellValue("D{$row}", 'Nominal Upah');
-        $sheet->setCellValue("E{$row}", 'HARGA REAL');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleTableHeader);
-        $row++;
-
-        // Placeholder Upah Harian kawasan
-        $sheet->mergeCells("A{$row}:E{$row}");
-        $sheet->setCellValue("A{$row}", 'Tidak ada data upah harian.');
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleBorderThin)->getFont()->setItalic(true);
-        $sheet->getStyle("A{$row}:E{$row}")->getFill()->applyFromArray($bodyFill);
-        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $row++;
-
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("A{$row}", 'SUBTOTAL REALISASI UPAH HARIAN TUKANG');
-        $sheet->setCellValue("E{$row}", 0);
-        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray($styleSubtotal);
-        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($currencyFormat);
-        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $row += 3;
 
         // ==========================================
         // GRAND TOTAL KESELURUHAN KAWASAN
@@ -1080,8 +1202,8 @@ class TerminController extends Controller
         // Pengaturan lebar kolom presisi (5 Kolom: A, B, C, D, E)
         $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6);  // NO
         $sheet->getColumnDimension('B')->setAutoSize(false)->setWidth(38); // Nama Bahan / Nomor Upah Harian
-        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(20); // Jumlah Real / Periode
-        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(20); // Kolom Kosong / Nominal Upah
+        $sheet->getColumnDimension('C')->setAutoSize(false)->setWidth(30); // Periode (Fit untuk rentang tanggal "04 Aug 2026 s/d 10 Aug 2026")
+        $sheet->getColumnDimension('D')->setAutoSize(false)->setWidth(25); // Nominal Upah
         $sheet->getColumnDimension('E')->setAutoSize(false)->setWidth(28); // HARGA REAL (Diperlebar agar tidak ###)
 
         $namaKawasanClean = preg_replace('/[^A-Za-z0-9\-]/', '_', $kawasan->nama ?? 'Kawasan');
