@@ -83,7 +83,7 @@
                             :class="tab === 'bahan' ? 'border-blue-600 text-blue-600 bg-white dark:bg-transparent' :
                                 'border-transparent text-gray-500 dark:text-gray-400'"
                             class="flex-1 min-w-[80px] py-3 px-2 text-[10px] font-bold border-b-2 uppercase tracking-wider transition-all whitespace-nowrap">
-                            <i class="fa-solid fa-box me-1"></i> Order Bahan
+                            <i class="fa-solid fa-box me-1"></i> Barang
                         </button>
                         <button @click="tab = 'upah'; $data.updateUrl({{ $index }}, 'upah')"
                             :class="tab === 'upah' ? 'border-blue-600 text-blue-600 bg-white dark:bg-transparent' :
@@ -140,7 +140,7 @@
                         <div class="flex border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5 overflow-x-auto">
                             <button @click="tab = 'bahan'; $data.updateUrl({{ $servisIndex }}, 'bahan')"
                                 class="flex-1 min-w-[80px] py-3 px-2 text-[10px] font-bold border-b-2 border-blue-600 text-blue-600 bg-white dark:bg-transparent uppercase tracking-wider transition-all whitespace-nowrap">
-                                <i class="fa-solid fa-box me-1"></i> Order Bahan
+                                <i class="fa-solid fa-box me-1"></i> Barang
                             </button>
                         </div>
 

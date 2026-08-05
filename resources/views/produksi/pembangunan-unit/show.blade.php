@@ -487,8 +487,10 @@
                     items: finalItems,
                     jenis_order: this.filterType,
                 });
+                this.openRequest = false;
                 location.reload();
             } catch (error) {
+                this.openRequest = false;
                 console.error(error.response?.data);
                 alert('Gagal mengirim order: ' + (error.response?.data?.message || 'Terjadi kesalahan'));
             } finally {

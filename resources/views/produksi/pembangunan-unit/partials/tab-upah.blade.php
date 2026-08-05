@@ -1,6 +1,124 @@
 <div x-show="tab === 'upah'" class="space-y-4">
+    @php
+        // --- Perhitungan Akumulasi Pengajuan Upah disetujui (ACC Akuntan / selesai) & RAP QC ---
+        $allApprovedUpah = \App\Models\PembangunanUnitUpahPengajuan::where('pembangunan_unit_qc_id', $qc->id)
+            ->where('status_pengajuan', 'disetujui_akuntan')
+            ->get();
+
+        $summaryRapUpahItems = collect();
+        if ($qc->pembangunanUnitRapUpah) {
+            foreach ($qc->pembangunanUnitRapUpah as $rapUpah) {
+                $approvedNominal = $allApprovedUpah->where('pembangunan_unit_rap_upah_id', $rapUpah->id)->sum('nominal_diajukan');
+                $targetNominal = (float) $rapUpah->nominal_standar;
+
+                $statusUpahSummary = 'belum_terpenuhi';
+                if (abs($approvedNominal - $targetNominal) <= 1 && $approvedNominal > 0) {
+                    $statusUpahSummary = 'terpenuhi';
+                } elseif ($approvedNominal > ($targetNominal + 1)) {
+                    $statusUpahSummary = 'melebihi_rap';
+                }
+
+                $summaryRapUpahItems->push([
+                    'is_rap' => true,
+                    'rap_id' => $rapUpah->id,
+                    'nama_upah' => $rapUpah->nama_upah,
+                    'nominal_rap' => $targetNominal,
+                    'nominal_approved' => $approvedNominal,
+                    'status_summary' => $statusUpahSummary,
+                ]);
+            }
+        }
+
+        // Grouping per rap_upah_id
+        $summaryRapUpahItems = collect();
+        if ($qc->pembangunanUnitRapUpah) {
+            foreach ($qc->pembangunanUnitRapUpah as $rapUpah) {
+                $approvedNominal = $allApprovedUpah->where('pembangunan_unit_rap_upah_id', $rapUpah->id)->sum('nominal_diajukan');
+                $targetNominal = (float) $rapUpah->nominal_standar;
+
+                $statusUpahSummary = 'belum_terpenuhi';
+                if (abs($approvedNominal - $targetNominal) <= 1 && $approvedNominal > 0) {
+                    $statusUpahSummary = 'sesuai_rap';
+                } elseif ($approvedNominal > ($targetNominal + 1)) {
+                    $statusUpahSummary = 'melebihi_rap';
+                }
+
+                $summaryRapUpahItems->push([
+                    'is_rap' => true,
+                    'rap_id' => $rapUpah->id,
+                    'nama_upah' => $rapUpah->nama_upah,
+                    'nominal_rap' => $targetNominal,
+                    'nominal_approved' => $approvedNominal,
+                    'status_summary' => $statusUpahSummary,
+                ]);
+            }
+        }
+    @endphp
+
+    {{-- Accordion Akumulasi Upah & RAP --}}
+    <div x-data="{ openUpahSummary: false }" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 overflow-hidden shadow-sm">
+        <button type="button" @click="openUpahSummary = !openUpahSummary"
+            class="w-full px-4 py-3 bg-gray-50/80 dark:bg-gray-800/60 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-calculator text-blue-600 text-xs"></i>
+                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
+                    Akumulasi Upah & RAP (Status Disetujui Akuntan)
+                </h4>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold text-gray-500 bg-white dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
+                    {{ $summaryRapUpahItems->count() }} Pekerjaan RAP
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition-transform duration-300"
+                    :class="openUpahSummary ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </button>
+
+        <div x-show="openUpahSummary" x-collapse x-cloak class="p-4 border-t border-gray-100 dark:border-gray-700/80 space-y-4">
+            {{-- Tabel Upah Kuota RAP QC --}}
+            <div>
+                <div class="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-gray-50 dark:bg-gray-800 text-[10px] font-bold text-gray-400 uppercase">
+                            <tr>
+                                <th class="p-2.5">Pekerjaan Upah</th>
+                                <th class="p-2.5 text-right">Nominal RAP</th>
+                                <th class="p-2.5 text-right">Akumulasi Disetujui</th>
+                                <th class="p-2.5 text-center">Status Pemenuhan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse ($summaryRapUpahItems as $sUpah)
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
+                                    <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sUpah['nama_upah'] }}</td>
+                                    <td class="p-2.5 text-right font-mono">Rp {{ number_format($sUpah['nominal_rap'], 0, ',', '.') }}</td>
+                                    <td class="p-2.5 text-right font-mono font-semibold {{ $sUpah['status_summary'] === 'melebihi_rap' ? 'text-red-600' : ($sUpah['status_summary'] === 'sesuai_rap' ? 'text-emerald-600' : 'text-blue-600') }}">
+                                        Rp {{ number_format($sUpah['nominal_approved'], 0, ',', '.') }}
+                                    </td>
+                                    <td class="p-2.5 text-center">
+                                        @if ($sUpah['status_summary'] === 'melebihi_rap')
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-700 rounded border border-red-200">Melebihi RAP</span>
+                                        @elseif ($sUpah['status_summary'] === 'sesuai_rap')
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Sesuai RAP</span>
+                                        @else
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded border border-blue-200">Belum Terpenuhi</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="p-3 text-center text-gray-400 italic text-[11px]">Tidak ada data RAP upah</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1 pt-2">
         <div class="flex items-center gap-3">
             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Daftar Pengajuan Upah</h4>
             <span class="bg-blue-100 text-blue-600 text-[9px] font-bold px-2 py-0.5 rounded-full">

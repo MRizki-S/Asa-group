@@ -1,68 +1,204 @@
 <div x-show="tab === 'bahan'" class="space-y-4">
 
-    {{-- Tabel Order Bahan --}}
     @php
-        $orders = \App\Models\PembangunanUnitBarangOrder::with(['details.barang', 'user', 'accBy'])
+        $orders = \App\Models\PembangunanUnitBarangOrder::with(['details.barang.baseUnit', 'details.rapBahan', 'user', 'accBy'])
             ->where('pembangunan_unit_qc_id', $qc->id)
             ->latest()
             ->get();
 
         $hasSelesai = $orders->where('status_order', 'selesai')->count() > 0;
-
         $qcNama = 'Ke - ' . $qc->qc_urutan_ke . ' (' . ($qc->nama_qc ?? $qc->masterQc->nama_qc ?? 'QC') . ')';
+
+        // --- Perhitungan Akumulasi Order Selesai & RAP QC ---
+        // 1. Ambil seluruh order detail yang selesai untuk QC ini
+        $allApprovedDetails = \App\Models\PembangunanUnitBarangOrderDetail::whereHas('order', function ($q) use ($qc) {
+            $q->where('pembangunan_unit_qc_id', $qc->id)
+              ->where('status_order', 'selesai');
+        })->with(['barang.baseUnit', 'rapBahan'])->get();
+
+        // Grouping per rap_bahan_id dan per barang_id (luar RAP)
+        $summaryRapItems = collect();
+        if ($qc->pembangunanUnitRapBahan) {
+            foreach ($qc->pembangunanUnitRapBahan as $rap) {
+                $approvedQtyBase = $allApprovedDetails->where('rap_bahan_id', $rap->id)->sum('jumlah_base');
+                $targetQtyBase = (float)$rap->jumlah_standar * (float)($rap->faktor_konversi ?? 1);
+                
+                $statusSummary = 'belum_terpenuhi';
+                if (abs($approvedQtyBase - $targetQtyBase) <= 0.001 && $approvedQtyBase > 0) {
+                    $statusSummary = 'terpenuhi';
+                } elseif ($approvedQtyBase > ($targetQtyBase + 0.001)) {
+                    $statusSummary = 'melebihi_rap';
+                }
+
+                $summaryRapItems->push([
+                    'is_rap' => true,
+                    'rap_id' => $rap->id,
+                    'nama_barang' => $rap->nama_barang,
+                    'satuan' => $rap->satuan,
+                    'jumlah_rap' => (float)$rap->jumlah_standar,
+                    'jumlah_ordered_base' => $approvedQtyBase,
+                    'jumlah_rap_base' => $targetQtyBase,
+                    'status_summary' => $statusSummary,
+                    'sisa_base' => max(0, $targetQtyBase - $approvedQtyBase),
+                ]);
+            }
+        }
+
+        // Barang Luar RAP yang disetujui (ACC selesai)
+        $outsideRapApprovedDetails = $allApprovedDetails->whereNull('rap_bahan_id')->groupBy('barang_id');
+        $summaryLuarRapItems = collect();
+        foreach ($outsideRapApprovedDetails as $bId => $detGroup) {
+            $firstDet = $detGroup->first();
+            $totalBaseLuar = $detGroup->sum('jumlah_base');
+            $summaryLuarRapItems->push([
+                'is_rap' => false,
+                'nama_barang' => $firstDet->nama_barang,
+                'satuan' => $firstDet->satuan,
+                'jumlah_ordered_base' => $totalBaseLuar,
+                'status_summary' => 'luar_rap',
+            ]);
+        }
     @endphp
 
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1">
+    {{-- Accordion Akumulasi Order & RAP --}}
+    <div x-data="{ openSummary: false }" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 overflow-hidden shadow-sm">
+        <button type="button" @click="openSummary = !openSummary"
+            class="w-full px-4 py-3 bg-gray-50/80 dark:bg-gray-800/60 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-calculator text-blue-600 text-xs"></i>
+                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
+                    Akumulasi Order Barang & RAP (Status ACC Selesai)
+                </h4>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold text-gray-500 bg-white dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
+                    {{ $summaryRapItems->count() }} Item RAP | {{ $summaryLuarRapItems->count() }} Luar RAP
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition-transform duration-300"
+                    :class="openSummary ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </button>
+
+        <div x-show="openSummary" x-collapse x-cloak class="p-4 border-t border-gray-100 dark:border-gray-700/80 space-y-4">
+            {{-- Tabel Barang Sesuai RAP --}}
+            <div>
+                <h5 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">1. Daftar Barang Kuota RAP QC</h5>
+                <div class="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-gray-50 dark:bg-gray-800 text-[10px] font-bold text-gray-400 uppercase">
+                            <tr>
+                                <th class="p-2.5">Nama Barang</th>
+                                <th class="p-2.5 text-center">Jenis</th>
+                                <th class="p-2.5 text-center">Volume RAP</th>
+                                <th class="p-2.5 text-center">Akumulasi Terorder</th>
+                                <th class="p-2.5 text-center">Status Pemenuhan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse ($summaryRapItems as $sRap)
+                                @php
+                                    // Ambil jenis_order dari order selesai yang memesan rap item ini
+                                    $relatedJenis = $allApprovedDetails->where('rap_bahan_id', $sRap['rap_id'])->pluck('order.jenis_order')->unique()->filter();
+                                @endphp
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
+                                    <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sRap['nama_barang'] }}</td>
+                                    <td class="p-2.5 text-center">
+                                        @forelse($relatedJenis as $j)
+                                            <span class="inline-block px-1.5 py-0.5 text-[8px] font-black uppercase rounded border {{ $j === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }} mr-0.5">
+                                                {{ $j }}
+                                            </span>
+                                        @empty
+                                            <span class="text-gray-400 italic text-[10px]">-</span>
+                                        @endforelse
+                                    </td>
+                                    <td class="p-2.5 text-center">{{ number_format($sRap['jumlah_rap'], 0, ',', '.') }} {{ $sRap['satuan'] }}</td>
+                                    <td class="p-2.5 text-center font-semibold {{ $sRap['status_summary'] === 'melebihi_rap' ? 'text-red-600' : ($sRap['status_summary'] === 'terpenuhi' ? 'text-emerald-600' : 'text-blue-600') }}">
+                                        {{ (float)round($sRap['jumlah_ordered_base'], 2) }} {{ $sRap['satuan'] }}
+                                    </td>
+                                    <td class="p-2.5 text-center">
+                                        @if ($sRap['status_summary'] === 'melebihi_rap')
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-700 rounded border border-red-200">Melebihi RAP</span>
+                                        @elseif ($sRap['status_summary'] === 'terpenuhi')
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Sesuai RAP (Terpenuhi)</span>
+                                        @else
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded border border-blue-200">Belum Terpenuhi</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="p-3 text-center text-gray-400 italic text-[11px]">Tidak ada data barang RAP</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Tabel Barang Luar RAP --}}
+            <div>
+                <h5 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">2. Daftar Barang Di Luar RAP (Akumulasi Order Selesai)</h5>
+                <div class="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-gray-50 dark:bg-gray-800 text-[10px] font-bold text-gray-400 uppercase">
+                            <tr>
+                                <th class="p-2.5">Nama Barang</th>
+                                <th class="p-2.5 text-center">Jenis</th>
+                                <th class="p-2.5 text-center">Total Akumulasi Terorder</th>
+                                <th class="p-2.5 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse ($summaryLuarRapItems as $sLuar)
+                                @php
+                                    $relatedLuarJenis = $allApprovedDetails->whereNull('rap_bahan_id')->where('nama_barang', $sLuar['nama_barang'])->pluck('order.jenis_order')->unique()->filter();
+                                @endphp
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
+                                    <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sLuar['nama_barang'] }}</td>
+                                    <td class="p-2.5 text-center">
+                                        @forelse($relatedLuarJenis as $j)
+                                            <span class="inline-block px-1.5 py-0.5 text-[8px] font-black uppercase rounded border {{ $j === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }} mr-0.5">
+                                                {{ $j }}
+                                            </span>
+                                        @empty
+                                            <span class="text-gray-400 italic text-[10px]">-</span>
+                                        @endforelse
+                                    </td>
+                                    <td class="p-2.5 text-center font-semibold text-amber-600">{{ (float)round($sLuar['jumlah_ordered_base'], 2) }} {{ $sLuar['satuan'] }}</td>
+                                    <td class="p-2.5 text-center">
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 rounded border border-amber-200">Diluar RAP</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="p-3 text-center text-gray-400 italic text-[11px]">Belum ada order barang di luar RAP yang disetujui (ACC Selesai)</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Header Riwayat Order --}}
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1 pt-2">
         <div class="flex items-center gap-3">
-            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Riwayat Order Bahan</h4>
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Riwayat Order Barang</h4>
             <span class="bg-blue-100 text-blue-600 text-[9px] font-bold px-2 py-0.5 rounded-full">
                 {{ $orders->count() }} Total
             </span>
         </div>
-
-        <div class="flex flex-wrap gap-2 sm:items-center">
-            {{-- 
-            <a href="{{ route('produksi.pembangunanUnit.laporanBahan', ['id' => $data->id, 'qcId' => $qc->master_qc_urutan_id]) }}"
-                class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-[10px] font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all uppercase flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-blue-500"></i>
-                Lihat Laporan
-            </a>
-            --}}
-            @php
-                $canOrderBahan = !in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']) || $qc->is_servis;
-            @endphp
-            @if (($qc->pembangunanUnitRapBahan->count() > 0 || $qc->is_servis) && $canOrderBahan)
-                <button @click="{{ $qc->is_servis ? 'prepareServisOrder(' . $qc->id . ')' : 'prepareOrder(' . json_encode($qc->pembangunanUnitRapBahan) . ', ' . $qc->id . ')' }}"
-                    class="px-4 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all uppercase flex items-center gap-2">
-                    <i class="fa-solid fa-box text-xs"></i>
-                    <span>{{ $qc->is_servis ? 'Order Barang Servis' : 'Order Barang' }}</span>
-                </button>
-            @endif
-            @if($hasSelesai && $canOrderBahan)
-                <button @click="prepareReturn({{ $qc->id }}, '{{ $qcNama }}')"
-                    class="px-4 py-2 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 shadow-sm transition-all uppercase flex items-center gap-2">
-                    <i class="fa-solid fa-rotate-left text-xs"></i>
-                    Retur Barang
-                </button>
-            @endif
-        </div>
     </div>
 
-    {{-- Tabel Order Bahan --}}
+    {{-- Tabel Order Barang --}}
     @if ($orders->count() > 0)
-        <div
-            class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800/40">
+        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm bg-white dark:bg-gray-800/40">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                         <th class="w-10 px-4 py-3"></th>
                         <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">No Order</th>
-                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">
-                            Item</th>
-                        <th
-                            class="w-40 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">
-                            Status</th>
+                        <th class="px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Item</th>
+                        <th class="w-40 px-4 py-3 text-[10px] font-bold text-gray-500 uppercase text-center tracking-wider">Status</th>
                     </tr>
                 </thead>
 
@@ -107,11 +243,9 @@
                                         'ditolak' => 'bg-red-50 text-red-600 border-red-100',
                                         'return_pending' => 'bg-orange-50 text-orange-600 border-orange-100',
                                     ];
-                                    $style =
-                                        $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                    $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
                                 @endphp
-                                <span
-                                    class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                <span class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $style }}">
                                     {{ str_replace('_', ' ', $order->status_order) }}
                                 </span>
                             </td>
@@ -120,87 +254,71 @@
                         {{-- Accordion Detail --}}
                         <tr x-show="open" x-cloak>
                             <td colspan="4" class="p-0 border-none bg-gray-50/50 dark:bg-gray-900/40">
-                                <div x-show="open" x-collapse
-                                    class="px-10 py-6 border-t border-gray-100 dark:border-gray-800">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div x-show="open" x-collapse class="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {{-- Daftar Barang --}}
-                                        <div class="space-y-4">
-                                            <h5
-                                                class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
-                                                Detail Item Barang</h5>
-                                            <div
-                                                class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                                        <div class="space-y-3">
+                                            <h5 class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                                Detail Item Barang
+                                            </h5>
+                                            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
                                                 <div class="max-h-[350px] overflow-auto custom-scrollbar">
                                                     <table class="w-full text-left border-collapse">
-                                                        <thead
-                                                            class="bg-gray-50/80 dark:bg-gray-700/50 sticky top-0 z-10 backdrop-blur-sm">
+                                                        <thead class="bg-gray-50/80 dark:bg-gray-700/50 sticky top-0 z-10 backdrop-blur-sm">
                                                             <tr>
-                                                                <th
-                                                                    class="px-3 py-2 text-[9px] font-bold text-gray-400 uppercase border-b border-gray-100 dark:border-gray-700">
-                                                                    Nama Barang</th>
-                                                                <th
-                                                                    class="px-3 py-2 text-[9px] font-bold text-gray-400 uppercase text-right border-b border-gray-100 dark:border-gray-700">
-                                                                    Status Jumlah</th>
+                                                                <th class="px-3 py-2 text-[10px] font-semibold text-gray-500 uppercase border-b border-gray-100 dark:border-gray-700">Nama Barang</th>
+                                                                <th class="px-3 py-2 text-[10px] font-semibold text-gray-500 uppercase text-center border-b border-gray-100 dark:border-gray-700">Jumlah</th>
+                                                                <th class="px-3 py-2 text-[10px] font-semibold text-gray-500 uppercase text-center border-b border-gray-100 dark:border-gray-700">Status</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                                                             @foreach ($order->details as $det)
                                                                 @php
-                                                                    // 1. Ambil jumlah base dari pengajuan (sudah hasil kali jumlah_input * faktor)
-                                                                    $baseOrder = (float) $det->jumlah_base;
-
-                                                                    // 2. Hitung jumlah base dari RAP asli (jumlah_standar * faktor_konversi RAP)
-                                                                    $standarRap =
-                                                                        (float) ($det->rapBahan->jumlah_standar ?? 0);
-                                                                    $faktorRap =
-                                                                        (float) ($det->rapBahan->faktor_konversi ?? 1);
-                                                                    $baseRap = $standarRap * $faktorRap;
-
-                                                                    // 3. Bandingkan base vs base (misal: 112 Pcs vs 112 Pcs)
-                                                                    // Kita beri toleransi sedikit (epsilon) untuk menghindari isu floating point
-                                                                    $isOver = $baseOrder - $baseRap > 0.001;
-
                                                                     $isRap = (bool) $det->rapBahan;
+                                                                    $isOverOrder = false;
+
+                                                                    if ($isRap) {
+                                                                        $standarRap = (float) ($det->rapBahan->jumlah_standar ?? 0);
+                                                                        $faktorRap = (float) ($det->rapBahan->faktor_konversi ?? 1);
+                                                                        $baseRapTarget = $standarRap * $faktorRap;
+
+                                                                        // Akumulasi order terdahulu + order ini (yang tidak ditolak)
+                                                                        $prevAccumulatedBase = (float) \App\Models\PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $det->rap_bahan_id)
+                                                                            ->whereHas('order', function ($q) use ($order) {
+                                                                                $q->where('status_order', '!=', 'ditolak')
+                                                                                  ->where('created_at', '<=', $order->created_at);
+                                                                            })
+                                                                            ->sum('jumlah_base');
+
+                                                                        $isOverOrder = ($prevAccumulatedBase - $baseRapTarget) > 0.001;
+                                                                    }
                                                                 @endphp
 
-                                                                <tr
-                                                                    class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                                                                    <td class="px-3 py-3">
-                                                                        <p
-                                                                            class="text-[11px] font-bold text-gray-700 dark:text-gray-200 leading-tight">
+                                                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors text-xs">
+                                                                    <td class="px-3 py-2.5 align-top">
+                                                                        <p class="text-[11px] font-normal text-gray-800 dark:text-gray-100 leading-snug">
                                                                             {{ $det->nama_barang ?? '-' }}
                                                                         </p>
                                                                         @if ($det->alasan_permintaan_tidak_sesuai_rap)
-                                                                            <p
-                                                                                class="text-[9px] text-red-500 italic mt-1">
-                                                                                Ket:
-                                                                                {{ $det->alasan_permintaan_tidak_sesuai_rap }}
+                                                                            <p class="text-[9px] text-red-500 italic mt-0.5 font-normal">
+                                                                                Ket: {{ $det->alasan_permintaan_tidak_sesuai_rap }}
                                                                             </p>
                                                                         @endif
                                                                     </td>
-                                                                    <td class="px-3 py-3 text-right align-top">
-                                                                        <div class="flex flex-col items-end">
-                                                                            <p
-                                                                                class="text-[11px] font-black {{ $isOver ? 'text-red-600' : 'text-gray-800 dark:text-white' }}">
-                                                                                {{ (float) $det->jumlah_input }}
-                                                                                <span
-                                                                                    class="text-[9px] font-medium text-gray-400">{{ $det->satuan }}</span>
-                                                                            </p>
-
-                                                                            <div
-                                                                                class="flex flex-wrap justify-end gap-1 mt-1">
-                                                                                @if ($isOver && $det->rap_bahan_id != null)
-                                                                                    <span
-                                                                                        class="text-[7px] font-black text-red-500 uppercase bg-red-50 px-1 rounded border border-red-100">Melebihi
-                                                                                        RAP</span>
-                                                                                @endif
-                                                                                @if (!$isRap)
-                                                                                    <span
-                                                                                        class="text-[7px] font-black text-amber-500 uppercase bg-amber-50 px-1 rounded border border-amber-100">Luar
-                                                                                        RAP</span>
-                                                                                @endif
-                                                                            </div>
-                                                                        </div>
+                                                                    <td class="px-3 py-2.5 text-center align-top whitespace-nowrap">
+                                                                        <p class="text-[11px] font-normal text-gray-900 dark:text-white">
+                                                                            {{ (float) $det->jumlah_input }}
+                                                                            <span class="text-[9px] text-gray-500 dark:text-gray-400">{{ $det->satuan }}</span>
+                                                                        </p>
+                                                                    </td>
+                                                                    <td class="px-3 py-2.5 text-center align-top whitespace-nowrap">
+                                                                        @if ($isRap && !$isOverOrder)
+                                                                            <span class="text-[8px] font-medium text-emerald-700 uppercase bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Sesuai RAP</span>
+                                                                        @elseif ($isRap && $isOverOrder)
+                                                                            <span class="text-[8px] font-medium text-red-700 uppercase bg-red-50 dark:bg-red-950/40 px-1.5 py-0.5 rounded border border-red-200 dark:border-red-800">Melebihi RAP</span>
+                                                                        @elseif (!$isRap)
+                                                                            <span class="text-[8px] font-medium text-amber-700 uppercase bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">Diluar RAP</span>
+                                                                        @endif
                                                                     </td>
                                                                 </tr>
                                                             @endforeach
@@ -248,16 +366,7 @@
                                             </div>
 
 
-                                             @if ($order->status_order == 'diproses')
-                                                  <div class="pt-2 flex justify-end">
-                                                      <button type="button"
-                                                          @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanUnit.orderDestroy', $order->id) }}'"
-                                                          class="px-4 py-2 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
-                                                          <i class="fa-solid fa-trash-can"></i>
-                                                          Batalkan Orderan
-                                                      </button>
-                                                  </div>
-                                             @endif
+
                                         </div>
                                     </div>
                                 </div>

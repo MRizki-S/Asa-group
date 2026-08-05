@@ -1604,13 +1604,13 @@
                         <a href="#"
                             @click.prevent="selected = (selected === 'MaterialProyekGroup' ? '':'MaterialProyekGroup')"
                             class="menu-item group"
-                            :class="(selected === 'MaterialProyekGroup') || (page === 'PermintaanBarang' ||
-                                page === 'BarangReturnGudang' || page === 'proFormLayout') ? 'menu-item-active' :
+                            :class="(selected === 'MaterialProyekGroup') || (page === 'PermintaanBarang' || page === 'PermintaanBarangUnit' || page === 'PermintaanBarangKawasan' || page === 'PermintaanBarangProyek' ||
+                                page === 'BarangReturnGudang' || page === 'BarangReturnUnit' || page === 'BarangReturnKawasan' || page === 'BarangReturnProyek' || page === 'proFormLayout') ? 'menu-item-active' :
                             'menu-item-inactive'">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 :class="(selected === 'MaterialProyekGroup') ||
-                                (page === 'PermintaanBarang' ||
-                                    page === 'BarangReturnGudang' ||
+                                (page === 'PermintaanBarang' || page === 'PermintaanBarangUnit' || page === 'PermintaanBarangKawasan' || page === 'PermintaanBarangProyek' ||
+                                    page === 'BarangReturnGudang' || page === 'BarangReturnUnit' || page === 'BarangReturnKawasan' || page === 'BarangReturnProyek' ||
                                     page === 'proFormLayout') ?
                                 'menu-item-icon-active' :
                                 'menu-item-icon-inactive'"
@@ -1650,25 +1650,22 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_unit']) }}"
-                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        class="menu-dropdown-item group"
                                         :class="page === 'PermintaanBarangUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
                                         Pemb. Unit
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_kawasan']) }}"
-                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        class="menu-dropdown-item group"
                                         :class="page === 'PermintaanBarangKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
                                         Pemb. Kawasan
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_proyek_mangoon']) }}"
-                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        class="menu-dropdown-item group"
                                         :class="page === 'PermintaanBarangProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
                                         Proyek Mangoon
                                     </a>
                                 </li>
@@ -1679,25 +1676,22 @@
                                 </li>
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.unit.index') }}"
-                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        class="menu-dropdown-item group"
                                         :class="page === 'BarangReturnUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
                                         Retur Unit
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.kawasan.index') }}"
-                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        class="menu-dropdown-item group"
                                         :class="page === 'BarangReturnKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
                                         Retur Kawasan
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.proyek.index') }}"
-                                        class="menu-dropdown-item group flex items-center gap-2"
+                                        class="menu-dropdown-item group"
                                         :class="page === 'BarangReturnProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-current opacity-40"></div>
                                         Retur Proyek Mangoon
                                     </a>
                                 </li>
@@ -1708,100 +1702,7 @@
                     <!-- Menu Item Material Proyek-->
 
 
-                     <!-- Menu Group Item Upah Harian Tukang -->
-                    <li>
-                        <a href="#"
-                            @click.prevent="selected = (selected === 'BarangRakitanGroup' ? '':'BarangRakitanGroup')"
-                            class="menu-item group"
-                            :class="(selected === 'BarangRakitanGroup') || (page === 'KomposisiRakitan' || page === 'ProduksiRakitan') ? 'menu-item-active' :
-                            'menu-item-inactive'">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                :class="(selected === 'BarangRakitanGroup') ||
-                                (page === 'KomposisiRakitan' ||
-                                    page === 'ProduksiRakitan') ?
-                                'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" class="size-6">
-                                <title>assembly-line</title>
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4 7.5 12 3l8 4.5-8 4.5L4 7.5Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4 12l8 4.5 8-4.5M4 16.5l8 4.5 8-4.5M8.5 5.1l8 4.5M15.5 5.1l-8 4.5" />
-                            </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Barang Rakitan
-                            </span>
-
-                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
-                                :class="[(selected === 'BarangRakitanGroup') ? 'menu-item-arrow-active' :
-                                    'menu-item-arrow-inactive',
-                                    sidebarToggle ? 'lg:hidden' : ''
-                                ]"
-                                width="20" height="20" viewBox="0 0 20 20" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
-                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </a>
-
-                        <!-- Dropdown Menu Start -->
-                        <div class="overflow-hidden transform translate"
-                            :class="(selected === 'BarangRakitanGroup') ? 'block' : 'hidden'">
-                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
-                                class="flex flex-col mt-2 menu-dropdown pl-9">
-
-                                <!-- Komposisi Rakitan -->
-                                <li>
-                                    <a href="{{ route('gudang.komposisiRakitan.index') }}"
-                                        class="menu-dropdown-item group flex items-center gap-3"
-                                        :class="page === 'KomposisiRakitan' ? 'menu-dropdown-item-active' :
-                                            'menu-dropdown-item-inactive'">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            :class="(selected === 'BarangRakitanGroup') ||
-                                            (page === 'KomposisiRakitan') ?
-                                            'menu-item-icon-active' :
-                                            'menu-item-icon-inactive'"
-                                            width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <title>recipe-composition</title>
-                                            <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="1.5">
-                                                <path d="M8 4h8M8 8h8M8 12h5" />
-                                                <path d="M5 4h.01M5 8h.01M5 12h.01" />
-                                                <path d="M4 20h16" />
-                                                <path d="M7 17h10l-2-4H9l-2 4Z" />
-                                            </g>
-                                        </svg>
-                                        Komposisi Rakitan
-                                    </a>
-                                </li>
-
-                                <!-- Produksi Rakitan -->
-                                <li>
-                                    <a href="{{ route('gudang.produksiRakitan.index') }}"
-                                        class="menu-dropdown-item group flex items-center"
-                                        :class="page === 'ProduksiRakitan' ? 'menu-dropdown-item-active' :
-                                            'menu-dropdown-item-inactive'">
-                                        <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="1.5">
-                                            <title>production-assembly</title>
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M3 17h4l2-4h6l2 4h4" />
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M6 17v3h12v-3M8 13V8l4-3 4 3v5M10 10h4" />
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M4 7h3m10 0h3M4 11h2m12 0h2" />
-                                        </svg>
-                                        Produksi Rakitan
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <!-- Dropdown Menu End -->
-                    </li>
-                    <!-- Upah Harian Tukang -->
 
                     <!-- Menu Group Item Upah Harian Tukang -->
                     <li>

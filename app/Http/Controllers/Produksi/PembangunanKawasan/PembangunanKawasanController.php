@@ -170,6 +170,7 @@ class PembangunanKawasanController extends Controller
                 'pembangunan_kawasan_barang_order_detail.barang_id',
                 DB::raw('MAX(pembangunan_kawasan_barang_order_detail.nama_barang) as nama_barang'),
                 DB::raw('SUM(pembangunan_kawasan_barang_order_detail.jumlah_base) as total_diterima_base'),
+                DB::raw('GROUP_CONCAT(DISTINCT o.jenis_order) as jenis_orders'),
             ])
             ->groupBy('pembangunan_kawasan_barang_order_detail.barang_id')
             ->get();
@@ -236,6 +237,7 @@ class PembangunanKawasanController extends Controller
                 'sisa_retur_base'     => $sisaBase,
                 'base_satuan_nama'    => $baseSatuanNama,
                 'satuan_options'      => $satuanOptions,
+                'jenis_orders'        => array_filter(explode(',', $d->jenis_orders ?? '')),
             ];
         })->filter()->values();
 
@@ -303,11 +305,11 @@ class PembangunanKawasanController extends Controller
         $kawasan = PembangunanKawasan::with('perumahan')->find($request->pembangunan_kawasan_id);
         
         if (!$kawasan) {
-            return redirect()->back()->with('error', 'Kawasan tidak ditemukan');
+            return response()->json(['message' => 'Kawasan tidak ditemukan'], 404);
         }
 
         if ($kawasan->status_pembangunan === 'selesai') {
-            return redirect()->back()->with('error', 'Kawasan ini sudah selesai, tidak dapat melakukan order barang.');
+            return response()->json(['message' => 'Kawasan ini sudah selesai, tidak dapat melakukan order barang.'], 422);
         }
 
         $namaPerumahan = $kawasan?->perumahan?->nama_perumahaan;
@@ -371,10 +373,10 @@ class PembangunanKawasanController extends Controller
                 $this->sendGroupNotificationOrder($kawasan, $order);
             }
 
-            return redirect()->back()->with('success', 'Order barang berhasil diajukan');
+            return response()->json(['message' => 'Order barang berhasil diajukan', 'order_id' => $order->id]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan order: ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan saat menyimpan order: ' . $e->getMessage()], 500);
         }
     }
 

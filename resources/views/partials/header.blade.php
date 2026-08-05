@@ -52,7 +52,15 @@
         </div>
 
         <div :class="menuToggle ? 'flex' : 'hidden'"
-            class="shadow-theme-md w-full items-center gap-4 px-5 py-4 flex-wrap justify-center lg:flex lg:justify-end lg:px-0 lg:shadow-none">
+            class="shadow-theme-md w-full items-center gap-3 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none">
+            
+            @if(\App\Models\AppSetting::isFreeze())
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-600 text-white rounded-lg text-[11px] font-bold shadow-sm shrink-0">
+                    <i class="fa-solid fa-snowflake text-xs"></i>
+                    <span>Freeze Mode</span>
+                </span>
+            @endif
+
             <div class="2xsm:gap-3 flex items-center gap-2">
                 <!-- Tempatkan di User Area, misal sebelum dropdown logout -->
                 @if (Auth::user()->is_global)

@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" x-show="pagedData.length > 0">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="pagedData.length > 0">
         <template x-for="item in pagedData" :key="item.id">
             <div class="group rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-all dark:border-gray-700 dark:bg-gray-800">
                 <div class="flex flex-col h-full justify-between">

@@ -158,6 +158,7 @@ class PembangunanProyekController extends Controller
                 'pembangunan_proyek_barang_order_detail.barang_id',
                 DB::raw('MAX(pembangunan_proyek_barang_order_detail.nama_barang) as nama_barang'),
                 DB::raw('SUM(pembangunan_proyek_barang_order_detail.jumlah_base) as total_diterima_base'),
+                DB::raw('GROUP_CONCAT(DISTINCT o.jenis_order) as jenis_orders'),
             ])
             ->groupBy('pembangunan_proyek_barang_order_detail.barang_id')
             ->get();
@@ -218,6 +219,7 @@ class PembangunanProyekController extends Controller
                 'sisa_retur_base'     => $sisaBase,
                 'base_satuan_nama'    => $baseSatuanNama,
                 'satuan_options'      => $satuanOptions,
+                'jenis_orders'        => array_filter(explode(',', $d->jenis_orders ?? '')),
             ];
         })->filter()->values();
 
@@ -270,11 +272,11 @@ class PembangunanProyekController extends Controller
         $project = PembangunanProyek::find($request->pembangunan_proyek_id);
         
         if (!$project) {
-            return redirect()->back()->with('error', 'Proyek tidak ditemukan');
+            return response()->json(['message' => 'Proyek tidak ditemukan'], 404);
         }
 
         if ($project->status_pembangunan === 'selesai') {
-            return redirect()->back()->with('error', 'Proyek ini sudah selesai, tidak dapat melakukan order barang.');
+            return response()->json(['message' => 'Proyek ini sudah selesai, tidak dapat melakukan order barang.'], 422);
         }
 
         $request->validate([
@@ -337,15 +339,14 @@ class PembangunanProyekController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            $project = PembangunanProyek::find($request->pembangunan_proyek_id);
             if ($project) {
                 $this->sendGroupNotificationOrder($project, $order);
             }
 
-            return redirect()->back()->with('success', 'Order barang berhasil diajukan');
+            return response()->json(['message' => 'Order barang berhasil diajukan', 'order_id' => $order->id]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan order: ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan saat menyimpan order: ' . $e->getMessage()], 500);
         }
     }
 

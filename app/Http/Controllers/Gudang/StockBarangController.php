@@ -125,4 +125,17 @@ class StockBarangController extends Controller
         return $pdf->download($filename);
     }
 
+    public function toggleFreezeState(Request $request)
+    {
+        $current = \App\Models\AppSetting::isFreeze();
+        $newStatus = $current ? '0' : '1';
+        \App\Models\AppSetting::setValue('is_freeze_stok', $newStatus);
+
+        $msg = $newStatus === '1' 
+            ? 'Mode Freeze Pencocokan Stok Opname berhasil diaktifkan! Seluruh transaksi barang, order, retur, dan edit stok sementara dibekukan.' 
+            : 'Mode Freeze Pencocokan Stok Opname berhasil dinonaktifkan! Transaksi barang telah dibuka kembali.';
+
+        return redirect()->back()->with('success', $msg);
+    }
+
 }

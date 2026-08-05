@@ -41,14 +41,32 @@
                     Stock Barang - <span class="text-blue-600 dark:text-blue-400 font-bold ml-1">{{ $titleGudang }}</span>
                 </h3>
 
-                <a href="{{ route('gudang.transferStockBarang.create') }}"
-                    target="_blank"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                    </svg>
-                    <span>Transfer Stock</span>
-                </a>
+                <div class="flex items-center gap-2">
+                    @php $isFreeze = \App\Models\AppSetting::isFreeze(); @endphp
+                    <form id="form-toggle-freeze" action="{{ route('gudang.stockBarang.toggleFreeze') }}" method="POST">
+                        @csrf
+                        @if($isFreeze)
+                            <button type="button" onclick="confirmToggleFreeze(true)" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">
+                                <i class="fa-solid fa-snowflake"></i>
+                                <span>Nonaktifkan Freeze</span>
+                            </button>
+                        @else
+                            <button type="button" onclick="confirmToggleFreeze(false)" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                                <i class="fa-regular fa-snowflake"></i>
+                                <span>Freeze Stok Opname</span>
+                            </button>
+                        @endif
+                    </form>
+
+                    <a href="{{ route('gudang.transferStockBarang.create') }}"
+                        target="_blank"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                        </svg>
+                        <span>Transfer Stock</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Pilih Gudang -->
@@ -355,5 +373,29 @@
 
 </div>
 <!-- ===== Main Content End ===== -->
+
+<script>
+function confirmToggleFreeze(isCurrentFreeze) {
+    const titleText = isCurrentFreeze ? 'Nonaktifkan Freeze Mode?' : 'Aktifkan Freeze Mode?';
+    const bodyText = isCurrentFreeze 
+        ? 'Seluruh transaksi order, retur, transfer, dan edit barang akan dibuka kembali.'
+        : 'Seluruh transaksi order, retur, transfer stok, dan edit barang sementara akan DIBEKUKAN selama pencocokan stok opname.';
+
+    Swal.fire({
+        title: titleText,
+        text: bodyText,
+        icon: isCurrentFreeze ? 'question' : 'warning',
+        showCancelButton: true,
+        confirmButtonColor: isCurrentFreeze ? '#10B981' : '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: isCurrentFreeze ? 'Ya, Buka Transaksi' : 'Ya, Freeze Sekarang!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('form-toggle-freeze').submit();
+        }
+    });
+}
+</script>
 
 @endsection

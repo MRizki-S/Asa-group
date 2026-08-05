@@ -10,6 +10,7 @@ use App\Models\NotaBarangMasukDetail;
 use App\Models\PembangunanUnitBahan;
 use App\Models\PembangunanUnitBarangFifoUsage;
 use App\Models\PembangunanUnitBarangOrder;
+use App\Models\PembangunanUnitBarangOrderDetail;
 use App\Models\PembangunanUnitBarangReturn;
 use App\Models\PembangunanUnitBarangReturnDetail;
 use App\Models\PembangunanUnitBarangReturnFifo;
@@ -80,6 +81,85 @@ class PermintaanBarangPembangunanUnitController extends Controller
         return redirect()
             ->route('gudang.permintaanBarang.history', ['jenis_order' => 'pembangunan_unit'])
             ->with('success', 'Permintaan barang unit berhasil di-ACC.');
+    }
+
+    public function tolakBarangOrder(Request $request, $id)
+    {
+        $request->validate(['catatan' => 'nullable|string|max:1000']);
+
+        $order = PembangunanUnitBarangOrder::with([
+            'details',
+            'qc',
+            'pembangunanUnit.unit.tahap.perumahaan'
+        ])->findOrFail($id);
+
+        if ($order->status_order !== 'diproses') {
+            return back()->with('error', 'Permintaan barang ini sudah tidak dalam status menunggu.');
+        }
+
+        $order->update([
+            'status_order' => 'ditolak',
+            'catatan'      => $request->catatan,
+        ]);
+
+        // Kirim notifikasi WA penolakan order barang
+        $targetGroup = env('FONNTE_ID_GROUP_TOLAK_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
+        if (!empty($targetGroup)) {
+            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $unit = $order->pembangunanUnit?->unit;
+            $message = view('notifications.whatsapp.pembangunan_unit.tolak_order_barang', [
+                'order' => $order,
+                'namaPerumahan' => $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-',
+                'namaTahap' => $unit?->tahap?->nama_tahap ?? '-',
+                'namaUnit' => $unit?->nama_unit ?? '-',
+                'adminGudang' => $adminName,
+                'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            ])->render();
+            $this->notification->sendWhatsApp($targetGroup, $message);
+        }
+
+        return back()->with('success', 'Permintaan barang berhasil ditolak.');
+    }
+
+    public function resubmitBarangOrder(Request $request, $id)
+    {
+        $request->validate(['catatan' => 'nullable|string|max:1000']);
+
+        $order = PembangunanUnitBarangOrder::with([
+            'details',
+            'user',
+            'qc',
+            'pembangunanUnit.unit.tahap.perumahaan'
+        ])->findOrFail($id);
+
+        if ($order->status_order !== 'ditolak') {
+            return back()->with('error', 'Hanya permintaan yang ditolak yang dapat diajukan kembali.');
+        }
+
+        $order->update([
+            'status_order'    => 'diproses',
+            'catatan'         => $request->catatan,
+            'tanggal_diajukan' => now(),
+        ]);
+
+        // Kirim notifikasi WA resubmit order barang
+        $targetGroup = env('FONNTE_ID_GROUP_RESUBMIT_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
+        if (!empty($targetGroup)) {
+            $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Pengaju';
+            $unit = $order->pembangunanUnit?->unit;
+            $message = view('notifications.whatsapp.pembangunan_unit.resubmit_order_barang', [
+                'order' => $order,
+                'namaPerumahan' => $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-',
+                'namaTahap' => $unit?->tahap?->nama_tahap ?? '-',
+                'namaUnit' => $unit?->nama_unit ?? '-',
+                'namaQc' => $order->qc?->nama_qc ?? '-',
+                'pengaju' => $pengaju,
+                'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            ])->render();
+            $this->notification->sendWhatsApp($targetGroup, $message);
+        }
+
+        return back()->with('success', 'Permintaan barang berhasil diajukan kembali.');
     }
 
     // Proses ACC permintaan barang unit pembangunan
@@ -788,5 +868,421 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 ],
             ],
         ]);
+    }
+
+    protected function currentPerumahaanId()
+    {
+        $user = Auth::user();
+        return $user->is_global ? session('current_perumahaan_id', null) : $user->perumahaan_id;
+    }
+
+    public function create(Request $request)
+    {
+        $category = $request->get('category', 'pembangunan_unit');
+        $perumahaanId = $this->currentPerumahaanId();
+
+        $pembangunanUnits = collect();
+        $pembangunanKawasan = collect();
+        $pembangunanProyek = collect();
+
+        if ($category === 'pembangunan_unit') {
+            $queryUnits = \App\Models\PembangunanUnit::with([
+                'unit.tahap.perumahaan',
+                'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
+                'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan'
+            ])
+            ->whereNotIn('status_pembangunan', ['selesai', 'selesai dengan catatan']);
+
+            if ($perumahaanId) {
+                $queryUnits->where('perumahaan_id', $perumahaanId);
+            }
+            $pembangunanUnits = $queryUnits->get();
+        } elseif ($category === 'pembangunan_kawasan') {
+            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'periodes' => function($q) {
+                $q->where('status', 'proses');
+            }]);
+            if ($perumahaanId) {
+                $queryKawasan->where('perumahaan_id', $perumahaanId);
+            }
+            $pembangunanKawasan = $queryKawasan->get();
+        } elseif ($category === 'pembangunan_proyek_mangoon') {
+            // Proyek hanya Mangoon — tidak ada filter perumahaan_id
+            $pembangunanProyek = \App\Models\PembangunanProyek::query()->get();
+        }
+
+        // Ambil stok gudang
+        // Untuk proyek Mangoon: semua gudang Mangoon (tanpa filter perumahaan_id)
+        // Untuk unit/kawasan: filter sesuai perumahaan_id
+        $barangGudangQuery = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan']);
+
+        if ($category === 'pembangunan_proyek_mangoon') {
+            // Tampilkan semua stok tanpa filter perumahaan
+            $barangGudangQuery->with('stock');
+        } elseif ($perumahaanId) {
+            $barangGudangQuery->with(['stock' => function ($q) use ($perumahaanId) {
+                $q->where('ubs_id', $perumahaanId);
+            }]);
+        } else {
+            $barangGudangQuery->with('stock');
+        }
+
+        $barangGudang = $barangGudangQuery->get()->map(function ($b) {
+            $stokTotal = $b->stock ? $b->stock->sum('jumlah_stock') : 0;
+            $b->stok_gudang_aktif = (float) $stokTotal;
+            return $b;
+        });
+
+        $titles = [
+            'pembangunan_unit' => 'Tambah Barang Keluar Unit',
+            'pembangunan_kawasan' => 'Tambah Barang Keluar Kawasan',
+            'pembangunan_proyek_mangoon' => 'Tambah Barang Keluar Proyek',
+        ];
+
+        return view('gudang.permintaan-barang.create', [
+            'category' => $category,
+            'titlePage' => $titles[$category] ?? 'Tambah Barang Keluar',
+            'pembangunanUnits' => $pembangunanUnits,
+            'pembangunanKawasan' => $pembangunanKawasan,
+            'pembangunanProyek' => $pembangunanProyek,
+            'barangGudang' => $barangGudang,
+            'breadcrumbs' => [
+                [
+                    'label' => 'Permintaan Barang',
+                    'url' => route('gudang.permintaanBarang.index', ['jenis_order' => $category]),
+                ],
+                [
+                    'label' => 'Tambah Barang Keluar',
+                    'url' => route('gudang.permintaanBarang.pembangunanUnit.create', ['category' => $category]),
+                ],
+            ],
+        ]);
+    }
+
+    public function getQcList($pembangunanUnitId)
+    {
+        $perumahaanId = $this->currentPerumahaanId();
+
+        $pembangunanUnit = \App\Models\PembangunanUnit::with([
+            'pembangunanUnitQc.masterQc',
+            'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
+            'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan',
+            'pembangunanUnitQc.pembangunanUnitRapBahan.barang.stock' => function($q) use ($perumahaanId) {
+                if ($perumahaanId) {
+                    $q->where('ubs_id', $perumahaanId);
+                }
+            }
+        ])->findOrFail($pembangunanUnitId);
+
+        $qcs = $pembangunanUnit->pembangunanUnitQc->map(function($qc) {
+            $nama = $qc->nama_qc;
+            if (!$nama) {
+                $nama = $qc->masterQc->nama_qc ?? $qc->masterQc->nama ?? ('QC Ke-' . ($qc->qc_urutan_ke ?? $qc->id));
+            }
+
+            return [
+                'id' => $qc->id,
+                'nama' => $nama,
+                'is_servis' => (bool) $qc->is_servis,
+                'rap_bahan' => $qc->pembangunanUnitRapBahan->map(function($rap) {
+                    $satuans = collect();
+                    if ($rap->barang && $rap->barang->baseUnit) {
+                        $satuans->push([
+                            'id' => $rap->barang->base_unit_id,
+                            'nama_satuan' => $rap->barang->baseUnit->nama,
+                            'konversi_ke_base' => 1
+                        ]);
+                    }
+                    if ($rap->barang && $rap->barang->satuanKonversi) {
+                        foreach ($rap->barang->satuanKonversi as $sk) {
+                            if ($sk->satuan) {
+                                $satuans->push([
+                                    'id' => $sk->satuan_id,
+                                    'nama_satuan' => $sk->satuan->nama,
+                                    'konversi_ke_base' => (float)$sk->konversi_ke_base
+                                ]);
+                            }
+                        }
+                    }
+
+                    $satuanNama = $rap->satuan;
+                    if (!$satuanNama && $rap->barang && $rap->barang->baseUnit) {
+                        $satuanNama = $rap->barang->baseUnit->nama;
+                    }
+
+                    $stokGudang = 0;
+                    if ($rap->barang && $rap->barang->stock) {
+                        $stokGudang = (float) $rap->barang->stock->sum('jumlah_stock');
+                    }
+
+                    // Hitung total akumulasi barang yang sudah diajukan/diorder dari RAP ini
+                    $totalOrderedBase = (float) \App\Models\PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rap->id)->sum('jumlah_base');
+
+                    return [
+                        'id' => $rap->id,
+                        'barang_id' => $rap->barang_id,
+                        'nama_barang' => $rap->nama_barang ?? ($rap->barang->nama_barang ?? '-'),
+                        'kode_barang' => $rap->barang->kode_barang ?? '-',
+                        'stok_gudang' => $stokGudang,
+                        'volume' => (float) ($rap->jumlah_standar ?? $rap->volume ?? 0),
+                        'faktor_konversi' => (float) ($rap->faktor_konversi ?? 1),
+                        'total_ordered_base' => $totalOrderedBase,
+                        'base_unit_id' => $rap->satuan_id ?? ($rap->barang->base_unit_id ?? null),
+                        'base_unit_nama' => $satuanNama ?? ($rap->barang->baseUnit->nama ?? ''),
+                        'satuans' => $satuans->unique('id')->values()->toArray(),
+                        'is_stock' => (bool) ($rap->barang->is_stock ?? true)
+                    ];
+                })
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'qcs' => $qcs
+        ]);
+    }
+
+    public function edit(Request $request, $id)
+    {
+        $category = $request->get('category', 'pembangunan_unit');
+
+        $order = null;
+        if ($category === 'pembangunan_unit') {
+            $order = PembangunanUnitBarangOrder::with([
+                'details.barang.baseUnit',
+                'details.barang.satuanKonversi.satuan',
+                'details.rapBahan',
+                'pembangunanUnit.unit.tahap.perumahaan',
+                'qc'
+            ])->findOrFail($id);
+        } elseif ($category === 'pembangunan_kawasan') {
+            $order = \App\Models\PembangunanKawasanBarangOrder::with([
+                'details.barang.baseUnit',
+                'details.barang.satuanKonversi.satuan',
+                'kawasan.perumahan'
+            ])->findOrFail($id);
+        } elseif ($category === 'pembangunan_proyek_mangoon') {
+            $order = \App\Models\PembangunanProyekBarangOrder::with([
+                'details.barang.baseUnit',
+                'details.barang.satuanKonversi.satuan',
+                'proyek'
+            ])->findOrFail($id);
+        }
+
+        if (!$order || $order->status_order !== 'ditolak') {
+            return redirect()->route('gudang.permintaanBarang.show', ['id' => $id, 'jenis_order' => $category])
+                ->with('error', 'Hanya order dengan status ditolak yang dapat diedit.');
+        }
+
+        // Ambil perumahaanId dari data order itu sendiri (bukan dari session)
+        // karena unit/kawasan tidak bisa diubah di halaman edit
+        $perumahaanId = null;
+        if ($category === 'pembangunan_unit') {
+            $perumahaanId = $order->pembangunanUnit->perumahaan_id ?? null;
+        } elseif ($category === 'pembangunan_kawasan') {
+            $perumahaanId = $order->kawasan->perumahaan_id ?? null;
+        }
+        // proyek tidak difilter per perumahan
+
+        $pembangunanUnits = collect();
+        $pembangunanKawasan = collect();
+        $pembangunanProyek = collect();
+
+        if ($category === 'pembangunan_unit') {
+            $queryUnits = \App\Models\PembangunanUnit::with([
+                'unit.tahap.perumahaan',
+                'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
+                'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan'
+            ]);
+            if ($perumahaanId) {
+                $queryUnits->where('perumahaan_id', $perumahaanId);
+            }
+            $pembangunanUnits = $queryUnits->get();
+        } elseif ($category === 'pembangunan_kawasan') {
+            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'periodes' => function($q) {
+                $q->where('status', 'proses');
+            }]);
+            if ($perumahaanId) {
+                $queryKawasan->where('perumahaan_id', $perumahaanId);
+            }
+            $pembangunanKawasan = $queryKawasan->get();
+        } elseif ($category === 'pembangunan_proyek_mangoon') {
+            $pembangunanProyek = \App\Models\PembangunanProyek::query()->get();
+        }
+
+        $barangGudangQuery = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan']);
+
+        if ($category === 'pembangunan_proyek_mangoon') {
+            // Tampilkan semua stok tanpa filter perumahaan
+            $barangGudangQuery->with('stock');
+        } elseif ($perumahaanId) {
+            $barangGudangQuery->with(['stock' => function ($q) use ($perumahaanId) {
+                $q->where('ubs_id', $perumahaanId);
+            }]);
+        } else {
+            $barangGudangQuery->with('stock');
+        }
+
+        $barangGudang = $barangGudangQuery->get()->map(function ($b) {
+            $stokTotal = $b->stock ? $b->stock->sum('jumlah_stock') : 0;
+            $b->stok_gudang_aktif = (float) $stokTotal;
+            return $b;
+        });
+
+        $titles = [
+            'pembangunan_unit' => 'Edit Permintaan Barang Unit',
+            'pembangunan_kawasan' => 'Edit Permintaan Barang Kawasan',
+            'pembangunan_proyek_mangoon' => 'Edit Permintaan Barang Proyek',
+        ];
+
+        return view('gudang.permintaan-barang.edit', [
+            'order' => $order,
+            'category' => $category,
+            'titlePage' => $titles[$category] ?? 'Edit Permintaan Barang',
+            'pembangunanUnits' => $pembangunanUnits,
+            'pembangunanKawasan' => $pembangunanKawasan,
+            'pembangunanProyek' => $pembangunanProyek,
+            'barangGudang' => $barangGudang,
+            'breadcrumbs' => [
+                [
+                    'label' => 'Permintaan Barang',
+                    'url' => route('gudang.permintaanBarang.index', ['jenis_order' => $category]),
+                ],
+                [
+                    'label' => 'Detail Permintaan',
+                    'url' => route('gudang.permintaanBarang.show', ['id' => $id, 'jenis_order' => $category]),
+                ],
+                [
+                    'label' => 'Edit Permintaan',
+                    'url' => route('gudang.permintaanBarang.edit', ['id' => $id, 'category' => $category]),
+                ],
+            ],
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $category = $request->get('category', 'pembangunan_unit');
+
+        $order = null;
+        if ($category === 'pembangunan_unit') {
+            $order = PembangunanUnitBarangOrder::with('details')->findOrFail($id);
+        } elseif ($category === 'pembangunan_kawasan') {
+            $order = \App\Models\PembangunanKawasanBarangOrder::with('details')->findOrFail($id);
+        } elseif ($category === 'pembangunan_proyek_mangoon') {
+            $order = \App\Models\PembangunanProyekBarangOrder::with('details')->findOrFail($id);
+        }
+
+        if (!$order || $order->status_order !== 'ditolak') {
+            return response()->json(['message' => 'Hanya permintaan dengan status ditolak yang dapat diedit.'], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $order->update([
+                'catatan' => $request->catatan,
+                'jenis_order' => $request->jenis_order ?? $order->jenis_order,
+            ]);
+
+            // Hapus detail lama dan ganti dengan detail baru
+            $order->details()->delete();
+
+            if ($category === 'pembangunan_unit') {
+                $pembangunanUnit = $order->pembangunanUnit;
+                foreach ($request->items as $item) {
+                    $barang = MasterBarang::findOrFail($item['barang_id']);
+                    $faktorKonversi = BarangSatuanKonversi::where('barang_id', $item['barang_id'])
+                        ->where('satuan_id', $item['satuan_id'])
+                        ->value('konversi_ke_base');
+
+                    $faktorKonversi = (float) ($faktorKonversi ?? ($item['faktor_konversi'] ?? 1));
+                    if ($faktorKonversi <= 0) {
+                        throw new \Exception("Konversi satuan untuk {$item['nama_barang']} tidak valid.");
+                    }
+
+                    $newQtyBase = $faktorKonversi * (float) $item['jumlah_input'];
+                    $alasan = $item['alasan'] ?? null;
+
+                    if (!empty($item['pembangunan_unit_rap_bahan_id'])) {
+                        $rapBahan = \App\Models\PembangunanUnitRapBahan::findOrFail($item['pembangunan_unit_rap_bahan_id']);
+                        $alreadyOrderedBase = PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rapBahan->id)
+                            ->where('order_id', '!=', $order->id)
+                            ->sum('jumlah_base');
+
+                        $rapTotalBase = (float) $rapBahan->jumlah_standar * (float) $rapBahan->faktor_konversi;
+
+                        if (($alreadyOrderedBase + $newQtyBase) > ($rapTotalBase + 0.001)) {
+                            if (empty($alasan)) {
+                                throw new \Exception("Order barang {$barang->nama_barang} melebihi RAP. Harap masukkan alasan melebihi RAP.");
+                            }
+                        }
+                    }
+
+                    PembangunanUnitBarangOrderDetail::create([
+                        'order_id' => $order->id,
+                        'barang_id' => $item['barang_id'],
+                        'nama_barang' => $barang->nama_barang,
+                        'satuan_id' => $item['satuan_id'],
+                        'satuan' => $item['satuan'],
+                        'ubs_id' => $pembangunanUnit?->perumahaan_id,
+                        'rap_bahan_id' => $item['pembangunan_unit_rap_bahan_id'] ?? null,
+                        'jumlah_input' => $item['jumlah_input'],
+                        'jumlah_base' => $newQtyBase,
+                        'alasan_permintaan_tidak_sesuai_rap' => $alasan,
+                    ]);
+                }
+            } elseif ($category === 'pembangunan_kawasan') {
+                foreach ($request->barang as $item) {
+                    $barang = MasterBarang::findOrFail($item['id']);
+                    $satuan = \App\Models\MasterSatuan::find($item['satuan_id']);
+                    $faktor = BarangSatuanKonversi::where('barang_id', $item['id'])
+                        ->where('satuan_id', $item['satuan_id'])
+                        ->value('konversi_ke_base') ?? 1.0;
+
+                    $jumlahBase = round((float) $item['jumlah_input'] * (float) $faktor, 3);
+
+                    \App\Models\PembangunanKawasanBarangOrderDetail::create([
+                        'order_id' => $order->id,
+                        'barang_id' => $item['id'],
+                        'nama_barang' => $barang->nama_barang,
+                        'satuan_id' => $item['satuan_id'],
+                        'satuan' => $satuan?->nama ?? '-',
+                        'jumlah_input' => $item['jumlah_input'],
+                        'jumlah_base' => $jumlahBase,
+                    ]);
+                }
+            } elseif ($category === 'pembangunan_proyek_mangoon') {
+                foreach ($request->barang as $item) {
+                    $barang = MasterBarang::findOrFail($item['id']);
+                    $satuan = \App\Models\MasterSatuan::find($item['satuan_id']);
+                    $faktor = BarangSatuanKonversi::where('barang_id', $item['id'])
+                        ->where('satuan_id', $item['satuan_id'])
+                        ->value('konversi_ke_base') ?? 1.0;
+
+                    $jumlahBase = round((float) $item['jumlah_input'] * (float) $faktor, 3);
+
+                    \App\Models\PembangunanProyekBarangOrderDetail::create([
+                        'order_id' => $order->id,
+                        'barang_id' => $item['id'],
+                        'nama_barang' => $barang->nama_barang,
+                        'satuan_id' => $item['satuan_id'],
+                        'satuan' => $satuan?->nama ?? '-',
+                        'jumlah_input' => $item['jumlah_input'],
+                        'jumlah_base' => $jumlahBase,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Permintaan barang berhasil disimpan. Silakan klik Ajukan Ulang untuk mengajukan kembali.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal memperbarui permintaan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

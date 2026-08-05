@@ -1,6 +1,6 @@
-📦 *PENGAJUAN PERMINTAAN BAHAN UNIT*
+🔄 *PENGAJUAN ULANG PERMINTAAN BAHAN UNIT*
 
-Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
+Permintaan bahan material unit telah *DIAJUKAN KEMBALI*:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
@@ -11,20 +11,8 @@ Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
 @endif
 • *Diajukan Oleh:* {{ $pengaju }}
 • *Tanggal:* {{ $tanggal }}
-@php
-   $hasLuarRap = $order->details->contains(function($item) {
-       return empty($item->rap_bahan_id);
-   });
-   $hasExceededRap = $order->details->contains(function($item) {
-       return !empty($item->rap_bahan_id) && !empty($item->alasan_permintaan_tidak_sesuai_rap);
-   });
-@endphp
-@if($hasLuarRap && $hasExceededRap)
-• *Status RAP:* ⚠️ *DI LUAR & MELEBIHI RAP*
-@elseif($hasExceededRap)
-• *Status RAP:* ⚠️ *MELEBIHI RAP*
-@elseif($hasLuarRap)
-• *Status RAP:* ⚠️ *DI LUAR RAP*
+@if(!empty($order->catatan))
+• *Catatan:* {{ $order->catatan }}
 @endif
 
 *Daftar Barang:*
@@ -41,7 +29,3 @@ Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
 {{ $idx + 1 }}. *{{ $item->nama_barang }}* ({{ (float)$item->jumlah_input }} {{ $item->satuan }})
 @endif
 @endforeach
-
-@if(!empty($order->catatan))
-• *Catatan:* {{ $order->catatan }}
-@endif

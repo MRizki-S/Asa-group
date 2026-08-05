@@ -139,6 +139,12 @@ class KpiDashboardController extends Controller
                 }
             }
         }
+        // Sort devisi names alphabetically, but ensure 'LAINNYA' is always at the very bottom
+        uksort($dashboardData, function ($a, $b) {
+            if ($a === 'LAINNYA') return 1;
+            if ($b === 'LAINNYA') return -1;
+            return strcasecmp($a, $b);
+        });
 
         return view('kpi.dashboard.index', [
             'tahun' => $tahun,
@@ -267,6 +273,13 @@ class KpiDashboardController extends Controller
                 }
             }
         }
+
+        // Sort devisi names alphabetically, but ensure 'LAINNYA' is always at the very bottom
+        uksort($dashboardData, function ($a, $b) {
+            if ($a === 'LAINNYA') return 1;
+            if ($b === 'LAINNYA') return -1;
+            return strcasecmp($a, $b);
+        });
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

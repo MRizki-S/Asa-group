@@ -31,14 +31,14 @@
         $perumahaanLabel = $pembangunanItem?->perumahan?->nama_perumahaan ?? '-';
         $tahapLabel = 'Kawasan';
         $unitLabel = $pembangunanItem?->nama ?? $pembangunanItem?->nama_pembangunan ?? '-';
-        $qcLabel = 'Kawasan / Umum';
+        $qcLabel = $pembangunanItem?->nama ?? $pembangunanItem?->nama_pembangunan ?? '-';
         $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
     } elseif ($category === 'pembangunan_proyek_mangoon') {
         $pembangunanItem = $order->proyek;
         $perumahaanLabel = 'Proyek Luar';
         $tahapLabel = 'Proyek';
         $unitLabel = $pembangunanItem?->nama_project ?? $pembangunanItem?->nama ?? '-';
-        $qcLabel = 'Proyek / Umum';
+        $qcLabel = $pembangunanItem?->nama_project ?? $pembangunanItem?->nama ?? '-';
         $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
     }
 
@@ -69,10 +69,18 @@
     $accRoute = $category === 'pembangunan_unit'
         ? route('gudang.permintaanBarang.pembangunanUnit.acc', ['id' => $order->id])
         : route('gudang.permintaanBarang.acc', ['id' => $order->id, 'jenis_order' => $category]);
+
+    $tolakRoute = $category === 'pembangunan_unit'
+        ? route('gudang.permintaanBarang.pembangunanUnit.tolak', ['id' => $order->id])
+        : route('gudang.permintaanBarang.tolak', ['id' => $order->id, 'jenis_order' => $category]);
+
+    $resubmitRoute = $category === 'pembangunan_unit'
+        ? route('gudang.permintaanBarang.pembangunanUnit.resubmit', ['id' => $order->id])
+        : route('gudang.permintaanBarang.resubmit', ['id' => $order->id, 'jenis_order' => $category]);
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
-    x-data="{ openAccModal: false, accSubmitting: false }">
+    x-data="{ openAccModal: false, accSubmitting: false, openTolakModal: false, tolakSubmitting: false, openResubmitModal: false, resubmitSubmitting: false }">
 
     <div x-data="{ pageName: 'Detail Permintaan Barang' }">
         @include('partials.breadcrumb')
@@ -252,21 +260,42 @@
                         @forelse ($order->details as $detail)
                             @php
                                 $isLuarRap = empty($detail->rap_bahan_id);
+                                $isOver = false;
+                                if ($category === 'pembangunan_unit' && ! $isLuarRap && $detail->rapBahan) {
+                                    $standarRap = (float) ($detail->rapBahan->jumlah_standar ?? 0);
+                                    $faktorRap = (float) ($detail->rapBahan->faktor_konversi ?? 1);
+                                    $baseRap = $standarRap * $faktorRap;
+                                    
+                                    // Hitung total akumulasi order pada RAP ini hingga order saat ini (kecuali yang ditolak)
+                                    $totalOrderedUpToThis = (float) \App\Models\PembangunanUnitBarangOrderDetail::query()
+                                        ->where('rap_bahan_id', $detail->rap_bahan_id)
+                                        ->whereHas('order', function ($q) use ($order) {
+                                            $q->where('status_order', '!=', 'ditolak')
+                                              ->where('id', '<=', $order->id);
+                                        })
+                                        ->sum('jumlah_base');
+
+                                    $isOver = ($totalOrderedUpToThis - $baseRap) > 0.001;
+                                }
                             @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                 <td class="border border-gray-300 px-3 py-2">
                                     <div class="text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-' }}
                                     </div>
-                                    <div class="text-xs text-gray-500">
-                                        {{ $detail->barang?->kode_barang ?? '-' }}
-                                        @if ($isLuarRap)
-                                            <span class="ml-2 px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-semibold">Luar RAP</span>
+                                    <div class="text-xs text-gray-500 flex flex-wrap items-center gap-1.5 mt-0.5">
+                                        <span>{{ $detail->barang?->kode_barang ?? '-' }}</span>
+                                        @if ($category === 'pembangunan_unit')
+                                            @if ($isLuarRap)
+                                                <span class="px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-semibold text-[10px]">Luar RAP</span>
+                                            @elseif ($isOver)
+                                                <span class="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-semibold text-[10px]">Melebihi RAP</span>
+                                            @endif
                                         @endif
                                     </div>
-                                    @if ($detail->alasan_permintaan_tidak_sesuai_rap)
-                                        <div class="mt-1 text-xs text-red-600">
-                                            {{ $detail->alasan_permintaan_tidak_sesuai_rap }}
+                                    @if ($category === 'pembangunan_unit' && $detail->alasan_permintaan_tidak_sesuai_rap)
+                                        <div class="mt-1 text-xs text-red-600 italic">
+                                            Ket: {{ $detail->alasan_permintaan_tidak_sesuai_rap }}
                                         </div>
                                     @endif
                                 </td>
@@ -337,19 +366,46 @@
         </a>
 
         @if ($order->status_order === 'diproses')
-            <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
-                @submit="accSubmitting = true">
-                @csrf
-                @method('PATCH')
-                <button type="button" @click="openAccModal = true"
-                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
-                    ACC
+            <div class="flex gap-2">
+                {{-- Tombol Tolak --}}
+                <button type="button" @click="openTolakModal = true"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Tolak
                 </button>
-            </form>
+
+                {{-- Tombol ACC --}}
+                <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
+                    @submit="accSubmitting = true">
+                    @csrf
+                    @method('PATCH')
+                    <button type="button" @click="openAccModal = true"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        ACC
+                    </button>
+                </form>
+            </div>
+        @endif
+
+        @if ($order->status_order === 'ditolak')
+            <div class="flex gap-2">
+                <a href="{{ route('gudang.permintaanBarang.edit', ['id' => $order->id, 'category' => $category]) }}"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all focus:outline-none focus:ring-4 focus:ring-amber-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Edit Permintaan
+                </a>
+                <button type="button" @click="openResubmitModal = true"
+                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Ajukan Ulang
+                </button>
+            </div>
         @endif
     </div>
 
     @if ($order->status_order === 'diproses')
+        {{-- Modal ACC --}}
         <div x-show="openAccModal" x-cloak x-transition
             class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div @click.away="openAccModal = false"
@@ -357,23 +413,16 @@
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                                Konfirmasi ACC Permintaan
-                            </h3>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Konfirmasi ACC Permintaan</h3>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
                                 {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                             </p>
                         </div>
-                        <button type="button" @click="openAccModal = false"
-                            class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
+                        <button type="button" @click="openAccModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
                         </button>
                     </div>
                 </div>
-
                 <div class="p-5 space-y-4">
                     <div class="rounded-xl border border-green-100 bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800">
                         <p class="text-sm font-semibold text-green-800 dark:text-green-300">
@@ -383,47 +432,150 @@
                                 ACC akan mengurangi stock UBS dan sisa nota barang masuk secara FIFO.
                             @endif
                         </p>
-                        <p class="mt-1 text-xs text-green-700/80 dark:text-green-300/80">
-                            Data realisasi bahan proyek akan langsung ditambahkan setelah proses berhasil.
-                        </p>
+                        <p class="mt-1 text-xs text-green-700/80 dark:text-green-300/80">Data realisasi bahan proyek akan langsung ditambahkan setelah proses berhasil.</p>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
                             <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Total Item</p>
-                            <p class="mt-1 text-lg font-bold text-gray-900 dark:text-white">
-                                {{ $order->details->count() }}
-                            </p>
+                            <p class="mt-1 text-lg font-bold text-gray-900 dark:text-white">{{ $order->details->count() }}</p>
                         </div>
                         <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
                             <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Jenis Order</p>
-                            <p class="mt-1 text-lg font-bold uppercase text-gray-900 dark:text-white">
-                                {{ $order->jenis_order }}
-                            </p>
+                            <p class="mt-1 text-lg font-bold uppercase text-gray-900 dark:text-white">{{ $order->jenis_order }}</p>
                         </div>
                     </div>
-
                     <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
                         <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Unit / Lokasi</p>
-                        <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            {{ $perumahaanLabel }} /
-                            {{ $tahapLabel }} /
-                            {{ $unitLabel }}
-                        </p>
+                        <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $perumahaanLabel }} / {{ $tahapLabel }} / {{ $unitLabel }}</p>
                     </div>
-                </div>
 
+                    @if ($category === 'pembangunan_unit')
+                        @php
+                            $itemsOverOrLuar = $order->details->filter(function($detail) use ($order) {
+                                $isLuar = empty($detail->rap_bahan_id);
+                                if ($isLuar) return true;
+                                if ($detail->rapBahan) {
+                                    $standarRap = (float) ($detail->rapBahan->jumlah_standar ?? 0);
+                                    $faktorRap = (float) ($detail->rapBahan->faktor_konversi ?? 1);
+                                    $baseRap = $standarRap * $faktorRap;
+                                    $totalOrderedUpToThis = (float) \App\Models\PembangunanUnitBarangOrderDetail::query()
+                                        ->where('rap_bahan_id', $detail->rap_bahan_id)
+                                        ->whereHas('order', function ($q) use ($order) {
+                                            $q->where('status_order', '!=', 'ditolak')
+                                              ->where('id', '<=', $order->id);
+                                        })
+                                        ->sum('jumlah_base');
+                                    return ($totalOrderedUpToThis - $baseRap) > 0.001;
+                                }
+                                return false;
+                            });
+                        @endphp
+
+                        @if ($itemsOverOrLuar->count() > 0)
+                            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:bg-amber-900/20 dark:border-amber-700">
+                                <p class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    Perhatian: Terdapat {{ $itemsOverOrLuar->count() }} barang tidak sesuai RAP
+                                </p>
+                            </div>
+                        @endif
+                    @endif
+                </div>
                 <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
                     <button type="button" @click="openAccModal = false"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">
-                        Batal
-                    </button>
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
                     <button type="button" :disabled="accSubmitting"
                         @click="if ($refs.accForm.reportValidity()) { accSubmitting = true; $refs.accForm.requestSubmit() }"
                         class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition disabled:opacity-60">
                         <span x-text="accSubmitting ? 'Memproses...' : 'Ya, ACC'"></span>
                     </button>
                 </div>
+            </div>
+        </div>
+
+        {{-- Modal Tolak --}}
+        <div x-show="openTolakModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div @click.away="openTolakModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Tolak Permintaan Barang</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openTolakModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <form method="POST" action="{{ $tolakRoute }}" @submit="tolakSubmitting = true">
+                    @csrf
+                    @method('PATCH')
+                    <div class="p-5 space-y-4">
+                        <div class="rounded-xl border border-red-100 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
+                            <p class="text-sm font-semibold text-red-800 dark:text-red-300">Permintaan barang akan ditolak dan pengaju dapat mengedit lalu mengajukan kembali.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Alasan / Catatan Penolakan</label>
+                            <textarea name="catatan" rows="3" placeholder="Masukkan alasan penolakan..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500">{{ $order->catatan }}</textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                        <button type="button" @click="openTolakModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                        <button type="submit" :disabled="tolakSubmitting"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm transition disabled:opacity-60">
+                            <span x-text="tolakSubmitting ? 'Memproses...' : 'Ya, Tolak'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    @if ($order->status_order === 'ditolak')
+        {{-- Modal Ajukan Ulang --}}
+        <div x-show="openResubmitModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div @click.away="openResubmitModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Ajukan Ulang Permintaan</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openResubmitModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <form method="POST" action="{{ $resubmitRoute }}" @submit="resubmitSubmitting = true">
+                    @csrf
+                    @method('PATCH')
+                    <div class="p-5 space-y-4">
+                        <div class="rounded-xl border border-blue-100 bg-blue-50 p-4 dark:bg-blue-900/20 dark:border-blue-800">
+                            <p class="text-sm font-semibold text-blue-800 dark:text-blue-300">Permintaan barang akan diajukan kembali ke status <strong>Menunggu</strong>. Anda dapat mengubah catatan sebelum mengajukan ulang.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Catatan (Opsional)</label>
+                            <textarea name="catatan" rows="3" placeholder="Tambahkan catatan jika perlu..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500">{{ $order->catatan }}</textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                        <button type="button" @click="openResubmitModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                        <button type="submit" :disabled="resubmitSubmitting"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-60">
+                            <span x-text="resubmitSubmitting ? 'Memproses...' : 'Ya, Ajukan Ulang'"></span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

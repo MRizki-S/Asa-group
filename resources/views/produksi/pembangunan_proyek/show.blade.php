@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{
-    tab: new URLSearchParams(window.location.search).get('tab') || 'order',
+    tab: new URLSearchParams(window.location.search).get('tab') || 'barang',
     init() {
         this.$watch('tab', value => {
             const url = new URL(window.location.href);
@@ -194,7 +194,7 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {{-- Status Dropdown --}}
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative" x-data="{ openStatus: false }">
                         <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Status Pembangunan</p>
@@ -243,166 +243,130 @@
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="mb-6">
-        <div class="flex border-b border-gray-200 dark:border-gray-700 w-full">
+    <!-- Card Utama (Navigasi Tab + Konten Tab) -->
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-sm mb-6 overflow-hidden">
+        {{-- Navigasi Tab Header Card --}}
+        <div class="flex border-b border-gray-200 dark:border-gray-700 w-full bg-gray-50/50 dark:bg-gray-800/40">
+            <button @click="tab = 'barang'"
+                :class="tab === 'barang' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 font-bold' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-semibold'"
+                class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-xs border-b-2 uppercase tracking-wider transition-all text-center">
+                <i class="fa-solid fa-boxes-stacked text-sm"></i>
+                <span>Barang</span>
+            </button>
             <button @click="tab = 'order'"
-                :class="tab === 'order' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
-                <i class="fa-solid fa-box text-xs sm:text-sm"></i>
-                <span class="leading-tight">Order<br class="sm:hidden"> Barang</span>
+                :class="tab === 'order' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 font-bold' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-semibold'"
+                class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-xs border-b-2 uppercase tracking-wider transition-all text-center">
+                <i class="fa-solid fa-box text-sm"></i>
+                <span>Order Barang</span>
             </button>
-            @if(false)
-            <button @click="tab = 'upah'"
-                :class="tab === 'upah' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
-                <i class="fa-solid fa-money-bill-wave text-xs sm:text-sm"></i>
-                <span class="leading-tight">Pengajuan<br class="sm:hidden"> Upah</span>
-            </button>
-            @endif
             <button @click="tab = 'retur'"
-                :class="tab === 'retur' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-transparent' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                class="flex-1 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-5 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold border-b-2 uppercase tracking-wider transition-all text-center">
-                <i class="fa-solid fa-rotate-left text-xs sm:text-sm"></i>
-                <span class="leading-tight">Retur<br class="sm:hidden"> Barang</span>
+                :class="tab === 'retur' ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 font-bold' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-semibold'"
+                class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-xs border-b-2 uppercase tracking-wider transition-all text-center">
+                <i class="fa-solid fa-rotate-left text-sm"></i>
+                <span>Retur Barang</span>
             </button>
         </div>
-    </div>
 
-    <!-- Tab Content: Order Barang -->
-    <div x-show="tab === 'order'" style="display: none;">
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-
-            @if ($data->status_pembangunan !== 'selesai')
-            <!-- Kiri: Form Order Baru -->
-            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <h3 class="font-bold text-gray-900 dark:text-white mb-4">Buat Order Barang</h3>
-                <form action="{{ route('produksi.pembangunanProyek.orderStore') }}" method="POST" x-data="{ submittingOrder: false }" @submit="if(submittingOrder) { $event.preventDefault(); return; }; submittingOrder = true">
-                    @csrf
-                    <input type="hidden" name="pembangunan_proyek_id" value="{{ $data->id }}">
-
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Catatan Tambahan</label>
-                                <textarea name="catatan" rows="4" class="bg-white block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Jenis Order <span class="text-red-500">*</span></label>
-                                <select name="jenis_order" x-model="filterType" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                                    <option value="stock">Stock (Gudang)</option>
-                                    <option value="direct">Direct (Langsung)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Dynamic Items -->
-                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <h4 class="font-semibold text-sm text-gray-900 dark:text-white">Daftar Barang</h4>
-                                <button type="button" @click="addAdditionalItem()" class="text-sm text-blue-600 hover:underline"><i class="fa-solid fa-plus"></i> Tambah</button>
-                            </div>
-
-                            <div class="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                <template x-for="(item, index) in itemsAdditional" :key="index">
-                                    <div class="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mb-3 space-y-3 relative">
-                                        <button type="button" @click="removeAdditionalItem(index)" class="absolute top-2 right-2 flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-500 hover:bg-red-200 transition-colors font-bold text-xs" title="Hapus Barang">X</button>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Barang</label>
-                                            <select :name="'barang['+index+'][id]'"
-                                                class="select2-dynamic block w-full rounded border-gray-300 bg-white text-xs text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                                                required
-                                                x-init="$nextTick(() => {
-                                                    $($el).select2({theme: 'bootstrap4', width: '100%'})
-                                                    .on('change', (e) => { updateBarangDetail(index, e); });
-                                                })">
-                                                <option value="">-- Pilih Barang --</option>
-                                                <template x-for="b in allBarang.filter(x => (filterType === 'stock' ? x.is_stock : !x.is_stock))" :key="b.id">
-                                                    <option :value="b.id" x-text="b.nama_barang" :disabled="isBarangSelected(index, b.id)"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <div class="flex-1">
-                                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah</label>
-                                                <input type="number" step="0.01" :name="'barang['+index+'][jumlah_input]'" x-model="item.jumlah_input" required class="block w-full rounded border-gray-300 bg-white text-xs text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
-                                            </div>
-                                            <div class="flex-1">
-                                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Satuan</label>
-                                                <select :name="'barang['+index+'][satuan_id]'" x-model="item.satuan_id" required class="block w-full rounded border-gray-300 bg-white text-xs text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
-                                                    <template x-for="s in item.satuans" :key="s.id">
-                                                        <option :value="s.id" x-text="s.nama_satuan"></option>
-                                                    </template>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            <div x-show="itemsAdditional.length === 0" class="text-sm text-gray-500 text-center py-4 italic">Belum ada barang ditambahkan.</div>
-                        </div>
-
-                        <div x-show="itemsAdditional.length > 0" class="flex justify-end mt-4">
-                            <button type="submit" :disabled="submittingOrder" :class="submittingOrder ? 'opacity-50 cursor-not-allowed' : ''" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
-                                <span x-text="submittingOrder ? 'Memproses...' : 'Kirim Order'"></span>
-                            </button>
-                        </div>
+        {{-- Body Content Card --}}
+        <div class="p-5">
+            <!-- Tab Content: Barang (Akumulasi Barang Selesai) -->
+            <div x-show="tab === 'barang'" style="display: none;" class="min-h-[500px]">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4">
+                    <div>
+                        <h3 class="font-bold text-gray-900 dark:text-white text-base">Akumulasi Barang</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Daftar akumulasi seluruh barang dari order yang telah berstatus selesai.</p>
                     </div>
-                </form>
-            </div>
-            @else
-            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-800/50 p-5 shadow-sm dark:border-gray-700 text-center flex flex-col items-center justify-center min-h-[300px]">
-                <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-3"></i>
-                <h3 class="font-bold text-gray-900 dark:text-white mb-1">Pembangunan Selesai</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Proyek ini sudah berstatus selesai. Tidak dapat membuat order barang lagi.</p>
-            </div>
-            @endif
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                        Total: {{ count($returnableBarang) }} Item
+                    </span>
+                </div>
 
-            <!-- Kanan: Riwayat Order -->
-            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">
-                <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex-none">Riwayat Order</h3>
-                <div class="relative flex-1 min-h-[300px]">
+                <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-gray-50 dark:bg-gray-800/80 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
+                            <tr>
+                                <th class="p-3">Nama Barang</th>
+                                <th class="p-3 text-center">Jenis</th>
+                                <th class="p-3 text-center">Total Diterima</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse ($returnableBarang as $b)
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="p-3 font-semibold text-gray-800 dark:text-gray-200">
+                                        {{ $b['nama_barang'] }}
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        @forelse($b['jenis_orders'] ?? [] as $j)
+                                            <span class="inline-block px-2 py-0.5 text-[9px] font-black uppercase rounded border {{ $j === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }} mr-1">
+                                                {{ $j }}
+                                            </span>
+                                        @empty
+                                            <span class="text-gray-400 italic text-[10px]">-</span>
+                                        @endforelse
+                                    </td>
+                                    <td class="p-3 text-center font-bold text-gray-900 dark:text-white">
+                                        {{ (float)round($b['total_diterima_base'], 2) }} {{ $b['base_satuan_nama'] }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="p-4 text-center text-gray-400 italic">
+                                        Belum ada barang dari order selesai.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content: Order Barang -->
+            <div x-show="tab === 'order'" style="display: none;">
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+                    <!-- Kanan: Riwayat Order -->
+                    <div class="xl:col-span-2 flex flex-col h-full">
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex-none">Riwayat Order</h3>
+                        <div class="relative flex-1 min-h-[500px]">
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if($data->orders && $data->orders->count() > 0)
                         @foreach($data->orders->sortByDesc('created_at') as $order)
                         <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
                             <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
-                                {{-- Baris 1: Tanggal + Nomor Order --}}
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex flex-col gap-0.5 min-w-0">
+                                {{-- Header Card Order: Kiri (Tgl, No Order, Status), Kanan (Panah atas, Stock/Direct pojok kanan bawah) --}}
+                                <div class="flex items-stretch justify-between gap-2">
+                                    <div class="flex flex-col gap-1 min-w-0">
                                         <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
                                             {{ \Carbon\Carbon::parse($order->tanggal_diajukan)->translatedFormat('d M Y, H:i') }}
                                         </p>
-                                        <div class="flex flex-wrap items-center gap-1.5">
-                                            <p class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
-                                                {{ $order->nomor_order }}
-                                            </p>
+                                        <p class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">
+                                            {{ $order->nomor_order }}
+                                        </p>
+                                        <div>
+                                            @php
+                                                $statusMap = [
+                                                    'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
+                                                    'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                                    'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
+                                                    'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
+                                                    'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                                ];
+                                                $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                            @endphp
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                                {{ str_replace('_', ' ', $order->status_order) }}
+                                            </span>
                                         </div>
                                     </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                                {{-- Baris 2: Badge Jenis + Badge Status --}}
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
-                                        {{ $order->jenis_order }}
-                                    </span>
-                                    @php
-                                        $statusMap = [
-                                            'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
-                                            'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                            'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
-                                            'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
-                                            'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
-                                        ];
-                                        $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
-                                    @endphp
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                        {{ str_replace('_', ' ', $order->status_order) }}
-                                    </span>
+                                    <div class="flex flex-col justify-between items-end shrink-0 py-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
+                                            {{ $order->jenis_order }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -453,16 +417,7 @@
 
 
 
-                                @if ($order->status_order == 'diproses')
-                                    <div class="pt-4 flex justify-end">
-                                        <button type="button"
-                                            @click="openCancelOrderModal = true; cancelOrderActionUrl = '{{ route('produksi.pembangunanProyek.orderDestroy', $order->id) }}'"
-                                            class="px-4 py-2 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                            Batalkan Orderan
-                                        </button>
-                                    </div>
-                                @endif
+
                             </div>
                         </div>
                         @endforeach
@@ -663,16 +618,6 @@
                                      </div>
                                      @endif
 
-                                     @if(is_null($u->disetujui_mgr_produksi) && is_null($u->disetujui_mgr_dukungan) && is_null($u->disetujui_akuntan) && is_null($u->ditolak_pada))
-                                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
-                                         <button type="button"
-                                             @click="openCancelUpahModal = true; cancelUpahActionUrl = '{{ route('produksi.pembangunanProyek.upahDestroy', $u->id) }}'"
-                                             class="px-4 py-2 text-[10px] font-black bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 rounded-xl uppercase border border-red-200 dark:border-red-800/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm">
-                                             <i class="fa-solid fa-trash-can"></i>
-                                             Batalkan Pengajuan Upah
-                                         </button>
-                                     </div>
-                                     @endif
                                 </div>
                             </div>
                         </div>
@@ -691,6 +636,7 @@
     <!-- Tab Content: Retur Barang -->
     <div x-show="tab === 'retur'" style="display: none;">
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {{-- 
             @if ($data->status_pembangunan !== 'selesai')
             <!-- Kiri (50%): Form Buat Retur Barang -->
             <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
@@ -791,17 +737,18 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400">Proyek ini sudah berstatus selesai. Tidak dapat membuat pengajuan retur barang lagi.</p>
             </div>
             @endif
+            --}}
 
-            <!-- Kanan (50%): Riwayat Retur Barang (Accordion layout) -->
-            <div class="xl:col-span-1 rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 flex flex-col h-full">
+            <!-- Kanan: Riwayat Retur Barang Full Width -->
+            <div class="xl:col-span-2 flex flex-col h-full">
                 <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex-none">Riwayat Retur Barang</h3>
-                <div class="relative flex-1 min-h-[300px]">
+                <div class="relative flex-1 min-h-[500px]">
                     <div class="absolute inset-0 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                         @if(isset($returns) && $returns->count() > 0)
                         @foreach($returns as $ret)
                         <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
                             <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
-                                {{-- Baris 1: Tanggal + Nomor Retur --}}
+                                {{-- Baris 1: Tanggal + Nomor Retur + Status (di kanan bawah panah) --}}
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex flex-col gap-0.5 min-w-0">
                                         <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
@@ -811,28 +758,29 @@
                                             {{ $ret->nomor_return ?? ('RTN-MGN-' . str_pad($ret->id, 5, '0', STR_PAD_LEFT)) }}
                                         </p>
                                     </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                                {{-- Baris 2: Badge Status --}}
-                                <div class="flex flex-wrap items-center gap-2">
-                                    @php
-                                        $statusMap = [
-                                            'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                            'selesai'  => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                            'ditolak'  => 'bg-red-50 text-red-600 border-red-100',
-                                        ];
-                                        $style = $statusMap[$ret->status] ?? 'bg-gray-50 text-gray-500 border-gray-100';
-                                        $label = [
-                                            'diproses' => 'Menunggu',
-                                            'selesai'  => 'Selesai',
-                                            'ditolak'  => 'Ditolak',
-                                        ][$ret->status] ?? strtoupper($ret->status);
-                                    @endphp
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                        {{ $label }}
-                                    </span>
+                                    <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div class="flex flex-wrap items-center justify-end gap-1.5">
+                                            @php
+                                                $statusMap = [
+                                                    'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                                    'selesai'  => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                                    'ditolak'  => 'bg-red-50 text-red-600 border-red-100',
+                                                ];
+                                                $style = $statusMap[$ret->status] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                                $label = [
+                                                    'diproses' => 'Menunggu',
+                                                    'selesai'  => 'Selesai',
+                                                    'ditolak'  => 'Ditolak',
+                                                ][$ret->status] ?? strtoupper($ret->status);
+                                            @endphp
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                                {{ $label }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             

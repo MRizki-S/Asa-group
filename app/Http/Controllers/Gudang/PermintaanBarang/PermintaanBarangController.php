@@ -316,6 +316,101 @@ class PermintaanBarangController extends Controller
             ->with('success', 'Permintaan barang berhasil di-ACC.');
     }
 
+    public function tolak(Request $request, $id)
+    {
+        $request->validate(['catatan' => 'nullable|string|max:1000']);
+
+        $category = $request->get('jenis_order', 'pembangunan_kawasan');
+        $config   = $this->getOrderConfig($category);
+        $order    = $config['model']::with($config['with'])->findOrFail($id);
+
+        if ($order->status_order !== 'diproses') {
+            return back()->with('error', 'Permintaan barang ini sudah tidak dalam status menunggu.');
+        }
+
+        $order->update([
+            'status_order' => 'ditolak',
+            'catatan'      => $request->catatan,
+        ]);
+
+        // Kirim notifikasi WA penolakan order barang kawasan/proyek
+        $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+        if ($category === 'pembangunan_kawasan') {
+            $targetGroup = env('FONNTE_ID_GROUP_TOLAK_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_kawasan.tolak_order_barang', [
+                    'order' => $order,
+                    'namaPerumahan' => $order->kawasan?->perumahan?->nama_perumahaan ?? '-',
+                    'namaKawasan' => $order->kawasan?->nama ?? '-',
+                    'adminGudang' => $adminName,
+                    'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
+        } elseif ($category === 'pembangunan_proyek_mangoon') {
+            $targetGroup = env('FONNTE_ID_GROUP_TOLAK_ORDER_BARANG_PROYEK', env('FONNTE_ID_GROUP_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_proyek.tolak_order_barang', [
+                    'order' => $order,
+                    'namaProyek' => $order->proyek?->nama ?? '-',
+                    'adminGudang' => $adminName,
+                    'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
+        }
+
+        return back()->with('success', 'Permintaan barang berhasil ditolak.');
+    }
+
+    public function resubmit(Request $request, $id)
+    {
+        $request->validate(['catatan' => 'nullable|string|max:1000']);
+
+        $category = $request->get('jenis_order', 'pembangunan_kawasan');
+        $config   = $this->getOrderConfig($category);
+        $order    = $config['model']::with($config['with'])->findOrFail($id);
+
+        if ($order->status_order !== 'ditolak') {
+            return back()->with('error', 'Hanya permintaan yang ditolak yang dapat diajukan kembali.');
+        }
+
+        $order->update([
+            'status_order'     => 'diproses',
+            'catatan'          => $request->catatan,
+            'tanggal_diajukan' => now(),
+        ]);
+
+        // Kirim notifikasi WA resubmit order barang kawasan/proyek
+        $pengaju = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Pengaju';
+        if ($category === 'pembangunan_kawasan') {
+            $targetGroup = env('FONNTE_ID_GROUP_RESUBMIT_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_kawasan.resubmit_order_barang', [
+                    'order' => $order,
+                    'namaPerumahan' => $order->kawasan?->perumahan?->nama_perumahaan ?? '-',
+                    'namaKawasan' => $order->kawasan?->nama ?? '-',
+                    'pengaju' => $pengaju,
+                    'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
+        } elseif ($category === 'pembangunan_proyek_mangoon') {
+            $targetGroup = env('FONNTE_ID_GROUP_RESUBMIT_ORDER_BARANG_PROYEK', env('FONNTE_ID_GROUP_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_proyek.resubmit_order_barang', [
+                    'order' => $order,
+                    'namaProyek' => $order->proyek?->nama ?? '-',
+                    'pengaju' => $pengaju,
+                    'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
+        }
+
+        return back()->with('success', 'Permintaan barang berhasil diajukan kembali.');
+    }
+
     private function processAcc($order, Request $request, string $category): void
     {
         $ubsId = $order->ubs_id;

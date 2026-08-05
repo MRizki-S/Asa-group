@@ -1,15 +1,18 @@
-✅ *KONFIRMASI PERMINTAAN BAHAN UNIT*
+❌ *PERMINTAAN BAHAN UNIT DITOLAK*
 
-Permintaan bahan material unit telah disetujui oleh Gudang:
+Permintaan bahan material unit telah *DITOLAK* oleh Gudang:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Tahap:* {{ $namaTahap }}
 • *Unit:* {{ $namaUnit }}
-• *Dikonfirmasi Oleh:* {{ $adminGudang }}
-• *Tanggal Disetujui:* {{ $tanggalAcc }}
+• *Ditolak Oleh:* {{ $adminGudang }}
+• *Tanggal:* {{ $tanggal }}
+@if(!empty($order->catatan))
+• *Alasan Penolakan:* {{ $order->catatan }}
+@endif
 
-*Daftar Barang yang Disetujui:*
+*Daftar Barang yang Ditolak:*
 @foreach($order->details as $idx => $item)
 @php
     $isLuar = empty($item->rap_bahan_id);
@@ -23,3 +26,5 @@ Permintaan bahan material unit telah disetujui oleh Gudang:
 {{ $idx + 1 }}. *{{ $item->nama_barang }}* ({{ (float)$item->jumlah_input }} {{ $item->satuan }})
 @endif
 @endforeach
+
+Silakan lakukan perbaikan dan ajukan ulang permintaan.

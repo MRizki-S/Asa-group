@@ -25,22 +25,33 @@
                         {{ $titlePage }}
                     </h3>
 
-                    @if ($isHistory)
-                        <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
-                            class="inline-flex w-fit items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            Kembali ke Permintaan
-                        </a>
-                    @else
-                        <a href="{{ route('gudang.permintaanBarang.history', ['jenis_order' => $category]) }}"
-                            class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
-                            Riwayat Permintaan Barang
-                        </a>
-                    @endif
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if (!$isHistory)
+                            <a href="{{ route('gudang.permintaanBarang.pembangunanUnit.create', ['category' => $category]) }}"
+                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg> Tambah Barang Keluar
+                            </a>
+                        @endif
+
+                        @if ($isHistory)
+                            <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
+                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                Kembali ke Permintaan
+                            </a>
+                        @else
+                            <a href="{{ route('gudang.permintaanBarang.history', ['jenis_order' => $category]) }}"
+                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
+                                Riwayat Permintaan Barang
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 <form method="GET" action="{{ $isHistory ? route('gudang.permintaanBarang.history') : route('gudang.permintaanBarang.index') }}"
                     class="flex flex-wrap items-end gap-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                    
+
                     <input type="hidden" name="category" value="{{ $category }}">
 
                     <div class="flex flex-col gap-1.5">
@@ -107,13 +118,13 @@
                                 $subLocationLabel = ($pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-') . ($pembangunan?->tahap?->nama_tahap ? ' / ' . $pembangunan->tahap->nama_tahap : '');
                                 $qcLabel = $order->qc->nama_qc ?? '-';
                             } elseif ($category === 'pembangunan_kawasan') {
-                                $locationLabel = $order->kawasan?->nama_pembangunan ?? 'Kawasan';
+                                $locationLabel = $order->kawasan?->nama ?? $order->kawasan?->nama_pembangunan ?? 'Kawasan';
                                 $subLocationLabel = $order->kawasan?->perumahan?->nama_perumahaan ?? '-';
-                                $qcLabel = 'Kawasan / Umum';
+                                $qcLabel = '-';
                             } elseif ($category === 'pembangunan_proyek_mangoon') {
-                                $locationLabel = $order->proyek?->nama ?? 'Proyek';
-                                $subLocationLabel = 'Proyek Luar';
-                                $qcLabel = 'Proyek / Umum';
+                                $locationLabel = $order->proyek?->nama_project ?? $order->proyek?->nama ?? 'Proyek';
+                                $subLocationLabel = 'Proyek Mangoon';
+                                $qcLabel = '-';
                             }
 
                             $statusMap = [

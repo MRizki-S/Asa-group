@@ -502,63 +502,101 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     // Stock Barang
     Route::get('/stok-barang', [StockBarangController::class, 'stockIndex'])
         ->name('gudang.stockBarang.index');
+    Route::post('/stok-barang/toggle-freeze', [StockBarangController::class, 'toggleFreezeState'])->name('gudang.stockBarang.toggleFreeze');
     Route::get('/stok-barang/export-pdf', [StockBarangController::class, 'exportPdf'])->name('gudang.stockBarang.exportPdf');
     Route::get('/stok-barang/export-excel', [StockBarangController::class, 'exportExcel'])->name('gudang.stockBarang.exportExcel');
-    // Transfer Stock Barang
-    Route::get('/transfer-stock-barang', [TransferStockBarangController::class, 'create'])->name('gudang.transferStockBarang.create');
-    Route::post('/transfer-stock-barang/store', [TransferStockBarangController::class, 'store'])->name('gudang.transferStockBarang.store');
+
+    // Route bertransaksi stok / barang yang dibatasi oleh Freeze Mode
+    Route::middleware('check.freeze')->group(function () {
+        // Transfer Stock Barang
+        Route::get('/transfer-stock-barang', [TransferStockBarangController::class, 'create'])->name('gudang.transferStockBarang.create');
+        Route::post('/transfer-stock-barang/store', [TransferStockBarangController::class, 'store'])->name('gudang.transferStockBarang.store');
+        // Tranfer penyesuain stok ubs
+        Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');
+        Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
+
+        // Master Barang mutation
+        Route::post('/master-barang', [MasterBarangController::class, 'store']);
+        Route::put('/master-barang/{id}', [MasterBarangController::class, 'update']);
+        Route::delete('/master-barang/{id}', [MasterBarangController::class, 'destroy']);
+
+        // Barang Rakitan
+        Route::post('/produksi-rakitan', [ProduksiRakitanController::class, 'store']);
+
+        // Nota Masuk
+        Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
+        Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+        Route::patch('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'update'])->name('gudang.draftNotaMasuk.update');
+        Route::patch('/draft-nota-masuk/{nomorNota}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit');
+        Route::delete('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
+        Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
+
+        // Barang Rusak
+        Route::get('/barang-rusak/create', [BarangRusakController::class, 'create'])->name('gudang.barangRusak.create');
+        Route::post('/barang-rusak', [BarangRusakController::class, 'store'])->name('gudang.barangRusak.store');
+        Route::patch('/barang-rusak/{nomorBarangRusak}/cancel', [BarangRusakController::class, 'cancel'])->name('gudang.barangRusak.cancel');
+
+        // ACC & Tolak Permintaan / Return Gudang
+        Route::patch('/permintaan-barang/pembangunan-unit/{id}/acc', [PermintaanBarangPembangunanUnitController::class, 'accBarangOrder'])->name('gudang.permintaanBarang.pembangunanUnit.acc');
+        Route::patch('/permintaan-barang/pembangunan-unit/{id}/tolak', [PermintaanBarangPembangunanUnitController::class, 'tolakBarangOrder'])->name('gudang.permintaanBarang.pembangunanUnit.tolak');
+        Route::patch('/permintaan-barang/pembangunan-unit/{id}/resubmit', [PermintaanBarangPembangunanUnitController::class, 'resubmitBarangOrder'])->name('gudang.permintaanBarang.pembangunanUnit.resubmit');
+        Route::patch('/permintaan-barang/pembangunan-unit/return/{id}/acc', [PermintaanBarangPembangunanUnitController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanUnit.accReturn');
+        Route::patch('/permintaan-barang/pembangunan-unit/return/{id}/reject', [PermintaanBarangPembangunanUnitController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanUnit.rejectReturn');
+        Route::patch('/permintaan-barang/{id}/acc', [PermintaanBarangController::class, 'acc'])->name('gudang.permintaanBarang.acc');
+        Route::patch('/permintaan-barang/{id}/tolak', [PermintaanBarangController::class, 'tolak'])->name('gudang.permintaanBarang.tolak');
+        Route::patch('/permintaan-barang/{id}/resubmit', [PermintaanBarangController::class, 'resubmit'])->name('gudang.permintaanBarang.resubmit');
+        Route::put('/permintaan-barang/{id}', [PermintaanBarangPembangunanUnitController::class, 'update'])->name('gudang.permintaanBarang.update');
+        Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.accReturn');
+        Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.rejectReturn');
+        Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.accReturn');
+        Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.rejectReturn');
+    });
+
+    // Transfer Stock Read-only & Helpers
     Route::get('/transfer-stock-barang/satuan-dan-stok/{barangId}', [TransferStockBarangController::class, 'getSatuanDanStok']);
-    // Riwayat Transfer stock gudang
     Route::get('/riwayat-transfer-stock', [TransferStockBarangController::class, 'riwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock');
     Route::get('/riwayat-transfer-stock/{nomorTransfer}', [TransferStockBarangController::class, 'showRiwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock.show');
-    // Tranfer penyesuain stok ubs
-    Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');
-    Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
     Route::get('/transfer-stock-penyesuain/stok/{barangId}/{ubsId}', [TransferPenyesuainStockController::class, 'getStokBarangUbsHub']);
 
     // Master satuan barang controller
     Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');
 
-    // Master Barang
-    Route::resource('/master-barang', MasterBarangController::class)->names('gudang.masterBarang');
+    // Master Barang Read Only Resource (Store/Update/Destroy moved inside check.freeze)
+    Route::get('/master-barang', [MasterBarangController::class, 'index'])->name('gudang.masterBarang.index');
+    Route::get('/master-barang/create', [MasterBarangController::class, 'create'])->name('gudang.masterBarang.create');
+    Route::get('/master-barang/{id}', [MasterBarangController::class, 'show'])->name('gudang.masterBarang.show');
+    Route::get('/master-barang/{id}/edit', [MasterBarangController::class, 'edit'])->name('gudang.masterBarang.edit');
 
     // Barang Rakitan > Komposisi Rakitan
     Route::resource('/barang-rakitan', KomposisiRakitanController::class)->names('gudang.komposisiRakitan');
 
     // Barang Rakitan > Produksi Rakitan
-    Route::resource('/produksi-rakitan', ProduksiRakitanController::class)->names('gudang.produksiRakitan');
+    Route::get('/produksi-rakitan', [ProduksiRakitanController::class, 'index'])->name('gudang.produksiRakitan.index');
+    Route::get('/produksi-rakitan/create', [ProduksiRakitanController::class, 'create'])->name('gudang.produksiRakitan.create');
+    Route::get('/produksi-rakitan/{id}', [ProduksiRakitanController::class, 'show'])->name('gudang.produksiRakitan.show');
 
     // Tambah Nota Masuk
-    Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
-    Route::post('/nota-barang-masuk/store', [NotaBarangMasukController::class, 'store'])->name('gudang.notaBarangMasuk.store');
+    // Tambah Nota Masuk Helpers
     Route::get('/barang/{id}/satuan', [NotaBarangMasukController::class, 'getSatuan']);
     // List Draft nota masuk
     Route::get('/draft-nota-masuk', [DraftNotaMasukController::class, 'index'])->name('gudang.draftNotaMasuk.index');
     Route::get('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'edit'])->name('gudang.draftNotaMasuk.edit');
-    Route::patch('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'update'])->name('gudang.draftNotaMasuk.update'); /// update change draft nota masuk
-    Route::patch('/draft-nota-masuk/{nomorNota}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit'); /// submit draft nota masuk menjadi posting
-    Route::delete('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
 
     // Daftar Nota Masuk
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
-    Route::delete('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'destroy'])->name('gudang.daftarNotaMasuk.destroy');
 
     // Barang Rusak
     Route::get('/barang-rusak', [BarangRusakController::class, 'index'])->name('gudang.barangRusak.index');
-    Route::get('/barang-rusak/create', [BarangRusakController::class, 'create'])->name('gudang.barangRusak.create');
-    Route::post('/barang-rusak', [BarangRusakController::class, 'store'])->name('gudang.barangRusak.store');
     Route::get('/barang-rusak/satuan-dan-stok/{barangId}', [BarangRusakController::class, 'getSatuanDanStok'])->name('gudang.barangRusak.satuanStok');
-    Route::patch('/barang-rusak/{nomorBarangRusak}/cancel', [BarangRusakController::class, 'cancel'])->name('gudang.barangRusak.cancel');
     Route::get('/barang-rusak/{nomorBarangRusak}', [BarangRusakController::class, 'show'])->name('gudang.barangRusak.show');
 
     // Permintaan Barang Proyek
     Route::get('/permintaan-barang', [PermintaanBarangController::class, 'index'])->name('gudang.permintaanBarang.index');
     Route::get('/permintaan-barang/riwayat', [PermintaanBarangController::class, 'history'])->name('gudang.permintaanBarang.history');
-    Route::patch('/permintaan-barang/pembangunan-unit/{id}/acc', [PermintaanBarangPembangunanUnitController::class, 'accBarangOrder'])->name('gudang.permintaanBarang.pembangunanUnit.acc');
-    Route::patch('/permintaan-barang/pembangunan-unit/return/{id}/acc', [PermintaanBarangPembangunanUnitController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanUnit.accReturn');
-    Route::patch('/permintaan-barang/pembangunan-unit/return/{id}/reject', [PermintaanBarangPembangunanUnitController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanUnit.rejectReturn');
-    Route::patch('/permintaan-barang/{id}/acc', [PermintaanBarangController::class, 'acc'])->name('gudang.permintaanBarang.acc');
+    Route::get('/permintaan-barang/pembangunan-unit/create', [PermintaanBarangPembangunanUnitController::class, 'create'])->name('gudang.permintaanBarang.pembangunanUnit.create');
+    Route::get('/permintaan-barang/pembangunan-unit/qc-list/{pembangunanUnitId}', [PermintaanBarangPembangunanUnitController::class, 'getQcList'])->name('gudang.permintaanBarang.pembangunanUnit.qcList');
+    Route::get('/permintaan-barang/{id}/edit', [PermintaanBarangPembangunanUnitController::class, 'edit'])->name('gudang.permintaanBarang.edit');
     Route::get('/permintaan-barang/{id}', [PermintaanBarangController::class, 'show'])->name('gudang.permintaanBarang.show');
 
     // Retur Barang Unit (Gudang)
@@ -570,15 +608,11 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/return-barang/kawasan', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'indexReturn'])->name('gudang.returnBarang.kawasan.index');
     Route::get('/return-barang/kawasan/riwayat', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'historyReturn'])->name('gudang.returnBarang.kawasan.history');
     Route::get('/return-barang/kawasan/{id}', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'showReturn'])->name('gudang.returnBarang.kawasan.show');
-    Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.accReturn');
-    Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.rejectReturn');
 
     // Retur Barang Proyek Mangoon (Gudang)
     Route::get('/return-barang/proyek', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'indexReturn'])->name('gudang.returnBarang.proyek.index');
     Route::get('/return-barang/proyek/riwayat', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'historyReturn'])->name('gudang.returnBarang.proyek.history');
     Route::get('/return-barang/proyek/{id}', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'showReturn'])->name('gudang.returnBarang.proyek.show');
-    Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.accReturn');
-    Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.rejectReturn');
 
     // Master Tukang Harian
     Route::get('/master-tukang-harian', [MasterTukangController::class, 'index'])->name('gudang.masterTukang.index');
@@ -691,15 +725,17 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
         Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
             ->name('produksi.pembangunanUnit.updateTaskNote');
 
-        Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
-            ->name('produksi.pembangunanUnit.orderStore');
-        Route::delete('pembangunan-unit/order-barang/{id}', [PembangunanUnitOrderBarangController::class, 'destroy'])
-            ->name('produksi.pembangunanUnit.orderDestroy');
+        Route::middleware('check.freeze')->group(function () {
+            Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
+                ->name('produksi.pembangunanUnit.orderStore');
+            Route::delete('pembangunan-unit/order-barang/{id}', [PembangunanUnitOrderBarangController::class, 'destroy'])
+                ->name('produksi.pembangunanUnit.orderDestroy');
+            Route::post('pembangunan-unit/return-barang', [PembangunanUnitBarangReturnController::class, 'store'])
+                ->name('produksi.pembangunanUnit.returnStore');
+        });
         // Return barang per-QC (baru)
         Route::get('pembangunan-unit/return-barang/{qcId}/summary', [PembangunanUnitBarangReturnController::class, 'summary'])
             ->name('produksi.pembangunanUnit.returnSummary');
-        Route::post('pembangunan-unit/return-barang', [PembangunanUnitBarangReturnController::class, 'store'])
-            ->name('produksi.pembangunanUnit.returnStore');
 
         Route::post('pembangunan-unit/upah-pengajuan', [PembangunanUnitPengajuanUpahController::class, 'store'])
             ->name('produksi.pembangunanUnit.upahStore');
@@ -740,9 +776,11 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::middleware('can:produksi.pembangunan-proyek')->group(function () {
         Route::resource('pembangunan-proyek', PembangunanProyekController::class)->names('produksi.pembangunanProyek');
-        Route::post('pembangunan-proyek/order-barang', [PembangunanProyekController::class, 'orderStore'])->name('produksi.pembangunanProyek.orderStore');
-        Route::delete('pembangunan-proyek/order-barang/{id}', [PembangunanProyekController::class, 'orderDestroy'])->name('produksi.pembangunanProyek.orderDestroy');
-        Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
+        Route::middleware('check.freeze')->group(function () {
+            Route::post('pembangunan-proyek/order-barang', [PembangunanProyekController::class, 'orderStore'])->name('produksi.pembangunanProyek.orderStore');
+            Route::delete('pembangunan-proyek/order-barang/{id}', [PembangunanProyekController::class, 'orderDestroy'])->name('produksi.pembangunanProyek.orderDestroy');
+            Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
+        });
         Route::post('pembangunan-proyek/upah-pengajuan', [PembangunanProyekController::class, 'upahStore'])->name('produksi.pembangunanProyek.upahStore');
         Route::delete('pembangunan-proyek/upah-pengajuan/{id}', [PembangunanProyekController::class, 'upahDestroy'])->name('produksi.pembangunanProyek.upahDestroy');
     });
@@ -755,9 +793,11 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::middleware('can:produksi.pembangunan-kawasan')->group(function () {
         Route::resource('pembangunan-kawasan', PembangunanKawasanController::class)->names('produksi.pembangunanKawasan');
-        Route::post('pembangunan-kawasan/order-barang', [PembangunanKawasanController::class, 'orderStore'])->name('produksi.pembangunanKawasan.orderStore');
-        Route::delete('pembangunan-kawasan/order-barang/{id}', [PembangunanKawasanController::class, 'orderDestroy'])->name('produksi.pembangunanKawasan.orderDestroy');
-        Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
+        Route::middleware('check.freeze')->group(function () {
+            Route::post('pembangunan-kawasan/order-barang', [PembangunanKawasanController::class, 'orderStore'])->name('produksi.pembangunanKawasan.orderStore');
+            Route::delete('pembangunan-kawasan/order-barang/{id}', [PembangunanKawasanController::class, 'orderDestroy'])->name('produksi.pembangunanKawasan.orderDestroy');
+            Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
+        });
         Route::post('pembangunan-kawasan/upah-pengajuan', [PembangunanKawasanController::class, 'upahStore'])->name('produksi.pembangunanKawasan.upahStore');
         Route::delete('pembangunan-kawasan/upah-pengajuan/{id}', [PembangunanKawasanController::class, 'upahDestroy'])->name('produksi.pembangunanKawasan.upahDestroy');
     });
