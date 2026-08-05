@@ -64,24 +64,14 @@
                     <div>
                         <span class="font-bold">Informasi Penting:</span>
                         <ul class="mt-1.5 list-disc list-inside">
-                            <li>Seluruh nota baru akan tersimpan otomatis sebagai <span class="font-semibold italic">Draft</span>.</li>
-                            <li>Stok di <span class="font-semibold">Gudang HUB</span> tidak akan bertambah selama status nota masih <span class="font-semibold text-red-600 dark:text-red-400">Draft</span> (belum di-Submit/Post pada halaman daftar nota draft).</li>
+                            <li>Nota baru akan tersimpan otomatis sebagai <span class="font-semibold italic">Draft</span> dengan <strong>nomor urut sementara</strong> (contoh: Draft #15).</li>
+                            <li><strong>Nomor Nota resmi</strong> (contoh: NOTA-20260804-0001) baru akan di-generate otomatis <span class="font-semibold text-blue-700 dark:text-blue-300">saat diposting</span>.</li>
+                            <li>Stok di <span class="font-semibold" id="nama-gudang-tujuan">Gudang Tujuan</span> tidak akan bertambah selama status masih <span class="font-semibold text-red-600 dark:text-red-400">Draft</span>.</li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label for="nomor_nota" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Nomor Nota <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="nomor_nota" name="nomor_nota" readonly value="{{ $newNomorNota }}"
-                            class="w-full bg-gray-100 border text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-gray-400 border-gray-300 cursor-not-allowed">
-                        @error('nomor_nota')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             Tanggal Nota <span class="text-red-500">*</span>
@@ -116,14 +106,37 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="supplier" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        <label for="supplier_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Supplier <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="supplier" name="supplier" required value="{{ old('supplier') }}" placeholder="Contoh: PT. Semen Indonesia"
-                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 @error('supplier') border-red-500 @else border-gray-300 @enderror">
-                        @error('supplier')
+                        <select id="supplier_id" name="supplier_id" required class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5">
+                            <option value="">Pilih Supplier</option>
+                            @foreach ($masterSuppliers as $supplier)
+                                <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                                    {{ $supplier->kode_supplier }} - {{ $supplier->nama_supplier }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('supplier_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="ubs_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Gudang Tujuan <span class="text-red-500">*</span>
+                        </label>
+                        <select id="ubs_id" name="ubs_id" required class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5">
+                            <option value="">Pilih Gudang</option>
+                            @foreach ($ubs as $item)
+                                <option value="{{ $item->id }}" {{ old('ubs_id') == $item->id ? 'selected' : '' }}>
+                                    {{ $item->kode_ubs }} - {{ $item->nama_ubs }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('ubs_id')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -488,4 +501,29 @@
 
 
 
+<script>
+    $(document).ready(function() {
+        $('#supplier_id').select2({
+            placeholder: 'Pilih Supplier',
+            allowClear: true,
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+        $('#ubs_id').select2({
+            placeholder: 'Pilih Gudang',
+            allowClear: true,
+            theme: 'bootstrap4',
+            width: '100%'
+        }).on('change', function() {
+            let selectedText = $(this).find('option:selected').text().trim();
+            if (selectedText && $(this).val()) {
+                let parts = selectedText.split(' - ');
+                let name = parts.length > 1 ? parts[1] : selectedText;
+                $('#nama-gudang-tujuan').text(name);
+            } else {
+                $('#nama-gudang-tujuan').text('Gudang Tujuan');
+            }
+        }).trigger('change');
+    });
+</script>
 @endsection

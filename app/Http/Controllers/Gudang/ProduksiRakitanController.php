@@ -24,7 +24,7 @@ class ProduksiRakitanController extends Controller
         $baseQuery = ProduksiBarangRakitan::with([
             'barangHasil:id,kode_barang,nama_barang',
             'satuanHasil:id,nama',
-            'ubs:id,nama,nama_ubs',
+            'ubs:id,nama_ubs,kode_ubs',
             'creator:id,username',
         ])->latest();
 
@@ -261,8 +261,11 @@ class ProduksiRakitanController extends Controller
             $notaHasil = NotaBarangMasuk::create([
                 'nomor_nota' => $this->generateNomorRKT(),
                 'tanggal_nota' => $validated['tanggal_rakitan'],
-                'supplier' => 'Produksi Rakitan Internal',
+                'jenis_nota' => 'produksi_rakitan',
+                'supplier_id' => null,
                 'cara_bayar' => null,
+                'stock_type' => $validated['stock_type'],
+                'ubs_id' => $validated['ubs_id'],
                 'status' => 'posted',
                 'created_by' => Auth::id(),
                 'posted_at' => now(),

@@ -7,8 +7,8 @@ use App\Models\BarangSatuanKonversi;
 use App\Models\MasterBarang;
 use App\Models\NotaBarangMasuk;
 use App\Models\NotaBarangMasukDetail;
-use App\Models\StockGudang;
-use App\Models\StockLedger;
+use App\Models\MasterSupplier;
+use App\Models\Ubs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,23 +35,23 @@ class NotaBarangMasukController extends Controller
     // create barang masuk pada halaman nota barang masuk
     public function create()
     {
-        // Ambil nota terakhir
-        $lastNota = NotaBarangMasuk::latest('id')->first();
-
-        // Generate kode baru
-        if ($lastNota) {
-            $lastId = intval(str_replace('NOTA-', '', $lastNota->nomor_nota));
-            $nowNomorNota = 'NOTA-' . str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $nowNomorNota = 'NOTA-0001';
-        }
         // Ambil master barang
         $masterBarangs = MasterBarang::where('is_stock', 1)->select('id', 'kode_barang', 'nama_barang')
             ->get();
 
+        // Ambil master supplier yang aktif
+        $masterSuppliers = MasterSupplier::where('status', 1)
+            ->orderBy('nama_supplier')
+            ->get();
+
+        // Ambil unit bisnis / gudang ubs
+        $ubs = Ubs::orderBy('nama_ubs')
+            ->get();
+
         return view('gudang.nota-barang-masuk.create', [
-            'newNomorNota' => $nowNomorNota,
             'masterBarangs' => $masterBarangs,
+            'masterSuppliers' => $masterSuppliers,
+            'ubs' => $ubs,
             'breadcrumbs' => [
                 [
                     'label' => 'Tambah Nota Barang Masuk',
@@ -61,14 +61,14 @@ class NotaBarangMasukController extends Controller
         ]);
     }
 
-    // aksi store
+    // aksi store — simpan sebagai draft (nomor nota belum di-generate, stok belum berubah)
     public function store(Request $request)
     {
         // validasi input
         $validated = $request->validate([
-            'nomor_nota' => 'required|string|unique:nota_barang_masuk,nomor_nota',
             'tanggal_nota' => 'required|date',
-            'supplier' => 'required|string|max:255',
+            'supplier_id' => 'required|exists:master_supplier,id',
+            'ubs_id' => 'required|exists:ubs,id',
             'cara_bayar' => 'required|in:cash,hutang',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:master_barang,id',
@@ -82,17 +82,20 @@ class NotaBarangMasukController extends Controller
         try {
             DB::transaction(function () use ($validated) {
 
-                // 1. INSERT HEADER (NOTA)
+                // 1. INSERT HEADER (NOTA) — nomor_nota NULL, akan di-generate saat posting
                 $nota = NotaBarangMasuk::create([
-                    'nomor_nota' => $validated['nomor_nota'],
+                    'nomor_nota' => null,
                     'tanggal_nota' => $validated['tanggal_nota'],
-                    'supplier' => $validated['supplier'],
+                    'jenis_nota' => 'supplier',
+                    'supplier_id' => $validated['supplier_id'],
                     'cara_bayar' => $validated['cara_bayar'],
-                    'status' => 'Draft', // Default status Draft
+                    'stock_type' => 'UBS', // default stock_type ke UBS
+                    'ubs_id' => $validated['ubs_id'],
+                    'status' => 'draft',
                     'created_by' => Auth::id(),
                 ]);
 
-                // 2. LOOP ITEMS & INSERT DETAIL
+                // 2. LOOP ITEMS & INSERT DETAIL (tidak mengubah stock_gudang karena masih draft)
                 foreach ($validated['items'] as $item) {
 
                     // Ambil konversi satuan
@@ -134,7 +137,4 @@ class NotaBarangMasukController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-
-
-
 }

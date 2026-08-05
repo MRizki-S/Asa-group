@@ -12,37 +12,29 @@
     </div>
     <!-- Breadcrumb End -->
 
-    {{-- Alert Error Validasi --}}
-    @if ($errors->any())
-    <div class="flex p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-        role="alert">
-        <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor" viewBox="0 0 20 20">
-            <path
-                d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+    {{-- Flash Messages --}}
+    @if(session('success'))
+    <div class="flex p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+        <svg class="shrink-0 inline w-4 h-4 me-3 mt-[2px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
         </svg>
-        <span class="sr-only">Danger</span>
-        <div>
-            <span class="font-medium">Terjadi kesalahan validasi:</span>
-            <ul class="mt-1.5 list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+        <div><span class="font-bold">Berhasil!</span> {{ session('success') }}</div>
     </div>
     @endif
 
     <div class="space-y-5 sm:space-y-6">
-        <div
-            class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                {{-- Judul --}}
                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
                     Riwayat Transfer Stock Gudang
                 </h3>
-
+                <a href="{{ route('gudang.transferStockBarang.create') }}"
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition focus:ring-4 focus:ring-blue-300 active:scale-95 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Ajukan Transfer Baru
+                </a>
             </div>
 
             {{-- Filter by bulan dan tahun --}}
@@ -133,6 +125,15 @@
                             </span>
                         </th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                            Status
+                        </th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                            Disetujui Oleh
+                        </th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                            Tanggal Persetujuan
+                        </th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                             Aksi
                         </th>
                     </tr>
@@ -168,8 +169,45 @@
                             @endif
                         </td>
 
+                        {{-- Status Badge --}}
+                        <td class="text-center">
+                            @if($transferStock->status === 'pending')
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                    Pending
+                                </span>
+                            @elseif($transferStock->status === 'disetujui')
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    Disetujui
+                                </span>
+                            @elseif($transferStock->status === 'ditolak')
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                    Ditolak
+                                </span>
+                            @else
+                                <span class="text-gray-400 text-xs">-</span>
+                            @endif
+                        </td>
+
+                        {{-- Disetujui Oleh --}}
+                        <td class="text-center text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                            @if($transferStock->approvedBy)
+                                {{ $transferStock->approvedBy->username ?? $transferStock->approvedBy->name }}
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+
+                        {{-- Tanggal Persetujuan --}}
+                        <td class="text-center text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                            @if($transferStock->approved_at)
+                                {{ \Carbon\Carbon::parse($transferStock->approved_at)->format('d-M-Y H:i') }}
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+
                         {{-- Aksi --}}
-                        <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                        <td class="px-4 py-3 flex flex-wrap gap-2 justify-center">
 
                             {{-- SHOW / DETAIL --}}
                             <a href="{{ route('gudang.transferStockBarang.riwayatTransferStock.show', $transferStock->nomor_transfer) }}"
@@ -181,6 +219,22 @@
                                         active:scale-95">
                                 Detail
                             </a>
+
+                            {{-- EDIT - hanya jika ditolak --}}
+                            @if($transferStock->status === 'ditolak')
+                            <a href="{{ route('gudang.transferStockBarang.edit', $transferStock->nomor_transfer) }}"
+                                class="inline-flex items-center gap-1
+                                        text-xs font-medium text-orange-700 bg-orange-100 hover:bg-orange-200
+                                        dark:bg-orange-900/40 dark:text-orange-300 dark:hover:bg-orange-900/60
+                                        px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                        focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1
+                                        active:scale-95">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit
+                            </a>
+                            @endif
                         </td>
                     </tr>
                     @endforeach
@@ -193,7 +247,6 @@
 </div>
 <!-- ===== Main Content End ===== -->
 
-{{-- sweatalert 2 for delete data --}}
 <script>
     if (document.getElementById("table-transferStock") && typeof simpleDatatables.DataTable !== 'undefined') {
         const dataTable = new simpleDatatables.DataTable("#table-transferStock", {

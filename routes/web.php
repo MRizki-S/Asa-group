@@ -19,6 +19,7 @@ use App\Http\Controllers\Gudang\DraftNotaMasukController;
 use App\Http\Controllers\Gudang\KomposisiRakitanController;
 use App\Http\Controllers\Gudang\MasterBarangController;
 use App\Http\Controllers\Gudang\MasterSatuanBarangController;
+use App\Http\Controllers\Gudang\MasterSupplierController;
 use App\Http\Controllers\Gudang\MasterTukangController;
 use App\Http\Controllers\Gudang\NotaBarangMasukController;
 use App\Http\Controllers\Gudang\PengajuanUpahHarianTukangController;
@@ -506,6 +507,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/stok-barang/export-pdf', [StockBarangController::class, 'exportPdf'])->name('gudang.stockBarang.exportPdf');
     Route::get('/stok-barang/export-excel', [StockBarangController::class, 'exportExcel'])->name('gudang.stockBarang.exportExcel');
 
+
     // Route bertransaksi stok / barang yang dibatasi oleh Freeze Mode
     Route::middleware('check.freeze')->group(function () {
         // Transfer Stock Barang
@@ -556,7 +558,29 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/transfer-stock-barang/satuan-dan-stok/{barangId}', [TransferStockBarangController::class, 'getSatuanDanStok']);
     Route::get('/riwayat-transfer-stock', [TransferStockBarangController::class, 'riwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock');
     Route::get('/riwayat-transfer-stock/{nomorTransfer}', [TransferStockBarangController::class, 'showRiwayatTransferStock'])->name('gudang.transferStockBarang.riwayatTransferStock.show');
+
+    // Transfer Stock Barang (UBS ke UBS dengan Approval SPV)
+    Route::get('/transfer-stock-barang', [TransferStockBarangController::class, 'create'])->name('gudang.transferStockBarang.create');
+    Route::post('/transfer-stock-barang/store', [TransferStockBarangController::class, 'store'])->name('gudang.transferStockBarang.store');
+    Route::get('/transfer-stock-barang/satuan-dan-stok/{barangId}/{ubsId}', [TransferStockBarangController::class, 'getSatuanDanStok']);
+    Route::get('/transfer-stock-barang/{nomorTransfer}/edit', [TransferStockBarangController::class, 'edit'])->name('gudang.transferStockBarang.edit');
+    Route::post('/transfer-stock-barang/{nomorTransfer}/update', [TransferStockBarangController::class, 'update'])->name('gudang.transferStockBarang.update');
+
+
+    // Daftar Transfer Stock Pengajuan dll
+    Route::get('/daftar-transfer-stock', [TransferStockBarangController::class, 'index'])->name('gudang.transferStockBarang.daftar.index');
+    Route::get('/daftar-transfer-stock/{nomorTransfer}', [TransferStockBarangController::class, 'daftarShow'])->name('gudang.transferStockBarang.daftar.show');
+    Route::get('/daftar-transfer-stock/{nomorTransfer}/pdf', [TransferStockBarangController::class, 'printPdf'])->name('gudang.transferStockBarang.daftar.pdf');
+    Route::patch('/daftar-transfer-stock/{nomorTransfer}/approve', [TransferStockBarangController::class, 'approvePengajuan'])->name('gudang.transferStockBarang.daftar.approve');
+    Route::patch('/daftar-transfer-stock/{nomorTransfer}/reject', [TransferStockBarangController::class, 'rejectPengajuan'])->name('gudang.transferStockBarang.daftar.reject');
+
+    // Tranfer penyesuain stok ubs
+    Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');
+    Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
     Route::get('/transfer-stock-penyesuain/stok/{barangId}/{ubsId}', [TransferPenyesuainStockController::class, 'getStokBarangUbsHub']);
+
+    // Master Supplier
+    Route::resource('/master-supplier', MasterSupplierController::class)->names('gudang.masterSupplier');
 
     // Master satuan barang controller
     Route::resource('/master-satuan-barang', MasterSatuanBarangController::class)->names('gudang.masterSatuanBarang');
@@ -580,7 +604,10 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/barang/{id}/satuan', [NotaBarangMasukController::class, 'getSatuan']);
     // List Draft nota masuk
     Route::get('/draft-nota-masuk', [DraftNotaMasukController::class, 'index'])->name('gudang.draftNotaMasuk.index');
-    Route::get('/draft-nota-masuk/{nomorNota}', [DraftNotaMasukController::class, 'edit'])->name('gudang.draftNotaMasuk.edit');
+    Route::get('/draft-nota-masuk/{id}', [DraftNotaMasukController::class, 'edit'])->name('gudang.draftNotaMasuk.edit');
+    Route::patch('/draft-nota-masuk/{id}', [DraftNotaMasukController::class, 'update'])->name('gudang.draftNotaMasuk.update'); /// update change draft nota masuk
+    Route::patch('/draft-nota-masuk/{id}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit'); /// submit draft nota masuk menjadi posting
+    Route::delete('/draft-nota-masuk/{id}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
 
     // Daftar Nota Masuk
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');

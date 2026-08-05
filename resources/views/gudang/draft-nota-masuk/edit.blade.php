@@ -72,12 +72,12 @@
                 <h4 class="text-sm font-bold text-blue-800 dark:text-blue-300">Posting ke Stok</h4>
             </div>
             <p class="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                Memvalidasi dan memasukkan barang ke <strong>Stok Gudang HUB</strong>. Nota akan berpindah ke Daftar Final dan tidak bisa diedit lagi.
+                Memvalidasi dan memasukkan barang ke <strong>Stok Gudang yang dipilih</strong>. Nota akan berpindah ke Daftar Final dan tidak bisa diedit lagi.
             </p>
         </div>
     </div>
 
-    <form action="{{ route('gudang.draftNotaMasuk.update', $nota->nomor_nota) }}" method="POST" id="form-nota">
+    <form action="{{ route('gudang.draftNotaMasuk.update', $nota->id) }}" method="POST" id="form-nota">
         @csrf
         @method('PATCH')
 
@@ -86,20 +86,21 @@
             <div class="px-5 py-4 sm:px-6 sm:py-5">
                 <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
                     <h3 class="text-base font-bold text-gray-800 dark:text-white/90">
-                        Edit Draft Nota: {{ $nota->nomor_nota }}
+                        Edit Draft #{{ $nota->id }}
                     </h3>
                     <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider text-yellow-800 bg-yellow-100 rounded-full border border-yellow-200">
-                        Draft Status
+                        Belum Diposting
                     </span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
                         <label for="nomor_nota" class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">
-                            Nomor Nota (Read Only)
+                            Nomor Nota
                         </label>
-                        <input type="text" id="nomor_nota" name="nomor_nota" readonly value="{{ $nota->nomor_nota }}"
-                            class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-400 cursor-not-allowed">
+                        <input type="text" id="nomor_nota" readonly value="Belum Diposting"
+                            class="w-full bg-gray-100 border border-gray-300 text-gray-400 text-sm rounded-lg p-2.5 italic dark:bg-gray-700/50 dark:text-gray-500 cursor-not-allowed">
+                        <p class="text-xs text-gray-400 mt-1">Nomor akan di-generate otomatis saat diposting (contoh: NOTA-20260804-0001)</p>
                     </div>
 
                     <div>
@@ -140,12 +141,42 @@
                     </div>
                 </div>
 
-                <div>
-                    <label for="supplier" class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">
-                        Supplier <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" id="supplier" name="supplier" required value="{{ old('supplier', $nota->supplier) }}"
-                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label for="supplier_id" class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">
+                            Supplier <span class="text-red-500">*</span>
+                        </label>
+                        <select id="supplier_id" name="supplier_id" required
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+                            <option value="">Pilih Supplier</option>
+                            @foreach ($masterSuppliers as $supplier)
+                                <option value="{{ $supplier->id }}" {{ old('supplier_id', $nota->supplier_id) == $supplier->id ? 'selected' : '' }}>
+                                    {{ $supplier->kode_supplier }} - {{ $supplier->nama_supplier }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('supplier_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="ubs_id" class="block mb-2 text-sm font-semibold text-gray-900 dark:text-white">
+                            Gudang Tujuan <span class="text-red-500">*</span>
+                        </label>
+                        <select id="ubs_id" name="ubs_id" required
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+                            <option value="">Pilih Gudang</option>
+                            @foreach ($ubs as $item)
+                                <option value="{{ $item->id }}" {{ old('ubs_id', $nota->ubs_id) == $item->id ? 'selected' : '' }}>
+                                    {{ $item->kode_ubs }} - {{ $item->nama_ubs }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('ubs_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
         </div>
@@ -298,7 +329,7 @@
     </form>
 
     {{-- Hidden Form for secondary actions --}}
-    <form id="form-delete" action="{{ route('gudang.draftNotaMasuk.destroy', $nota->nomor_nota) }}" method="POST" class="hidden">
+    <form id="form-delete" action="{{ route('gudang.draftNotaMasuk.destroy', $nota->id) }}" method="POST" class="hidden">
         @csrf
         @method('DELETE')
     </form>
@@ -511,7 +542,7 @@
 
         Swal.fire({
             title: 'Posting Nota?',
-            text: "Setelah diposting, stok gudang HUB akan bertambah dan nota tidak bisa diedit lagi sebagai draft!",
+            text: "Setelah diposting, stok gudang yang dipilih akan bertambah dan nota tidak bisa diedit lagi sebagai draft!",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -520,10 +551,26 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 // Ubah action form ke route submit/post
-                form.action = "{{ route('gudang.draftNotaMasuk.submit', $nota->nomor_nota) }}";
+                form.action = "{{ route('gudang.draftNotaMasuk.submit', $nota->id) }}";
                 form.submit();
             }
         });
     }
+</script>
+<script>
+    $(document).ready(function() {
+        $('#supplier_id').select2({
+            placeholder: 'Pilih Supplier',
+            allowClear: true,
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+        $('#ubs_id').select2({
+            placeholder: 'Pilih Gudang',
+            allowClear: true,
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+    });
 </script>
 @endsection

@@ -95,10 +95,6 @@
                             <option value="all" {{ request('ubs_id', 'all') == 'all' ? 'selected' : '' }}>
                                 Semua Gudang
                             </option>
-                            {{-- Opsi HUB (Pusat) --}}
-                            <option value="hub" {{ request('ubs_id') == 'hub' ? 'selected' : '' }}>
-                                HUB (Pusat)
-                            </option>
                             {{-- Opsi UBS --}}
                             @foreach ($ubsData as $ubs)
                             <option value="{{ $ubs->kode_ubs }}" {{ request('ubs_id') == $ubs->kode_ubs ? 'selected' : '' }}>
@@ -339,9 +335,15 @@
                                             $dNilaiSisa = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
                                             @endphp
                                             <tr class="hover:bg-yellow-50 border-b border-gray-100">
-                                                <td class="px-3 py-1 font-medium">{{ $detail->nota->nomor_nota }}</td>
-                                                <td class="px-3 py-1">{{ $detail->merk }}</td>
-                                                <td class="px-3 py-1">{{ $detail->nota->supplier }}</td>
+                                                <td class="px-3 py-1 font-medium">{{ $detail->nota->nomor_nota ?? '-' }}</td>
+                                                <td class="px-3 py-1">{{ !empty($detail->merk) ? $detail->merk : '-' }}</td>
+                                                <td class="px-3 py-1">
+                                                    @if($detail->nota && $detail->nota->supplier)
+                                                        {{ $detail->nota->supplier->kode_supplier }} - {{ $detail->nota->supplier->nama_supplier }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
                                                 <td class="px-3 py-1 text-center">{{ formatStock($dMasuk) }}</td>
                                                 <td class="px-3 py-1 text-center font-bold text-blue-600">{{ formatStock($dSisa) }}</td>
                                                 <td class="px-3 py-1 text-center font-medium">{{ $satuanNama }}</td>

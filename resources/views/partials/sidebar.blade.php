@@ -1433,6 +1433,28 @@
                             :class="(selected === 'MasterGudang') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
+                                 <!-- Master Satuan -->
+                                <li>
+                                    <a href="{{ route('gudang.masterSupplier.index') }}"
+                                        class="menu-dropdown-item group flex items-center gap-3"
+                                        :class="page === 'MasterSupplier' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            :class="(selected === 'MasterGudang') ||
+                                            (page === 'MasterSupplier') ?
+                                            'menu-item-icon-active' :
+                                            'menu-item-icon-inactive'"
+                                            width="24" height="24" viewBox="0 0 16 16">
+                                            <title>report-outline</title>
+                                            <g fill="none" stroke="currentColor" stroke-linejoin="round">
+                                                <path
+                                                    d="M7.563 1.545H2.5v10.91h9V5.364M7.563 1.545L11.5 5.364M7.563 1.545v3.819H11.5m-7 9.136h9v-7M4 7.5h6M4 5h2m-2 5h6" />
+                                            </g>
+                                        </svg>
+                                        Master Supplier
+                                    </a>
+                                </li>
+
 
                                 <!-- Master Satuan -->
                                 <li>
@@ -1700,9 +1722,6 @@
                         <!-- Dropdown Menu End -->
                     </li>
                     <!-- Menu Item Material Proyek-->
-
-
-
 
                     <!-- Menu Group Item Upah Harian Tukang -->
                     <li>

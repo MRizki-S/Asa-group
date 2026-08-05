@@ -19,9 +19,9 @@ class DaftarNotaMasukController extends Controller
         $tahun = $request->get('tahun', now()->year);
         $tanggal = $request->get('tanggal');
 
-        $query = NotaBarangMasuk::with('details.barang')
+        $query = NotaBarangMasuk::with(['details.barang', 'supplier', 'ubs'])
             ->where('status', 'posted')
-            ->orderBy('created_at', 'desc');
+            ->orderBy('posted_at', 'desc');
 
         // Jika ada request tanggal → pakai filter hari (override bulan/tahun)
         if ($request->filled('tanggal')) {
@@ -35,8 +35,18 @@ class DaftarNotaMasukController extends Controller
 
         $notas = $query->get();
 
+        // Bagi data nota ke kategori supplier dan internal
+        $notasSupplier = $notas->filter(fn($n) => $n->jenis_nota === 'supplier');
+        $notasSupplierHutang = $notasSupplier->filter(fn($n) => $n->cara_bayar === 'hutang');
+        $notasSupplierLunas = $notasSupplier->filter(fn($n) => $n->cara_bayar !== 'hutang'); // selain hutang dianggap lunas (cash)
+
+        $notasInternal = $notas->filter(fn($n) => $n->jenis_nota !== 'supplier');
+
         return view('gudang.daftar-nota-masuk.index', [
-            'notas' => $notas,
+            'notasSupplier' => $notasSupplier,
+            'notasSupplierHutang' => $notasSupplierHutang,
+            'notasSupplierLunas' => $notasSupplierLunas,
+            'notasInternal' => $notasInternal,
             'bulan' => $bulan,
             'tahun' => $tahun,
             'tanggal' => $tanggal,
@@ -52,7 +62,7 @@ class DaftarNotaMasukController extends Controller
     //show detail dari daftar nota barang mausk
     public function show($nomorNota)
     {
-        $nota = NotaBarangMasuk::with(['details.barang', 'details.satuan'])
+        $nota = NotaBarangMasuk::with(['details.barang', 'details.satuan', 'supplier', 'ubs'])
             ->where('status', 'posted')
             ->where('nomor_nota', $nomorNota)
             ->firstOrFail();
@@ -83,12 +93,13 @@ class DaftarNotaMasukController extends Controller
             DB::transaction(function () use ($nota) {
                 // Hanya kurangi stok jika statusnya BUKAN Draft 
                 // (karena Draft belum masuk ke tabel stock_gudang)
-                if ($nota->status !== 'Draft') {
+                if ($nota->status !== 'draft') {
                     foreach ($nota->details as $detail) {
                         if ($detail->barang && $detail->barang->is_stock) {
 
                             $stock = StockGudang::where('barang_id', $detail->barang_id)
-                                ->where('stock_type', 'HUB')
+                                ->where('stock_type', $nota->stock_type)
+                                ->where('ubs_id', $nota->ubs_id)
                                 ->lockForUpdate()
                                 ->first();
 
@@ -100,8 +111,8 @@ class DaftarNotaMasukController extends Controller
                             StockLedger::create([
                                 'tanggal' => now(),
                                 'barang_id' => $detail->barang_id,
-                                'stock_type' => 'HUB',
-                                'ubs_id' => null,
+                                'stock_type' => $nota->stock_type,
+                                'ubs_id' => $nota->ubs_id,
                                 'tipe' => 'koreksi',
                                 'ref_type' => 'NotaBarangMasuk_Delete',
                                 'ref_id' => $nota->id,

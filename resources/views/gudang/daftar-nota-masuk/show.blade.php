@@ -18,7 +18,7 @@
                 Detail Nota
             </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 {{-- Nomor Nota --}}
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -39,6 +39,25 @@
                     </div>
                 </div>
 
+                {{-- Jenis Nota --}}
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Jenis Nota
+                    </label>
+                    @php
+                        $jenisMap = [
+                            'supplier' => ['label' => 'Supplier', 'class' => 'bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/30 dark:border-blue-600 dark:text-blue-400'],
+                            'produksi_rakitan' => ['label' => 'Produksi Rakitan', 'class' => 'bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-900/30 dark:border-purple-600 dark:text-purple-400'],
+                            'return_barang' => ['label' => 'Return Barang', 'class' => 'bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-900/30 dark:border-orange-600 dark:text-orange-400'],
+                            'adjustment_stock' => ['label' => 'Adjustment Stock', 'class' => 'bg-gray-100 border-gray-300 text-gray-800 dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300'],
+                        ];
+                        $jenis = $jenisMap[$nota->jenis_nota] ?? ['label' => $nota->jenis_nota, 'class' => 'bg-gray-100 border-gray-300 text-gray-700'];
+                    @endphp
+                    <div class="w-full border text-sm font-semibold rounded-lg p-2.5 text-center {{ $jenis['class'] }}">
+                        {{ $jenis['label'] }}
+                    </div>
+                </div>
+
                 {{-- Status --}}
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -50,14 +69,29 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {{-- Supplier --}}
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         Supplier
                     </label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
-                        {{ $nota->supplier }}
+                        {{ $nota->supplier->kode_supplier ?? '' }} - {{ $nota->supplier->nama_supplier ?? '-' }}
+                    </div>
+                </div>
+
+                {{-- Gudang Tujuan --}}
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Gudang Tujuan
+                    </label>
+                    <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                        @if ($nota->stock_type === 'HUB')
+                            Gudang HUB
+                        @else
+                            {{ $nota->ubs->kode_ubs ?? '' }} - {{ $nota->ubs->nama_ubs ?? '-' }}
+                        @endif
                     </div>
                 </div>
 
@@ -67,7 +101,7 @@
                         Cara Bayar
                     </label>
                     <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 uppercase">
-                        {{ $nota->cara_bayar }}
+                        {{ $nota->cara_bayar ?? '-' }}
                     </div>
                 </div>
             </div>

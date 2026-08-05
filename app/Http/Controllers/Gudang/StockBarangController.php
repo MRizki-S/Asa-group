@@ -33,7 +33,7 @@ class StockBarangController extends Controller
                         ->whereHas('nota', function ($queryNota) {
                             $queryNota->where('status', 'posted');
                         })
-                        ->with('nota')
+                        ->with('nota.supplier')
                         ->orderBy('created_at', 'asc'); // FIFO
                 }
             ]);

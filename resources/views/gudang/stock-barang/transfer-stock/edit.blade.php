@@ -18,7 +18,7 @@
 </style>
 
 <!-- ===== Main Content Start ===== -->
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="transferStock({{ Js::from($masterBarangs) }}, {{ Js::from($ubsList) }})">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="transferStock({{ Js::from($masterBarangs) }}, {{ Js::from($ubsList) }}, {{ Js::from($existingItems) }})">
 
     <!-- Breadcrumb Start -->
     <div x-data="{ pageName: 'StokBarangGudang' }">
@@ -47,15 +47,15 @@
     </div>
     @endif
 
-    <form action="{{ route('gudang.transferStockBarang.store') }}" method="POST" @submit="validateSubmit">
+    <form action="{{ route('gudang.transferStockBarang.update', $transfer->nomor_transfer) }}" method="POST" @submit="validateSubmit">
         @csrf
 
-        {{-- hedaer transfer barang--}}
+        {{-- header transfer barang--}}
         <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
             <div class="px-5 py-4 sm:px-6 sm:py-5">
                 <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-4">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                        Transfer Stock Barang
+                        Edit Pengajuan Transfer Stock (Ditolak) - {{ $transfer->nomor_transfer }}
                     </h3>
                 </div>
 
@@ -67,8 +67,8 @@
                     <div>
                         <span class="font-bold">Informasi Penting:</span>
                         <ul class="mt-1.5 list-disc list-inside space-y-1">
-                            <li>Transfer yang diajukan akan dikirim kepada SPV Logistik & Pengadaan untuk dilakukan persetujuan. Stok gudang baru akan berubah setelah pengajuan disetujui.</li>
-                            <li>Pastikan seluruh data barang dan jumlah telah sesuai sebelum mengajukan transfer.</li>
+                            <li>Pengajuan transfer ini ditolak sebelumnya. Anda dapat mengedit item barang dan mengajukan kembali kepada SPV Logistik & Pengadaan.</li>
+                            <li>Keterangan penolakan sebelumnya: <span class="font-bold text-red-600 dark:text-red-400">{{ $transfer->keterangan ?? '-' }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
                                    @error('dari_ubs_id') border-red-500 @else border-gray-300 @enderror">
                             <option value="">Pilih Gudang Asal</option>
                             @foreach($ubsList as $ubs)
-                                <option value="{{ $ubs->id }}" {{ old('dari_ubs_id') == $ubs->id ? 'selected' : '' }}>
+                                <option value="{{ $ubs->id }}" {{ (old('dari_ubs_id') ?? $transfer->dari_ubs_id) == $ubs->id ? 'selected' : '' }}>
                                     {{ $ubs->nama_ubs }} {{ $ubs->kode_ubs ? '('.$ubs->kode_ubs.')' : '' }}
                                 </option>
                             @endforeach
@@ -107,7 +107,7 @@
                             @foreach($ubsList as $ubs)
                                 <option value="{{ $ubs->id }}" 
                                     x-bind:disabled="dariUbsId == {{ $ubs->id }}"
-                                    {{ old('ke_ubs_id') == $ubs->id ? 'selected' : '' }}>
+                                    {{ (old('ke_ubs_id') ?? $transfer->ke_ubs_id) == $ubs->id ? 'selected' : '' }}>
                                     {{ $ubs->nama_ubs }} {{ $ubs->kode_ubs ? '('.$ubs->kode_ubs.')' : '' }}
                                 </option>
                             @endforeach
@@ -121,7 +121,7 @@
                         <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             Tanggal Transfer <span class="text-red-500">*</span>
                         </label>
-                        <div class="relative" x-data="{ tampil: '{{ now()->format('d-m-Y') }}', simpan: '{{ now()->format('Y-m-d') }}' }">
+                        <div class="relative" x-data="{ tampil: '{{ \Carbon\Carbon::parse($transfer->tanggal_transfer)->format('d-m-Y') }}', simpan: '{{ \Carbon\Carbon::parse($transfer->tanggal_transfer)->format('Y-m-d') }}' }">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
@@ -130,7 +130,7 @@
                             <input type="date" name="tanggal_transfer_display"
                                 x-init="flatpickr($el, { 
                                     dateFormat: 'd-m-Y', 
-                                    defaultDate: '{{ now()->format('d-m-Y') }}',
+                                    defaultDate: '{{ \Carbon\Carbon::parse($transfer->tanggal_transfer)->format('d-m-Y') }}',
                                     onChange: (selectedDates, dateStr, instance) => {
                                         tampil = dateStr;
                                         simpan = instance.formatDate(selectedDates[0], 'Y-m-d');
@@ -165,11 +165,11 @@
 
                     <div class="md:col-span-2">
                         <label for="keterangan" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Keterangan Transfer <span class="text-red-500">*</span>
+                            Keterangan Transfer
                         </label>
-                        <textarea id="keterangan" name="keterangan" rows="2" required
+                        <textarea id="keterangan" name="keterangan" rows="2"
                             class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 @error('keterangan') border-red-500 @enderror" 
-                            placeholder="Tulis alasan transfer stok di sini...">{{ old('keterangan') }}</textarea>
+                            placeholder="Tulis alasan transfer stok di sini...">{{ old('keterangan') ?? $transfer->keterangan }}</textarea>
                         @error('keterangan')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -201,7 +201,7 @@
 
                         <tbody>
                             <template x-for="(item, index) in items" :key="item.ui_id">
-                                <tr x-init="$nextTick(() => initSelect2($refs.barangSelect, index))">
+                                <tr x-init="$nextTick(() => { initSelect2($refs.barangSelect, index); })">
 
                                     <!-- Barang -->
                                     <td class="border p-1">
@@ -222,7 +222,7 @@
 
                                     <!-- Satuan -->
                                     <td class="border p-1">
-                                        <select x-init="$nextTick(() => initSatuanSelect2($el, index))"
+                                        <select x-init="$nextTick(() => { initSatuanSelect2($el, index); })"
                                             :disabled="!dariUbsId"
                                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 cursor-pointer"
                                             :name="`items[${index}][satuan_id]`" required>
@@ -290,7 +290,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                     </svg>
-                    <span>Ajukan Transfer</span>
+                    <span>Ajukan Kembali</span>
                 </div>
             </button>
         </div>
@@ -301,13 +301,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    function transferStock(masterBarangs, ubsList) {
+    function transferStock(masterBarangs, ubsList, existingItems = []) {
         return {
             masterBarangs,
             ubsList,
-            dariUbsId: '',
-            keUbsId: '',
-            items: [{
+            dariUbsId: '{{ $transfer->dari_ubs_id }}',
+            keUbsId: '{{ $transfer->ke_ubs_id }}',
+            items: existingItems.length > 0 ? existingItems.map(item => ({
+                ui_id: Date.now().toString() + Math.random().toString(),
+                barang_id: item.barang_id,
+                satuan_id: item.satuan_id,
+                satuanList: item.satuanList || [],
+                stock_hub_saat_ini: item.stock_hub_saat_ini || null,
+                jumlah: item.jumlah,
+                _selectEl: null,
+                _satuanSelectEl: null
+            })) : [{
                 ui_id: Date.now().toString() + Math.random().toString(),
                 barang_id: '',
                 satuan_id: '',
@@ -359,7 +368,13 @@
                     width: '100%'
                 });
 
+                // Set initial value if editing
+                if (this.items[index].barang_id) {
+                    $(selectEl).val(this.items[index].barang_id).trigger('change.select2');
+                }
+
                 $(selectEl).on('change', async (e) => {
+                    if (e.target.value === this.items[index].barang_id) return;
                     this.items[index].barang_id = e.target.value;
                     this.refreshDisabledOptions();
                     this.resetRow(index);
@@ -407,6 +422,11 @@
                     theme: 'bootstrap4',
                     width: '100%'
                 });
+
+                // Set initial value if editing
+                if (this.items[index].satuan_id) {
+                    $(selectEl).val(this.items[index].satuan_id).trigger('change.select2');
+                }
 
                 $(selectEl).on('change', (e) => {
                     this.items[index].satuan_id = e.target.value;

@@ -15,8 +15,16 @@ class TransferStock extends Model
         'dari_ubs_id',
         'ke_stock_type',
         'ke_ubs_id',
+        'status',
+        'approved_by',
+        'approved_at',
         'keterangan',
         'created_by'
+    ];
+
+    protected $casts = [
+        'tanggal_transfer' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     public function details()
@@ -37,5 +45,10 @@ class TransferStock extends Model
     public function toUbs()
     {
         return $this->belongsTo(Ubs::class, 'ke_ubs_id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

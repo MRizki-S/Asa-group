@@ -78,7 +78,7 @@
                         <select id="gudang_tujuan" x-model="gudangTujuan" @change="applyGudang"
                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-white"
                             required>
-                            <option value="HUB">HUB</option>
+                            <option value="">Pilih Tujuan</option>
                             @foreach ($ubsList as $ubs)
                             <option value="UBS:{{ $ubs->id }}">
                                 {{ $ubs->nama_ubs }} {{ $ubs->kode_ubs ? '(' . $ubs->kode_ubs . ')' : '' }}

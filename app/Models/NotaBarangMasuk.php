@@ -13,8 +13,11 @@ class NotaBarangMasuk extends Model
     protected $fillable = [
         'nomor_nota',
         'tanggal_nota',
-        'supplier',
+        'jenis_nota',
+        'supplier_id',
         'cara_bayar',
+        'stock_type',
+        'ubs_id',
         'status',
         'created_by',
         'posted_at'
@@ -30,6 +33,18 @@ class NotaBarangMasuk extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    // supplier
+    public function supplier()
+    {
+        return $this->belongsTo(MasterSupplier::class, 'supplier_id');
+    }
+
+    // ubs
+    public function ubs()
+    {
+        return $this->belongsTo(Ubs::class, 'ubs_id');
     }
 
     // detail barang

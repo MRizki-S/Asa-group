@@ -33,7 +33,7 @@
     </div>
     @endif
 
-    <div class="space-y-5 sm:space-y-6">
+    <div class="space-y-5 sm:space-y-6" x-data="{ mainTab: 'supplier', supplierTab: 'all' }">
         <div
             class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -114,89 +114,263 @@
 
 
 
-            <table id="table-daftarNotaMasuk">
-                <thead>
-                    <tr>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                            <span class="flex items-center">
-                                Nomor Nota
-                                <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                    width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
-                                </svg>
-                            </span>
-                        </th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                            <span class="flex items-center">
-                                Tanggal Masuk
-                                <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                    width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="m8 15 4 4 4-4m0-6-4-4-4 4" />
-                                </svg>
-                            </span>
-                        </th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                            Supplier
-                        </th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                            Cara Bayar
-                        </th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($notas as $nota)
-                    <tr>
-                        {{-- Nomor Nota --}}
-                        <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ $nota->nomor_nota }}
-                        </td>
+            <!-- Tab Navigation (Main) -->
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
+                <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
+                    <button @click="mainTab = 'supplier'"
+                        :class="mainTab === 'supplier' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                        class="px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200">
+                        Nota Supplier ({{ $notasSupplier->count() }})
+                    </button>
+                    <button @click="mainTab = 'internal'"
+                        :class="mainTab === 'internal' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                        class="px-4 py-2 text-sm font-bold rounded-lg transition-all duration-200">
+                        Nota Internal ({{ $notasInternal->count() }})
+                    </button>
+                </div>
+            </div>
 
-                        {{-- Tanggal Masuk --}}
-                        <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}
-                        </td>
+            <!-- Sub Tab Navigation (Only for Supplier) -->
+            <div x-show="mainTab === 'supplier'" x-transition class="mb-6 flex flex-wrap gap-2 items-center p-1 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl w-fit">
+                <button @click="supplierTab = 'all'"
+                    :class="supplierTab === 'all' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200">
+                    Semua ({{ $notasSupplier->count() }})
+                </button>
+                <button @click="supplierTab = 'hutang'"
+                    :class="supplierTab === 'hutang' ? 'bg-yellow-500 text-yellow-950 font-bold shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200">
+                    Hutang ({{ $notasSupplierHutang->count() }})
+                </button>
+                <button @click="supplierTab = 'lunas'"
+                    :class="supplierTab === 'lunas' ? 'bg-green-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200">
+                    Lunas ({{ $notasSupplierLunas->count() }})
+                </button>
+            </div>
 
-                        {{-- Supplier --}}
-                        <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ $nota->supplier ?? '-' }}
-                        </td>
+            <!-- ====== TABEL NOTA SUPPLIER (ALL) ====== -->
+            <div x-show="mainTab === 'supplier' && supplierTab === 'all'" x-transition:enter="transition ease-out duration-200">
+                <table id="table-supplier-all">
+                    <thead>
+                        <tr>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Nomor Nota</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Masuk</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Supplier</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Cara Bayar</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($notasSupplier as $nota)
+                        <tr>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->supplier->nama_supplier ?? '-' }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                @if ($nota->stock_type === 'HUB')
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Gudang HUB</span>
+                                @else
+                                    {{ $nota->ubs->nama_ubs ?? '-' }}
+                                @endif
+                            </td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                @if($nota->cara_bayar)
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $nota->cara_bayar === 'cash' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                        {{ strtoupper($nota->cara_bayar) }}
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap">
+                                @if($nota->posted_at)
+                                    <span class="text-xs font-medium text-green-700 dark:text-green-400">{{ \Carbon\Carbon::parse($nota->posted_at)->format('d-M-Y') }}</span>
+                                    <br>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ \Carbon\Carbon::parse($nota->posted_at)->format('H:i:s') }}</span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
+                                    class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                        {{-- Cara Bayar --}}
-                        <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            <span
-                                class="px-2 py-1 rounded-full text-xs font-semibold
-                                        {{ $nota->cara_bayar === 'cash' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                                {{ strtoupper($nota->cara_bayar) }}
-                            </span>
+            <!-- ====== TABEL NOTA SUPPLIER (HUTANG) ====== -->
+            <div x-show="mainTab === 'supplier' && supplierTab === 'hutang'" x-transition:enter="transition ease-out duration-200" style="display: none;">
+                <table id="table-supplier-hutang">
+                    <thead>
+                        <tr>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Nomor Nota</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Masuk</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Supplier</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Cara Bayar</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($notasSupplierHutang as $nota)
+                        <tr>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->supplier->nama_supplier ?? '-' }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                @if ($nota->stock_type === 'HUB')
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Gudang HUB</span>
+                                @else
+                                    {{ $nota->ubs->nama_ubs ?? '-' }}
+                                @endif
+                            </td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                    HUTANG
+                                </span>
+                            </td>
+                            <td class="whitespace-nowrap">
+                                @if($nota->posted_at)
+                                    <span class="text-xs font-medium text-green-700 dark:text-green-400">{{ \Carbon\Carbon::parse($nota->posted_at)->format('d-M-Y') }}</span>
+                                    <br>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ \Carbon\Carbon::parse($nota->posted_at)->format('H:i:s') }}</span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
+                                    class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                        </td>
+            <!-- ====== TABEL NOTA SUPPLIER (LUNAS) ====== -->
+            <div x-show="mainTab === 'supplier' && supplierTab === 'lunas'" x-transition:enter="transition ease-out duration-200" style="display: none;">
+                <table id="table-supplier-lunas">
+                    <thead>
+                        <tr>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Nomor Nota</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Masuk</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Supplier</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Cara Bayar</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($notasSupplierLunas as $nota)
+                        <tr>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->supplier->nama_supplier ?? '-' }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                @if ($nota->stock_type === 'HUB')
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Gudang HUB</span>
+                                @else
+                                    {{ $nota->ubs->nama_ubs ?? '-' }}
+                                @endif
+                            </td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                    {{ $nota->cara_bayar ? strtoupper($nota->cara_bayar) : 'CASH' }}
+                                </span>
+                            </td>
+                            <td class="whitespace-nowrap">
+                                @if($nota->posted_at)
+                                    <span class="text-xs font-medium text-green-700 dark:text-green-400">{{ \Carbon\Carbon::parse($nota->posted_at)->format('d-M-Y') }}</span>
+                                    <br>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ \Carbon\Carbon::parse($nota->posted_at)->format('H:i:s') }}</span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
+                                    class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                        {{-- Aksi --}}
-                        <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
-
-                            {{-- SHOW / DETAIL --}}
-                            <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
-                                class="inline-flex items-center gap-1
-                                        text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
-                                        dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
-                                        px-2.5 py-1.5 rounded-md transition-colors duration-200
-                                        focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
-                                        active:scale-95">
-                                Detail
-                            </a>
-                        </td>
-
-                    </tr>
-                    @empty
-
-                    @endforelse
-                </tbody>
-            </table>
+            <!-- ====== TABEL NOTA INTERNAL ====== -->
+            <div x-show="mainTab === 'internal'" x-transition:enter="transition ease-out duration-200" style="display: none;">
+                <table id="table-internal">
+                    <thead>
+                        <tr>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Nomor Nota</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Masuk</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Jenis Nota</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($notasInternal as $nota)
+                        <tr>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
+                            <td class="text-center">
+                                @php
+                                    $jenisMap = [
+                                        'supplier' => ['label' => 'Supplier', 'class' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'],
+                                        'produksi_rakitan' => ['label' => 'Produksi Rakitan', 'class' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'],
+                                        'return_barang' => ['label' => 'Return Barang', 'class' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'],
+                                        'adjustment_stock' => ['label' => 'Adjustment', 'class' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'],
+                                    ];
+                                    $jenis = $jenisMap[$nota->jenis_nota] ?? ['label' => $nota->jenis_nota, 'class' => 'bg-gray-100 text-gray-600'];
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $jenis['class'] }}">
+                                    {{ $jenis['label'] }}
+                                </span>
+                            </td>
+                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                @if ($nota->stock_type === 'HUB')
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Gudang HUB</span>
+                                @else
+                                    {{ $nota->ubs->nama_ubs ?? '-' }}
+                                @endif
+                            </td>
+                            <td class="whitespace-nowrap">
+                                @if($nota->posted_at)
+                                    <span class="text-xs font-medium text-green-700 dark:text-green-400">{{ \Carbon\Carbon::parse($nota->posted_at)->format('d-M-Y') }}</span>
+                                    <br>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ \Carbon\Carbon::parse($nota->posted_at)->format('H:i:s') }}</span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
+                                    class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
         </div>
     </div>
@@ -204,14 +378,22 @@
 </div>
 <!-- ===== Main Content End ===== -->
 
-{{-- sweatalert 2 for delete data --}}
 <script>
-    if (document.getElementById("table-daftarNotaMasuk") && typeof simpleDatatables.DataTable !== 'undefined') {
-        const dataTable = new simpleDatatables.DataTable("#table-daftarNotaMasuk", {
-            searchable: true,
-            sortable: true,
-            perPageSelect: [5, 10, 20, 50],
-        });
+    function initTable(id) {
+        if (document.getElementById(id) && typeof simpleDatatables.DataTable !== 'undefined') {
+            new simpleDatatables.DataTable("#" + id, {
+                searchable: true,
+                sortable: true,
+                perPageSelect: [5, 10, 20, 50],
+            });
+        }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initTable("table-supplier-all");
+        initTable("table-supplier-hutang");
+        initTable("table-supplier-lunas");
+        initTable("table-internal");
+    });
 </script>
 @endsection

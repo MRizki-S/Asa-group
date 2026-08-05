@@ -156,7 +156,7 @@ class PengajuanPemesananController extends Controller
 
             // Ambil data customer & sales
             $customerName   = $pemesanan->dataDiri->nama_pribadi ?? $pemesanan->customer->username ?? '-';
-            $salesName      = $pemesanan->sales->username ?? '-';
+            $salesName      = $pemesanan->sales->nama_lengkap ?? '-';
             $unitName       = $pemesanan->unit->nama_unit ?? '-';
             $totalTagihan   = number_format($pemesanan->total_tagihan, 0, ',', '.');
             $sisaTagihan    = number_format($pemesanan->sisa_tagihan, 0, ',', '.');

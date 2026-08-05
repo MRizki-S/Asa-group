@@ -68,7 +68,7 @@
                     <tr>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                             <span class="flex items-center">
-                                Nomor Nota
+                                Draft
                                 <svg class="w-4 h-4 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                     width="24" height="24" fill="none" viewBox="0 0 24 24">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -90,6 +90,9 @@
                             Supplier
                         </th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
+                            Gudang Tujuan
+                        </th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                             Cara Bayar
                         </th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
@@ -100,9 +103,12 @@
                 <tbody>
                     @forelse ($notas as $nota)
                     <tr>
-                        {{-- Nomor Nota --}}
+                        {{-- Draft ID --}}
                         <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ $nota->nomor_nota }}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Draft #{{ $nota->id }}
+                            </span>
                         </td>
 
                         {{-- Tanggal Masuk --}}
@@ -112,7 +118,16 @@
 
                         {{-- Supplier --}}
                         <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ $nota->supplier ?? '-' }}
+                            {{ $nota->supplier->nama_supplier ?? '-' }}
+                        </td>
+
+                        {{-- Gudang Tujuan --}}
+                        <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            @if ($nota->stock_type === 'HUB')
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Gudang HUB</span>
+                            @else
+                                {{ $nota->ubs->nama_ubs ?? '-' }}
+                            @endif
                         </td>
 
                         {{-- Cara Bayar --}}
@@ -122,21 +137,20 @@
                                         {{ $nota->cara_bayar === 'cash' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
                                 {{ strtoupper($nota->cara_bayar) }}
                             </span>
-
                         </td>
 
                         {{-- Aksi --}}
                         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
 
                             {{-- EDIT --}}
-                            <a href="{{ route('gudang.draftNotaMasuk.edit', $nota->nomor_nota) }}"
+                            <a href="{{ route('gudang.draftNotaMasuk.edit', $nota->id) }}"
                                         class="inline-flex items-center gap-1
                                         text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
                                         dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700
                                         px-2.5 py-1.5 rounded-md transition-colors duration-200
                                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1
                                         active:scale-95">
-                                        Edit 
+                                        Edit
                                     </a>
                         </td>
 
