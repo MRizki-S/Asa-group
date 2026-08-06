@@ -8,7 +8,7 @@ use App\Http\Controllers\Etalase\KualifikasiBlokController;
 use App\Http\Controllers\Etalase\PerubahaanHargaTypeUnitController;
 use App\Http\Controllers\Etalase\PerumahaanController;
 use App\Http\Controllers\Etalase\TahapController;
-use App\Http\Controllers\Etalase\TahapKualifikasiController;
+use App\Http\Controllers\Etalase\TahapKualifikasiController;    
 use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
@@ -523,7 +523,8 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
         Route::delete('/master-barang/{id}', [MasterBarangController::class, 'destroy'])->name('gudang.masterBarang.destroy');
 
         // Barang Rakitan
-        Route::post('/produksi-rakitan', [ProduksiRakitanController::class, 'store']);
+        Route::post('/produksi-rakitan', [ProduksiRakitanController::class, 'store'])->name('gudang.produksiRakitan.store');
+        Route::delete('/produksi-rakitan/{id}', [ProduksiRakitanController::class, 'destroy'])->name('gudang.produksiRakitan.destroy');
 
         // Nota Masuk
         Route::get('/nota-barang-masuk/create', [NotaBarangMasukController::class, 'create'])->name('gudang.notaBarangMasuk.create');
