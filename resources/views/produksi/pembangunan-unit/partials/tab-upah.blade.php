@@ -59,15 +59,15 @@
     <div x-data="{ openUpahSummary: false }" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 overflow-hidden shadow-sm">
         <button type="button" @click="openUpahSummary = !openUpahSummary"
             class="w-full px-4 py-3 bg-gray-50/80 dark:bg-gray-800/60 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-            <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-calculator text-blue-600 text-xs"></i>
-                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                    Akumulasi Upah & RAP (Status Disetujui Akuntan)
+            <div class="flex items-center gap-2 min-w-0">
+                <i class="fa-solid fa-calculator text-blue-600 text-xs shrink-0"></i>
+                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider truncate">
+                    Akumulasi Upah & RAP
                 </h4>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] font-semibold text-gray-500 bg-white dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
-                    {{ $summaryRapUpahItems->count() }} Pekerjaan RAP
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-[10px] font-semibold text-gray-500 bg-white dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 whitespace-nowrap">
+                    {{ $summaryRapUpahItems->count() }} Pekerjaan
                 </span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition-transform duration-300"
                     :class="openUpahSummary ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,27 +83,27 @@
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-gray-50 dark:bg-gray-800 text-[10px] font-bold text-gray-400 uppercase">
                             <tr>
-                                <th class="p-2.5">Pekerjaan Upah</th>
-                                <th class="p-2.5 text-right">Nominal RAP</th>
-                                <th class="p-2.5 text-right">Akumulasi Disetujui</th>
-                                <th class="p-2.5 text-center">Status Pemenuhan</th>
+                                <th class="p-2.5">Pekerjaan</th>
+                                <th class="p-2.5 text-right">RAP</th>
+                                <th class="p-2.5 text-right">Disetujui</th>
+                                <th class="p-2.5 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                             @forelse ($summaryRapUpahItems as $sUpah)
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
                                     <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sUpah['nama_upah'] }}</td>
-                                    <td class="p-2.5 text-right font-mono">Rp {{ number_format($sUpah['nominal_rap'], 0, ',', '.') }}</td>
-                                    <td class="p-2.5 text-right font-mono font-semibold {{ $sUpah['status_summary'] === 'melebihi_rap' ? 'text-red-600' : ($sUpah['status_summary'] === 'sesuai_rap' ? 'text-emerald-600' : 'text-blue-600') }}">
+                                    <td class="p-2.5 text-right font-mono whitespace-nowrap">Rp {{ number_format($sUpah['nominal_rap'], 0, ',', '.') }}</td>
+                                    <td class="p-2.5 text-right font-mono font-semibold whitespace-nowrap {{ $sUpah['status_summary'] === 'melebihi_rap' ? 'text-red-600' : ($sUpah['status_summary'] === 'sesuai_rap' ? 'text-emerald-600' : 'text-blue-600') }}">
                                         Rp {{ number_format($sUpah['nominal_approved'], 0, ',', '.') }}
                                     </td>
                                     <td class="p-2.5 text-center">
                                         @if ($sUpah['status_summary'] === 'melebihi_rap')
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-700 rounded border border-red-200">Melebihi RAP</span>
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-700 rounded border border-red-200">Melebihi</span>
                                         @elseif ($sUpah['status_summary'] === 'sesuai_rap')
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Sesuai RAP</span>
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Sesuai</span>
                                         @else
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded border border-blue-200">Belum Terpenuhi</span>
+                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded border border-blue-200">Belum</span>
                                         @endif
                                     </td>
                                 </tr>

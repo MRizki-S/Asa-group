@@ -168,10 +168,6 @@ class PermintaanBarangPembangunanKawasanController extends Controller
             'return' => $return,
             'breadcrumbs' => [
                 [
-                    'label' => 'Material Proyek',
-                    'url' => '#',
-                ],
-                [
                     'label' => 'Retur Barang Kawasan',
                     'url' => route('gudang.returnBarang.kawasan.index'),
                 ],
@@ -361,8 +357,10 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                             'updated_at'        => now(),
                         ]);
 
+                        // Barang Layak -> Masuk Stok UBS Perumahan asal (stock_type = 'UBS', ubs_id = $ubsId)
                         $stock = StockGudang::where('barang_id', $detail->barang_id)
-                            ->where('stock_type', 'HUB')
+                            ->where('stock_type', 'UBS')
+                            ->where('ubs_id', $ubsId)
                             ->lockForUpdate()
                             ->first();
 
@@ -371,8 +369,8 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                         } else {
                             StockGudang::create([
                                 'barang_id' => $detail->barang_id,
-                                'stock_type' => 'HUB',
-                                'ubs_id' => null,
+                                'stock_type' => 'UBS',
+                                'ubs_id' => $ubsId,
                                 'jumlah_stock' => $jumlahLayakBase,
                             ]);
                         }
@@ -380,8 +378,8 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                         StockLedger::create([
                             'tanggal' => now(),
                             'barang_id' => $detail->barang_id,
-                            'stock_type' => 'HUB',
-                            'ubs_id' => null,
+                            'stock_type' => 'UBS',
+                            'ubs_id' => $ubsId,
                             'tipe' => 'masuk',
                             'ref_type' => 'PembangunanKawasanBarangReturn',
                             'ref_id' => $return->id,

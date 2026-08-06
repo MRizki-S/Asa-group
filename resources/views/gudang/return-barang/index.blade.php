@@ -80,17 +80,28 @@
                         {{ $titlePage }}
                     </h3>
 
-                    @if ($isHistory)
-                        <a href="{{ route($cfg['indexRoute']) }}"
-                            class="inline-flex w-fit items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            Kembali ke Konfirmasi Retur
-                        </a>
-                    @else
-                        <a href="{{ route($cfg['historyRoute']) }}"
-                            class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
-                            Riwayat Retur Barang
-                        </a>
-                    @endif
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if (!$isHistory)
+                            <a href="{{ route('gudang.returnBarang.create', ['category' => $category ?? 'pembangunan_unit']) }}"
+                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg> Tambah Barang Retur
+                            </a>
+                        @endif
+
+                        @if ($isHistory)
+                            <a href="{{ route($cfg['indexRoute']) }}"
+                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                                Kembali ke Konfirmasi Retur
+                            </a>
+                        @else
+                            <a href="{{ route($cfg['historyRoute']) }}"
+                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
+                                Riwayat Retur Barang
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 <form method="GET" action="{{ $isHistory ? route($cfg['historyRoute']) : route($cfg['indexRoute']) }}"

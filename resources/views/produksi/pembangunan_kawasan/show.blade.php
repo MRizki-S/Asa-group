@@ -289,11 +289,15 @@
                             <tr>
                                 <th class="p-3">Nama Barang</th>
                                 <th class="p-3 text-center">Jenis</th>
-                                <th class="p-3 text-center">Total Diterima</th>
+                                <th class="p-3 text-center">Terorder</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                             @forelse ($returnableBarang as $b)
+                                @php
+                                    $num = round((float)$b['sisa_retur_base'], 3);
+                                    $dispNum = rtrim(rtrim(number_format($num, 3, ',', '.'), '0'), ',');
+                                @endphp
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                                     <td class="p-3 font-semibold text-gray-800 dark:text-gray-200">
                                         {{ $b['nama_barang'] }}
@@ -307,8 +311,8 @@
                                             <span class="text-gray-400 italic text-[10px]">-</span>
                                         @endforelse
                                     </td>
-                                    <td class="p-3 text-center font-bold text-gray-900 dark:text-white">
-                                        {{ (float)round($b['total_diterima_base'], 2) }} {{ $b['base_satuan_nama'] }}
+                                    <td class="p-3 text-center font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                                        {{ $dispNum }} {{ $b['base_satuan_nama'] }}
                                     </td>
                                 </tr>
                             @empty

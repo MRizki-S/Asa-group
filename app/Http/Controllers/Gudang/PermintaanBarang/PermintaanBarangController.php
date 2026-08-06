@@ -318,7 +318,9 @@ class PermintaanBarangController extends Controller
 
     public function tolak(Request $request, $id)
     {
-        $request->validate(['catatan' => 'nullable|string|max:1000']);
+        $request->validate([
+            'alasan_tolak' => 'required|string|max:1000',
+        ]);
 
         $category = $request->get('jenis_order', 'pembangunan_kawasan');
         $config   = $this->getOrderConfig($category);
@@ -330,7 +332,7 @@ class PermintaanBarangController extends Controller
 
         $order->update([
             'status_order' => 'ditolak',
-            'catatan'      => $request->catatan,
+            'alasan_tolak' => $request->alasan_tolak,
         ]);
 
         // Kirim notifikasi WA penolakan order barang kawasan/proyek

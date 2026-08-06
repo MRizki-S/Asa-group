@@ -97,6 +97,7 @@ class PembangunanUnitBarangReturnController extends Controller
             return [
                 'barang_id'           => $d->barang_id,
                 'nama_barang'         => $masterBarang->nama_barang ?? $d->nama_barang,
+                'kode_barang'         => $masterBarang?->kode_barang ?? '-',
                 'base_satuan_id'      => $baseSatuanId,
                 'base_satuan_nama'    => $baseSatuanNama,
                 'total_diterima_base' => $totalDiterimaBase,

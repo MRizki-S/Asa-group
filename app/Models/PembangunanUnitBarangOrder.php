@@ -16,6 +16,7 @@ class PembangunanUnitBarangOrder extends Model
         'pembangunan_unit_qc_id',
         'jenis_order',
         'catatan',
+        'alasan_tolak',
         'tanggal_diajukan',
         'status_order',
         'tanggal_selesai',

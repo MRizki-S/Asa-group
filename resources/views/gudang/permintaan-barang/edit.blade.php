@@ -365,7 +365,7 @@
     <div x-show="showConfirmModal" class="fixed inset-0 z-[999999] overflow-y-auto" x-cloak>
         <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
             <!-- Backdrop -->
-            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" @click="showConfirmModal = false"></div>
+            <div class="fixed inset-0 bg-gray-900/60 transition-opacity" @click="showConfirmModal = false"></div>
 
             <!-- Modal Panel -->
             <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-2xl border border-gray-100 dark:border-gray-700">

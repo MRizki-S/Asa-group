@@ -163,22 +163,23 @@ class PembangunanKawasanController extends Controller
 
         if ($activePeriodeId) {
             $orderedDetailsQuery->where('o.pembangunan_kawasan_periode_id', $activePeriodeId);
+            $orderedDetails = $orderedDetailsQuery
+                ->select([
+                    'pembangunan_kawasan_barang_order_detail.barang_id',
+                    DB::raw('MAX(pembangunan_kawasan_barang_order_detail.nama_barang) as nama_barang'),
+                    DB::raw('SUM(pembangunan_kawasan_barang_order_detail.jumlah_base) as total_diterima_base'),
+                    DB::raw('GROUP_CONCAT(DISTINCT o.jenis_order) as jenis_orders'),
+                ])
+                ->groupBy('pembangunan_kawasan_barang_order_detail.barang_id')
+                ->get();
+        } else {
+            $orderedDetails = collect();
         }
-
-        $orderedDetails = $orderedDetailsQuery
-            ->select([
-                'pembangunan_kawasan_barang_order_detail.barang_id',
-                DB::raw('MAX(pembangunan_kawasan_barang_order_detail.nama_barang) as nama_barang'),
-                DB::raw('SUM(pembangunan_kawasan_barang_order_detail.jumlah_base) as total_diterima_base'),
-                DB::raw('GROUP_CONCAT(DISTINCT o.jenis_order) as jenis_orders'),
-            ])
-            ->groupBy('pembangunan_kawasan_barang_order_detail.barang_id')
-            ->get();
 
         $returnedBaseMapQuery = PembangunanKawasanBarangReturnDetail::query()
             ->join('pembangunan_kawasan_barang_returns as r', 'r.id', '=', 'pembangunan_kawasan_barang_return_details.return_id')
             ->where('r.pembangunan_kawasan_id', $id)
-            ->whereIn('r.status', ['diproses', 'selesai']);
+            ->where('r.status', 'selesai');
 
         if ($activePeriodeId) {
             $returnedBaseMapQuery->where('r.pembangunan_kawasan_periode_id', $activePeriodeId);
@@ -197,10 +198,6 @@ class PembangunanKawasanController extends Controller
             $totalDiterimaBase = (float) $d->total_diterima_base;
             $sudahReturBase    = (float) ($returnedBaseMap[$d->barang_id] ?? 0);
             $sisaBase          = max(0, $totalDiterimaBase - $sudahReturBase);
-
-            if ($sisaBase <= 0.0001) {
-                return null;
-            }
 
             $masterBarang = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan'])->find($d->barang_id);
             $baseSatuanNama = $masterBarang?->baseUnit?->nama ?? 'Unit';
@@ -239,7 +236,7 @@ class PembangunanKawasanController extends Controller
                 'satuan_options'      => $satuanOptions,
                 'jenis_orders'        => array_filter(explode(',', $d->jenis_orders ?? '')),
             ];
-        })->filter()->values();
+        })->values();
 
         $allBarang = MasterBarang::with(['satuanKonversi.satuan'])
             ->select('id', 'kode_barang', 'nama_barang', 'is_stock')

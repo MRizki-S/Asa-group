@@ -163,10 +163,12 @@ class PembangunanProyekController extends Controller
             ->groupBy('pembangunan_proyek_barang_order_detail.barang_id')
             ->get();
 
-        $returnedBaseMap = PembangunanProyekBarangReturnDetail::query()
+        $returnedBaseMapQuery = PembangunanProyekBarangReturnDetail::query()
             ->join('pembangunan_proyek_barang_returns as r', 'r.id', '=', 'pembangunan_proyek_barang_return_details.return_id')
             ->where('r.pembangunan_proyek_id', $id)
-            ->whereIn('r.status', ['diproses', 'selesai'])
+            ->where('r.status', 'selesai');
+
+        $returnedBaseMap = $returnedBaseMapQuery
             ->select([
                 'pembangunan_proyek_barang_return_details.barang_id',
                 DB::raw('SUM(pembangunan_proyek_barang_return_details.jumlah_base) as total_returned_base'),
@@ -179,10 +181,6 @@ class PembangunanProyekController extends Controller
             $totalDiterimaBase = (float) $d->total_diterima_base;
             $sudahReturBase    = (float) ($returnedBaseMap[$d->barang_id] ?? 0);
             $sisaBase          = max(0, $totalDiterimaBase - $sudahReturBase);
-
-            if ($sisaBase <= 0.0001) {
-                return null;
-            }
 
             $masterBarang = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan'])->find($d->barang_id);
             $baseSatuanNama = $masterBarang?->baseUnit?->nama ?? 'Unit';
@@ -221,7 +219,7 @@ class PembangunanProyekController extends Controller
                 'satuan_options'      => $satuanOptions,
                 'jenis_orders'        => array_filter(explode(',', $d->jenis_orders ?? '')),
             ];
-        })->filter()->values();
+        })->values();
 
         $allBarang = MasterBarang::with(['satuanKonversi.satuan'])
             ->select('id', 'kode_barang', 'nama_barang', 'is_stock')

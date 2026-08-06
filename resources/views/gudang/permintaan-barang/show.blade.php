@@ -225,9 +225,18 @@
 
             @if ($order->catatan)
                 <div class="mt-4">
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Catatan</label>
-                    <div class="w-full bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm rounded-lg p-3 dark:bg-yellow-900/20 dark:border-yellow-700 dark:text-yellow-200">
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Catatan Permintaan</label>
+                    <div class="w-full bg-yellow-50 border border-yellow-200 text-yellow-900 text-sm rounded-lg p-3 dark:bg-yellow-900/20 dark:border-yellow-700 dark:text-yellow-200 font-medium">
                         {{ $order->catatan }}
+                    </div>
+                </div>
+            @endif
+
+            @if ($order->status_order === 'ditolak' && $order->alasan_tolak)
+                <div class="mt-4">
+                    <label class="block mb-2 text-sm font-medium text-red-600 dark:text-red-400">Alasan Penolakan Gudang</label>
+                    <div class="w-full bg-red-50 border border-red-200 text-red-900 text-sm rounded-lg p-3 dark:bg-red-900/20 dark:border-red-700 dark:text-red-200 font-semibold">
+                        {{ $order->alasan_tolak }}
                     </div>
                 </div>
             @endif
@@ -407,7 +416,7 @@
     @if ($order->status_order === 'diproses')
         {{-- Modal ACC --}}
         <div x-show="openAccModal" x-cloak x-transition
-            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
             <div @click.away="openAccModal = false"
                 class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
@@ -495,7 +504,7 @@
 
         {{-- Modal Tolak --}}
         <div x-show="openTolakModal" x-cloak x-transition
-            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
             <div @click.away="openTolakModal = false"
                 class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
@@ -519,8 +528,8 @@
                             <p class="text-sm font-semibold text-red-800 dark:text-red-300">Permintaan barang akan ditolak dan pengaju dapat mengedit lalu mengajukan kembali.</p>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Alasan / Catatan Penolakan</label>
-                            <textarea name="catatan" rows="3" placeholder="Masukkan alasan penolakan..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500">{{ $order->catatan }}</textarea>
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Alasan / Catatan Penolakan <span class="text-red-500">*</span></label>
+                            <textarea name="alasan_tolak" rows="3" required placeholder="Masukkan alasan penolakan..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500">{{ $order->alasan_tolak }}</textarea>
                         </div>
                     </div>
                     <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
@@ -539,7 +548,7 @@
     @if ($order->status_order === 'ditolak')
         {{-- Modal Ajukan Ulang --}}
         <div x-show="openResubmitModal" x-cloak x-transition
-            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
             <div @click.away="openResubmitModal = false"
                 class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">

@@ -165,10 +165,6 @@ class PermintaanBarangPembangunanProyekController extends Controller
             'return' => $return,
             'breadcrumbs' => [
                 [
-                    'label' => 'Material Proyek',
-                    'url' => '#',
-                ],
-                [
                     'label' => 'Retur Proyek Mangoon',
                     'url' => route('gudang.returnBarang.proyek.index'),
                 ],
@@ -190,6 +186,7 @@ class PermintaanBarangPembangunanProyekController extends Controller
 
         try {
             DB::transaction(function () use ($request, $return) {
+                $ubsId = Ubs::where('nama_ubs', 'like', '%mangoon%')->value('id') ?? 3;
                 $notaRtnId = null;
 
                 foreach ($return->details as $detail) {
@@ -347,8 +344,10 @@ class PermintaanBarangPembangunanProyekController extends Controller
                             'updated_at'        => now(),
                         ]);
 
+                        // Barang Layak -> Masuk Stok UBS Proyek Mangoon (stock_type = 'UBS', ubs_id = $ubsId)
                         $stock = StockGudang::where('barang_id', $detail->barang_id)
-                            ->where('stock_type', 'HUB')
+                            ->where('stock_type', 'UBS')
+                            ->where('ubs_id', $ubsId)
                             ->lockForUpdate()
                             ->first();
 
@@ -357,8 +356,8 @@ class PermintaanBarangPembangunanProyekController extends Controller
                         } else {
                             StockGudang::create([
                                 'barang_id' => $detail->barang_id,
-                                'stock_type' => 'HUB',
-                                'ubs_id' => null,
+                                'stock_type' => 'UBS',
+                                'ubs_id' => $ubsId,
                                 'jumlah_stock' => $jumlahLayakBase,
                             ]);
                         }
@@ -366,8 +365,8 @@ class PermintaanBarangPembangunanProyekController extends Controller
                         StockLedger::create([
                             'tanggal' => now(),
                             'barang_id' => $detail->barang_id,
-                            'stock_type' => 'HUB',
-                            'ubs_id' => null,
+                            'stock_type' => 'UBS',
+                            'ubs_id' => $ubsId,
                             'tipe' => 'masuk',
                             'ref_type' => 'PembangunanProyekBarangReturn',
                             'ref_id' => $return->id,
@@ -384,8 +383,8 @@ class PermintaanBarangPembangunanProyekController extends Controller
                         BarangRusak::create([
                             'nomor_barang_rusak' => $nomorBr,
                             'tgl_rusak' => now(),
-                            'stock_type' => 'HUB',
-                            'ubs_id' => null,
+                            'stock_type' => 'UBS',
+                            'ubs_id' => $ubsId,
                             'barang_id' => $detail->barang_id,
                             'satuan_id' => $satuanInputId,
                             'qty_out' => round($jumlahRusakBase / $faktor, 3),

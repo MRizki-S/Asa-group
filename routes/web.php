@@ -599,6 +599,20 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/permintaan-barang/{id}/edit', [PermintaanBarangPembangunanUnitController::class, 'edit'])->name('gudang.permintaanBarang.edit');
     Route::get('/permintaan-barang/{id}', [PermintaanBarangController::class, 'show'])->name('gudang.permintaanBarang.show');
 
+    // Retur Barang (Gudang CRUD) - read only
+    Route::get('/return-barang/create', [PermintaanBarangPembangunanUnitController::class, 'createReturn'])->name('gudang.returnBarang.create');
+    Route::get('/return-barang/{id}/edit', [PermintaanBarangPembangunanUnitController::class, 'editReturn'])->name('gudang.returnBarang.edit');
+    Route::get('/return-barang/qc-summary/{qcId}', [PermintaanBarangPembangunanUnitController::class, 'returnSummaryQc'])->name('gudang.returnBarang.qcSummary');
+    Route::get('/return-barang/kawasan-summary/{kawasanId}', [PermintaanBarangPembangunanUnitController::class, 'returnSummaryKawasan'])->name('gudang.returnBarang.kawasanSummary');
+    Route::get('/return-barang/proyek-summary/{proyekId}', [PermintaanBarangPembangunanUnitController::class, 'returnSummaryProyek'])->name('gudang.returnBarang.proyekSummary');
+
+    // Retur Barang (Gudang CRUD) - mutasi, dibatasi Freeze Mode
+    Route::middleware('check.freeze')->group(function () {
+        Route::post('/return-barang/store', [PermintaanBarangPembangunanUnitController::class, 'storeReturn'])->name('gudang.returnBarang.store');
+        Route::put('/return-barang/{id}', [PermintaanBarangPembangunanUnitController::class, 'updateReturn'])->name('gudang.returnBarang.update');
+        Route::patch('/return-barang/{id}/resubmit', [PermintaanBarangPembangunanUnitController::class, 'resubmitReturn'])->name('gudang.returnBarang.resubmit');
+    });
+
     // Retur Barang Unit (Gudang)
     Route::get('/return-barang/unit', [PermintaanBarangPembangunanUnitController::class, 'indexReturn'])->name('gudang.returnBarang.unit.index');
     Route::get('/return-barang/unit/riwayat', [PermintaanBarangPembangunanUnitController::class, 'historyReturn'])->name('gudang.returnBarang.unit.history');
@@ -613,6 +627,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/return-barang/proyek', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'indexReturn'])->name('gudang.returnBarang.proyek.index');
     Route::get('/return-barang/proyek/riwayat', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'historyReturn'])->name('gudang.returnBarang.proyek.history');
     Route::get('/return-barang/proyek/{id}', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'showReturn'])->name('gudang.returnBarang.proyek.show');
+
 
     // Master Tukang Harian
     Route::get('/master-tukang-harian', [MasterTukangController::class, 'index'])->name('gudang.masterTukang.index');

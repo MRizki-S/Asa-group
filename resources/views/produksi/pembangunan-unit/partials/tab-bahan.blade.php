@@ -16,17 +16,31 @@
               ->where('status_order', 'selesai');
         })->with(['barang.baseUnit', 'rapBahan'])->get();
 
+        // Ambil kuantitas yang sudah di-retur (status selesai) untuk QC ini
+        $allReturnedDetails = \App\Models\PembangunanUnitBarangReturnDetail::whereHas('barangReturn', function ($q) use ($qc) {
+            $q->where('pembangunan_unit_qc_id', $qc->id)
+              ->where('status', 'selesai');
+        })->get();
+
         // Grouping per rap_bahan_id dan per barang_id (luar RAP)
         $summaryRapItems = collect();
         if ($qc->pembangunanUnitRapBahan) {
             foreach ($qc->pembangunanUnitRapBahan as $rap) {
-                $approvedQtyBase = $allApprovedDetails->where('rap_bahan_id', $rap->id)->sum('jumlah_base');
+                $rawApprovedQtyBase = (float) $allApprovedDetails->where('rap_bahan_id', $rap->id)->sum('jumlah_base');
+                $returnedQtyBase = (float) $allReturnedDetails->where('barang_id', $rap->barang_id)->sum('jumlah_base');
+                $approvedQtyBase = max(0, $rawApprovedQtyBase - $returnedQtyBase);
+
                 $targetQtyBase = (float)$rap->jumlah_standar * (float)($rap->faktor_konversi ?? 1);
+                $faktorRap = (float)($rap->faktor_konversi ?? 1);
+                if ($faktorRap <= 0) $faktorRap = 1.0;
                 
+                $approvedQtyRapSatuan = $approvedQtyBase / $faktorRap;
+                $targetQtyRapSatuan = (float)$rap->jumlah_standar;
+
                 $statusSummary = 'belum_terpenuhi';
-                if (abs($approvedQtyBase - $targetQtyBase) <= 0.001 && $approvedQtyBase > 0) {
+                if (abs($approvedQtyRapSatuan - $targetQtyRapSatuan) < 0.0001) {
                     $statusSummary = 'terpenuhi';
-                } elseif ($approvedQtyBase > ($targetQtyBase + 0.001)) {
+                } elseif ($approvedQtyRapSatuan > $targetQtyRapSatuan) {
                     $statusSummary = 'melebihi_rap';
                 }
 
@@ -35,7 +49,8 @@
                     'rap_id' => $rap->id,
                     'nama_barang' => $rap->nama_barang,
                     'satuan' => $rap->satuan,
-                    'jumlah_rap' => (float)$rap->jumlah_standar,
+                    'jumlah_rap' => $targetQtyRapSatuan,
+                    'jumlah_ordered_satuan' => $approvedQtyRapSatuan,
                     'jumlah_ordered_base' => $approvedQtyBase,
                     'jumlah_rap_base' => $targetQtyBase,
                     'status_summary' => $statusSummary,
@@ -64,15 +79,19 @@
     <div x-data="{ openSummary: false }" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 overflow-hidden shadow-sm">
         <button type="button" @click="openSummary = !openSummary"
             class="w-full px-4 py-3 bg-gray-50/80 dark:bg-gray-800/60 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-            <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-calculator text-blue-600 text-xs"></i>
-                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                    Akumulasi Order Barang & RAP (Status ACC Selesai)
+            <div class="flex items-center gap-2 min-w-0">
+                <i class="fa-solid fa-calculator text-blue-600 text-xs shrink-0"></i>
+                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider truncate">
+                    {{ $qc->is_servis ? 'Akumulasi Servis' : 'Akumulasi Barang & RAP' }}
                 </h4>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] font-semibold text-gray-500 bg-white dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
-                    {{ $summaryRapItems->count() }} Item RAP | {{ $summaryLuarRapItems->count() }} Luar RAP
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-[10px] font-semibold text-gray-500 bg-white dark:bg-gray-700 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 whitespace-nowrap">
+                    @if ($qc->is_servis)
+                        {{ $summaryLuarRapItems->count() }} Item
+                    @else
+                        {{ $summaryRapItems->count() }} RAP | {{ $summaryLuarRapItems->count() }} Luar
+                    @endif
                 </span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 transition-transform duration-300"
                     :class="openSummary ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,58 +101,64 @@
         </button>
 
         <div x-show="openSummary" x-collapse x-cloak class="p-4 border-t border-gray-100 dark:border-gray-700/80 space-y-4">
-            {{-- Tabel Barang Sesuai RAP --}}
-            <div>
-                <h5 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">1. Daftar Barang Kuota RAP QC</h5>
-                <div class="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead class="bg-gray-50 dark:bg-gray-800 text-[10px] font-bold text-gray-400 uppercase">
-                            <tr>
-                                <th class="p-2.5">Nama Barang</th>
-                                <th class="p-2.5 text-center">Jenis</th>
-                                <th class="p-2.5 text-center">Volume RAP</th>
-                                <th class="p-2.5 text-center">Akumulasi Terorder</th>
-                                <th class="p-2.5 text-center">Status Pemenuhan</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                            @forelse ($summaryRapItems as $sRap)
-                                @php
-                                    // Ambil jenis_order dari order selesai yang memesan rap item ini
-                                    $relatedJenis = $allApprovedDetails->where('rap_bahan_id', $sRap['rap_id'])->pluck('order.jenis_order')->unique()->filter();
-                                @endphp
-                                <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
-                                    <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sRap['nama_barang'] }}</td>
-                                    <td class="p-2.5 text-center">
-                                        @forelse($relatedJenis as $j)
-                                            <span class="inline-block px-1.5 py-0.5 text-[8px] font-black uppercase rounded border {{ $j === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }} mr-0.5">
-                                                {{ $j }}
-                                            </span>
-                                        @empty
-                                            <span class="text-gray-400 italic text-[10px]">-</span>
-                                        @endforelse
-                                    </td>
-                                    <td class="p-2.5 text-center">{{ number_format($sRap['jumlah_rap'], 0, ',', '.') }} {{ $sRap['satuan'] }}</td>
-                                    <td class="p-2.5 text-center font-semibold {{ $sRap['status_summary'] === 'melebihi_rap' ? 'text-red-600' : ($sRap['status_summary'] === 'terpenuhi' ? 'text-emerald-600' : 'text-blue-600') }}">
-                                        {{ (float)round($sRap['jumlah_ordered_base'], 2) }} {{ $sRap['satuan'] }}
-                                    </td>
-                                    <td class="p-2.5 text-center">
-                                        @if ($sRap['status_summary'] === 'melebihi_rap')
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-700 rounded border border-red-200">Melebihi RAP</span>
-                                        @elseif ($sRap['status_summary'] === 'terpenuhi')
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Sesuai RAP (Terpenuhi)</span>
-                                        @else
-                                            <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded border border-blue-200">Belum Terpenuhi</span>
-                                        @endif
-                                    </td>
+            {{-- Tabel Barang Sesuai RAP (Hanya untuk QC reguler) --}}
+            @if (!$qc->is_servis)
+                <div>
+                    <h5 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">1. Daftar Barang Kuota RAP QC</h5>
+                    <div class="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-[10px] font-bold text-gray-400 uppercase">
+                                <tr>
+                                    <th class="p-2.5">Nama Barang</th>
+                                    <th class="p-2.5 text-center">Jenis</th>
+                                    <th class="p-2.5 text-center">RAP</th>
+                                    <th class="p-2.5 text-center">Terorder</th>
+                                    <th class="p-2.5 text-center">Status</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="5" class="p-3 text-center text-gray-400 italic text-[11px]">Tidak ada data barang RAP</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                                @forelse ($summaryRapItems as $sRap)
+                                    @php
+                                        // Ambil jenis_order dari order selesai yang memesan rap item ini
+                                        $relatedJenis = $allApprovedDetails->where('rap_bahan_id', $sRap['rap_id'])->pluck('order.jenis_order')->unique()->filter();
+                                        $formatDec = function($val) {
+                                            $num = round((float)$val, 3);
+                                            return rtrim(rtrim(number_format($num, 3, ',', '.'), '0'), ',');
+                                        };
+                                    @endphp
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
+                                        <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sRap['nama_barang'] }}</td>
+                                        <td class="p-2.5 text-center">
+                                            @forelse($relatedJenis as $j)
+                                                <span class="inline-block px-1.5 py-0.5 text-[8px] font-black uppercase rounded border {{ $j === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }} mr-0.5">
+                                                    {{ $j }}
+                                                </span>
+                                            @empty
+                                                <span class="text-gray-400 italic text-[10px]">-</span>
+                                            @endforelse
+                                        </td>
+                                        <td class="p-2.5 text-center whitespace-nowrap">{{ $formatDec($sRap['jumlah_rap']) }} {{ $sRap['satuan'] }}</td>
+                                        <td class="p-2.5 text-center font-semibold whitespace-nowrap {{ $sRap['status_summary'] === 'melebihi_rap' ? 'text-red-600' : ($sRap['status_summary'] === 'terpenuhi' ? 'text-emerald-600' : 'text-blue-600') }}">
+                                            {{ $formatDec($sRap['jumlah_ordered_satuan']) }} {{ $sRap['satuan'] }}
+                                        </td>
+                                        <td class="p-2.5 text-center">
+                                            @if ($sRap['status_summary'] === 'melebihi_rap')
+                                                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-700 rounded border border-red-200">Melebihi</span>
+                                            @elseif ($sRap['status_summary'] === 'terpenuhi')
+                                                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded border border-emerald-200">Terpenuhi</span>
+                                            @else
+                                                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded border border-blue-200">Belum</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="p-3 text-center text-gray-400 italic text-[11px]">Tidak ada data barang RAP</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             {{-- Tabel Barang Luar RAP --}}
             <div>
@@ -144,7 +169,7 @@
                             <tr>
                                 <th class="p-2.5">Nama Barang</th>
                                 <th class="p-2.5 text-center">Jenis</th>
-                                <th class="p-2.5 text-center">Total Akumulasi Terorder</th>
+                                <th class="p-2.5 text-center">Terorder</th>
                                 <th class="p-2.5 text-center">Status</th>
                             </tr>
                         </thead>
@@ -152,6 +177,10 @@
                             @forelse ($summaryLuarRapItems as $sLuar)
                                 @php
                                     $relatedLuarJenis = $allApprovedDetails->whereNull('rap_bahan_id')->where('nama_barang', $sLuar['nama_barang'])->pluck('order.jenis_order')->unique()->filter();
+                                    $formatDec = function($val) {
+                                        $num = round((float)$val, 3);
+                                        return rtrim(rtrim(number_format($num, 3, ',', '.'), '0'), ',');
+                                    };
                                 @endphp
                                 <tr class="hover:bg-gray-50/50 dark:hover:bg-white/5">
                                     <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">{{ $sLuar['nama_barang'] }}</td>
@@ -164,9 +193,9 @@
                                             <span class="text-gray-400 italic text-[10px]">-</span>
                                         @endforelse
                                     </td>
-                                    <td class="p-2.5 text-center font-semibold text-amber-600">{{ (float)round($sLuar['jumlah_ordered_base'], 2) }} {{ $sLuar['satuan'] }}</td>
+                                    <td class="p-2.5 text-center font-semibold text-amber-600 whitespace-nowrap">{{ $formatDec($sLuar['jumlah_ordered_base']) }} {{ $sLuar['satuan'] }}</td>
                                     <td class="p-2.5 text-center">
-                                        <span class="px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 rounded border border-amber-200">Diluar RAP</span>
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 rounded border border-amber-200">Diluar</span>
                                     </td>
                                 </tr>
                             @empty

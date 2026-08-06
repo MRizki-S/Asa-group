@@ -365,29 +365,190 @@
     {{-- Action Buttons --}}
     <div class="flex items-center justify-between">
         <a href="{{ route($cfg['indexRoute']) }}"
-            class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300">
-            Kembali
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali ke Daftar
         </a>
 
         @if ($return->status === 'diproses')
-            <div class="flex items-center gap-3">
-                <button type="button" onclick="confirmRejectRetur()"
-                    class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition">
-                    Tolak Retur
+            <div class="flex gap-2">
+                {{-- Tombol Tolak --}}
+                <button type="button" @click="openTolakModal = true"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Tolak
                 </button>
-                <button type="button" onclick="confirmAccRetur()"
-                    class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
-                    ACC / Setujui Retur
+
+                {{-- Tombol ACC --}}
+                <button type="button" @click="openAccModal = true"
+                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    ACC
+                </button>
+            </div>
+        @endif
+
+        @if ($return->status === 'ditolak')
+            <div class="flex gap-2">
+                <a href="{{ route('gudang.returnBarang.edit', ['id' => $return->id, 'category' => $category]) }}"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all focus:outline-none focus:ring-4 focus:ring-amber-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Edit Retur
+                </a>
+                <button type="button" @click="openResubmitModal = true"
+                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Ajukan Ulang
                 </button>
             </div>
         @endif
     </div>
 
+    @if ($return->status === 'diproses')
+        {{-- Modal ACC --}}
+        <div x-show="openAccModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+            <div @click.away="openAccModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Konfirmasi ACC Retur Barang</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $return->nomor_return ?? ($cfg['prefix'] . str_pad($return->id, 5, '0', STR_PAD_LEFT)) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openAccModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div class="rounded-xl border border-green-100 bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800">
+                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">
+                            ACC retur akan memproses kuantitas barang Layak dan Rusak yang telah diinput ke dalam stok gudang & pencatatan barang.
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Total Item</p>
+                            <p class="mt-1 text-lg font-bold text-gray-900 dark:text-white">{{ $return->details->count() }} Item</p>
+                        </div>
+                        <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                            <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Status Baru</p>
+                            <p class="mt-1 text-lg font-bold uppercase text-green-600">SELESAI</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                    <button type="button" @click="openAccModal = false"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                    <button type="button" @click="submitAccForm()" :disabled="accSubmitting"
+                        class="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition disabled:opacity-60">
+                        <span x-text="accSubmitting ? 'Memproses...' : 'Ya, ACC'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal Tolak --}}
+        <div x-show="openTolakModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+            <div @click.away="openTolakModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Tolak Retur Barang</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $return->nomor_return ?? ($cfg['prefix'] . str_pad($return->id, 5, '0', STR_PAD_LEFT)) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openTolakModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route($cfg['rejectRoute'], $return->id) }}" @submit="tolakSubmitting = true">
+                    @csrf
+                    @method('PATCH')
+                    <div class="p-5 space-y-4">
+                        <div class="rounded-xl border border-red-100 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-800">
+                            <p class="text-sm font-semibold text-red-800 dark:text-red-300">Pengajuan retur barang akan ditolak dan pengaju dapat mengedit lalu mengajukan kembali.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Alasan / Catatan Penolakan <span class="text-red-500">*</span></label>
+                            <textarea name="alasan_tolak" rows="3" required placeholder="Masukkan alasan penolakan..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-red-500 focus:ring-red-500">{{ $return->alasan_tolak }}</textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                        <button type="button" @click="openTolakModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                        <button type="submit" :disabled="tolakSubmitting"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm transition disabled:opacity-60">
+                            <span x-text="tolakSubmitting ? 'Memproses...' : 'Ya, Tolak'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    @if ($return->status === 'ditolak')
+        {{-- Modal Ajukan Ulang --}}
+        <div x-show="openResubmitModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+            <div @click.away="openResubmitModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Ajukan Ulang Retur Barang</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $return->nomor_return ?? ($cfg['prefix'] . str_pad($return->id, 5, '0', STR_PAD_LEFT)) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openResubmitModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('gudang.returnBarang.resubmit', $return->id) }}" @submit="resubmitSubmitting = true">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="category" value="{{ $category }}">
+                    <div class="p-5 space-y-4">
+                        <div class="rounded-xl border border-blue-100 bg-blue-50 p-4 dark:bg-blue-900/20 dark:border-blue-800">
+                            <p class="text-sm font-semibold text-blue-800 dark:text-blue-300">Pengajuan retur barang akan diajukan kembali ke status <strong>Menunggu (Diproses)</strong>. Anda dapat mengubah catatan sebelum mengajukan ulang.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Catatan (Opsional)</label>
+                            <textarea name="catatan" rows="3" placeholder="Tambahkan catatan jika perlu..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500">{{ $return->catatan }}</textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                        <button type="button" @click="openResubmitModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                        <button type="submit" :disabled="resubmitSubmitting"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-60">
+                            <span x-text="resubmitSubmitting ? 'Memproses...' : 'Ya, Ajukan Ulang'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>
 
 <script>
     function showReturComponent() {
         return {
+            openAccModal: false,
+            openTolakModal: false,
+            openResubmitModal: false,
+            accSubmitting: false,
+            tolakSubmitting: false,
+            resubmitSubmitting: false,
             items: [
                 @foreach($return->details as $index => $det)
                     @php
@@ -442,49 +603,13 @@
                 if (item.rusak < 0) item.rusak = 0;
                 if (item.rusak > item.total) item.rusak = item.total;
                 item.layak = Math.max(0, Math.round((item.total - item.rusak) * 1000) / 1000);
+            },
+            submitAccForm() {
+                this.accSubmitting = true;
+                const form = document.getElementById('form-acc-retur');
+                if (form) form.submit();
             }
         };
-    }
-
-    function confirmAccRetur() {
-        Swal.fire({
-            title: 'Setujui Retur Barang?',
-            text: 'Apakah Anda yakin jumlah barang Layak dan Rusak sudah sesuai dan ingin memproses retur barang ini?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#16a34a',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Ya, Setujui',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('form-acc-retur').submit();
-            }
-        });
-    }
-
-    function confirmRejectRetur() {
-        Swal.fire({
-            title: 'Tolak Retur Barang',
-            text: 'Masukkan alasan penolakan retur barang ini:',
-            input: 'textarea',
-            inputPlaceholder: 'Contoh: Barang fisik tidak ditemukan di lapangan...',
-            inputValidator: (value) => {
-                if (!value || !value.trim()) {
-                    return 'Alasan penolakan wajib diisi!';
-                }
-            },
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Tolak Retur',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed && result.value) {
-                document.getElementById('reject-alasan-input').value = result.value;
-                document.getElementById('form-reject-retur').submit();
-            }
-        });
     }
 </script>
 @endsection
