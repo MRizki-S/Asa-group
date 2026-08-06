@@ -67,17 +67,22 @@
         </form>
     </div>
 
+    @php
+        $is2026 = ($tahun == 2026);
+        $colspan = $is2026 ? 10 : 18;
+    @endphp
     <div class="overflow-x-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-white/[0.03] dark:border-gray-800">
         <table class="w-full text-xs text-left text-gray-700 dark:text-gray-300" style="min-width: 950px;">
             <thead class="uppercase bg-gray-200 border-b border-gray-300 dark:bg-gray-800 dark:border-gray-700">
                 <tr>
-                    <th colspan="18" class="px-2 py-2 text-center text-sm font-bold text-gray-800 border-b border-gray-300 bg-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                    <th colspan="{{ $colspan }}" class="px-2 py-2 text-center text-sm font-bold text-gray-800 border-b border-gray-300 bg-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600">
                         Dashboard KPI {{ $tahun }}
                     </th>
                 </tr>
                 <tr class="text-center font-bold align-middle dark:border-gray-700">
                     <th class="px-2 py-2 border-r border-gray-300 text-left dark:border-gray-700">Nama Karyawan</th>
                     <th class="px-2 py-2 border-r border-gray-300 text-left dark:border-gray-700">Jabatan</th>
+                    @if(!$is2026)
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Jan</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Feb</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Mar</th>
@@ -86,6 +91,7 @@
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Mei</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Jun</th>
                     <th class="px-1 py-2 border-r border-gray-300 bg-[#00b050] text-white dark:bg-green-600/40 dark:text-green-200 dark:border-gray-700">AVG Q2</th>
+                    @endif
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Jul</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Agu</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Sep</th>
@@ -100,7 +106,7 @@
                 @forelse($dashboardData as $devisiName => $users)
                     {{-- Subheader Group Devisi --}}
                     <tr class="bg-gray-100 font-bold border-b border-gray-200 dark:bg-gray-800/50 dark:border-gray-700">
-                        <td colspan="18" class="px-3 py-2 text-left bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-wider border-r border-gray-300 dark:bg-gray-800/50 dark:text-white dark:border-gray-700">
+                        <td colspan="{{ $colspan }}" class="px-3 py-2 text-left bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-wider border-r border-gray-300 dark:bg-gray-800/50 dark:text-white dark:border-gray-700">
                             🏢 {{ $devisiName }}
                         </td>
                     </tr>
@@ -109,6 +115,7 @@
                             <td class="px-2 py-1.5 border-r border-gray-300 font-medium text-gray-900 dark:text-white dark:border-gray-700" title="{{ $user['nama'] }}">{{ $user['nama'] }}</td>
                             <td class="px-2 py-1.5 border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" title="{{ $user['jabatan'] }}">{{ $user['jabatan'] }}</td>
 
+                            @if(!$is2026)
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
                                 {{ !is_null($user['bulan']['januari']) ? rtrim(rtrim(number_format($user['bulan']['januari'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
@@ -134,6 +141,7 @@
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-green-100 font-bold text-green-900 dark:bg-green-950/20 dark:text-green-400 dark:border-gray-700">
                                 {{ !is_null($user['q2']) ? rtrim(rtrim(number_format($user['q2'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
+                            @endif
 
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
                                 {{ !is_null($user['bulan']['juli']) ? rtrim(rtrim(number_format($user['bulan']['juli'], 2, ',', '.'), '0'), ',') : '-' }}
@@ -164,7 +172,7 @@
                     @endforeach
                 @empty
                     <tr>
-                        <td colspan="18" class="px-4 py-8 text-center text-sm text-gray-500 italic bg-gray-50 dark:bg-gray-800/20 dark:text-gray-400">
+                        <td colspan="{{ $colspan }}" class="px-4 py-8 text-center text-sm text-gray-500 italic bg-gray-50 dark:bg-gray-800/20 dark:text-gray-400">
                             Data KPI tidak ditemukan.
                         </td>
                     </tr>

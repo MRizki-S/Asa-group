@@ -308,9 +308,12 @@ class KpiDashboardController extends Controller
             ],
         ];
 
-        $sheet->mergeCells('A3:R3');
+        $is2026 = ($tahun == 2026);
+        $lastColumn = $is2026 ? 'J' : 'R';
+
+        $sheet->mergeCells("A3:{$lastColumn}3");
         $sheet->setCellValue('A3', 'Dashboard KPI ' . $tahun);
-        $sheet->getStyle('A3:R3')->applyFromArray([
+        $sheet->getStyle("A3:{$lastColumn}3")->applyFromArray([
             'font' => ['bold' => true, 'size' => 14],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -321,13 +324,20 @@ class KpiDashboardController extends Controller
                 'startColor' => ['argb' => 'FFB2B2B2']
             ]
         ]);
-        $sheet->getStyle('A3:R3')->applyFromArray($borderStyle);
+        $sheet->getStyle("A3:{$lastColumn}3")->applyFromArray($borderStyle);
 
-        $headers = [
-            'Nama Karyawan', 'Jabatan', 'Januari', 'Februari', 'Maret', 'AVG Q1',
-            'April', 'Mei', 'Juni', 'AVG Q2', 'Juli', 'Agustus', 'September',
-            'AVG Q3', 'Oktober', 'November', 'Desember', 'AVG Q4'
-        ];
+        if ($is2026) {
+            $headers = [
+                'Nama Karyawan', 'Jabatan', 'Juli', 'Agustus', 'September',
+                'AVG Q3', 'Oktober', 'November', 'Desember', 'AVG Q4'
+            ];
+        } else {
+            $headers = [
+                'Nama Karyawan', 'Jabatan', 'Januari', 'Februari', 'Maret', 'AVG Q1',
+                'April', 'Mei', 'Juni', 'AVG Q2', 'Juli', 'Agustus', 'September',
+                'AVG Q3', 'Oktober', 'November', 'Desember', 'AVG Q4'
+            ];
+        }
 
         $colIndex = 'A';
         foreach ($headers as $header) {
@@ -336,7 +346,7 @@ class KpiDashboardController extends Controller
             $colIndex++;
         }
 
-        $sheet->getStyle('A4:R4')->applyFromArray([
+        $sheet->getStyle("A4:{$lastColumn}4")->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -344,20 +354,26 @@ class KpiDashboardController extends Controller
             ]
         ]);
 
-        $sheet->getStyle('F4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00'); // Kuning
-        $sheet->getStyle('J4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF00B050'); // Hijau
-        $sheet->getStyle('N4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF8EA9DB'); // Biru
-        $sheet->getStyle('R4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000'); // Merah (Teks putih)
-        $sheet->getStyle('R4')->getFont()->getColor()->setARGB('FFFFFFFF'); // Teks Putih untuk Q4
+        if ($is2026) {
+            $sheet->getStyle('F4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF8EA9DB'); // Biru
+            $sheet->getStyle('J4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000'); // Merah (Teks putih)
+            $sheet->getStyle('J4')->getFont()->getColor()->setARGB('FFFFFFFF');
+        } else {
+            $sheet->getStyle('F4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00'); // Kuning
+            $sheet->getStyle('J4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF00B050'); // Hijau
+            $sheet->getStyle('N4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF8EA9DB'); // Biru
+            $sheet->getStyle('R4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000'); // Merah (Teks putih)
+            $sheet->getStyle('R4')->getFont()->getColor()->setARGB('FFFFFFFF'); // Teks Putih untuk Q4
+        }
 
-        $sheet->getStyle('A4:R4')->applyFromArray($borderStyle);
+        $sheet->getStyle("A4:{$lastColumn}4")->applyFromArray($borderStyle);
 
         $rowNum = 5;
         foreach ($dashboardData as $devisiName => $devisiUsers) {
             // Add Devisi group subheader in Excel
-            $sheet->mergeCells("A{$rowNum}:R{$rowNum}");
+            $sheet->mergeCells("A{$rowNum}:{$lastColumn}{$rowNum}");
             $sheet->setCellValue("A{$rowNum}", strtoupper($devisiName));
-            $sheet->getStyle("A{$rowNum}:R{$rowNum}")->applyFromArray([
+            $sheet->getStyle("A{$rowNum}:{$lastColumn}{$rowNum}")->applyFromArray([
                 'font' => ['bold' => true, 'size' => 11],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -368,49 +384,65 @@ class KpiDashboardController extends Controller
                     'startColor' => ['argb' => 'FFEAEAEA']
                 ]
             ]);
-            $sheet->getStyle("A{$rowNum}:R{$rowNum}")->applyFromArray($borderStyle);
+            $sheet->getStyle("A{$rowNum}:{$lastColumn}{$rowNum}")->applyFromArray($borderStyle);
             $rowNum++;
 
             foreach ($devisiUsers as $user) {
                 $sheet->setCellValue('A' . $rowNum, $user['nama']);
                 $sheet->setCellValue('B' . $rowNum, $user['jabatan']);
 
-                $sheet->setCellValue('C' . $rowNum, $user['bulan']['januari']);
-                $sheet->setCellValue('D' . $rowNum, $user['bulan']['februari']);
-                $sheet->setCellValue('E' . $rowNum, $user['bulan']['maret']);
-                $sheet->setCellValue('F' . $rowNum, $user['q1']);
+                if ($is2026) {
+                    $sheet->setCellValue('C' . $rowNum, $user['bulan']['juli']);
+                    $sheet->setCellValue('D' . $rowNum, $user['bulan']['agustus']);
+                    $sheet->setCellValue('E' . $rowNum, $user['bulan']['september']);
+                    $sheet->setCellValue('F' . $rowNum, $user['q3']);
 
-                $sheet->setCellValue('G' . $rowNum, $user['bulan']['april']);
-                $sheet->setCellValue('H' . $rowNum, $user['bulan']['mei']);
-                $sheet->setCellValue('I' . $rowNum, $user['bulan']['juni']);
-                $sheet->setCellValue('J' . $rowNum, $user['q2']);
+                    $sheet->setCellValue('G' . $rowNum, $user['bulan']['oktober']);
+                    $sheet->setCellValue('H' . $rowNum, $user['bulan']['november']);
+                    $sheet->setCellValue('I' . $rowNum, $user['bulan']['desember']);
+                    $sheet->setCellValue('J' . $rowNum, $user['q4']);
 
-                $sheet->setCellValue('K' . $rowNum, $user['bulan']['juli']);
-                $sheet->setCellValue('L' . $rowNum, $user['bulan']['agustus']);
-                $sheet->setCellValue('M' . $rowNum, $user['bulan']['september']);
-                $sheet->setCellValue('N' . $rowNum, $user['q3']);
+                    $sheet->getStyle('F' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF8EA9DB');
+                    $sheet->getStyle('J' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
+                    $sheet->getStyle('J' . $rowNum)->getFont()->getColor()->setARGB('FFFFFFFF');
+                } else {
+                    $sheet->setCellValue('C' . $rowNum, $user['bulan']['januari']);
+                    $sheet->setCellValue('D' . $rowNum, $user['bulan']['februari']);
+                    $sheet->setCellValue('E' . $rowNum, $user['bulan']['maret']);
+                    $sheet->setCellValue('F' . $rowNum, $user['q1']);
 
-                $sheet->setCellValue('O' . $rowNum, $user['bulan']['oktober']);
-                $sheet->setCellValue('P' . $rowNum, $user['bulan']['november']);
-                $sheet->setCellValue('Q' . $rowNum, $user['bulan']['desember']);
-                $sheet->setCellValue('R' . $rowNum, $user['q4']);
+                    $sheet->setCellValue('G' . $rowNum, $user['bulan']['april']);
+                    $sheet->setCellValue('H' . $rowNum, $user['bulan']['mei']);
+                    $sheet->setCellValue('I' . $rowNum, $user['bulan']['juni']);
+                    $sheet->setCellValue('J' . $rowNum, $user['q2']);
 
-                $sheet->getStyle('F' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
-                $sheet->getStyle('J' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF00B050');
-                $sheet->getStyle('N' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF8EA9DB');
-                $sheet->getStyle('R' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                $sheet->getStyle('R' . $rowNum)->getFont()->getColor()->setARGB('FFFFFFFF');
+                    $sheet->setCellValue('K' . $rowNum, $user['bulan']['juli']);
+                    $sheet->setCellValue('L' . $rowNum, $user['bulan']['agustus']);
+                    $sheet->setCellValue('M' . $rowNum, $user['bulan']['september']);
+                    $sheet->setCellValue('N' . $rowNum, $user['q3']);
 
-                $sheet->getStyle("C{$rowNum}:R{$rowNum}")->getNumberFormat()->setFormatCode('#,##0.##');
+                    $sheet->setCellValue('O' . $rowNum, $user['bulan']['oktober']);
+                    $sheet->setCellValue('P' . $rowNum, $user['bulan']['november']);
+                    $sheet->setCellValue('Q' . $rowNum, $user['bulan']['desember']);
+                    $sheet->setCellValue('R' . $rowNum, $user['q4']);
 
-                $sheet->getStyle('C' . $rowNum . ':R' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('F' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
+                    $sheet->getStyle('J' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF00B050');
+                    $sheet->getStyle('N' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF8EA9DB');
+                    $sheet->getStyle('R' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
+                    $sheet->getStyle('R' . $rowNum)->getFont()->getColor()->setARGB('FFFFFFFF');
+                }
+
+                $sheet->getStyle("C{$rowNum}:{$lastColumn}{$rowNum}")->getNumberFormat()->setFormatCode('#,##0.##');
+
+                $sheet->getStyle('C' . $rowNum . ':' . $lastColumn . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 $rowNum++;
             }
         }
 
         if ($rowNum > 5) {
-            $sheet->getStyle('A4:R' . ($rowNum - 1))->applyFromArray($borderStyle);
+            $sheet->getStyle("A4:{$lastColumn}" . ($rowNum - 1))->applyFromArray($borderStyle);
         }
 
         $writer = new Xlsx($spreadsheet);
