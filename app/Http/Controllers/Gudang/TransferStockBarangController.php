@@ -603,4 +603,52 @@ class TransferStockBarangController extends Controller
             return back()->with('error', 'Gagal menolak transfer: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Hapus pengajuan transfer stock.
+     * - Status pending  : hapus + kirim notifikasi WA ke group bahwa pengajuan dihapus
+     * - Status ditolak  : hapus saja, tidak kirim notifikasi
+     */
+    public function destroy($nomorTransfer)
+    {
+        try {
+            $transfer = TransferStock::with(['fromUbs', 'toUbs', 'creator'])
+                ->where('nomor_transfer', $nomorTransfer)
+                ->whereIn('status', ['pending', 'ditolak'])
+                ->firstOrFail();
+
+            $statusSebelum = $transfer->status;
+            $fromUbs = $transfer->fromUbs;
+            $toUbs   = $transfer->toUbs;
+
+            // Hapus detail & header
+            $transfer->details()->delete();
+            $transfer->delete();
+
+            // Kirim notifikasi WA hanya jika sebelumnya pending
+            if ($statusSebelum === 'pending') {
+                $groupId  = env('FONNTE_ID_GROUP_GUDANG_STOCK');
+                $penghapus = Auth::user();
+                $roleName  = $penghapus->getRoleNames()->first() ?? '-';
+
+                $messageHapus =
+                    "🗑️ *PENGAJUAN TRANSFER STOCK DIHAPUS*\n\n" .
+                    "No. Transfer : {$nomorTransfer}\n" .
+                    "Gudang Asal  : " . ($fromUbs->nama_ubs ?? '-') . " (" . ($fromUbs->kode_ubs ?? '-') . ")\n" .
+                    "Gudang Tujuan: " . ($toUbs->nama_ubs  ?? '-') . " (" . ($toUbs->kode_ubs  ?? '-') . ")\n\n" .
+                    "Dihapus Oleh : {$penghapus->nama_lengkap} ({$roleName})\n" .
+                    "Waktu Hapus  : " . now()->translatedFormat('d M Y, H:i') . " WIB\n\n" .
+                    "Pengajuan ini telah dibatalkan dan dihapus dari sistem.";
+
+                if ($groupId) {
+                    $this->notificationGroup->send($groupId, $messageHapus);
+                }
+            }
+
+            return redirect()->route('gudang.transferStockBarang.daftar.index')
+                ->with('success', 'Pengajuan transfer #' . $nomorTransfer . ' berhasil dihapus.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus pengajuan: ' . $e->getMessage());
+        }
+    }
 }

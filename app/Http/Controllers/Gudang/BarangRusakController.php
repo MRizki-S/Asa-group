@@ -247,7 +247,7 @@ class BarangRusakController extends Controller
                     "Status: ✅ Berhasil";
             });
 
-            $groupId = env('FONNTE_ID_GROUP_GUDANG_ABM');
+            $groupId = env('FONNTE_ID_GROUP_GUDANG_STOCK');
             if ($groupId && $messageGroup) {
                 try {
                     $this->notificationGroup->send($groupId, $messageGroup);
@@ -410,7 +410,8 @@ class BarangRusakController extends Controller
                 'ubs:id,nama_ubs',
                 'creator:id,nama_lengkap,username',
                 'canceller:id,nama_lengkap,username',
-                'fifoDetails.notaDetail.nota:id,nomor_nota,tanggal_nota,supplier',
+                'fifoDetails.notaDetail.nota:id,nomor_nota,tanggal_nota,supplier_id',
+                'fifoDetails.notaDetail.nota.supplier:id,nama_supplier',
             ])
             ->where('nomor_barang_rusak', $nomorBarangRusak)
             ->firstOrFail();
@@ -558,7 +559,7 @@ class BarangRusakController extends Controller
                     "Status: ✅ Stock berhasil dikembalikan";
             });
 
-            $groupId = env('FONNTE_ID_GROUP_GUDANG_ABM');
+            $groupId = env('FONNTE_ID_GROUP_GUDANG_STOCK');
             if ($groupId && $messageGroup) {
                 try {
                     $this->notificationGroup->send($groupId, $messageGroup);

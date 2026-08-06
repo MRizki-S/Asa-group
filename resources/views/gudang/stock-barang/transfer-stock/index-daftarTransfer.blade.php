@@ -117,7 +117,8 @@
             </div>
 
             {{-- Table --}}
-            <table id="table-daftar-transfer">
+            <div class="overflow-x-auto w-full">
+            <table id="table-daftar-transfer" class="min-w-full">
                 <thead>
                     <tr>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
@@ -191,8 +192,8 @@
                         </td>
 
                         {{-- Aksi --}}
-                        <td class="px-4 py-3">
-                            <div class="flex gap-2 justify-center flex-wrap">
+                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                            <div class="inline-flex gap-2 items-center flex-nowrap">
 
                                 {{-- Detail / Tinjau --}}
                                 <a href="{{ route('gudang.transferStockBarang.daftar.show', $transfer->nomor_transfer) }}"
@@ -225,6 +226,23 @@
                                 </a>
                                 @endif
 
+                                {{-- Hapus — hanya jika pending atau ditolak --}}
+                                @if(in_array($transfer->status, ['pending', 'ditolak']))
+                                <button type="button"
+                                    onclick="konfirmasiHapus('{{ $transfer->nomor_transfer }}', '{{ $transfer->status }}')"
+                                    class="inline-flex items-center gap-1
+                                            text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200
+                                            dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60
+                                            px-2.5 py-1.5 rounded-md transition-colors duration-200
+                                            focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
+                                            active:scale-95">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Hapus
+                                </button>
+                                @endif
+
                             </div>
                         </td>
                     </tr>
@@ -232,6 +250,13 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
+
+            {{-- Hidden form untuk DELETE --}}
+            <form id="form-hapus-transfer" method="POST" style="display:none;">
+                @csrf
+                @method('DELETE')
+            </form>
 
         </div>
     </div>
@@ -247,5 +272,32 @@
             perPageSelect: [10, 20, 50],
         });
     }
+
+    function konfirmasiHapus(nomorTransfer, status) {
+        const isPending = status === 'pending';
+        const warningText = isPending
+            ? 'Pengajuan yang masih <b>pending</b> akan dihapus dan <b>notifikasi akan dikirim</b> ke grup WhatsApp.'
+            : 'Pengajuan yang sudah <b>ditolak</b> ini akan dihapus secara permanen.';
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Hapus Pengajuan Transfer?',
+            html: `<p class="text-sm text-gray-600">${warningText}</p>
+                   <p class="mt-2 text-sm font-mono font-semibold text-gray-800">${nomorTransfer}</p>`,
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('form-hapus-transfer');
+                form.action = `/gudang/daftar-transfer-stock/${nomorTransfer}/destroy`;
+                form.submit();
+            }
+        });
+    }
 </script>
 @endsection
+

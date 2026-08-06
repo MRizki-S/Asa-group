@@ -144,7 +144,7 @@
                                     {{ $fifo->notaDetail?->nota?->tanggal_nota?->format('d-m-Y') ?? '-' }}
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-sm text-gray-800 dark:text-white">
-                                    {{ $fifo->notaDetail?->nota?->supplier ?? '-' }}
+                                    {{ $fifo->notaDetail?->nota?->supplier->nama_supplier ?? '-' }}
                                 </td>
                                 <td class="border border-gray-300 px-3 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
                                     {{ formatQtyBarangRusak($fifo->qty_base_diambil) }}

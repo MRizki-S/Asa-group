@@ -573,6 +573,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/daftar-transfer-stock/{nomorTransfer}/pdf', [TransferStockBarangController::class, 'printPdf'])->name('gudang.transferStockBarang.daftar.pdf');
     Route::patch('/daftar-transfer-stock/{nomorTransfer}/approve', [TransferStockBarangController::class, 'approvePengajuan'])->name('gudang.transferStockBarang.daftar.approve');
     Route::patch('/daftar-transfer-stock/{nomorTransfer}/reject', [TransferStockBarangController::class, 'rejectPengajuan'])->name('gudang.transferStockBarang.daftar.reject');
+    Route::delete('/daftar-transfer-stock/{nomorTransfer}/destroy', [TransferStockBarangController::class, 'destroy'])->name('gudang.transferStockBarang.daftar.destroy');
 
     // Tranfer penyesuain stok ubs
     Route::get('/transfer-stock-penyesuain', [TransferPenyesuainStockController::class, 'create'])->name('gudang.transferStockBarang.createPenyesuaian');

@@ -63,7 +63,7 @@
                         </label>
                         <select name="stock_type" x-model="stockType" @change="onSourceChange" required
                             class="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                            <option value="HUB">Gudang HUB</option>
+                            <option value="">Pilih gudang sumber</option>
                             <option value="UBS">Gudang UBS</option>
                         </select>
                     </div>
