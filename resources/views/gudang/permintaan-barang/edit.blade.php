@@ -453,7 +453,7 @@
                     <button type="button" @click="processSubmitOrder()" :disabled="submitting"
                         class="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span x-text="submitting ? 'Memproses...' : 'Ya, Simpan & Kirim Order'"></span>
+                        <span x-text="submitting ? 'Memproses...' : 'Ya, Simpan'"></span>
                     </button>
                 </div>
             </div>

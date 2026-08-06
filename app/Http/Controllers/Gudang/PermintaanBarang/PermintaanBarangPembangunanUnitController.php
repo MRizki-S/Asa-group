@@ -892,8 +892,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'unit.tahap.perumahaan',
                 'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
                 'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan'
-            ])
-            ->whereNotIn('status_pembangunan', ['selesai', 'selesai dengan catatan']);
+            ]);
 
             if ($perumahaanId) {
                 $queryUnits->where('perumahaan_id', $perumahaanId);
@@ -979,7 +978,16 @@ class PermintaanBarangPembangunanUnitController extends Controller
             }
         ])->findOrFail($pembangunanUnitId);
 
-        $qcs = $pembangunanUnit->pembangunanUnitQc->map(function($qc) {
+        $isUnitSelesai = in_array($pembangunanUnit->status_pembangunan, ['selesai', 'selesai dengan catatan']);
+
+        $filteredQcs = $pembangunanUnit->pembangunanUnitQc->filter(function($qc) use ($isUnitSelesai) {
+            if ($isUnitSelesai) {
+                return (bool) $qc->is_servis;
+            }
+            return true;
+        });
+
+        $qcs = $filteredQcs->map(function($qc) {
             $nama = $qc->nama_qc;
             if (!$nama) {
                 $nama = $qc->masterQc->nama_qc ?? $qc->masterQc->nama ?? ('QC Ke-' . ($qc->qc_urutan_ke ?? $qc->id));
@@ -1043,7 +1051,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
         return response()->json([
             'success' => true,
-            'qcs' => $qcs
+            'qcs' => $qcs->values()
         ]);
     }
 

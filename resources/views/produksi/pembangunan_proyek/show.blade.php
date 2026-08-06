@@ -752,7 +752,7 @@
                         @foreach($returns as $ret)
                         <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-gray-800/40">
                             <div @click="open = !open" class="flex flex-col gap-2 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-200 dark:border-gray-700">
-                                {{-- Baris 1: Tanggal + Nomor Retur + Status (di kanan bawah panah) --}}
+                                {{-- Baris 1: Tanggal + Nomor Retur + Panah Accordion --}}
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex flex-col gap-0.5 min-w-0">
                                         <p class="text-[9px] text-gray-400 font-medium uppercase tracking-wider">
@@ -762,29 +762,28 @@
                                             {{ $ret->nomor_return ?? ('RTN-MGN-' . str_pad($ret->id, 5, '0', STR_PAD_LEFT)) }}
                                         </p>
                                     </div>
-                                    <div class="flex flex-col items-end gap-1.5 shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                        <div class="flex flex-wrap items-center justify-end gap-1.5">
-                                            @php
-                                                $statusMap = [
-                                                    'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                                    'selesai'  => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                                    'ditolak'  => 'bg-red-50 text-red-600 border-red-100',
-                                                ];
-                                                $style = $statusMap[$ret->status] ?? 'bg-gray-50 text-gray-500 border-gray-100';
-                                                $label = [
-                                                    'diproses' => 'Menunggu',
-                                                    'selesai'  => 'Selesai',
-                                                    'ditolak'  => 'Ditolak',
-                                                ][$ret->status] ?? strtoupper($ret->status);
-                                            @endphp
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                                {{ $label }}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-300 shrink-0 mt-1" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                                {{-- Baris 2: Badge Status (Pojok Kiri Bawah) --}}
+                                <div class="flex flex-wrap items-center gap-2">
+                                    @php
+                                        $statusMap = [
+                                            'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                            'selesai'  => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                            'ditolak'  => 'bg-red-50 text-red-600 border-red-100',
+                                        ];
+                                        $style = $statusMap[$ret->status] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                        $label = [
+                                            'diproses' => 'Menunggu',
+                                            'selesai'  => 'Selesai',
+                                            'ditolak'  => 'Ditolak',
+                                        ][$ret->status] ?? strtoupper($ret->status);
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
+                                        {{ $label }}
+                                    </span>
                                 </div>
                             </div>
                             

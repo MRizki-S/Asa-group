@@ -2,7 +2,7 @@
     @php
         // --- Perhitungan Akumulasi Pengajuan Upah disetujui (ACC Akuntan / selesai) & RAP QC ---
         $allApprovedUpah = \App\Models\PembangunanUnitUpahPengajuan::where('pembangunan_unit_qc_id', $qc->id)
-            ->where('status_pengajuan', 'disetujui_akuntan')
+            ->where('status_pengajuan', 'disetujui')
             ->get();
 
         $summaryRapUpahItems = collect();

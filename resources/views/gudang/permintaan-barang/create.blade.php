@@ -63,7 +63,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @if($category === 'pembangunan_unit')
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Unit (Proses) <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Unit <span class="text-red-500">*</span></label>
                     <select x-ref="pembangunanSelect"
                         class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
                         <option value="">-- Pilih Pembangunan Unit --</option>
@@ -73,8 +73,10 @@
                                 $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
                                 $namaUnit = $pu->unit->nama_unit ?? '-';
                                 $tglMulai = $pu->tanggal_mulai ? \Carbon\Carbon::parse($pu->tanggal_mulai)->format('d/m/Y') : '-';
+                                $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
+                                $statusSuffix = $isSelesai ? ' (SELESAI)' : '';
                             @endphp
-                            <option value="{{ $pu->id }}">{{ $namaPerumahan }} - {{ $namaTahap }} ({{ $namaUnit }}) - {{ $tglMulai }}</option>
+                            <option value="{{ $pu->id }}">{{ $namaPerumahan }} - {{ $namaTahap }} ({{ $namaUnit }}) - {{ $tglMulai }}{{ $statusSuffix }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -138,7 +140,7 @@
 
         <!-- Card Left (7 Cols): List Semua Barang yang ada di Gudang / RAP -->
         <div class="lg:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex flex-col h-[680px]">
-            
+
             <!-- Header Left Card & Button Toggle Stock/Direct -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-3 mb-3 shrink-0">
                 <h4 class="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
@@ -181,7 +183,7 @@
                         <span class="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-900/40 px-2.5 py-1 rounded-md border border-blue-100 dark:border-blue-800 flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg> 1. Barang Sesuai RAP QC
                         </span>
-                        
+
                         <!-- Tombol Tambah Semua Barang RAP -->
                         <button type="button" x-show="qcId && filteredRapItems().length > 0" @click="addAllRapToCart()" :disabled="!pembangunanUnitId || !qcId"
                             class="px-3 py-1 bg-blue-100 hover:bg-blue-200 disabled:opacity-40 disabled:cursor-not-allowed text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 dark:hover:bg-blue-800 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
@@ -260,7 +262,7 @@
 
         <!-- Card Right (5 Cols): Keranjang Checkout Order Barang -->
         <div class="lg:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex flex-col h-[680px]">
-            
+
             <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 mb-3 shrink-0">
                 <h4 class="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg> Keranjang Checkout Order
@@ -282,12 +284,14 @@
 
             <!-- Cart Items Container -->
             <div class="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3">
-                <template x-for="(item, idx) in filteredCartItems()" :key="idx">
-                    <div class="p-3.5 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-2 relative">
+                <template x-for="(item, idx) in cart" :key="item.barang_id + '-' + (item.rap_id ?? 'null')">
+                    <div
+                        x-show="cartMatchesSearch(item)"
+                        class="p-3.5 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-2 relative">
                         <button type="button" @click="removeFromCart(idx)" class="absolute top-3 right-3 text-red-500 hover:text-red-700 text-xs font-bold p-1" title="Hapus Barang">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
-                        
+
                         <div class="pr-6">
                             <div class="flex items-center justify-between gap-1.5">
                                 <div class="flex items-center gap-1.5 min-w-0">
@@ -305,17 +309,40 @@
                                         x-text="'Terorder: ' + formatNumber(getConvertedOrdered(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
                                     <span x-show="item.is_rap" class="text-indigo-600 dark:text-indigo-400 font-bold"
                                         x-text="'Sisa RAP: ' + formatNumber(getConvertedRemainingRap(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
-                                    <!-- Menampilkan stok gudang terkonversi sesuai satuan terpilih -->
                                     <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Stok: ' + formatNumber(getConvertedStock(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <!-- Input Jumlah dengan tombol - dan + -->
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jumlah</label>
-                                <input type="number" step="0.01" min="0.01" :max="getConvertedStock(item)" x-model="item.qty" @input="validateQty(item)"
-                                    class="w-full text-xs font-bold p-2 rounded-lg border-gray-300 bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500">
+                                <div class="flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 overflow-hidden">
+                                    <!-- Tombol kurang -->
+                                    <button type="button"
+                                        @click="decrementQty(item)"
+                                        class="px-2 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 transition-colors select-none shrink-0"
+                                        title="Kurangi">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+                                    </button>
+                                    <!-- Input langsung -->
+                                    <input
+                                        type="text"
+                                        inputmode="decimal"
+                                        x-model="item.qty"
+                                        @change="validateQtyOnChange(item)"
+                                        placeholder="0"
+                                        class="w-full text-xs font-bold text-center bg-transparent text-gray-800 dark:text-white border-0 focus:ring-0 focus:outline-none p-1"
+                                    >
+                                    <!-- Tombol tambah -->
+                                    <button type="button"
+                                        @click="incrementQty(item)"
+                                        class="px-2 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 transition-colors select-none shrink-0"
+                                        title="Tambah">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Satuan</label>
@@ -594,6 +621,11 @@ function createOrderUnitComponent() {
                     this.qcs = data.qcs || [];
 
                     this.$nextTick(() => {
+                        qcSelectEl.empty().append('<option value="">-- Pilih QC --</option>');
+                        this.qcs.forEach(q => {
+                            let label = q.nama + (q.is_servis ? ' (SERVIS)' : '');
+                            qcSelectEl.append(new Option(label, q.id, false, false));
+                        });
                         qcSelectEl.select2('destroy');
                         qcSelectEl.select2({
                             theme: 'bootstrap4',
@@ -658,6 +690,14 @@ function createOrderUnitComponent() {
                 return (item.nama_barang && item.nama_barang.toLowerCase().includes(q)) ||
                        (item.kode_barang && item.kode_barang.toLowerCase().includes(q));
             });
+        },
+
+        // Helper untuk x-show filter di cart items (agar index asli terjaga)
+        cartMatchesSearch(item) {
+            let q = this.cartSearchQuery.toLowerCase().trim();
+            if (!q) return true;
+            return (item.nama_barang && item.nama_barang.toLowerCase().includes(q)) ||
+                   (item.kode_barang && item.kode_barang.toLowerCase().includes(q));
         },
 
         async setJenisOrderType(type) {
@@ -788,7 +828,7 @@ function createOrderUnitComponent() {
             if (!item.is_rap || !item.volume_rap) return 0;
             let st = (item.satuans || []).find((s) => s.id == item.satuan_id);
             let konversi = st ? (parseFloat(st.konversi_ke_base) || 1) : 1;
-            
+
             let totalOrderedBase = parseFloat(item.total_ordered_base || 0);
             let rapTotalBase = parseFloat(item.volume_rap || 0) * (parseFloat(item.faktor_konversi_rap) || 1);
 
@@ -810,15 +850,51 @@ function createOrderUnitComponent() {
             return (totalOrderedBase + inputBase) > (rapTotalBase + 0.0001);
         },
 
-        // Handler validasi max input stok
-        validateQty(item) {
+        // Handler validasi max input stok — hanya cap ke stok max, tidak reset paksa ke 0.01
+        // Dipanggil @change (saat user selesai mengetik dan keluar dari field)
+        validateQtyOnChange(item) {
+            // Normalisasi koma ke titik (untuk input gaya Indonesia seperti "0,5")
+            let raw = String(item.qty || '').replace(',', '.');
+            let val = parseFloat(raw);
+
+            // Kalau tidak valid atau negatif — biarkan saja, jangan paksa reset
+            // (user mungkin sedang menghapus untuk ganti angka)
+            if (isNaN(val) || val <= 0) return;
+
+            // Cap ke stok maksimum jika melebihi
             let maxStok = this.getConvertedStock(item);
-            if (parseFloat(item.qty) > maxStok) {
+            if (maxStok > 0 && val > maxStok) {
                 item.qty = maxStok;
+            } else {
+                // Simpan kembali sebagai angka bersih (dot sebagai desimal)
+                item.qty = val;
             }
         },
 
+        // Increment qty: +1 untuk bulat, +0.1 untuk desimal
+        incrementQty(item) {
+            let raw = String(item.qty || '0').replace(',', '.');
+            let current = parseFloat(raw) || 0;
+            // Deteksi apakah desimal
+            let isDecimal = current % 1 !== 0;
+            let step = isDecimal ? 0.1 : 1;
+            let newVal = Math.round((current + step) * 10000) / 10000;
+            let maxStok = this.getConvertedStock(item);
+            item.qty = (maxStok > 0) ? Math.min(newVal, maxStok) : newVal;
+        },
+
+        // Decrement qty: -1 untuk bulat, -0.1 untuk desimal, min 0.01
+        decrementQty(item) {
+            let raw = String(item.qty || '0').replace(',', '.');
+            let current = parseFloat(raw) || 0;
+            let isDecimal = current % 1 !== 0;
+            let step = isDecimal ? 0.1 : 1;
+            let newVal = Math.round((current - step) * 10000) / 10000;
+            item.qty = Math.max(newVal, 0.01);
+        },
+
         removeFromCart(index) {
+            // index adalah index asli di this.cart (bukan dari filtered)
             this.cart.splice(index, 1);
         },
 
@@ -902,6 +978,12 @@ function createOrderUnitComponent() {
             this.showConfirmModal = true;
         },
 
+        // Helper parse qty dari string/number (handle koma desimal gaya Indonesia)
+        parseQty(val) {
+            let num = parseFloat(String(val || '0').replace(',', '.'));
+            return isNaN(num) ? 0 : num;
+        },
+
         processSubmitOrder() {
             this.submitting = true;
             let targetUrl = '';
@@ -921,7 +1003,7 @@ function createOrderUnitComponent() {
                             nama_barang: c.nama_barang,
                             satuan_id: c.satuan_id,
                             satuan: st ? st.nama_satuan : c.satuan_nama,
-                            jumlah_input: c.qty,
+                            jumlah_input: this.parseQty(c.qty),
                             faktor_konversi: st ? st.konversi_ke_base : 1,
                             pembangunan_unit_rap_bahan_id: c.rap_id,
                             alasan: c.alasan
@@ -938,7 +1020,7 @@ function createOrderUnitComponent() {
                         return {
                             id: c.barang_id,
                             satuan_id: c.satuan_id,
-                            jumlah_input: c.qty
+                            jumlah_input: this.parseQty(c.qty)
                         };
                     })
                 };
@@ -952,7 +1034,7 @@ function createOrderUnitComponent() {
                         return {
                             id: c.barang_id,
                             satuan_id: c.satuan_id,
-                            jumlah_input: c.qty
+                            jumlah_input: this.parseQty(c.qty)
                         };
                     })
                 };

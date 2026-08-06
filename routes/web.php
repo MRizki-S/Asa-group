@@ -516,9 +516,9 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
         Route::post('/transfer-stock-penyesuain/store', [TransferPenyesuainStockController::class, 'store'])->name('gudang.transferStockBarang.storePenyesuaian');
 
         // Master Barang mutation
-        Route::post('/master-barang', [MasterBarangController::class, 'store']);
-        Route::put('/master-barang/{id}', [MasterBarangController::class, 'update']);
-        Route::delete('/master-barang/{id}', [MasterBarangController::class, 'destroy']);
+        Route::post('/master-barang', [MasterBarangController::class, 'store'])->name('gudang.masterBarang.store');
+        Route::put('/master-barang/{id}', [MasterBarangController::class, 'update'])->name('gudang.masterBarang.update');
+        Route::delete('/master-barang/{id}', [MasterBarangController::class, 'destroy'])->name('gudang.masterBarang.destroy');
 
         // Barang Rakitan
         Route::post('/produksi-rakitan', [ProduksiRakitanController::class, 'store']);

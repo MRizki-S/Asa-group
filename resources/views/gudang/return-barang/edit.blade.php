@@ -241,7 +241,7 @@
                         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jumlah Retur *</label>
-                                <input type="number" step="0.001" min="0.001" :max="item.sisa_display" x-model="item.jumlah_input" @input="validateQty(item)"
+                                <input type="number" step="1" min="1" :max="item.sisa_display" x-model="item.jumlah_input" @input="validateQty(item)"
                                     class="w-full text-xs font-bold p-2 rounded-lg border-gray-300 bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500">
                             </div>
                             <div>
@@ -516,6 +516,10 @@
                 if (this.isInCart(b.barang_id)) return;
 
                 const baseOpt = b.satuan_options.find(s => s.is_base) || b.satuan_options[0];
+                const konv = parseFloat(baseOpt ? baseOpt.konversi_ke_base : 1.0) || 1.0;
+                const sisaDisplay = Math.round((b.sisa_retur_base / konv) * 1000) / 1000;
+                const initialQty = Math.min(1, sisaDisplay);
+
                 const item = {
                     barang_id: b.barang_id,
                     nama_barang: b.nama_barang,
@@ -523,8 +527,8 @@
                     sisa_base: b.sisa_retur_base,
                     satuan_id: baseOpt ? baseOpt.satuan_id : b.base_satuan_id,
                     satuan_nama: baseOpt ? baseOpt.nama_satuan : b.base_satuan_nama,
-                    sisa_display: b.sisa_retur_base,
-                    jumlah_input: 1,
+                    sisa_display: sisaDisplay,
+                    jumlah_input: initialQty,
                     catatan: '',
                     satuan_options: b.satuan_options
                 };
@@ -559,15 +563,17 @@
                 if (opt) {
                     item.satuan_nama = opt.nama_satuan;
                     const konv = parseFloat(opt.konversi_ke_base) || 1.0;
-                    item.sisa_display = Math.floor((item.sisa_base / konv) * 1000) / 1000;
-                    if (parseFloat(item.jumlah_input) > item.sisa_display) {
-                        item.jumlah_input = item.sisa_display;
-                    }
+                    item.sisa_display = Math.round((item.sisa_base / konv) * 1000) / 1000;
+                    this.validateQty(item);
                 }
             },
 
             validateQty(item) {
-                if (parseFloat(item.jumlah_input) > item.sisa_display) {
+                let val = parseFloat(item.jumlah_input);
+                if (isNaN(val) || val <= 0) {
+                    return; // Biarkan kosong/sedang mengetik
+                }
+                if (val > item.sisa_display) {
                     item.jumlah_input = item.sisa_display;
                 }
             },
@@ -577,6 +583,21 @@
                     Swal.fire('Peringatan', 'Keranjang retur masih kosong.', 'warning');
                     return;
                 }
+
+                // Validasi setiap item di keranjang
+                for (let c of this.cart) {
+                    let val = parseFloat(c.jumlah_input);
+                    if (isNaN(val) || val <= 0) {
+                        Swal.fire('Peringatan', `Jumlah retur untuk barang "${c.nama_barang}" tidak boleh kosong atau 0.`, 'warning');
+                        return;
+                    }
+                    if (val > c.sisa_display) {
+                        c.jumlah_input = c.sisa_display;
+                        Swal.fire('Peringatan', `Jumlah retur "${c.nama_barang}" melebihi batas sisa maks (${c.sisa_display} ${c.satuan_nama}). Disesuaikan ke batas maksimum.`, 'warning');
+                        return;
+                    }
+                }
+
                 this.showConfirmModal = true;
             },
 
