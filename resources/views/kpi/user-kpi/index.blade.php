@@ -28,7 +28,7 @@
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Daftar Penilaian Periode
-                        {{ $bulanFilter }}/{{ $tahunFilter }}</h3>
+                        {{ $bulanFilter ?: 'Semua Bulan' }}/{{ $tahunFilter }}</h3>
                     <div class="flex items-center gap-2">
                         @can('kpi.kpi-user.export')
                             <button type="button" id="btnExportModal"
@@ -210,7 +210,7 @@
                 <div>
                     <h4 class="text-base font-semibold text-gray-800 dark:text-white">Export Excel KPI</h4>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        Periode: {{ date('F', mktime(0, 0, 0, $bulanFilter, 1)) }} {{ $tahunFilter }}
+                        Periode: {{ $bulanFilter ? date('F', mktime(0, 0, 0, (int)$bulanFilter, 1)) : 'Semua Bulan' }} {{ $tahunFilter }}
                     </p>
                 </div>
                 <button type="button" id="btnCloseModal"

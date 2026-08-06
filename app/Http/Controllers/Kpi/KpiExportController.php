@@ -266,10 +266,10 @@ class KpiExportController extends Controller
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        $bulan   = (int)$request->bulan ?? date('n');
-        $tahun   = (int)$request->tahun ?? date('Y');
-        $periode = date('F_Y', mktime(0, 0, 0, $bulan, 1, $tahun));
-        $filename = "Rekap_KPI_Karyawan_{$periode}.xlsx";
+        $bulan = $request->input('bulan');
+        $tahun = (int)$request->input('tahun', date('Y'));
+        $periode = ($bulan !== null && $bulan !== '') ? date('F_Y', mktime(0, 0, 0, (int)$bulan, 1, $tahun)) : 'Semua_Bulan';
+        $filename = "Rekap_KPI_Karyawan_{$periode}_{$tahun}.xlsx";
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 

@@ -74,7 +74,7 @@ class KpiReviewController extends Controller
     {
         $request->validate([
             'skor_custom'   => 'required|array',
-            'skor_custom.*' => 'in:0,70',
+            'skor_custom.*' => 'in:0,70,100',
             'status'        => 'required|in:draft,final',
         ]);
 
@@ -134,7 +134,7 @@ class KpiReviewController extends Controller
 
         try {
             // $this->notificationPribadi->sendWhatsApp($manager->no_hp, $message);
-            $this->notificationPribadi->sendWhatsApp("089685813512", $message);
+            $this->notificationPribadi->sendWhatsApp("085238617670", $message);
             return back()->with('success', 'Permintaan dikirim');
         } catch (\Exception $e) {
         }

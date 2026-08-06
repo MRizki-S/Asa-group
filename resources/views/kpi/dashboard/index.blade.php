@@ -56,13 +56,13 @@
                     Reset
                 </a>
 
-                <a href="{{ route('kpi.dashboard.export', ['tahun' => request('tahun', $tahun), 'jabatan' => request('jabatan'), 'devisi' => request('devisi')]) }}"
+                <button type="submit" formaction="{{ route('kpi.dashboard.export') }}"
                    class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2 focus:outline-none flex items-center gap-2">
                     <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 18">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 1v11m0 0 4-4m-4 4L4 8m11 4v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3"/>
                     </svg>
                     Export
-                </a>
+                </button>
             </div>
         </form>
     </div>
@@ -109,32 +109,56 @@
                             <td class="px-2 py-1.5 border-r border-gray-300 font-medium text-gray-900 dark:text-white dark:border-gray-700" title="{{ $user['nama'] }}">{{ $user['nama'] }}</td>
                             <td class="px-2 py-1.5 border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" title="{{ $user['jabatan'] }}">{{ $user['jabatan'] }}</td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['januari'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['februari'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['maret'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['januari']) ? rtrim(rtrim(number_format($user['bulan']['januari'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['februari']) ? rtrim(rtrim(number_format($user['bulan']['februari'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['maret']) ? rtrim(rtrim(number_format($user['bulan']['maret'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-yellow-100 font-bold text-yellow-900 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-gray-700">
-                                {{ $user['q1'] ? rtrim(rtrim(number_format($user['q1'], 2, ',', '.'), '0'), ',') : '-' }}
+                                {{ !is_null($user['q1']) ? rtrim(rtrim(number_format($user['q1'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['april'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['mei'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['juni'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['april']) ? rtrim(rtrim(number_format($user['bulan']['april'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['mei']) ? rtrim(rtrim(number_format($user['bulan']['mei'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['juni']) ? rtrim(rtrim(number_format($user['bulan']['juni'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-green-100 font-bold text-green-900 dark:bg-green-950/20 dark:text-green-400 dark:border-gray-700">
-                                {{ $user['q2'] ? rtrim(rtrim(number_format($user['q2'], 2, ',', '.'), '0'), ',') : '-' }}
+                                {{ !is_null($user['q2']) ? rtrim(rtrim(number_format($user['q2'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['juli'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['agustus'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['september'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['juli']) ? rtrim(rtrim(number_format($user['bulan']['juli'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['agustus']) ? rtrim(rtrim(number_format($user['bulan']['agustus'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['september']) ? rtrim(rtrim(number_format($user['bulan']['september'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
                             <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-blue-100 font-bold text-blue-900 dark:bg-blue-950/20 dark:text-blue-400 dark:border-gray-700">
-                                {{ $user['q3'] ? rtrim(rtrim(number_format($user['q3'], 2, ',', '.'), '0'), ',') : '-' }}
+                                {{ !is_null($user['q3']) ? rtrim(rtrim(number_format($user['q3'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['oktober'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['november'] ?? '-' }}</td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">{{ $user['bulan']['desember'] ?? '-' }}</td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['oktober']) ? rtrim(rtrim(number_format($user['bulan']['oktober'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['november']) ? rtrim(rtrim(number_format($user['bulan']['november'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
+                                {{ !is_null($user['bulan']['desember']) ? rtrim(rtrim(number_format($user['bulan']['desember'], 2, ',', '.'), '0'), ',') : '-' }}
+                            </td>
                             <td class="px-1 py-1.5 text-center bg-red-100 font-bold text-red-900 dark:bg-red-950/20 dark:text-red-400">
-                                {{ $user['q4'] ? rtrim(rtrim(number_format($user['q4'], 2, ',', '.'), '0'), ',') : '-' }}
+                                {{ !is_null($user['q4']) ? rtrim(rtrim(number_format($user['q4'], 2, ',', '.'), '0'), ',') : '-' }}
                             </td>
                         </tr>
                     @endforeach

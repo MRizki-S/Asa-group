@@ -52,6 +52,7 @@ class KpiDashboardController extends Controller
         $kpiScores = DB::table('kpi_user')
             ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
             ->where('kpi_user.tahun', $tahun)
+            ->where('kpi_user.status', 'final')
             ->select(
                 'kpi_user.karyawan_id as user_id',
                 'kpi_user.bulan',
@@ -118,6 +119,13 @@ class KpiDashboardController extends Controller
             ];
         }
 
+        // Sort devisi names alphabetically, keeping LAINNYA at the end
+        uksort($dashboardData, function ($a, $b) {
+            if ($a === 'LAINNYA') return 1;
+            if ($b === 'LAINNYA') return -1;
+            return strcasecmp($a, $b);
+        });
+
         // 4. Calculate Quarter averages
         $quarters = [
             'q1' => ['januari', 'februari', 'maret'],
@@ -139,12 +147,9 @@ class KpiDashboardController extends Controller
                 }
             }
         }
-        // Sort devisi names alphabetically, but ensure 'LAINNYA' is always at the very bottom
-        uksort($dashboardData, function ($a, $b) {
-            if ($a === 'LAINNYA') return 1;
-            if ($b === 'LAINNYA') return -1;
-            return strcasecmp($a, $b);
-        });
+
+        unset($users);
+        unset($data);
 
         return view('kpi.dashboard.index', [
             'tahun' => $tahun,
@@ -194,6 +199,7 @@ class KpiDashboardController extends Controller
         $kpiScores = DB::table('kpi_user')
             ->join('kpi_user_komponen', 'kpi_user.id', '=', 'kpi_user_komponen.kpi_user_id')
             ->where('kpi_user.tahun', $tahun)
+            ->where('kpi_user.status', 'final')
             ->select(
                 'kpi_user.karyawan_id as user_id',
                 'kpi_user.bulan',
@@ -254,6 +260,13 @@ class KpiDashboardController extends Controller
             ];
         }
 
+        // Sort devisi names alphabetically, keeping LAINNYA at the end
+        uksort($dashboardData, function ($a, $b) {
+            if ($a === 'LAINNYA') return 1;
+            if ($b === 'LAINNYA') return -1;
+            return strcasecmp($a, $b);
+        });
+
         // 4. Calculate Quarter averages
         $quarters = [
             'q1' => ['januari', 'februari', 'maret'],
@@ -273,6 +286,8 @@ class KpiDashboardController extends Controller
                 }
             }
         }
+        unset($users);
+        unset($data);
 
         // Sort devisi names alphabetically, but ensure 'LAINNYA' is always at the very bottom
         uksort($dashboardData, function ($a, $b) {
@@ -338,7 +353,7 @@ class KpiDashboardController extends Controller
         $sheet->getStyle('A4:R4')->applyFromArray($borderStyle);
 
         $rowNum = 5;
-        foreach ($dashboardData as $devisiName => $users) {
+        foreach ($dashboardData as $devisiName => $devisiUsers) {
             // Add Devisi group subheader in Excel
             $sheet->mergeCells("A{$rowNum}:R{$rowNum}");
             $sheet->setCellValue("A{$rowNum}", strtoupper($devisiName));
@@ -356,7 +371,7 @@ class KpiDashboardController extends Controller
             $sheet->getStyle("A{$rowNum}:R{$rowNum}")->applyFromArray($borderStyle);
             $rowNum++;
 
-            foreach ($users as $user) {
+            foreach ($devisiUsers as $user) {
                 $sheet->setCellValue('A' . $rowNum, $user['nama']);
                 $sheet->setCellValue('B' . $rowNum, $user['jabatan']);
 
@@ -386,7 +401,7 @@ class KpiDashboardController extends Controller
                 $sheet->getStyle('R' . $rowNum)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
                 $sheet->getStyle('R' . $rowNum)->getFont()->getColor()->setARGB('FFFFFFFF');
 
-                $sheet->getStyle("F{$rowNum}:R{$rowNum}")->getNumberFormat()->setFormatCode('#,##0.00');
+                $sheet->getStyle("C{$rowNum}:R{$rowNum}")->getNumberFormat()->setFormatCode('#,##0.##');
 
                 $sheet->getStyle('C' . $rowNum . ':R' . $rowNum)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 

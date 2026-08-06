@@ -25,15 +25,18 @@ class KpiUserController extends Controller
      */
     public function index(Request $request)
     {
-        $bulanFilter = $request->get('bulan', date('m')) ?? Carbon::now()->month;
+        $bulanFilter = $request->has('bulan') ? $request->get('bulan') : date('m');
         $tahunFilter = $request->get('tahun', date('Y')) ?? Carbon::now()->year;
         $roleFilter = $request->get('role');
         $statusFilter = $request->get('status');
         $devisiFilter = $request->get('devisi');
 
         $query = KpiUser::with(['karyawan', 'details', 'karyawan.role.devisi'])
-            ->where('bulan', (int) $bulanFilter)
             ->where('tahun', (int) $tahunFilter);
+
+        if ($bulanFilter !== null && $bulanFilter !== '') {
+            $query->where('bulan', (int) $bulanFilter);
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $statusFilter);
