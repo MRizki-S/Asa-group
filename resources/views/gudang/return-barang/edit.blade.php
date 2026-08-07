@@ -109,6 +109,24 @@
                     <input type="text" readonly value="{{ $return->qc?->nama_qc ?? '-' }}"
                         class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Unit</label>
+                    <input type="text" disabled value="{{ $return->pembangunanUnit?->pengawas?->nama_lengkap ?? '-' }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
+                    <input type="text" disabled value="{{ $return->pembangunanUnit?->subcon ?? '-' }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
             @elseif($category === 'pembangunan_kawasan')
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pembangunan Kawasan</label>
@@ -121,19 +139,43 @@
                     <input type="text" readonly :value="selectedKawasanPeriodeName" placeholder="Mendeteksi periode aktif..."
                         class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-600 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Kawasan</label>
+                    <input type="text" disabled value="{{ $return->kawasan?->pengawas?->nama_lengkap ?? '-' }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
+                    <input type="text" disabled value="{{ $return->kawasan?->periodes->first()?->subcon ?? '-' }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
             @else
-                <div class="md:col-span-2">
+                <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pembangunan Proyek</label>
                     <input type="text" readonly value="{{ $return->proyek?->nama_project ?? $return->proyek?->nama ?? '-' }}"
                         class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
-            @endif
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
-                <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
-                    class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-            </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Proyek</label>
+                    <input type="text" disabled value="{{ $return->proyek?->pengawas?->nama_lengkap ?? '-' }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+            @endif
 
             <div class="md:col-span-3">
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Catatan Pengajuan Retur (Opsional)</label>
@@ -239,10 +281,34 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <!-- Input Jumlah Retur dengan tombol - dan + -->
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jumlah Retur *</label>
-                                <input type="number" step="1" min="1" :max="item.sisa_display" x-model="item.jumlah_input" @input="validateQty(item)"
-                                    class="w-full text-xs font-bold p-2 rounded-lg border-gray-300 bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500">
+                                <div class="flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 overflow-hidden">
+                                    <!-- Tombol kurang -->
+                                    <button type="button"
+                                        @click="decrementQty(item)"
+                                        class="px-2 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 transition-colors select-none shrink-0"
+                                        title="Kurangi">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+                                    </button>
+                                    <!-- Input langsung -->
+                                    <input
+                                        type="text"
+                                        inputmode="decimal"
+                                        x-model="item.jumlah_input"
+                                        @change="validateQtyOnChange(item)"
+                                        placeholder="0"
+                                        class="w-full text-xs font-bold text-center bg-transparent text-gray-800 dark:text-white border-0 focus:ring-0 focus:outline-none p-1"
+                                    >
+                                    <!-- Tombol tambah -->
+                                    <button type="button"
+                                        @click="incrementQty(item)"
+                                        class="px-2 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 transition-colors select-none shrink-0"
+                                        title="Tambah">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Satuan</label>
@@ -425,6 +491,7 @@
                     'satuan_id' => $d->satuan_id,
                     'satuan_nama' => $d->satuan,
                     'jumlah_input' => (float)$d->jumlah_input,
+                    'jumlah_base' => (float)($d->jumlah_base ?? $d->jumlah_input),
                     'catatan' => $d->alasan_return ?? '',
                 ];
             })->values()->all()) !!},
@@ -469,7 +536,19 @@
                 for (let initItem of this.initialDetails) {
                     let summaryItem = this.availableBarangList.find(b => b.barang_id == initItem.barang_id);
                     let satuanOptions = summaryItem ? summaryItem.satuan_options : [];
-                    let sisaBase = summaryItem ? (summaryItem.sisa_retur_base + (initItem.jumlah_input * 1.0)) : initItem.jumlah_input;
+                    
+                    let initKonv = 1.0;
+                    if (satuanOptions.length > 0) {
+                        let matchedOpt = satuanOptions.find(s => s.satuan_id == initItem.satuan_id);
+                        if (matchedOpt) {
+                            initKonv = parseFloat(matchedOpt.konversi_ke_base) || 1.0;
+                        }
+                    }
+
+                    let currentItemBaseQty = initItem.jumlah_base || (initItem.jumlah_input * initKonv);
+                    // Karena backend summary hanya menghitung status ['diajukan', 'diproses', 'selesai'] (retur status 'ditolak' DIKECUALIKAN),
+                    // sisa_retur_base dari API summary SUDAH memperhitungkan seluruh sisa batas retur yang tersedia (termasuk kuantitas dari retur ditolak ini).
+                    let sisaBase = summaryItem ? summaryItem.sisa_retur_base : currentItemBaseQty;
 
                     let baseOpt = satuanOptions.find(s => s.is_base) || (satuanOptions.length > 0 ? satuanOptions[0] : { satuan_id: initItem.satuan_id, nama_satuan: initItem.satuan_nama, konversi_ke_base: 1.0 });
 
@@ -564,18 +643,39 @@
                     item.satuan_nama = opt.nama_satuan;
                     const konv = parseFloat(opt.konversi_ke_base) || 1.0;
                     item.sisa_display = Math.round((item.sisa_base / konv) * 1000) / 1000;
-                    this.validateQty(item);
+                    this.validateQtyOnChange(item);
                 }
             },
 
-            validateQty(item) {
-                let val = parseFloat(item.jumlah_input);
-                if (isNaN(val) || val <= 0) {
-                    return; // Biarkan kosong/sedang mengetik
+            validateQtyOnChange(item) {
+                let raw = String(item.jumlah_input || '').replace(',', '.');
+                let val = parseFloat(raw);
+                if (isNaN(val) || val <= 0) return;
+                let maxRetur = parseFloat(item.sisa_display || 0);
+                if (maxRetur > 0 && val > maxRetur) {
+                    item.jumlah_input = maxRetur;
+                } else {
+                    item.jumlah_input = val;
                 }
-                if (val > item.sisa_display) {
-                    item.jumlah_input = item.sisa_display;
-                }
+            },
+
+            incrementQty(item) {
+                let raw = String(item.jumlah_input || '0').replace(',', '.');
+                let current = parseFloat(raw) || 0;
+                let isDecimal = current % 1 !== 0;
+                let step = isDecimal ? 0.1 : 1;
+                let newVal = Math.round((current + step) * 10000) / 10000;
+                let maxRetur = parseFloat(item.sisa_display || 0);
+                item.jumlah_input = (maxRetur > 0) ? Math.min(newVal, maxRetur) : newVal;
+            },
+
+            decrementQty(item) {
+                let raw = String(item.jumlah_input || '0').replace(',', '.');
+                let current = parseFloat(raw) || 0;
+                let isDecimal = current % 1 !== 0;
+                let step = isDecimal ? 0.1 : 1;
+                let newVal = Math.round((current - step) * 10000) / 10000;
+                item.jumlah_input = Math.max(newVal, 0.01);
             },
 
             openConfirmModal() {

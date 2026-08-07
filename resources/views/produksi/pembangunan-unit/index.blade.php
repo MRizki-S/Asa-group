@@ -127,13 +127,13 @@
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Tahap</th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Nama</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    SPV</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Progres & Status</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                                    Pengawas</th>
+                                    RAP Acuan</th>
+                                    <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                        Progres & Status</th>
+                                    <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                        Pengawas</th>
+                                    <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                        Subcon</th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Serah Terima</th>
                             </tr>
@@ -150,10 +150,6 @@
                                     <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
                                         {{ $item->qcContainer->nama_container }}
                                     </td>
-                                    <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
-                                        {{ $item->spv->nama_lengkap ?? '-' }}
-                                    </td>
-
                                     <td class="p-0 text-center" style="padding: 0 !important;">
                                         @php
                                             $bgClass = 'bg-blue-500 hover:bg-blue-600';
@@ -184,6 +180,10 @@
 
                                     <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                         {{ $item->pengawas->nama_lengkap ?? '-' }}
+                                    </td>
+
+                                    <td class="font-medium text-gray-600 whitespace-nowrap dark:text-gray-400 text-center">
+                                        {{ $item->subcon ?? '-' }}
                                     </td>
 
                                     <td class="whitespace-nowrap text-center">

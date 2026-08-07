@@ -16,6 +16,7 @@ class PembangunanUnit extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status_pembangunan',
+        'subcon',
         'status_serah_terima',
         'qc_container_id'
     ];

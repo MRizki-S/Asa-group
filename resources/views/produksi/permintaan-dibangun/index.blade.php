@@ -17,6 +17,7 @@
                 'status' => $p->status_pengajuan,
                 'qcContainerName' => $p->pembangunanUnit->qcContainer->nama_container ?? '-',
                 'pengawas' => $p->pembangunanUnit->pengawas->nama_lengkap ?? '-',
+                'subcon' => $p->pembangunanUnit->subcon ?? '-',
                 'spvName' => $p->pembangunanUnit->spv->nama_lengkap ?? '-',
                 'tanggal' => \Carbon\Carbon::parse($p->tanggal_diajukan)->format('d M Y H:i:s'),
                 'tanggal_respon' => $p->tanggal_direspon
@@ -119,6 +120,11 @@
                                 <span class="text-gray-400">Pengawas:</span>
                                 <span class="text-gray-700 dark:text-gray-300 font-medium"
                                     x-text="item.pengawas"></span>
+                            </div>
+                            <div class="flex justify-between text-[11px] items-center">
+                                <span class="text-gray-400">Subcon:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium"
+                                    x-text="item.subcon"></span>
                             </div>
                             <div class="flex justify-between text-[11px] items-center">
                                 <span class="text-gray-400">Waktu:</span>

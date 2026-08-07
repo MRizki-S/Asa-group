@@ -210,6 +210,11 @@
                                 </select>
                             </div>
 
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Subcon <span class="text-red-500">*</span></label>
+                                <input type="text" name="subcon" required placeholder="Masukkan subcon..." class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                            </div>
+
                             <div x-data="{ simpanMulai: '{{ date('Y-m-d') }}', simpanSelesai: '', endPicker: null }">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>

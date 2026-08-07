@@ -142,6 +142,7 @@ class PembangunanUnitOrderBarangController extends Controller
                 if (!empty($item['pembangunan_unit_rap_bahan_id'])) {
                     $rapBahan = \App\Models\PembangunanUnitRapBahan::findOrFail($item['pembangunan_unit_rap_bahan_id']);
                     $alreadyOrderedBase = PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rapBahan->id)
+                        ->whereHas('order', fn($q) => $q->where('status_order', '!=', 'ditolak'))
                         ->sum('jumlah_base');
 
                     $rapTotalBase = (float) $rapBahan->jumlah_standar * (float) $rapBahan->faktor_konversi;

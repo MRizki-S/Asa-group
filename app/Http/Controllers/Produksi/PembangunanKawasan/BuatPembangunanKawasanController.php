@@ -138,6 +138,7 @@ class BuatPembangunanKawasanController extends Controller
 
         $request->validate([
             'pengawas_id' => 'required|exists:users,id',
+            'subcon' => 'required|string|max:255',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'nullable|date',
         ]);
@@ -145,6 +146,7 @@ class BuatPembangunanKawasanController extends Controller
         $periode = \App\Models\PembangunanKawasanPeriode::create([
             'pembangunan_kawasan_id' => $kawasan->id,
             'pengawas_id' => $request->pengawas_id,
+            'subcon' => $request->subcon,
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_selesai' => $request->tanggal_selesai,
             'status' => 'proses',

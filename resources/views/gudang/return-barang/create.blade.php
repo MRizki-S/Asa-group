@@ -85,17 +85,21 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             @if($category === 'pembangunan_unit')
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pembangunan Unit <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tipe Pembangunan <span class="text-red-500">*</span></label>
+                    <select x-model="jenisPembangunan" @change="onJenisPembangunanChange()"
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                        <option value="pembangunan">Pembangunan (Proses)</option>
+                        <option value="servis">Servis (Selesai)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Unit <span class="text-red-500">*</span></label>
                     <select x-ref="unitSelect" name="pembangunan_unit_id" required
                         class="w-full">
                         <option value="">-- Pilih Pembangunan Unit --</option>
                         @foreach($pembangunanUnits as $pu)
-                            @php
-                                $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
-                                $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
-                                $namaUnit = $pu->unit->nama_unit ?? '-';
-                            @endphp
-                            <option value="{{ $pu->id }}">{{ $namaPerumahan }} - {{ $namaTahap }} ({{ $namaUnit }})</option>
+                            <option value="{{ $pu->id }}">{{ $pu->label_formatted }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -110,9 +114,27 @@
                         </template>
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Unit</label>
+                    <input type="text" disabled :value="selectedUnitInfo?.pengawas_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
+                    <input type="text" disabled :value="selectedUnitInfo?.subcon_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
             @elseif($category === 'pembangunan_kawasan')
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pembangunan Kawasan <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Kawasan <span class="text-red-500">*</span></label>
                     <select x-ref="kawasanSelect" name="pembangunan_kawasan_id" required
                         class="w-full">
                         <option value="">-- Pilih Pembangunan Kawasan --</option>
@@ -127,9 +149,27 @@
                     <input type="text" readonly :value="selectedKawasanPeriodeName" placeholder="Otomatis mendeteksi periode aktif..."
                         class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-600 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Kawasan</label>
+                    <input type="text" disabled :value="selectedKawasanInfo?.pengawas_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
+                    <input type="text" disabled :value="selectedKawasanInfo?.subcon_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
             @elseif($category === 'pembangunan_proyek_mangoon' || $category === 'pembangunan_proyek')
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pembangunan Proyek <span class="text-red-500">*</span></label>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Proyek <span class="text-red-500">*</span></label>
                     <select x-ref="proyekSelect" name="pembangunan_proyek_id" required
                         class="w-full">
                         <option value="">-- Pilih Pembangunan Proyek --</option>
@@ -138,13 +178,19 @@
                         @endforeach
                     </select>
                 </div>
-            @endif
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
-                <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
-                    class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-            </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Proyek</label>
+                    <input type="text" disabled :value="selectedProyekInfo?.pengawas_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+            @endif
 
             <div class="md:col-span-3">
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Catatan Pengajuan Retur (Opsional)</label>
@@ -254,10 +300,34 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <!-- Input Jumlah Retur dengan tombol - dan + -->
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Jumlah Retur *</label>
-                                <input type="number" step="1" min="1" :max="item.sisa_display" x-model="item.jumlah_input" @input="validateQty(item)"
-                                    class="w-full text-xs font-bold p-2 rounded-lg border-gray-300 bg-white text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500">
+                                <div class="flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 overflow-hidden">
+                                    <!-- Tombol kurang -->
+                                    <button type="button"
+                                        @click="decrementQty(item)"
+                                        class="px-2 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 transition-colors select-none shrink-0"
+                                        title="Kurangi">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+                                    </button>
+                                    <!-- Input langsung -->
+                                    <input
+                                        type="text"
+                                        inputmode="decimal"
+                                        x-model="item.jumlah_input"
+                                        @change="validateQtyOnChange(item)"
+                                        placeholder="0"
+                                        class="w-full text-xs font-bold text-center bg-transparent text-gray-800 dark:text-white border-0 focus:ring-0 focus:outline-none p-1"
+                                    >
+                                    <!-- Tombol tambah -->
+                                    <button type="button"
+                                        @click="incrementQty(item)"
+                                        class="px-2 py-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 transition-colors select-none shrink-0"
+                                        title="Tambah">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Satuan</label>
@@ -442,7 +512,44 @@
             targetId: '',
             selectedQcList: [],
             selectedKawasanPeriodeName: '',
-            hasActivePeriode: true,
+            jenisPembangunan: 'pembangunan',
+            get filteredPembangunanUnits() {
+                if (this.jenisPembangunan === 'servis') {
+                    return this.pembangunanUnits.filter(pu => pu.is_selesai);
+                }
+                return this.pembangunanUnits.filter(pu => !pu.is_selesai);
+            },
+            onJenisPembangunanChange() {
+                this.pembangunanUnitId = '';
+                this.targetId = '';
+                this.selectedQcList = [];
+                this.availableBarangList = [];
+                this.cart = [];
+
+                let unitSelectEl = $(this.$refs.unitSelect);
+                let qcSelectEl = $(this.$refs.qcSelect);
+
+                unitSelectEl.val('').empty().append('<option value="">-- Pilih Pembangunan Unit --</option>');
+                this.filteredPembangunanUnits.forEach(pu => {
+                    unitSelectEl.append(new Option(pu.label_formatted, pu.id, false, false));
+                });
+                unitSelectEl.trigger('change.select2');
+
+                qcSelectEl.val('').empty().append('<option value="">-- Pilih QC --</option>').trigger('change.select2');
+            },
+            
+            get selectedUnitInfo() {
+                if (!this.pembangunanUnitId) return null;
+                return this.pembangunanUnits.find(pu => pu.id == this.pembangunanUnitId) || null;
+            },
+            get selectedKawasanInfo() {
+                if (!this.targetId) return null;
+                return this.pembangunanKawasan.find(pk => pk.id == this.targetId) || null;
+            },
+            get selectedProyekInfo() {
+                if (!this.targetId) return null;
+                return this.pembangunanProyek.find(pp => pp.id == this.targetId) || null;
+            },
             
             availableBarangList: [],
             searchQuery: '',
@@ -459,7 +566,13 @@
                     const category = this.category;
 
                     if (category === 'pembangunan_unit') {
-                        $(this.$refs.unitSelect).select2({
+                        let unitSelectEl = $(this.$refs.unitSelect);
+                        unitSelectEl.empty().append('<option value="">-- Pilih Pembangunan Unit --</option>');
+                        this.filteredPembangunanUnits.forEach(pu => {
+                            unitSelectEl.append(new Option(pu.label_formatted, pu.id, false, false));
+                        });
+
+                        unitSelectEl.select2({
                             theme: 'bootstrap4',
                             placeholder: '-- Pilih Pembangunan Unit --',
                             allowClear: true,
@@ -512,7 +625,13 @@
                 this.availableBarangList = [];
                 this.cart = [];
                 const found = this.pembangunanUnits.find(u => u.id == this.pembangunanUnitId);
-                this.selectedQcList = found ? found.pembangunan_unit_qc : [];
+                const allQcs = found ? (found.pembangunan_unit_qc || []) : [];
+
+                if (this.jenisPembangunan === 'servis') {
+                    this.selectedQcList = allQcs.filter(q => Boolean(q.is_servis));
+                } else {
+                    this.selectedQcList = allQcs.filter(q => !q.is_servis);
+                }
 
                 this.$nextTick(() => {
                     const qcEl = $(this.$refs.qcSelect);
@@ -648,18 +767,39 @@
                     item.satuan_nama = opt.nama_satuan;
                     const konv = parseFloat(opt.konversi_ke_base) || 1.0;
                     item.sisa_display = Math.round((item.sisa_base / konv) * 1000) / 1000;
-                    this.validateQty(item);
+                    this.validateQtyOnChange(item);
                 }
             },
 
-            validateQty(item) {
-                let val = parseFloat(item.jumlah_input);
-                if (isNaN(val) || val <= 0) {
-                    return; // Biarkan kosong/sedang mengetik
+            validateQtyOnChange(item) {
+                let raw = String(item.jumlah_input || '').replace(',', '.');
+                let val = parseFloat(raw);
+                if (isNaN(val) || val <= 0) return;
+                let maxRetur = parseFloat(item.sisa_display || 0);
+                if (maxRetur > 0 && val > maxRetur) {
+                    item.jumlah_input = maxRetur;
+                } else {
+                    item.jumlah_input = val;
                 }
-                if (val > item.sisa_display) {
-                    item.jumlah_input = item.sisa_display;
-                }
+            },
+
+            incrementQty(item) {
+                let raw = String(item.jumlah_input || '0').replace(',', '.');
+                let current = parseFloat(raw) || 0;
+                let isDecimal = current % 1 !== 0;
+                let step = isDecimal ? 0.1 : 1;
+                let newVal = Math.round((current + step) * 10000) / 10000;
+                let maxRetur = parseFloat(item.sisa_display || 0);
+                item.jumlah_input = (maxRetur > 0) ? Math.min(newVal, maxRetur) : newVal;
+            },
+
+            decrementQty(item) {
+                let raw = String(item.jumlah_input || '0').replace(',', '.');
+                let current = parseFloat(raw) || 0;
+                let isDecimal = current % 1 !== 0;
+                let step = isDecimal ? 0.1 : 1;
+                let newVal = Math.round((current - step) * 10000) / 10000;
+                item.jumlah_input = Math.max(newVal, 0.01);
             },
 
             openConfirmModal() {

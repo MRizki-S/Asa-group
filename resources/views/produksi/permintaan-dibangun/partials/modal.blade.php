@@ -54,6 +54,12 @@
                     </div>
 
                     <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Subcon <span class="text-red-500">*</span></label>
+                        <input type="text" name="subcon" required placeholder="Masukkan subcon..."
+                            class="w-full text-gray-700 rounded-lg border border-gray-200 bg-gray-50 p-2.5 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all outline-none">
+                    </div>
+
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">QC (Quality Control)</label>
                         <select name="qc_container_id" required id="selectQC"
                             class="w-full text-gray-700 rounded-lg border-gray-200 bg-gray-50 text-sm focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-all">

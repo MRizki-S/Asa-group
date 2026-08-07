@@ -158,12 +158,14 @@ class PermintaanDibangunController extends Controller
 
         $validated = $request->validate([
             'pengawas_id' => 'required|integer|exists:users,id',
+            'subcon' => 'required|string|max:255',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
         ]);
 
         $pembangunan->update([
             'pengawas_id' => $validated['pengawas_id'],
+            'subcon' => $validated['subcon'],
             'tanggal_mulai' => $validated['tanggal_mulai'],
             'tanggal_selesai' => $validated['tanggal_selesai'],
         ]);
@@ -218,6 +220,11 @@ class PermintaanDibangunController extends Controller
 
         try {
             DB::beginTransaction();
+
+            $unit = Unit::lockForUpdate()->findOrFail($validated['unit_id']);
+            if ($unit->status_pembangunan !== 'belum dibangun') {
+                throw new \Exception("Unit {$unit->nama_unit} sudah pernah diajukan / sedang dalam pembangunan / telah selesai.");
+            }
 
             $pembangunan = PembangunanUnit::create([
                 'unit_id' => $validated['unit_id'],
@@ -334,7 +341,7 @@ class PermintaanDibangunController extends Controller
 
             $units = Unit::where('tahap_id', $tahapId)
                 ->where(function ($query) use ($currentUnitId) {
-                    $query->whereIn('status_pembangunan', ['belum dibangun', 'selesai dibangun']);
+                    $query->where('status_pembangunan', 'belum dibangun');
                     if ($currentUnitId) {
                         $query->orWhere('id', $currentUnitId);
                     }

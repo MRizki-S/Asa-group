@@ -186,17 +186,12 @@
         <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
 
             {{-- Kiri: Identitas --}}
-            <div class="flex-1 space-y-3">
+            <div class="flex-1 space-y-4">
                 <div>
                     <h2 class="text-xl font-bold text-gray-800 dark:text-white leading-tight">{{ $data->nama }}</h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <span><i class="fa-solid fa-location-dot me-1"></i>{{ $data->perumahan->nama_perumahaan ?? '-' }}</span>
-                        <span class="text-gray-300 dark:text-gray-600">|</span>
-                        <span><i class="fa-solid fa-user-gear me-1"></i><span class="font-semibold text-gray-600 dark:text-gray-300">Pengawas:</span> {{ $data->pengawas->nama_lengkap ?? '-' }}</span>
-                    </p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
                     {{-- Status Dropdown --}}
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative" x-data="{ openStatus: false }">
                         <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Status Pembangunan</p>
@@ -231,6 +226,29 @@
                         <p class="text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                             {{ $data->tanggal_mulai ? \Carbon\Carbon::parse($data->tanggal_mulai)->format('d M Y') : '-' }} s/d {{ $data->tanggal_selesai ? \Carbon\Carbon::parse($data->tanggal_selesai)->format('d M Y') : '-' }}
                         </p>
+                    </div>
+                </div>
+
+                @php
+                    $latestPeriode = $data->periodes()->where('status', 'proses')->latest()->first() ?? $data->periodes()->latest()->first();
+                @endphp
+
+                {{-- Disabled Input Fields: Perumahan, Pengawas, Subcon --}}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Perumahan</label>
+                        <input type="text" disabled value="{{ $data->perumahan->nama_perumahaan ?? '-' }}"
+                            class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Pengawas</label>
+                        <input type="text" disabled value="{{ $latestPeriode->pengawas->nama_lengkap ?? $data->pengawas->nama_lengkap ?? '-' }}"
+                            class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Subcon</label>
+                        <input type="text" disabled value="{{ $latestPeriode->subcon ?? '-' }}"
+                            class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
                     </div>
                 </div>
             </div>

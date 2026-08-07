@@ -318,8 +318,10 @@ class PermintaanBarangPembangunanProyekController extends Controller
                             $notaRtnId = DB::table('nota_barang_masuk')->insertGetId([
                                 'nomor_nota'   => $nomorNota,
                                 'tanggal_nota' => now()->format('Y-m-d'),
-                                'supplier'     => "Return Proyek Mangoon #{$return->pembangunan_proyek_id} ({$return->nomor_return})",
+                                'jenis_nota'   => 'return_barang',
                                 'cara_bayar'   => 'cash',
+                                'stock_type'   => 'UBS',
+                                'ubs_id'       => $ubsId,
                                 'status'       => 'posted',
                                 'created_by'   => Auth::id(),
                                 'posted_at'    => now(),

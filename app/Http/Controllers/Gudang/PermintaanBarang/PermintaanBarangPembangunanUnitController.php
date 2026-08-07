@@ -890,6 +890,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
         if ($category === 'pembangunan_unit') {
             $queryUnits = \App\Models\PembangunanUnit::with([
                 'unit.tahap.perumahaan',
+                'pengawas',
                 'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
                 'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan'
             ]);
@@ -897,18 +898,36 @@ class PermintaanBarangPembangunanUnitController extends Controller
             if ($perumahaanId) {
                 $queryUnits->where('perumahaan_id', $perumahaanId);
             }
-            $pembangunanUnits = $queryUnits->get();
+            $pembangunanUnits = $queryUnits->get()->map(function($pu) {
+                $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
+                $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
+                $namaUnit = $pu->unit->nama_unit ?? '-';
+                $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
+                $pu->is_selesai = $isSelesai;
+                $pu->label_formatted = "{$namaPerumahan} - {$namaTahap} - {$namaUnit}";
+                $pu->pengawas_nama = $pu->pengawas->nama_lengkap ?? '-';
+                $pu->subcon_nama = $pu->subcon ?? '-';
+                return $pu;
+            });
         } elseif ($category === 'pembangunan_kawasan') {
-            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'periodes' => function($q) {
+            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes' => function($q) {
                 $q->where('status', 'proses');
             }]);
             if ($perumahaanId) {
                 $queryKawasan->where('perumahaan_id', $perumahaanId);
             }
-            $pembangunanKawasan = $queryKawasan->get();
+            $pembangunanKawasan = $queryKawasan->get()->map(function($pk) {
+                $activePeriode = $pk->periodes->first();
+                $pk->pengawas_nama = $pk->pengawas->nama_lengkap ?? '-';
+                $pk->subcon_nama = $activePeriode->subcon ?? '-';
+                return $pk;
+            });
         } elseif ($category === 'pembangunan_proyek_mangoon') {
             // Proyek hanya Mangoon — tidak ada filter perumahaan_id
-            $pembangunanProyek = \App\Models\PembangunanProyek::query()->get();
+            $pembangunanProyek = \App\Models\PembangunanProyek::with('pengawas')->get()->map(function($pp) {
+                $pp->pengawas_nama = $pp->pengawas->nama_lengkap ?? '-';
+                return $pp;
+            });
         }
 
         // Ambil stok gudang
@@ -1028,8 +1047,10 @@ class PermintaanBarangPembangunanUnitController extends Controller
                         $stokGudang = (float) $rap->barang->stock->sum('jumlah_stock');
                     }
 
-                    // Hitung total akumulasi barang yang sudah diajukan/diorder dari RAP ini
-                    $totalOrderedBase = (float) \App\Models\PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rap->id)->sum('jumlah_base');
+                    // Hitung total akumulasi barang yang sudah diajukan/diorder dari RAP ini (abaikan order ditolak)
+                    $totalOrderedBase = (float) \App\Models\PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rap->id)
+                        ->whereHas('order', fn($q) => $q->where('status_order', '!=', 'ditolak'))
+                        ->sum('jumlah_base');
 
                     return [
                         'id' => $rap->id,
@@ -1224,6 +1245,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     if (!empty($item['pembangunan_unit_rap_bahan_id'])) {
                         $rapBahan = \App\Models\PembangunanUnitRapBahan::findOrFail($item['pembangunan_unit_rap_bahan_id']);
                         $alreadyOrderedBase = PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rapBahan->id)
+                            ->whereHas('order', fn($q) => $q->where('status_order', '!=', 'ditolak'))
                             ->where('order_id', '!=', $order->id)
                             ->sum('jumlah_base');
 
@@ -1319,20 +1341,41 @@ class PermintaanBarangPembangunanUnitController extends Controller
         if ($category === 'pembangunan_unit') {
             $queryUnits = \App\Models\PembangunanUnit::with([
                 'unit.tahap.perumahaan',
+                'pengawas',
                 'pembangunanUnitQc'
             ]);
             if ($perumahaanId) {
                 $queryUnits->where('perumahaan_id', $perumahaanId);
             }
-            $pembangunanUnits = $queryUnits->get();
+            $pembangunanUnits = $queryUnits->get()->map(function($pu) {
+                $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
+                $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
+                $namaUnit = $pu->unit->nama_unit ?? '-';
+                $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
+                $pu->is_selesai = $isSelesai;
+                $pu->label_formatted = "{$namaPerumahan} - {$namaTahap} - {$namaUnit}";
+                $pu->pengawas_nama = $pu->pengawas->nama_lengkap ?? '-';
+                $pu->subcon_nama = $pu->subcon ?? '-';
+                return $pu;
+            });
         } elseif ($category === 'pembangunan_kawasan') {
-            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'periodes']);
+            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes' => function($q) {
+                $q->where('status', 'proses');
+            }]);
             if ($perumahaanId) {
                 $queryKawasan->where('perumahaan_id', $perumahaanId);
             }
-            $pembangunanKawasan = $queryKawasan->get();
+            $pembangunanKawasan = $queryKawasan->get()->map(function($pk) {
+                $activePeriode = $pk->periodes->first();
+                $pk->pengawas_nama = $pk->pengawas->nama_lengkap ?? '-';
+                $pk->subcon_nama = $activePeriode->subcon ?? '-';
+                return $pk;
+            });
         } elseif ($category === 'pembangunan_proyek_mangoon') {
-            $pembangunanProyek = \App\Models\PembangunanProyek::query()->get();
+            $pembangunanProyek = \App\Models\PembangunanProyek::with('pengawas')->get()->map(function($pp) {
+                $pp->pengawas_nama = $pp->pengawas->nama_lengkap ?? '-';
+                return $pp;
+            });
         }
 
         $titles = [

@@ -122,7 +122,7 @@
                         class="w-full bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed outline-none">
                 </div>
 
-                <div class="md:col-span-2">
+                <div>
                     <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Pengawas Unit <span class="text-red-500">*</span></label>
                     <select name="pengawas_id" required id="selectPengawas"
                         class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
@@ -143,6 +143,12 @@
                             });
                         });
                     </script>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-white">Subcon <span class="text-red-500">*</span></label>
+                    <input type="text" name="subcon" required value="{{ old('subcon', $pembangunan->subcon) }}" placeholder="Masukkan subcon..."
+                        class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 </div>
             </div>
         </div>

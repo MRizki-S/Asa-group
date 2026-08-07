@@ -60,24 +60,25 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             @if($category === 'pembangunan_unit')
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tipe Pembangunan <span class="text-red-500">*</span></label>
+                    <select x-model="jenisPembangunan" @change="onJenisPembangunanChange()"
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                        <option value="pembangunan">Pembangunan (Proses)</option>
+                        <option value="servis">Servis (Selesai)</option>
+                    </select>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Unit <span class="text-red-500">*</span></label>
                     <select x-ref="pembangunanSelect"
                         class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
                         <option value="">-- Pilih Pembangunan Unit --</option>
-                        @foreach($pembangunanUnits as $pu)
-                            @php
-                                $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
-                                $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
-                                $namaUnit = $pu->unit->nama_unit ?? '-';
-                                $tglMulai = $pu->tanggal_mulai ? \Carbon\Carbon::parse($pu->tanggal_mulai)->format('d/m/Y') : '-';
-                                $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
-                                $statusSuffix = $isSelesai ? ' (SELESAI)' : '';
-                            @endphp
-                            <option value="{{ $pu->id }}">{{ $namaPerumahan }} - {{ $namaTahap }} ({{ $namaUnit }}) - {{ $tglMulai }}{{ $statusSuffix }}</option>
-                        @endforeach
+                        <template x-for="pu in filteredPembangunanUnits" :key="pu.id">
+                            <option :value="pu.id" x-text="pu.label_formatted"></option>
+                        </template>
                     </select>
                 </div>
 
@@ -87,9 +88,21 @@
                         class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50">
                         <option value="">-- Pilih QC --</option>
                         <template x-for="q in qcs" :key="q.id">
-                            <option :value="q.id" x-text="q.nama + (q.is_servis ? ' (SERVIS)' : '')"></option>
+                            <option :value="q.id" x-text="q.nama + (q.is_servis ? ' (SERVIS)' : '')" :disabled="q.is_placeholder"></option>
                         </template>
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Unit</label>
+                    <input type="text" disabled :value="selectedUnitInfo?.pengawas_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
+                    <input type="text" disabled :value="selectedUnitInfo?.subcon_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
                 </div>
             @elseif($category === 'pembangunan_kawasan')
                 <div>
@@ -114,8 +127,20 @@
                         Kawasan ini tidak memiliki periode aktif. Tambah periode terlebih dahulu.
                     </p>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Kawasan</label>
+                    <input type="text" disabled :value="selectedKawasanInfo?.pengawas_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
+                    <input type="text" disabled :value="selectedKawasanInfo?.subcon_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
             @elseif($category === 'pembangunan_proyek_mangoon')
-                <div class="md:col-span-2">
+                <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select Pembangunan Proyek <span class="text-red-500">*</span></label>
                     <select x-ref="proyekSelect"
                         class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
@@ -125,9 +150,15 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Proyek</label>
+                    <input type="text" disabled :value="selectedProyekInfo?.pengawas_nama || '-'"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
             @endif
 
-            <div class="md:col-span-2">
+            <div class="md:col-span-3">
                 <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Catatan Permintaan (Opsional)</label>
                 <textarea x-model="catatan" rows="2" placeholder="Masukkan catatan atau pengayut order barang jika ada..."
                     class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"></textarea>
@@ -356,8 +387,8 @@
                         </div>
 
                         @if($category === 'pembangunan_unit')
-                        <!-- Textarea Alasan jika barang diluar RAP ATAU akumulasi order melebihi RAP -->
-                        <div x-show="!item.is_rap || isExceedingRap(item)" class="pt-1">
+                        <!-- Textarea Alasan jika barang diluar RAP ATAU akumulasi order melebihi RAP (hanya untuk tipe Pembangunan) -->
+                        <div x-show="jenisPembangunan !== 'servis' && (!item.is_rap || isExceedingRap(item))" class="pt-1">
                             <label class="block text-[10px] font-bold text-red-500 uppercase mb-1">
                                 <span x-show="!item.is_rap">Alasan Permintaan (Diluar RAP) <span class="text-red-500">*</span></span>
                                 <span x-show="item.is_rap && isExceedingRap(item)">Alasan Permintaan (Melebihi RAP) <span class="text-red-500">*</span></span>
@@ -551,11 +582,58 @@ function createOrderUnitComponent() {
         submitting: false,
         showConfirmModal: false,
 
+        jenisPembangunan: 'pembangunan',
+        allPembangunanUnits: {!! $pembangunanUnits->toJson() !!},
+        get filteredPembangunanUnits() {
+            if (this.jenisPembangunan === 'servis') {
+                return this.allPembangunanUnits.filter(pu => pu.is_selesai);
+            }
+            return this.allPembangunanUnits.filter(pu => !pu.is_selesai);
+        },
+        allPembangunanKawasan: {!! $pembangunanKawasan->toJson() !!},
+        allPembangunanProyek: {!! $pembangunanProyek->toJson() !!},
+        get selectedUnitInfo() {
+            if (!this.pembangunanUnitId) return null;
+            return this.allPembangunanUnits.find(pu => pu.id == this.pembangunanUnitId) || null;
+        },
+        get selectedKawasanInfo() {
+            if (!this.pembangunanKawasanId) return null;
+            return this.allPembangunanKawasan.find(pk => pk.id == this.pembangunanKawasanId) || null;
+        },
+        get selectedProyekInfo() {
+            if (!this.pembangunanProyekId) return null;
+            return this.allPembangunanProyek.find(pp => pp.id == this.pembangunanProyekId) || null;
+        },
+        onJenisPembangunanChange() {
+            this.pembangunanUnitId = '';
+            this.qcId = '';
+            this.qcs = [];
+            this.rapItems = [];
+            this.cart = [];
+
+            let pemSelectEl = $(this.$refs.pembangunanSelect);
+            let qcSelectEl = $(this.$refs.qcSelect);
+
+            pemSelectEl.val('').empty().append('<option value="">-- Pilih Pembangunan Unit --</option>');
+            this.filteredPembangunanUnits.forEach(pu => {
+                pemSelectEl.append(new Option(pu.label_formatted, pu.id, false, false));
+            });
+            pemSelectEl.trigger('change.select2');
+
+            qcSelectEl.val('').empty().append('<option value="">-- Pilih QC --</option>').trigger('change.select2');
+        },
         init() {
             this.$nextTick(() => {
                 if (this.category === 'pembangunan_unit') {
+                    // Populate Pembangunan Unit Select
+                    let pemSelectEl = $(this.$refs.pembangunanSelect);
+                    pemSelectEl.empty().append('<option value="">-- Pilih Pembangunan Unit --</option>');
+                    this.filteredPembangunanUnits.forEach(pu => {
+                        pemSelectEl.append(new Option(pu.label_formatted, pu.id, false, false));
+                    });
+
                     // Inisialisasi Select2 Pembangunan Unit
-                    $(this.$refs.pembangunanSelect).select2({
+                    pemSelectEl.select2({
                         theme: 'bootstrap4',
                         placeholder: '-- Pilih Pembangunan Unit --',
                         allowClear: true,
@@ -623,8 +701,13 @@ function createOrderUnitComponent() {
                     this.$nextTick(() => {
                         qcSelectEl.empty().append('<option value="">-- Pilih QC --</option>');
                         this.qcs.forEach(q => {
-                            let label = q.nama + (q.is_servis ? ' (SERVIS)' : '');
-                            qcSelectEl.append(new Option(label, q.id, false, false));
+                            if (q.is_placeholder) {
+                                qcSelectEl.append(new Option(q.nama, '', false, false));
+                                qcSelectEl.find('option:last').prop('disabled', true);
+                            } else {
+                                let label = q.nama + (q.is_servis ? ' (SERVIS)' : '');
+                                qcSelectEl.append(new Option(label, q.id, false, false));
+                            }
                         });
                         qcSelectEl.select2('destroy');
                         qcSelectEl.select2({
@@ -951,7 +1034,7 @@ function createOrderUnitComponent() {
                 return;
             }
 
-            if (this.category === 'pembangunan_unit') {
+            if (this.category === 'pembangunan_unit' && this.jenisPembangunan !== 'servis') {
                 let missingAlasan = false;
                 let missingAlasanRap = false;
                 this.cart.forEach((c) => {

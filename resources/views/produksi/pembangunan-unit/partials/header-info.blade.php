@@ -11,13 +11,6 @@
                         Tahap {{ $data->tahap->nama_tahap }}
                     </span>
                 </div>
-                <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
-                    <span><i class="fa-solid fa-location-dot me-1"></i>{{ $data->perumahaan->nama_perumahaan ?? '-' }}</span>
-                    <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <span><i class="fa-solid fa-user-shield me-1"></i><span class="font-semibold text-gray-600 dark:text-gray-300">SPV:</span> {{ $data->spv->nama_lengkap ?? '-' }}</span>
-                    <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <span><i class="fa-solid fa-user-gear me-1"></i><span class="font-semibold text-gray-600 dark:text-gray-300">Pengawas:</span> {{ $data->pengawas->nama_lengkap ?? '-' }}</span>
-                </p>
             </div>
 
             {{-- Status Badges Grid --}}
@@ -169,5 +162,29 @@
             </div>
         </div>
 
+    </div>
+
+    {{-- Bottom Section: Disabled Fields --}}
+    <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Perumahan</label>
+            <input type="text" disabled value="{{ $data->perumahaan->nama_perumahaan ?? '-' }}"
+                class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">SPV</label>
+            <input type="text" disabled value="{{ $data->spv->nama_lengkap ?? '-' }}"
+                class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Pengawas</label>
+            <input type="text" disabled value="{{ $data->pengawas->nama_lengkap ?? '-' }}"
+                class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Subcon</label>
+            <input type="text" disabled value="{{ $data->subcon ?? '-' }}"
+                class="w-full text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none cursor-not-allowed opacity-85 shadow-sm">
+        </div>
     </div>
 </div>
