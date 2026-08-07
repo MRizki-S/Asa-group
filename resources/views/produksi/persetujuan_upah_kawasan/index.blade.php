@@ -146,6 +146,7 @@
                                         @endphp
 
                                         @if (!$isFinal)
+                                            @can('produksi.manajemen-upah.upah-borongan.confirm')
                                             <button type="button"
                                                 @click="openModal({
                                                         id: '{{ $item->id }}',
@@ -158,6 +159,7 @@
                                                 class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-4 py-1.5 rounded-lg shadow-sm transition-all active:scale-95">
                                                 PROSES
                                             </button>
+                                            @endcan
                                         @else
                                             <div class="flex flex-col items-center justify-center gap-1">
                                                 <div class="flex flex-col items-center justify-center gap-1">

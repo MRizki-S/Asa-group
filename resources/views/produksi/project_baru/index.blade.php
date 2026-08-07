@@ -35,6 +35,7 @@
 
     <div class="flex flex-col gap-6 mt-6">
         <!-- Form Create -->
+        @can('produksi.kontraktor.proyek-baru.create')
         <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Proyek Kontraktor Baru</h3>
             <form action="{{ route('produksi.projectBaru.store') }}" method="POST" id="form-create-project" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
@@ -92,8 +93,9 @@
                         </button>
                     </div>
                 </div>
-                </form>
+            </form>
         </div>
+        @endcan
 
         <!-- Tabel -->
         <div>
@@ -131,16 +133,22 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
                                         @if($p->status_pembangunan === 'pending')
+                                            @can('produksi.kontraktor.proyek-baru.proses')
                                             <form action="{{ route('produksi.projectBaru.proses', $p->id) }}" method="POST" class="inline confirm-process-form">
                                                 @csrf
                                                 <button type="button" class="btn-process inline-flex items-center justify-center text-xs font-semibold text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-800/30 dark:text-green-300 px-2.5 py-1.5 rounded-md transition-all duration-200 focus:outline-none active:scale-95">Proses</button>
                                             </form>
+                                            @endcan
+                                            @can('produksi.kontraktor.proyek-baru.edit')
                                             <a href="{{ route('produksi.projectBaru.edit', $p->id) }}" class="inline-flex items-center justify-center text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800/30 dark:text-yellow-300 px-2.5 py-1.5 rounded-md transition-all duration-200 focus:outline-none active:scale-95">Edit</a>
+                                            @endcan
+                                            @can('produksi.kontraktor.proyek-baru.delete')
                                             <form action="{{ route('produksi.projectBaru.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button" class="btn-delete inline-flex items-center justify-center text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 px-2.5 py-1.5 rounded-md transition-all duration-200 focus:outline-none active:scale-95">Hapus</button>
                                             </form>
+                                            @endcan
                                         @else
                                             <span class="text-xs italic text-gray-400">Tidak ada aksi</span>
                                         @endif

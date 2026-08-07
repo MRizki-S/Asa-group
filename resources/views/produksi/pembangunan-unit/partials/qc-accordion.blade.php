@@ -105,6 +105,7 @@
 
     {{-- Section 2: Servis Pasca Serah Terima --}}
     @if($servisQc)
+        @can('produksi.properti.pembangunan-unit.read-servis')
         @php
             $servisIndex = $data->pembangunanUnitQc->search(fn($q) => $q->id === $servisQc->id);
         @endphp
@@ -152,5 +153,6 @@
                 </div>
             </div>
         </div>
+        @endcan
     @endif
 </div>

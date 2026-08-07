@@ -167,6 +167,7 @@
                                             }
                                         @endphp
 
+                                        @can('produksi.properti.pembangunan-unit.detail')
                                         <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
                                             class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} {{ $textClass }} transition-all group">
                                             <span class="text-sm font-black">{!! $statusIcon !!}
@@ -176,6 +177,15 @@
                                                 {{ $item->status_pembangunan }}
                                             </span>
                                         </a>
+                                        @else
+                                        <div class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} {{ $textClass }}">
+                                            <span class="text-sm font-black">{!! $statusIcon !!}
+                                                {{ $item->total_progres }}%</span>
+                                            <span class="text-[9px] uppercase font-bold opacity-80">
+                                                {{ $item->status_pembangunan }}
+                                            </span>
+                                        </div>
+                                        @endcan
                                     </td>
 
                                     <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
@@ -307,12 +317,14 @@
                             </div>
 
                             {{-- Action Button --}}
+                            @can('produksi.properti.pembangunan-unit.detail')
                             <div class="pt-4 border-t border-gray-100 dark:border-gray-700">
                                 <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
                                     class="block w-full text-center text-xs font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 px-2.5 py-2.5 rounded-lg transition-colors border border-blue-100 dark:border-blue-800 shadow-sm">
                                     Lihat Detail
                                 </a>
                             </div>
+                            @endcan
                         </div>
                     @empty
                         <div class="py-8 text-center text-gray-400 text-sm">

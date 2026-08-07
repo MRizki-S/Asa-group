@@ -44,7 +44,7 @@
                         List Master QC & RAP
                     </h3>
 
-                    @can('etalase.blok.create')
+                    @can('produksi.properti.master-qc-rap.create')
                         <a href="{{ route('produksi.masterQcRap.create') }}"
                             class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                             + Tambah
@@ -124,6 +124,7 @@
                                     <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                         {{ $item->created_at->format('d M Y H:i:s') }}</td>
                                     <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                                        @can('produksi.properti.master-qc-rap.detail')
                                         <a href="{{ route('produksi.masterQcRap.show', $item->id) }}"
                                             class="btn-edit inline-flex items-center gap-1
                                         text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
@@ -133,6 +134,8 @@
                                         active:scale-95">
                                             Detail
                                         </a>
+                                        @endcan
+                                        @can('produksi.properti.master-qc-rap.edit')
                                         <a href="{{ route('produksi.masterQcRap.edit', $item) }}"
                                             class="btn-edit inline-flex items-center gap-1
                                         text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
@@ -142,6 +145,8 @@
                                         active:scale-95">
                                             Edit
                                         </a>
+                                        @endcan
+                                        @can('produksi.properti.master-qc-rap.delete')
                                         <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST"
                                             class="delete-form">
                                             @csrf
@@ -151,6 +156,7 @@
                                                 Delete
                                             </button>
                                         </form>
+                                        @endcan
                                     </td>
                                 </tr>
                             @endforeach
@@ -183,14 +189,19 @@
                                 </div>
                             </div>
                             <div class="pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2">
+                                @can('produksi.properti.master-qc-rap.detail')
                                 <a href="{{ route('produksi.masterQcRap.show', $item->id) }}"
                                     class="flex-grow text-center text-xs font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 px-2.5 py-2.5 rounded-lg transition-colors border border-blue-100 dark:border-blue-800 shadow-sm">
                                     Detail
                                 </a>
+                                @endcan
+                                @can('produksi.properti.master-qc-rap.edit')
                                 <a href="{{ route('produksi.masterQcRap.edit', $item) }}"
                                     class="flex-grow text-center text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 px-2.5 py-2.5 rounded-lg transition-colors border border-yellow-100 dark:border-yellow-800 shadow-sm">
                                     Edit
                                 </a>
+                                @endcan
+                                @can('produksi.properti.master-qc-rap.delete')
                                 <form action="{{ route('produksi.masterQcRap.destroy', $item->id) }}" method="POST"
                                     class="delete-form flex-grow">
                                     @csrf
@@ -200,6 +211,7 @@
                                         Delete
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </div>
                     @empty

@@ -79,11 +79,13 @@
                         <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
                             Daftar Pengajuan Upah Pemb. Unit
                         </h3>
+                        @can('produksi.manajemen-upah.upah-borongan.confirm')
                         <button type="button" x-show="selectedIds.length > 0" x-cloak @click="openBatchModal()"
                             class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
                             <span>PROSES TERPILIH</span>
                             <span class="bg-white/20 text-white px-1.5 py-0.5 rounded text-[10px]" x-text="selectedIds.length"></span>
                         </button>
+                        @endcan
                     </div>
 
                     {{-- Filter Dropdown --}}
@@ -207,6 +209,7 @@
                                     <td class="px-4 py-4 text-center">
                                         <div class="flex flex-wrap items-center justify-center gap-1.5">
                                             @if (!$isFinal)
+                                                @can('produksi.manajemen-upah.upah-borongan.confirm')
                                                 <button type="button"
                                                     @click="openModal({
                                                             id: '{{ $item->id }}',
@@ -219,6 +222,7 @@
                                                     class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-4 py-1.5 rounded-lg shadow-sm transition-all active:scale-95">
                                                     PROSES
                                                  </button>
+                                                @endcan
                                             @else
                                                 <div class="flex flex-col items-center justify-center gap-1">
                                                     @if ($item->status_pengajuan === 'ditolak_mgr_produksi')

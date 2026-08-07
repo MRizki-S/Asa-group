@@ -56,6 +56,7 @@
     @endphp
 
     {{-- Accordion Akumulasi Upah & RAP --}}
+    @can('produksi.properti.pembangunan-unit.akumulasi-upah')
     <div x-data="{ openUpahSummary: false }" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 overflow-hidden shadow-sm">
         <button type="button" @click="openUpahSummary = !openUpahSummary"
             class="w-full px-4 py-3 bg-gray-50/80 dark:bg-gray-800/60 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
@@ -116,6 +117,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 px-1 pt-2">

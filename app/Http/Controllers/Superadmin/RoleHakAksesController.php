@@ -55,7 +55,7 @@ class RoleHakAksesController extends Controller
     {
         $role = Role::with('permissions')->findOrFail($id);
         $permissions = Permission::orderBy('name')->get();
-        
+
         $groupedPermissions = $this->groupPermissions($permissions);
         $rolePermissions = $role->permissions->pluck('id')->toArray();
         $devisis = Devisi::orderBy('nama_devisi')->get();
@@ -87,69 +87,19 @@ class RoleHakAksesController extends Controller
 
             $category = $parts[0] ?? 'Other';
 
-            if ($category === 'produksi') {
-                $permissionName = $permission->name;
-                
-                if (in_array($permissionName, [
-                    'produksi.master-qc-rap',
-                    'produksi.permintaan-dibangun',
-                    'produksi.pembangunan-unit'
-                ])) {
-                    $module = 'properti';
-                    if ($permissionName === 'produksi.master-qc-rap') {
-                        $permission->custom_label = 'Master QC & RAP';
-                    } elseif ($permissionName === 'produksi.permintaan-dibangun') {
-                        $permission->custom_label = 'Permintaan Dibangun';
-                    } else {
-                        $permission->custom_label = 'Pembangunan Unit';
-                    }
-                } elseif (in_array($permissionName, [
-                    'produksi.project-baru',
-                    'produksi.pembangunan-proyek'
-                ])) {
-                    $module = 'kontraktor';
-                    if ($permissionName === 'produksi.project-baru') {
-                        $permission->custom_label = 'Project Baru';
-                    } else {
-                        $permission->custom_label = 'Pembangunan Proyek';
-                    }
-                } elseif (in_array($permissionName, [
-                    'produksi.buat-pembangunan-kawasan',
-                    'produksi.pembangunan-kawasan'
-                ])) {
-                    $module = 'kawasan';
-                    if ($permissionName === 'produksi.buat-pembangunan-kawasan') {
-                        $permission->custom_label = 'Buat Pembangunan';
-                    } else {
-                        $permission->custom_label = 'Pembangunan Kawasan';
-                    }
-                } else {
-                    $module = 'manajemen upah';
-                    if ($permissionName === 'produksi.penamaan-upah') {
-                        $permission->custom_label = 'Penamaan Upah';
-                    } elseif ($permissionName === 'produksi.upah-properti') {
-                        $permission->custom_label = 'Upah Properti';
-                    } elseif ($permissionName === 'produksi.upah-kontraktor') {
-                        $permission->custom_label = 'Upah Kontraktor';
-                    } else {
-                        $permission->custom_label = 'Upah Kawasan';
-                    }
-                }
-
+            if ($count >= 4) {
+                // Contoh: etalase.perubahaan-harga.type-unit.read
+                // Atau: produksi.properti.master-qc-rap.read
+                $module = $parts[1];
+                $subModule = $parts[2];
+            } elseif ($count == 3) {
+                // Contoh: etalase.unit.read
+                // Atau: produksi.properti.pembangunan-unit (jika ada 3 bagian)
+                $module = $parts[1];
                 $subModule = 'default';
             } else {
-                if ($count >= 4) {
-                    // Contoh: etalase.perubahaan-harga.type-unit.read
-                    $module = $parts[1];
-                    $subModule = $parts[2];
-                } elseif ($count == 3) {
-                    // Contoh: etalase.unit.read
-                    $module = $parts[1];
-                    $subModule = 'default'; // Modul tanpa sub-modul
-                } else {
-                    $module = $parts[1] ?? 'General';
-                    $subModule = 'default';
-                }
+                $module = $parts[1] ?? 'General';
+                $subModule = 'default';
             }
 
             $groupedPermissions[$category][$module][$subModule][] = $permission;

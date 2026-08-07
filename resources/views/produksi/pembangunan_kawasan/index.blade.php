@@ -131,9 +131,11 @@
                     </div>
 
                     <div class="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        @can('produksi.kawasan.pembangunan-kawasan.detail')
                         <a :href="'{{ route('produksi.pembangunanKawasan.index') }}/' + item.id" class="block w-full text-center py-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400 shadow-sm">
                             Lihat Detail
                         </a>
+                        @endcan
                     </div>
                 </div>
             </div>

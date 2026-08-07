@@ -747,20 +747,20 @@ Route::middleware('auth')->prefix('keuangan')->group(function () {
 // Produksi
 Route::middleware('auth')->prefix('produksi')->group(function () {
     // Master QC RAP
-    Route::resource('master-qc-rap', MasterQcRapController::class)->middleware('can:produksi.master-qc-rap')->names('produksi.masterQcRap');
+    Route::resource('master-qc-rap', MasterQcRapController::class)->middleware('can:produksi.properti.master-qc-rap.read')->names('produksi.masterQcRap');
 
     // Penamaan Upah
-    Route::resource('penamaan-upah', PenamaanUpahController::class)->middleware('can:produksi.penamaan-upah')->names('produksi.masterUpah');
+    Route::resource('penamaan-upah', PenamaanUpahController::class)->middleware('can:produksi.manajemen-upah.penamaan-upah.read')->names('produksi.masterUpah');
 
     // Permintaan Dibangun
-    Route::middleware('can:produksi.permintaan-dibangun')->group(function () {
+    Route::middleware('can:produksi.properti.permintaan-dibangun.read')->group(function () {
         Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->names('produksi.pengajuanPembangunanUnit');
         Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
         Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
     });
 
     // Pembangunan Unit
-    Route::middleware('can:produksi.pembangunan-unit')->group(function () {
+    Route::middleware('can:produksi.properti.pembangunan-unit.read')->group(function () {
         Route::resource('pembangunan-unit', PembangunanUnitController::class)->names('produksi.pembangunanUnit');
         Route::post('pembangunan-unit/{id}/update-serah-terima', [PembangunanUnitController::class, 'updateSerahTerima'])
             ->name('produksi.pembangunanUnit.updateSerahTerima');
@@ -792,10 +792,10 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     // Persetujuan Upah (Shared across properti/kontraktor/kawasan approvals)
     Route::get('persetujuan-upah', [PersetujuanUpahController::class, 'index'])
-        ->middleware('canany:produksi.upah-properti,produksi.upah-kontraktor,produksi.upah-kawasan')
+        ->middleware('can:produksi.manajemen-upah.upah-borongan.read')
         ->name('produksi.persetujuanUpah.index');
     Route::patch('persetujuan-upah/{id}/update-status', [PersetujuanUpahController::class, 'update'])
-        ->middleware('canany:produksi.upah-properti,produksi.upah-kontraktor,produksi.upah-kawasan')
+        ->middleware('can:produksi.manajemen-upah.upah-borongan.confirm')
         ->name('produksi.persetujuanUpah.update');
 
     // Laporan
@@ -813,12 +813,12 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
         ->name('produksi.pembangunanKawasan.laporanTermin.export');
 
     // Kontraktor (Pembangunan Proyek)
-    Route::middleware('can:produksi.project-baru')->group(function () {
-        Route::resource('project-baru', BuatPembangunanProyekController::class)->names('produksi.projectBaru');
-        Route::post('project-baru/{id}/proses', [BuatPembangunanProyekController::class, 'proses'])->name('produksi.projectBaru.proses');
+    Route::middleware('can:produksi.kontraktor.proyek-baru.read')->group(function () {
+        Route::resource('proyek-baru', BuatPembangunanProyekController::class)->names('produksi.projectBaru');
+        Route::post('proyek-baru/{id}/proses', [BuatPembangunanProyekController::class, 'proses'])->name('produksi.projectBaru.proses');
     });
 
-    Route::middleware('can:produksi.pembangunan-proyek')->group(function () {
+    Route::middleware('can:produksi.kontraktor.pembangunan-proyek.read')->group(function () {
         Route::resource('pembangunan-proyek', PembangunanProyekController::class)->names('produksi.pembangunanProyek');
         Route::middleware('check.freeze')->group(function () {
             Route::post('pembangunan-proyek/order-barang', [PembangunanProyekController::class, 'orderStore'])->name('produksi.pembangunanProyek.orderStore');
@@ -830,12 +830,12 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     });
 
     // Kawasan (Pembangunan Kawasan)
-    Route::middleware('can:produksi.buat-pembangunan-kawasan')->group(function () {
+    Route::middleware('can:produksi.kawasan.buat-pembangunan.read')->group(function () {
         Route::resource('buat-pembangunan', BuatPembangunanKawasanController::class)->names('produksi.buatPembangunanKawasan');
         Route::post('buat-pembangunan/{id}/proses', [BuatPembangunanKawasanController::class, 'proses'])->name('produksi.buatPembangunanKawasan.proses');
     });
 
-    Route::middleware('can:produksi.pembangunan-kawasan')->group(function () {
+    Route::middleware('can:produksi.kawasan.pembangunan-kawasan.read')->group(function () {
         Route::resource('pembangunan-kawasan', PembangunanKawasanController::class)->names('produksi.pembangunanKawasan');
         Route::middleware('check.freeze')->group(function () {
             Route::post('pembangunan-kawasan/order-barang', [PembangunanKawasanController::class, 'orderStore'])->name('produksi.pembangunanKawasan.orderStore');
@@ -847,20 +847,20 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
     });
 
     // Persetujuan Upah Spesifik
-    Route::patch('persetujuan-upah-properti/update-status', [PersetujuanUpahPropertiController::class, 'update'])->middleware('can:produksi.upah-properti');
-    Route::resource('persetujuan-upah-properti', PersetujuanUpahPropertiController::class)->middleware('can:produksi.upah-properti')->only(['index', 'update'])->names('produksi.persetujuanUpahProperti');
-    Route::resource('persetujuan-upah-kontraktor', PersetujuanUpahKontraktorController::class)->middleware('can:produksi.upah-kontraktor')->only(['index', 'update'])->names('produksi.persetujuanUpahKontraktor');
-    Route::resource('persetujuan-upah-kawasan', PersetujuanUpahKawasanController::class)->middleware('can:produksi.upah-kawasan')->only(['index', 'update'])->names('produksi.persetujuanUpahKawasan');
+    Route::patch('persetujuan-upah-properti/update-status', [PersetujuanUpahPropertiController::class, 'update'])->middleware('can:produksi.manajemen-upah.upah-borongan.confirm');
+    Route::resource('persetujuan-upah-properti', PersetujuanUpahPropertiController::class)->middleware('can:produksi.manajemen-upah.upah-borongan.read')->only(['index', 'update'])->names('produksi.persetujuanUpahProperti');
+    Route::resource('persetujuan-upah-kontraktor', PersetujuanUpahKontraktorController::class)->middleware('can:produksi.manajemen-upah.upah-borongan.read')->only(['index', 'update'])->names('produksi.persetujuanUpahKontraktor');
+    Route::resource('persetujuan-upah-kawasan', PersetujuanUpahKawasanController::class)->middleware('can:produksi.manajemen-upah.upah-borongan.read')->only(['index', 'update'])->names('produksi.persetujuanUpahKawasan');
 });
 
-Route::middleware('auth')->prefix('manager')->group(function () {
+Route::middleware(['auth', 'can:keuangan.upah-borongan.manager.read'])->prefix('manager')->group(function () {
     Route::patch('persetujuan-upah-properti/update-status', [App\Http\Controllers\Manager\PersetujuanUpahPropertiController::class, 'update']);
     Route::resource('persetujuan-upah-properti', App\Http\Controllers\Manager\PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('manager.persetujuanUpahProperti');
     Route::resource('persetujuan-upah-kontraktor', App\Http\Controllers\Manager\PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('manager.persetujuanUpahKontraktor');
     Route::resource('persetujuan-upah-kawasan', App\Http\Controllers\Manager\PersetujuanUpahKawasanController::class)->only(['index', 'update'])->names('manager.persetujuanUpahKawasan');
 });
 
-Route::middleware('auth')->prefix('akuntan')->group(function () {
+Route::middleware(['auth', 'can:keuangan.upah-borongan.akuntan.read'])->prefix('akuntan')->group(function () {
     Route::patch('persetujuan-upah-properti/update-status', [App\Http\Controllers\Akuntan\PersetujuanUpahPropertiController::class, 'update']);
     Route::resource('persetujuan-upah-properti', App\Http\Controllers\Akuntan\PersetujuanUpahPropertiController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahProperti');
     Route::resource('persetujuan-upah-kontraktor', App\Http\Controllers\Akuntan\PersetujuanUpahKontraktorController::class)->only(['index', 'update'])->names('akuntan.persetujuanUpahKontraktor');

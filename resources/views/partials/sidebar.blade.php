@@ -1122,7 +1122,7 @@
                         <!-- Menu Item DaftarLaporan -->
 
                         <!-- Persetujuan Upah Borongan (Manager & Akuntan) -->
-                        @if(auth()->user()->hasRole(['Manager Produksi', 'Staff Akuntansi', 'Superadmin']))
+                        @canany(['keuangan.upah-borongan.manager.read', 'keuangan.upah-borongan.akuntan.read'])
                         <li>
                             <a href="#" @click.prevent="selected = (selected === 'upahBoronganKeuanganGroup' ? '':'upahBoronganKeuanganGroup')"
                                 class="menu-item group"
@@ -1140,26 +1140,26 @@
                             </a>
                             <div class="overflow-hidden transform translate" :class="(selected === 'upahBoronganKeuanganGroup') ? 'block' : 'hidden'">
                                 <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
-                                    @if(auth()->user()->hasRole(['Manager Produksi', 'Superadmin']))
+                                    @can('keuangan.upah-borongan.manager.read')
                                     <li>
                                         <a href="{{ route('manager.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'managerPersetujuanUpahProperti' || page === 'managerPersetujuanUpahKontraktor' || page === 'managerPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                             Konfirmasi Manager
                                         </a>
                                     </li>
-                                    @endif
-                                    @if(auth()->user()->hasRole(['Staff Akuntansi', 'Superadmin']))
+                                    @endcan
+                                    @can('keuangan.upah-borongan.akuntan.read')
                                     <li>
                                         <a href="{{ route('akuntan.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'akuntanPersetujuanUpahProperti' || page === 'akuntanPersetujuanUpahKontraktor' || page === 'akuntanPersetujuanUpahKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                             Konfirmasi Akuntan
                                         </a>
                                     </li>
-                                    @endif
+                                    @endcan
                                 </ul>
                             </div>
                         </li>
-                        @endif
+                        @endcanany
 
 
                         <!-- Upah Harian Tukang -->
@@ -1822,7 +1822,17 @@
             <!-- Gudang -  Group -->
 
 
-            @canany(['produksi.master-qc-rap', 'produksi.permintaan-dibangun', 'produksi.pembangunan-unit', 'produksi.project-baru', 'produksi.pembangunan-proyek', 'produksi.buat-pembangunan-kawasan', 'produksi.pembangunan-kawasan', 'produksi.penamaan-upah', 'produksi.upah-properti', 'produksi.upah-kontraktor', 'produksi.upah-kawasan'])
+            @canany([
+                'produksi.properti.master-qc-rap.read',
+                'produksi.properti.permintaan-dibangun.read',
+                'produksi.properti.pembangunan-unit.read',
+                'produksi.kawasan.buat-pembangunan.read',
+                'produksi.kawasan.pembangunan-kawasan.read',
+                'produksi.kontraktor.proyek-baru.read',
+                'produksi.kontraktor.pembangunan-proyek.read',
+                'produksi.manajemen-upah.penamaan-upah.read',
+                'produksi.manajemen-upah.upah-borongan.read'
+            ])
             <!-- Master Produksi RAP -->
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
@@ -1841,7 +1851,7 @@
 
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Pembangunan Properti -->
-                    @canany(['produksi.master-qc-rap', 'produksi.permintaan-dibangun', 'produksi.pembangunan-unit'])
+                    @canany(['produksi.properti.master-qc-rap.read', 'produksi.properti.permintaan-dibangun.read', 'produksi.properti.pembangunan-unit.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Properti' ? '':'Properti')"
                             class="menu-item group"
@@ -1859,7 +1869,7 @@
                         </a>
                         <div class="overflow-hidden transform translate" :class="(selected === 'Properti') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
-                                @can('produksi.master-qc-rap')
+                                @can('produksi.properti.master-qc-rap.read')
                                 <li>
                                     <a href="{{ route('produksi.masterQcRap.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'MasterQC-RAP' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1867,7 +1877,7 @@
                                     </a>
                                 </li>
                                 @endcan
-                                @can('produksi.permintaan-dibangun')
+                                @can('produksi.properti.permintaan-dibangun.read')
                                 <li>
                                     <a href="{{ route('produksi.pengajuanPembangunanUnit.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'PengajuanPembangunan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1875,7 +1885,7 @@
                                     </a>
                                 </li>
                                 @endcan
-                                @can('produksi.pembangunan-unit')
+                                @can('produksi.properti.pembangunan-unit.read')
                                 <li>
                                     <a href="{{ route('produksi.pembangunanUnit.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1889,7 +1899,7 @@
                     @endcanany
 
                     <!-- Pembangunan Kawasan -->
-                    @canany(['produksi.buat-pembangunan-kawasan', 'produksi.pembangunan-kawasan'])
+                    @canany(['produksi.kawasan.buat-pembangunan.read', 'produksi.kawasan.pembangunan-kawasan.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Kawasan' ? '':'Kawasan')"
                             class="menu-item group"
@@ -1907,7 +1917,7 @@
                         </a>
                         <div class="overflow-hidden transform translate" :class="(selected === 'Kawasan') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
-                                @can('produksi.buat-pembangunan-kawasan')
+                                @can('produksi.kawasan.buat-pembangunan.read')
                                 <li>
                                     <a href="{{ route('produksi.buatPembangunanKawasan.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'buatPembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1915,7 +1925,7 @@
                                     </a>
                                 </li>
                                 @endcan
-                                @can('produksi.pembangunan-kawasan')
+                                @can('produksi.kawasan.pembangunan-kawasan.read')
                                 <li>
                                     <a href="{{ route('produksi.pembangunanKawasan.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1929,7 +1939,7 @@
                     @endcanany
 
                     <!-- Proyek Kontraktor -->
-                    @canany(['produksi.project-baru', 'produksi.pembangunan-proyek'])
+                    @canany(['produksi.kontraktor.proyek-baru.read', 'produksi.kontraktor.pembangunan-proyek.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Kontraktor' ? '':'Kontraktor')"
                             class="menu-item group"
@@ -1947,7 +1957,7 @@
                         </a>
                         <div class="overflow-hidden transform translate" :class="(selected === 'Kontraktor') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
-                                @can('produksi.project-baru')
+                                @can('produksi.kontraktor.proyek-baru.read')
                                 <li>
                                     <a href="{{ route('produksi.projectBaru.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'projectBaru' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1955,7 +1965,7 @@
                                     </a>
                                 </li>
                                 @endcan
-                                @can('produksi.pembangunan-proyek')
+                                @can('produksi.kontraktor.pembangunan-proyek.read')
                                 <li>
                                     <a href="{{ route('produksi.pembangunanProyek.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1970,7 +1980,7 @@
 
 
                     <!-- Manajemen Upah -->
-                    @canany(['produksi.penamaan-upah', 'produksi.upah-properti', 'produksi.upah-kontraktor', 'produksi.upah-kawasan'])
+                    @canany(['produksi.manajemen-upah.penamaan-upah.read', 'produksi.manajemen-upah.upah-borongan.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'ManajemenUpah' ? '':'ManajemenUpah')"
                             class="menu-item group"
@@ -1988,7 +1998,7 @@
                         </a>
                         <div class="overflow-hidden transform translate" :class="(selected === 'ManajemenUpah') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
-                                @can('produksi.penamaan-upah')
+                                @can('produksi.manajemen-upah.penamaan-upah.read')
                                 <li>
                                     <a href="{{ route('produksi.masterUpah.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'PenamaanUpah' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -1996,7 +2006,7 @@
                                     </a>
                                 </li>
                                 @endcan
-                                @can('produksi.upah-properti')
+                                @can('produksi.manajemen-upah.upah-borongan.read')
                                 <li>
                                     <a href="{{ route('produksi.persetujuanUpahProperti.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'persetujuanUpah' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">

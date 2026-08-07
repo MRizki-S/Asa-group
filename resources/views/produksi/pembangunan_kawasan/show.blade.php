@@ -195,6 +195,7 @@
                     {{-- Status Dropdown --}}
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative" x-data="{ openStatus: false }">
                         <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Status Pembangunan</p>
+                        @can('produksi.kawasan.pembangunan-kawasan.edit-status')
                         <div class="relative">
                             <button @click="openStatus = !openStatus"
                                 class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all border border-transparent hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
@@ -219,6 +220,14 @@
                                 </div>
                             </div>
                         </div>
+                        @else
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase shadow-sm"
+                            :class="{
+                                'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': kawasanStatus === 'proses',
+                                'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400': kawasanStatus === 'selesai',
+                                'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400': kawasanStatus === 'selesai dengan catatan'
+                            }" x-text="kawasanStatus"></span>
+                        @endcan
                     </div>
                     {{-- Tgl Pembangunan --}}
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60">
@@ -255,10 +264,12 @@
 
             {{-- Kanan: Aksi --}}
             <div class="flex flex-row lg:flex-col items-center lg:items-end gap-2 shrink-0">
+                @can('produksi.kawasan.pembangunan-kawasan.termin')
                 <a href="{{ route('produksi.pembangunanKawasan.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
                     <i class="fa-solid fa-file-excel text-green-600"></i> Laporan Termin
                 </a>
+                @endcan
             </div>
         </div>
     </div>

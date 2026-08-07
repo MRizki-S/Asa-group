@@ -58,6 +58,7 @@
 
     <div class="flex flex-col gap-6 mt-6">
         <!-- Form Create -->
+        @can('produksi.kawasan.buat-pembangunan.create')
         <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Pembangunan Kawasan</h3>
             <form action="{{ route('produksi.buatPembangunanKawasan.store') }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
@@ -95,6 +96,7 @@
                 </div>
             </form>
         </div>
+        @endcan
 
         <!-- Tabel -->
         <div>
@@ -138,15 +140,20 @@
                                 <td class="px-4 py-4">
                                      <div class="flex flex-row items-center gap-1.5 flex-wrap">
                                          @if($p->status_pembangunan === 'pending')
+                                             @can('produksi.kawasan.buat-pembangunan.create-periode')
                                              <button type="button"
                                                  @click="openProcessModal = true; processActionUrl = '{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}'; kawasanNama = '{{ addslashes($p->nama) }}'"
                                                  title="Proses Pembangunan"
                                                  class="inline-flex items-center gap-1 text-xs font-bold text-white bg-green-600 hover:bg-green-700 px-2 py-1 rounded-md transition shadow-sm">
                                                  <i class="fa-solid fa-play text-[10px]"></i> Proses
                                              </button>
+                                             @endcan
+                                             @can('produksi.kawasan.buat-pembangunan.edit')
                                              <a href="{{ route('produksi.buatPembangunanKawasan.edit', $p->id) }}" title="Edit" class="inline-flex items-center gap-1 text-xs font-semibold text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800/30 dark:text-yellow-300 px-2 py-1 rounded-md transition">
                                                  <i class="fa-solid fa-pen text-[10px]"></i> Edit
                                              </a>
+                                             @endcan
+                                             @can('produksi.kawasan.buat-pembangunan.delete')
                                              <form action="{{ route('produksi.buatPembangunanKawasan.destroy', $p->id) }}" method="POST" class="inline confirm-delete-form">
                                                  @csrf
                                                  @method('DELETE')
@@ -154,20 +161,23 @@
                                                      <i class="fa-solid fa-trash text-[10px]"></i> Hapus
                                                  </button>
                                              </form>
+                                             @endcan
                                          @elseif(in_array($p->status_pembangunan, ['selesai', 'selesai dengan catatan']))
+                                             @can('produksi.kawasan.buat-pembangunan.create-periode')
                                              <button type="button"
                                                  @click="openProcessModal = true; processActionUrl = '{{ route('produksi.buatPembangunanKawasan.proses', $p->id) }}'; kawasanNama = '{{ addslashes($p->nama) }}'"
                                                  title="Proses Periode Baru"
                                                  class="inline-flex items-center gap-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded-md transition shadow-sm">
                                                  <i class="fa-solid fa-rotate-right text-[10px]"></i> Periode Baru
                                              </button>
+                                             @endcan
                                          @else
-                                            <span class="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                                                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                                                Berjalan
-                                            </span>
-                                        @endif
-                                    </div>
+                                             <span class="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                                                 <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                                                 Berjalan
+                                             </span>
+                                         @endif
+                                     </div>
                                 </td>
                             </tr>
                             @endforeach

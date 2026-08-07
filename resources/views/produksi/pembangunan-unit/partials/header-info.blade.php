@@ -19,6 +19,7 @@
                 <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative"
                     x-data="{ openStatusDD: false }">
                     <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Status</p>
+                    @can('produksi.properti.pembangunan-unit.edit-status')
                     <div class="relative">
                         <button @click="openStatusDD = !openStatusDD"
                             class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-all duration-300 border border-transparent hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
@@ -46,12 +47,21 @@
                             </div>
                         </div>
                     </div>
+                    @else
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase shadow-sm"
+                        :class="{
+                            'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': unitStatus === 'proses',
+                            'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400': unitStatus === 'selesai',
+                            'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400': unitStatus === 'selesai dengan catatan'
+                        }" x-text="unitStatus"></span>
+                    @endcan
                 </div>
 
                 {{-- Serah Terima --}}
                 <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/60 relative"
                     x-data="{ openST: false }">
                     <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Serah Terima</p>
+                    @can('produksi.properti.pembangunan-unit.edit-serah-terima')
                     <div class="relative">
                         <button @click="openST = !openST"
                             class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-all duration-300 border border-transparent hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
@@ -77,6 +87,14 @@
                             </div>
                         </div>
                     </div>
+                    @else
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase shadow-sm"
+                        :class="{
+                            'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300': statusST === 'pending',
+                            'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': statusST === 'siap_serah_terima',
+                            'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400': statusST === 'siap_lpa'
+                        }" x-text="statusST.replace(/_/g, ' ')"></span>
+                    @endcan
                 </div>
 
                 {{-- Tgl Pembangunan --}}
@@ -132,33 +150,37 @@
                     $existingServis = $data->pembangunanUnitQc->where('is_servis', true)->first();
                     $servisIdx = $existingServis ? $data->pembangunanUnitQc->search(fn($q) => $q->id === $existingServis->id) : null;
                 @endphp
-                @if(auth()->user()->hasRole(['Superadmin', 'Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR']))
-                    @if($existingServis)
-                        <button type="button" @click="goToServis({{ $servisIdx }})"
+                @if($existingServis)
+                    @can('produksi.properti.pembangunan-unit.read-servis')
+                    <button type="button" @click="goToServis({{ $servisIdx }})"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-wrench text-amber-500"></i>
+                        <span>Lihat Servis</span>
+                    </button>
+                    @endcan
+                @else
+                    @can('produksi.properti.pembangunan-unit.create-servis')
+                    <form id="form-create-servis" action="{{ route('produksi.pembangunanUnit.createServis', $data->id) }}" method="POST"
+                        x-show="totalProgress >= 100 && ['selesai', 'selesai dengan catatan'].includes(unitStatus) && statusST === 'siap_serah_terima'"
+                        x-cloak>
+                        @csrf
+                        <button type="button" @click="promptCreateServis()"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
-                            <i class="fa-solid fa-wrench text-amber-500"></i>
-                            <span>Lihat Servis</span>
+                            <i class="fa-solid fa-wrench text-blue-500"></i>
+                            <span>Mulai Servis</span>
                         </button>
-                    @else
-                        <form id="form-create-servis" action="{{ route('produksi.pembangunanUnit.createServis', $data->id) }}" method="POST"
-                            x-show="totalProgress >= 100 && ['selesai', 'selesai dengan catatan'].includes(unitStatus) && statusST === 'siap_serah_terima'"
-                            x-cloak>
-                            @csrf
-                            <button type="button" @click="promptCreateServis()"
-                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
-                                <i class="fa-solid fa-wrench text-blue-500"></i>
-                                <span>Mulai Servis</span>
-                            </button>
-                        </form>
-                    @endif
+                    </form>
+                    @endcan
                 @endif
 
                 {{-- Laporan Termin Button --}}
+                @can('produksi.properti.pembangunan-unit.termin')
                 <a href="{{ route('produksi.pembangunanUnit.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
                     <i class="fa-solid fa-file-invoice-dollar text-purple-500"></i>
                     <span>Laporan Termin</span>
                 </a>
+                @endcan
             </div>
         </div>
 

@@ -51,8 +51,8 @@
                 </button>
 
                 <select x-model="status" @change="saveTask($event.target.value)"
-                    :disabled="['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
-                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) disabled @endif
+                    :disabled="['selesai', 'selesai dengan catatan'].includes($data.unitStatus) || {{ auth()->user()->cannot('produksi.properti.pembangunan-unit.edit-task') ? 'true' : 'false' }}"
+                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']) || auth()->user()->cannot('produksi.properti.pembangunan-unit.edit-task')) disabled @endif
                     class="text-xs font-bold rounded-lg border-gray-200 bg-gray-50 p-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 text-gray-700 dark:text-white">
                     <option value="belum sesuai">Belum Sesuai</option>
                     <option value="sesuai">Sesuai</option>
@@ -94,12 +94,12 @@
                                     class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Pesan
                                     Catatan</label>
                                 <textarea name="catatan_qc" rows="4"
-                                    x-show="!['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
-                                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan'])) disabled @endif
+                                    x-show="!['selesai', 'selesai dengan catatan'].includes($data.unitStatus) && {{ auth()->user()->can('produksi.properti.pembangunan-unit.edit-task') ? 'true' : 'false' }}"
+                                    @if (in_array($data->status_pembangunan, ['selesai', 'selesai dengan catatan']) || auth()->user()->cannot('produksi.properti.pembangunan-unit.edit-task')) disabled @endif
                                     class="w-full text-xs rounded-xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 text-gray-800 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500 p-3 outline-none"
                                     placeholder="Tuliskan catatan perbaikan atau kendala di sini...">{!! old('catatan_qc', $task->catatan_qc) !!}</textarea>
 
-                                <div x-show="['selesai', 'selesai dengan catatan'].includes($data.unitStatus)"
+                                <div x-show="['selesai', 'selesai dengan catatan'].includes($data.unitStatus) || {{ auth()->user()->cannot('produksi.properti.pembangunan-unit.edit-task') ? 'true' : 'false' }}"
                                     class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800 text-xs text-gray-700 dark:text-gray-300 min-h-[80px]">
                                     {!! old('catatan_qc', $task->catatan_qc) ?: '<span class="text-gray-400 italic">Tidak ada catatan</span>' !!}
                                 </div>
@@ -109,8 +109,9 @@
                                 class="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
                                 <button type="button" @click="openModalNote = false"
                                     class="px-4 py-2 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
-                                    BATAL
+                                    {{ auth()->user()->can('produksi.properti.pembangunan-unit.edit-task') ? 'BATAL' : 'TUTUP' }}
                                 </button>
+                                @can('produksi.properti.pembangunan-unit.edit-task')
                                 <button type="submit"
                                     :disabled="submitting"
                                     :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
@@ -119,6 +120,7 @@
                                     class="px-5 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">
                                     <span x-text="submitting ? 'MEMPROSES...' : 'SIMPAN CATATAN'"></span>
                                 </button>
+                                @endcan
                             </div>
                         </form>
                     </div>
