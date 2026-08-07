@@ -99,6 +99,7 @@
                         @foreach ($groupedPermissions as $category => $modules)
                             <div x-data="{ 
                                     allChecked: false,
+                                    open: true,
                                     toggleAll() {
                                         this.allChecked = !this.allChecked;
                                         const checkboxes = $el.querySelectorAll('.perm-checkbox');
@@ -108,16 +109,24 @@
                                 class="border border-gray-100 dark:border-gray-800 rounded-xl p-4 bg-gray-50/50 dark:bg-gray-800/20">
                                 
                                 <div class="flex items-center justify-between mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                                    <h4 class="text-sm font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
-                                        {{ str_replace('-', ' ', $category) }}
-                                    </h4>
+                                    <div @click="open = !open" class="flex items-center gap-2 cursor-pointer select-none group">
+                                        <h4 class="text-sm font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors">
+                                            {{ str_replace('-', ' ', $category) }}
+                                        </h4>
+                                        <!-- Chevron Icon -->
+                                        <svg class="w-4 h-4 text-blue-700 dark:text-blue-400 transition-transform duration-200"
+                                            :class="open ? 'rotate-0' : '-rotate-90'"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                     <label class="inline-flex items-center cursor-pointer">
                                         <input type="checkbox" @click="toggleAll" class="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded border-gray-300">
                                         <span class="ml-2 text-xs font-medium text-gray-600 dark:text-gray-400 italic">Pilih Semua {{ ucfirst($category) }}</span>
                                     </label>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                <div x-show="open" x-collapse.duration.250ms class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     @foreach ($modules as $module => $subModules)
                                         <div class="space-y-4">
                                             <h5 class="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-2">
@@ -136,7 +145,7 @@
                                                         
                                                         <div class="flex flex-col gap-2">
                                                             @foreach ($perms as $perm)
-                                                                @php
+                                                                 @php
                                                                     $parts = explode('.', $perm->name);
                                                                     $action = end($parts);
                                                                     $label = $perm->custom_label ?? ucfirst(str_replace('-', ' ', $action));
