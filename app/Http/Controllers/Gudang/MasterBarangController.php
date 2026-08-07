@@ -131,15 +131,6 @@ class MasterBarangController extends Controller
             // INSERT STOCK GUDANG JIKA is_stock = 1 (Stock)
             if ($validated['is_stock'] == '1') {
 
-                // INSERT STOCK GUDANG HUB
-                StockGudang::create([
-                    'barang_id' => $barang->id,
-                    'stock_type' => 'HUB',
-                    'ubs_id' => null,
-                    'jumlah_stock' => 0,
-                    'minimal_stock' => $validated['minimal_stock_hub'] ?? 0,
-                ]);
-
                 // INSERT STOCK GUDANG UBS
                 $allUbs = Ubs::select('id')->get();
                 $stockUbsData = [];
@@ -249,24 +240,6 @@ class MasterBarangController extends Controller
 
             // Jika barang menggunakan stock
             if ($masterBarang->is_stock) {
-                // Stock HUB
-                $stockHub = StockGudang::where('barang_id', $masterBarang->id)
-                    ->where('stock_type', 'HUB')
-                    ->first();
-
-                if ($stockHub) {
-                    $stockHub->update([
-                        'minimal_stock' => $validated['minimal_stock_hub'] ?? 0,
-                    ]);
-                } else {
-                    StockGudang::create([
-                        'barang_id' => $masterBarang->id,
-                        'stock_type' => 'HUB',
-                        'jumlah_stock' => 0,
-                        'minimal_stock' => $validated['minimal_stock_hub'] ?? 0,
-                    ]);
-                }
-
                 // Stock UBS
                 $allUbs = Ubs::select('id')->get();
                 foreach ($allUbs as $ubs) {

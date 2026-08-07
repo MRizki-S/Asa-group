@@ -137,7 +137,7 @@
 
                 <!-- Bagian form khusus jika tipe barang adalah Stock -->
                 <div x-show="is_stock === '1'" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <!-- Minimal Stock HUB -->
+                    <!-- Minimal Stock HUB
                     <div>
                         <label for="minimal_stock_hub" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Minimal Stock Pusat (HUB) <span class="text-red-500">*</span>
@@ -146,6 +146,7 @@
                             x-bind:required="is_stock === '1'" value="{{ old('minimal_stock_hub', $minimal_stock_hub ? rtrim(rtrim($minimal_stock_hub, '0'), '.') : 0) }}"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-800 dark:text-white border-gray-300">
                     </div>
+                    -->
 
                     <!-- Minimal Stock UBS -->
                     <div>
