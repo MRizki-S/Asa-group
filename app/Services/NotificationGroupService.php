@@ -41,7 +41,7 @@ class NotificationGroupService
                 'Authorization' => $this->apiKey,
             ])->post($this->fonnteSendApiUrl, [
                 'target'  => $groupId,
-                'message' => $message,
+                'message' => html_entity_decode($message, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
             ]);
 
             if ($response->successful() && $response->json('status')) {

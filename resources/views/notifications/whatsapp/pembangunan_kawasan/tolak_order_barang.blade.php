@@ -7,8 +7,8 @@ Permintaan bahan material kawasan telah *DITOLAK* oleh Gudang:
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Ditolak Oleh:* {{ $adminGudang }}
 • *Tanggal:* {{ $tanggal }}
-@if(!empty($order->catatan))
-• *Alasan Penolakan:* {{ $order->catatan }}
+@if(!empty($alasanTolak))
+• *Alasan Penolakan:* {{ $alasanTolak }}
 @endif
 
 *Daftar Barang yang Ditolak:*

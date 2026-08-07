@@ -8,8 +8,11 @@ Permintaan bahan material unit telah *DITOLAK* oleh Gudang:
 • *Unit:* {{ $namaUnit }}
 • *Ditolak Oleh:* {{ $adminGudang }}
 • *Tanggal:* {{ $tanggal }}
-@if(!empty($order->catatan))
-• *Alasan Penolakan:* {{ $order->catatan }}
+@if(!empty($namaQc))
+• *QC:* {{ $namaQc }}
+@endif
+@if(!empty($alasanTolak))
+• *Alasan Penolakan:* {{ $alasanTolak }}
 @endif
 
 *Daftar Barang yang Ditolak:*

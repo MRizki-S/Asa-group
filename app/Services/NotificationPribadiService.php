@@ -36,8 +36,8 @@ class NotificationPribadiService
             $response = Http::withHeaders([
                 'Authorization' => "{$this->apiKey}",
             ])->post($this->sendUrl, [
-                'target'  => $noHp,
-                'message' => $message,
+                'target'      => $noHp,
+                'message'     => html_entity_decode($message, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                 'countryCode' => '62', // opsional, kalau perlu
             ]);
 

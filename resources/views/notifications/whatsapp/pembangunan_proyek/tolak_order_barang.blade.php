@@ -6,8 +6,8 @@ Permintaan bahan material proyek telah *DITOLAK* oleh Gudang:
 • *Nama Proyek:* {{ $namaProyek }}
 • *Ditolak Oleh:* {{ $adminGudang }}
 • *Tanggal:* {{ $tanggal }}
-@if(!empty($order->catatan))
-• *Alasan Penolakan:* {{ $order->catatan }}
+@if(!empty($alasanTolak))
+• *Alasan Penolakan:* {{ $alasanTolak }}
 @endif
 
 *Daftar Barang yang Ditolak:*

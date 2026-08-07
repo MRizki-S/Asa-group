@@ -345,6 +345,7 @@ class PermintaanBarangController extends Controller
                     'namaPerumahan' => $order->kawasan?->perumahan?->nama_perumahaan ?? '-',
                     'namaKawasan' => $order->kawasan?->nama ?? '-',
                     'adminGudang' => $adminName,
+                    'alasanTolak' => $order->alasan_tolak ?? null,
                     'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
                 $this->notification->sendWhatsApp($targetGroup, $message);
@@ -356,6 +357,7 @@ class PermintaanBarangController extends Controller
                     'order' => $order,
                     'namaProyek' => $order->proyek?->nama ?? '-',
                     'adminGudang' => $adminName,
+                    'alasanTolak' => $order->alasan_tolak ?? null,
                     'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
                 $this->notification->sendWhatsApp($targetGroup, $message);

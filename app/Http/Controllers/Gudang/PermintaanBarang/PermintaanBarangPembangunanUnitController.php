@@ -20,18 +20,22 @@ use App\Models\PembangunanUnitQc;
 use App\Models\StockGudang;
 use App\Models\StockLedger;
 use App\Models\Ubs;
+use App\Services\NotificationGroupService;
 use App\Services\NotificationPribadiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PermintaanBarangPembangunanUnitController extends Controller
 {
     protected NotificationPribadiService $notification;
+    protected NotificationGroupService $notificationGroup;
 
-    public function __construct(NotificationPribadiService $notification)
+    public function __construct(NotificationPribadiService $notification, NotificationGroupService $notificationGroup)
     {
         $this->notification = $notification;
+        $this->notificationGroup = $notificationGroup;
     }
 
     public function accBarangOrder(Request $request, $id)
@@ -117,7 +121,9 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'namaPerumahan' => $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-',
                 'namaTahap' => $unit?->tahap?->nama_tahap ?? '-',
                 'namaUnit' => $unit?->nama_unit ?? '-',
+                'namaQc' => $order->qc?->nama_qc ?? null,
                 'adminGudang' => $adminName,
+                'alasanTolak' => $order->alasan_tolak ?? null,
                 'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             ])->render();
             $this->notification->sendWhatsApp($targetGroup, $message);
@@ -560,8 +566,10 @@ class PermintaanBarangPembangunanUnitController extends Controller
                             $notaRtnId = DB::table('nota_barang_masuk')->insertGetId([
                                 'nomor_nota'   => $nomorNota,
                                 'tanggal_nota' => now()->format('Y-m-d'),
-                                'supplier'     => "Return Proyek Unit #{$return->pembangunan_unit_id} ({$return->nomor_return})",
+                                'jenis_nota'   => 'return_barang',
                                 'cara_bayar'   => 'cash',
+                                'stock_type'   => 'UBS',
+                                'ubs_id'       => $ubsId,
                                 'status'       => 'posted',
                                 'created_by'   => Auth::id(),
                                 'posted_at'    => now(),
@@ -1435,7 +1443,10 @@ class PermintaanBarangPembangunanUnitController extends Controller
             ]);
 
             try {
-                DB::transaction(function () use ($request) {
+                $return = null;
+                $pembangunanUnit = null;
+
+                DB::transaction(function () use ($request, &$return, &$pembangunanUnit) {
                     $pembangunanUnit = PembangunanUnit::findOrFail($request->pembangunan_unit_id);
                     $qc = PembangunanUnitQc::where('pembangunan_unit_id', $pembangunanUnit->id)
                         ->where('id', $request->pembangunan_unit_qc_id)
@@ -1482,6 +1493,30 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     }
                 });
 
+                // Kirim notifikasi WA
+                if ($return && $pembangunanUnit) {
+                    $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT', env('FONNTE_ID_RETURN_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                    if ($groupId) {
+                        $pembangunanUnit->loadMissing(['unit.tahap.perumahaan']);
+                        $unit = $pembangunanUnit->unit;
+                        $messageGroup = view('notifications.whatsapp.pembangunan_unit.retur_barang', [
+                            'tipe'          => 'Unit',
+                            'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
+                            'namaTahap'     => $unit->tahap->nama_tahap ?? '-',
+                            'namaUnit'      => $unit->nama_unit ?? '-',
+                            'namaQc'        => $return->qc->nama_qc ?? null,
+                            'pengaju'       => Auth::user()->nama_lengkap ?? Auth::user()->name,
+                            'tanggal'       => now()->format('d/m/Y H:i') . ' WIB',
+                            'return'        => $return,
+                        ])->render();
+                        try {
+                            $this->notificationGroup->send($groupId, $messageGroup);
+                        } catch (\Exception $e) {
+                            Log::error('WA Return Unit Error: ' . $e->getMessage());
+                        }
+                    }
+                }
+
                 return redirect()->route('gudang.returnBarang.unit.index')
                     ->with('success', 'Pengajuan retur barang unit berhasil disimpan.');
             } catch (\Exception $e) {
@@ -1499,7 +1534,10 @@ class PermintaanBarangPembangunanUnitController extends Controller
             ]);
 
             try {
-                DB::transaction(function () use ($request) {
+                $return = null;
+                $kawasan = null;
+
+                DB::transaction(function () use ($request, &$return, &$kawasan) {
                     $kawasan = \App\Models\PembangunanKawasan::findOrFail($request->pembangunan_kawasan_id);
                     $periodeActive = $kawasan->periodes()->where('status', 'proses')->first();
 
@@ -1545,6 +1583,27 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     }
                 });
 
+                // Kirim notifikasi WA
+                if ($return && $kawasan) {
+                    $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_KAWASAN', env('FONNTE_ID_RETURN_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                    if ($groupId) {
+                        $kawasan->loadMissing(['perumahan']);
+                        $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.retur_barang', [
+                            'tipe' => 'Kawasan',
+                            'namaPerumahan' => $kawasan->perumahan->nama_perumahaan ?? '-',
+                            'namaKawasan' => $kawasan->nama ?? '-',
+                            'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
+                            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                            'return' => $return
+                        ])->render();
+                        try {
+                            $this->notificationGroup->send($groupId, $messageGroup);
+                        } catch (\Exception $e) {
+                            Log::error('WA Return Kawasan Error: ' . $e->getMessage());
+                        }
+                    }
+                }
+
                 return redirect()->route('gudang.returnBarang.kawasan.index')
                     ->with('success', 'Pengajuan retur barang kawasan berhasil disimpan.');
             } catch (\Exception $e) {
@@ -1562,7 +1621,10 @@ class PermintaanBarangPembangunanUnitController extends Controller
             ]);
 
             try {
-                DB::transaction(function () use ($request) {
+                $return = null;
+                $proyek = null;
+
+                DB::transaction(function () use ($request, &$return, &$proyek) {
                     $proyek = \App\Models\PembangunanProyek::findOrFail($request->pembangunan_proyek_id);
 
                     // Generate nomor_return
@@ -1605,6 +1667,25 @@ class PermintaanBarangPembangunanUnitController extends Controller
                         ]);
                     }
                 });
+
+                // Kirim notifikasi WA
+                if ($return && $proyek) {
+                    $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_PROYEK', env('FONNTE_ID_RETURN_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                    if ($groupId) {
+                        $messageGroup = view('notifications.whatsapp.pembangunan_proyek.retur_barang', [
+                            'tipe' => 'Proyek',
+                            'namaProyek' => $proyek->nama_project ?? $proyek->nama ?? '-',
+                            'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
+                            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                            'return' => $return
+                        ])->render();
+                        try {
+                            $this->notificationGroup->send($groupId, $messageGroup);
+                        } catch (\Exception $e) {
+                            Log::error('WA Return Proyek Error: ' . $e->getMessage());
+                        }
+                    }
+                }
 
                 return redirect()->route('gudang.returnBarang.proyek.index')
                     ->with('success', 'Pengajuan retur barang proyek berhasil disimpan.');
@@ -1796,7 +1877,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
         try {
             if ($category === 'pembangunan_unit') {
-                $return = PembangunanUnitBarangReturn::findOrFail($id);
+                $return = PembangunanUnitBarangReturn::with(['qc', 'pembangunanUnit.unit.tahap.perumahaan', 'details'])->findOrFail($id);
                 if ($return->status !== 'ditolak') {
                     return back()->with('error', 'Hanya retur berstatus ditolak yang dapat diajukan ulang.');
                 }
@@ -1804,8 +1885,29 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     'status' => 'diproses',
                     'catatan' => $request->input('catatan', $return->catatan),
                 ]);
+
+                // Kirim Notifikasi WA Resubmit Retur Unit
+                $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_UNIT', env('FONNTE_ID_RETURN_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                if ($groupId) {
+                    $unit = $return->pembangunanUnit?->unit;
+                    $messageGroup = view('notifications.whatsapp.pembangunan_unit.resubmit_retur_barang', [
+                        'tipe'          => 'Unit',
+                        'namaPerumahan' => $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-',
+                        'namaTahap'     => $unit?->tahap?->nama_tahap ?? '-',
+                        'namaUnit'      => $unit?->nama_unit ?? '-',
+                        'namaQc'        => $return->qc?->nama_qc ?? null,
+                        'pengaju'       => Auth::user()->nama_lengkap ?? Auth::user()->name,
+                        'tanggal'       => now()->format('d/m/Y H:i') . ' WIB',
+                        'return'        => $return,
+                    ])->render();
+                    try {
+                        $this->notificationGroup->send($groupId, $messageGroup);
+                    } catch (\Exception $e) {
+                        Log::error('WA Resubmit Return Unit Error: ' . $e->getMessage());
+                    }
+                }
             } elseif ($category === 'pembangunan_kawasan') {
-                $return = \App\Models\PembangunanKawasanBarangReturn::findOrFail($id);
+                $return = \App\Models\PembangunanKawasanBarangReturn::with(['kawasan.perumahan', 'details'])->findOrFail($id);
                 if ($return->status !== 'ditolak') {
                     return back()->with('error', 'Hanya retur berstatus ditolak yang dapat diajukan ulang.');
                 }
@@ -1813,8 +1915,26 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     'status' => 'diproses',
                     'catatan' => $request->input('catatan', $return->catatan),
                 ]);
+
+                // Kirim Notifikasi WA Resubmit Retur Kawasan
+                $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_KAWASAN', env('FONNTE_ID_RETURN_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                if ($groupId) {
+                    $messageGroup = view('notifications.whatsapp.pembangunan_kawasan.resubmit_retur_barang', [
+                        'tipe' => 'Kawasan',
+                        'namaPerumahan' => $return->kawasan?->perumahan?->nama_perumahaan ?? '-',
+                        'namaKawasan' => $return->kawasan?->nama ?? '-',
+                        'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
+                        'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                        'return' => $return
+                    ])->render();
+                    try {
+                        $this->notificationGroup->send($groupId, $messageGroup);
+                    } catch (\Exception $e) {
+                        Log::error('WA Resubmit Return Kawasan Error: ' . $e->getMessage());
+                    }
+                }
             } elseif ($category === 'pembangunan_proyek_mangoon' || $category === 'pembangunan_proyek') {
-                $return = \App\Models\PembangunanProyekBarangReturn::findOrFail($id);
+                $return = \App\Models\PembangunanProyekBarangReturn::with(['proyek', 'details'])->findOrFail($id);
                 if ($return->status !== 'ditolak') {
                     return back()->with('error', 'Hanya retur berstatus ditolak yang dapat diajukan ulang.');
                 }
@@ -1822,6 +1942,23 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     'status' => 'diproses',
                     'catatan' => $request->input('catatan', $return->catatan),
                 ]);
+
+                // Kirim Notifikasi WA Resubmit Retur Proyek
+                $groupId = env('FONNTE_ID_GROUP_RETUR_BARANG_PROYEK', env('FONNTE_ID_RETURN_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+                if ($groupId) {
+                    $messageGroup = view('notifications.whatsapp.pembangunan_proyek.resubmit_retur_barang', [
+                        'tipe' => 'Proyek',
+                        'namaProyek' => $return->proyek?->nama_project ?? $return->proyek?->nama ?? '-',
+                        'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
+                        'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+                        'return' => $return
+                    ])->render();
+                    try {
+                        $this->notificationGroup->send($groupId, $messageGroup);
+                    } catch (\Exception $e) {
+                        Log::error('WA Resubmit Return Proyek Error: ' . $e->getMessage());
+                    }
+                }
             }
 
             return back()->with('success', 'Pengajuan retur berhasil diajukan ulang ke gudang.');

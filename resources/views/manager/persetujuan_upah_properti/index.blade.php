@@ -91,7 +91,7 @@
                                 <span class="bg-white/20 text-white px-1.5 py-0.5 rounded text-[10px]" x-text="selectedIds.length"></span>
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Halaman verifikasi & konfirmasi persetujuan pengajuan upah borongan oleh Manager Produksi</p>
+                        <p class="text-xs text-gray-500 mt-1">Halaman verifikasi & konfirmasi persetujuan pengajuan upah borongan oleh Manager Dukungan</p>
                     </div>
 
                     {{-- Filter Dropdown --}}

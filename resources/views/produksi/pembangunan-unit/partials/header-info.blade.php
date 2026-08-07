@@ -8,7 +8,7 @@
                 <div class="flex flex-wrap items-center gap-2 mb-1.5">
                     <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">Unit {{ $data->unit->nama_unit }}</h2>
                     <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                        Tahap {{ $data->tahap->nama_tahap }}
+                        {{ $data->tahap->nama_tahap }}
                     </span>
                 </div>
             </div>
