@@ -28,7 +28,7 @@
             <div class="p-5 sm:p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase mb-1">Type Unit</p>
+                        <p class="text-xs font-medium text-gray-400 uppercase mb-1">Tipe Unit</p>
                         <p class="text-lg font-semibold text-gray-800 dark:text-white">{{ $container->type->nama_type }}</p>
                     </div>
                     <div>

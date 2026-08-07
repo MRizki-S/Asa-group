@@ -61,7 +61,7 @@
                         <select name="typeFil" id="selectType"
                             class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
                             dark:bg-gray-600 dark:text-white">
-                            <option value="">Semua Type</option>
+                            <option value="">Semua Tipe</option>
                             @foreach ($allType as $item)
                                 <option value="{{ $item->slug }}" {{ $item->slug === $typeSlug ? 'selected' : '' }}>
                                     {{ $item->nama_type }}
@@ -72,14 +72,14 @@
                     <script>
                         $(document).ready(function() {
                             $('#selectType').select2({
-                                placeholder: "Semua Type",
+                                placeholder: "Semua Tipe",
                                 theme: 'bootstrap4',
                                 allowClear: true,
                                 width: '100%'
                             });
                         });
                     </script>
- 
+
                     <div class="flex gap-2 w-full sm:w-auto">
                         <button type="submit" class="flex-grow sm:flex-none px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-center">
                             Terapkan
@@ -96,7 +96,7 @@
                         <thead>
                             <tr>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                                    Type Unit
+                                    Tipe Unit
                                 </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Nama

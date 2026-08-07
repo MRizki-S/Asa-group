@@ -6,18 +6,18 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
 <div class="mx-auto max-w-[--breakpoint-md] p-4 md:p-6" x-data="{}">
     @include('partials.breadcrumb', ['breadcrumbs' => [
-        ['label' => 'Project Baru Kontraktor', 'url' => route('produksi.projectBaru.index')],
+        ['label' => 'Proyek Baru Kontraktor', 'url' => route('produksi.projectBaru.index')],
         ['label' => 'Edit', 'url' => '']
     ]])
 
     <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800 mt-6">
-        <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Edit Project Kontraktor</h3>
+        <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Edit Proyek Kontraktor</h3>
         <form action="{{ route('produksi.projectBaru.update', $project->id) }}" method="POST" x-data="{ submitting: false, simpanMulai: '{{ $project->tanggal_mulai ? \Carbon\Carbon::parse($project->tanggal_mulai)->format('Y-m-d') : '' }}', simpanSelesai: '{{ $project->tanggal_selesai ? \Carbon\Carbon::parse($project->tanggal_selesai)->format('Y-m-d') : '' }}', endPickerEditProj: null }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Project <span class="text-red-500">*</span></label>
+                    <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Proyek <span class="text-red-500">*</span></label>
                     <input type="text" name="nama" value="{{ $project->nama }}" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 </div>
 

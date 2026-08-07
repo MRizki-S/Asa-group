@@ -12,8 +12,8 @@
         z-index: 9999999 !important;
     }
 </style>
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{ 
-    openProcessModal: false, 
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{
+    openProcessModal: false,
     processActionUrl: '',
     kawasanNama: ''
 }" x-init="$watch('openProcessModal', value => {
@@ -65,7 +65,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">Nama Pembangunan <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="mis. Kawasan Melati Cluster A">
+                        <input type="text" name="nama" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="">
                     </div>
 
                     <div>

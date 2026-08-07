@@ -89,8 +89,8 @@ class DatabaseSeeder extends Seeder
 
             // Master Data Marketing
             MasterPerumahaanSeeder::class,
-            MasterBankSeeder::class,
-            MasterKprDokumenSeeder::class,
+            \Database\Seeders\Master\MasterBankSeeder::class,
+            \Database\Seeders\Master\MasterKprDokumenSeeder::class,
 
             // Master Data Keuangan
             KategoriAkunKeuanganSeeder::class,

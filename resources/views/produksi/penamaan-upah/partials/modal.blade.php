@@ -33,9 +33,9 @@
                     <label class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
                         Nama Upah Pekerjaan <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="nama_upah" x-model="formData.nama_upah" required
-                        placeholder="Contoh: Pekerjaan Pondasi, Pasang Keramik..."
-                        class="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2.5 
+                    <input type="text" name="nama_upah" x-model="formData.nama" required
+                        placeholder=""
+                        class="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2.5
                             focus:ring-blue-600 focus:border-blue-600 outline-none transition">
                 </div>
 

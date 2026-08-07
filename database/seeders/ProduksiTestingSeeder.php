@@ -23,15 +23,16 @@ class ProduksiTestingSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Ambil atau Buat Type Pembangunan (Default: Type 36/66)
+        // 1. Ambil atau Buat Type Pembangunan (Default: Type 33/66)
+        $perumahan = \App\Models\Perumahaan::first();
         $type = Type::firstOrCreate(
             ['nama_type' => '33/66'],
             [
+                'perumahaan_id' => $perumahan ? $perumahan->id : 1,
                 'luas_bangunan' => 33,
                 'luas_tanah' => 66,
                 'harga_dasar' => 150000000,
                 'harga_diajukan' => 180000000,
-                'status_pengajuan' => 'disetujui'
             ]
         );
 
@@ -319,7 +320,6 @@ class ProduksiTestingSeeder extends Seeder
             ['nomor_nota' => 'NBM-INIT-TESTING'],
             [
                 'tanggal_nota' => now()->subDays(30),
-                'supplier' => 'Supplier Utama Testing',
                 'cara_bayar' => 'cash',
                 'status' => 'posted',
                 'created_by' => 1,
@@ -434,10 +434,10 @@ class ProduksiTestingSeeder extends Seeder
             ]
         );
 
-        // 6. Data Struktur QC0 - QC6 (Pekerjaan, Bahan RAP, & Upah RAP)
+        // 6. Data Struktur QC1 - QC7 (Pekerjaan, Bahan RAP, & Upah RAP)
         $qcStructure = [
-            0 => [
-                'nama_qc' => 'QC 0 - Pekerjaan Persiapan & Pondasi',
+            1 => [
+                'nama_qc' => 'QC 1 - Pekerjaan Persiapan & Pondasi',
                 'tugas' => [
                     'Pekerjaan galian tanah pondasi',
                     'Pemasangan batu kali & pondasi',
@@ -457,8 +457,8 @@ class ProduksiTestingSeeder extends Seeder
                     ['nama' => 'Borongan sepitenk', 'nominal' => 150000],
                 ]
             ],
-            1 => [
-                'nama_qc' => 'QC 1 - Pekerjaan Dinding & Pipa Bawah',
+            2 => [
+                'nama_qc' => 'QC 2 - Pekerjaan Dinding & Pipa Bawah',
                 'tugas' => [
                     'Pemasangan hebel & perekat',
                     'Pemasangan besi ram & sirap',
@@ -488,8 +488,8 @@ class ProduksiTestingSeeder extends Seeder
                     ['nama' => 'Borong urukan', 'nominal' => 200000],
                 ]
             ],
-            2 => [
-                'nama_qc' => 'QC 2 - Pekerjaan Cor Kolom & Pasang Ringbalk',
+            3 => [
+                'nama_qc' => 'QC 3 - Pekerjaan Cor Kolom & Pasang Ringbalk',
                 'tugas' => [
                     'Pengecoran kolom praktis & ringbalk',
                     'Pemasangan dinding hebel lanjutan',
@@ -499,39 +499,6 @@ class ProduksiTestingSeeder extends Seeder
                     ['nama' => 'Besi ram', 'qty' => 8, 'satuan' => 'ljr'],
                     ['nama' => 'Semen', 'qty' => 3, 'satuan' => 'sak'],
                     ['nama' => 'Pasir', 'qty' => 1, 'satuan' => 'kubik'],
-                    ['nama' => 'Hebel', 'qty' => 7, 'satuan' => 'kubik'],
-                    ['nama' => 'perekat', 'qty' => 8, 'satuan' => 'sak'],
-                    ['nama' => 'Triplek', 'qty' => 2, 'satuan' => 'lbr'],
-                    ['nama' => 'Usuk', 'qty' => 7, 'satuan' => 'ljr'],
-                    ['nama' => 'Pipa 3/4', 'qty' => 1, 'satuan' => 'ljr'],
-                    ['nama' => 'Knee drat 3/4', 'qty' => 3, 'satuan' => 'bh'],
-                    ['nama' => 'Kran', 'qty' => 1, 'satuan' => 'bh'],
-                ],
-                'upah' => [
-                    ['nama' => 'Borong kerja unit', 'nominal' => 2150000],
-                    ['nama' => 'Borong pipa', 'nominal' => 50000],
-                    ['nama' => 'Borong listrik dan bahan', 'nominal' => 1331500],
-                ]
-            ],
-            3 => [
-                'nama_qc' => 'QC 3 - Rangka Atap, Plafond, & Keramik Kamar Mandi',
-                'tugas' => [
-                    'Pemasangan rangka atap baja ringan & genteng',
-                    'Pemasangan rangka & penutup plafond',
-                    'Pemasangan keramik dinding & lantai kamar mandi',
-                    'Pemasangan closet & acian bata ringan'
-                ],
-                'bahan' => [
-                    ['nama' => 'Canal C', 'qty' => 13, 'satuan' => 'ljr'],
-                    ['nama' => 'Reng', 'qty' => 24, 'satuan' => 'ljr'],
-                    ['nama' => 'Spandek 7 m', 'qty' => 2, 'satuan' => 'lbr'],
-                    ['nama' => 'Baut canal', 'qty' => 200, 'satuan' => 'bj'],
-                    ['nama' => 'Baut reng', 'qty' => 340, 'satuan' => 'bj'],
-                    ['nama' => 'Baut spandek', 'qty' => 30, 'satuan' => 'bj'],
-                    ['nama' => 'Hollow plafond', 'qty' => 30, 'satuan' => 'ljr'],
-                    ['nama' => 'Enjel', 'qty' => 16, 'satuan' => 'ljr'],
-                    ['nama' => 'Kalsiboar', 'qty' => 13, 'satuan' => 'lbr'],
-                    ['nama' => 'Skrup gip', 'qty' => 1, 'satuan' => 'dus'],
                     ['nama' => 'Kornes', 'qty' => 10, 'satuan' => 'sak'],
                     ['nama' => 'Perban tip', 'qty' => 1, 'satuan' => 'bh'],
                     ['nama' => 'Talang PVC', 'qty' => 1, 'satuan' => 'ljr'],

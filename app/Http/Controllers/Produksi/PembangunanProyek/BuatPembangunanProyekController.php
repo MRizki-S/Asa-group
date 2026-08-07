@@ -55,14 +55,14 @@ class BuatPembangunanProyekController extends Controller
 
         PembangunanProyek::create($request->all());
 
-        return redirect()->back()->with('success', 'Project baru berhasil dibuat!');
+        return redirect()->back()->with('success', 'Proyek baru berhasil dibuat!');
     }
 
     public function edit($id)
     {
         $project = PembangunanProyek::findOrFail($id);
         if ($project->status_pembangunan !== 'pending') {
-            abort(403, 'Hanya project pending yang dapat diedit');
+            abort(403, 'Hanya proyek pending yang dapat diedit');
         }
         $users = \App\Models\User::role('Pengawas Proyek Mangoon')->get();
         return view('produksi.project_baru.edit', compact('project', 'users'));
@@ -72,7 +72,7 @@ class BuatPembangunanProyekController extends Controller
     {
         $project = PembangunanProyek::findOrFail($id);
         if ($project->status_pembangunan !== 'pending') {
-            abort(403, 'Hanya project pending yang dapat diedit');
+            abort(403, 'Hanya proyek pending yang dapat diedit');
         }
 
         $request->validate([
@@ -85,29 +85,29 @@ class BuatPembangunanProyekController extends Controller
 
         $project->update($request->all());
 
-        return redirect()->route('produksi.projectBaru.index')->with('success', 'Project berhasil diupdate!');
+        return redirect()->route('produksi.projectBaru.index')->with('success', 'Proyek berhasil diupdate!');
     }
 
     public function destroy($id)
     {
         $project = PembangunanProyek::findOrFail($id);
         if ($project->status_pembangunan !== 'pending') {
-            return redirect()->back()->with('error', 'Hanya project pending yang dapat dihapus');
+            return redirect()->back()->with('error', 'Hanya proyek pending yang dapat dihapus');
         }
         $project->delete();
-        return redirect()->route('produksi.projectBaru.index')->with('success', 'Project berhasil dihapus!');
+        return redirect()->route('produksi.projectBaru.index')->with('success', 'Proyek berhasil dihapus!');
     }
 
     public function proses($id)
     {
         $project = PembangunanProyek::findOrFail($id);
         if ($project->status_pembangunan !== 'pending') {
-            return redirect()->back()->with('error', 'Project sudah diproses');
+            return redirect()->back()->with('error', 'Proyek sudah diproses');
         }
 
         $project->update(['status_pembangunan' => 'proses']);
         $this->sendGroupNotificationProses($project);
 
-        return redirect()->route('produksi.projectBaru.index')->with('success', 'Project mulai diproses!');
+        return redirect()->route('produksi.projectBaru.index')->with('success', 'Proyek mulai diproses!');
     }
 }

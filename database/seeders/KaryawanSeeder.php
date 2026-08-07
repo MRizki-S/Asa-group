@@ -28,7 +28,7 @@ class KaryawanSeeder extends Seeder
                     'nama' => $k->nama_lengkap ?? 'Karyawan ' . $k->id,
                     'no_hp' => $k->no_hp ?? '',
                     'role_id' => $k->role_id,
-                    'perumahaan_id' => $k->perumahaan_id,
+                    'ubs_id' => $k->perumahaan_id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]

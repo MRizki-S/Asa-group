@@ -71,7 +71,7 @@
         }
     }">
 
-        <div x-data="{ pageName: 'Persetujuan Upah Pemb. Unit' }">
+        <div x-data="{ pageName: 'Konfirmasi Upah Borongan' }">
             @include('partials.breadcrumb')
         </div>
         <div class="space-y-5 sm:space-y-6">
@@ -80,15 +80,18 @@
 
                 {{-- Header & Filter --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-                            Daftar Pengajuan Upah Pemb. Unit
-                        </h3>
-                        <button type="button" x-show="selectedIds.length > 0" x-cloak @click="openBatchModal()"
-                            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
-                            <span>PROSES TERPILIH</span>
-                            <span class="bg-white/20 text-white px-1.5 py-0.5 rounded text-[10px]" x-text="selectedIds.length"></span>
-                        </button>
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-base font-bold text-gray-800 dark:text-white/90">
+                                Konfirmasi Upah Borongan
+                            </h3>
+                            <button type="button" x-show="selectedIds.length > 0" x-cloak @click="openBatchModal()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5">
+                                <span>PROSES TERPILIH</span>
+                                <span class="bg-white/20 text-white px-1.5 py-0.5 rounded text-[10px]" x-text="selectedIds.length"></span>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Halaman verifikasi & konfirmasi persetujuan pengajuan upah borongan oleh Manager Produksi</p>
                     </div>
 
                     {{-- Filter Dropdown --}}
@@ -118,11 +121,10 @@
                                     <input type="checkbox" @change="toggleSelectAll($event)"
                                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 </th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit / Pekerjaan
-                                </th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tahap QC</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Budget & Akumulasi</th>
-                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Nominal Diajukan</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Pekerjaan</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Unit & QC</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">RAP & Akumulasi</th>
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Diajukan</th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Status
                                 </th>
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi
@@ -144,31 +146,35 @@
                                             {{ $isFinal ? 'disabled' : '' }}>
                                     </td>
                                     <td class="px-4 py-4">
-                                        <div class="flex flex-col leading-tight">
-                                            <span class="text-[10px] font-black text-blue-600 font-mono mb-0.5">
-                                                {{ $item->nomor_pengajuan ?? ('UBT-' . \Carbon\Carbon::parse($item->tanggal_diajukan)->format('ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT)) }}
-                                            </span>
-                                            <span class="text-[9px] text-gray-500 mb-0.5">
-                                                {{ \Carbon\Carbon::parse($item->tanggal_diajukan)->format('d M Y, H:i') }}
-                                            </span>
-                                            <span class="font-bold text-gray-900 dark:text-white uppercase">
-                                                {{ $item->pembangunanUnit->unit->nama_unit ?? '-' }}
-                                            </span>
-                                            <span class="text-[10px] text-emerald-600 font-bold uppercase mt-1">
-                                                {{ $item->nama_upah }}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4 uppercase">
-                                        <div class="text-[10px]">
-                                            <p class="font-medium text-gray-700 dark:text-gray-300">
-                                                {{ $item->pembangunanUnit->qcContainer->nama_container ?? '-' }}
-                                            </p>
-                                            <p class="text-gray-400 italic font-normal tracking-tighter">
-                                                {{ $item->pembangunanUnitQc->nama_qc ?? '-' }}
-                                            </p>
-                                        </div>
-                                    </td>
+                                         <div class="flex flex-col leading-tight">
+                                             <span class="text-[10px] font-black text-blue-600 font-mono mb-0.5">
+                                                 {{ $item->nomor_pengajuan ?? ('UBT-' . \Carbon\Carbon::parse($item->tanggal_diajukan)->format('ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT)) }}
+                                             </span>
+                                             <span class="font-bold text-xs text-emerald-600 dark:text-emerald-400 uppercase">
+                                                 {{ $item->nama_upah }}
+                                             </span>
+                                             <span class="text-[9px] text-gray-400 mt-1">
+                                                 {{ \Carbon\Carbon::parse($item->tanggal_diajukan)->format('d M Y, H:i') }}
+                                             </span>
+                                         </div>
+                                     </td>
+                                     <td class="px-4 py-4 uppercase">
+                                         <div class="text-[10px]">
+                                             @php
+                                                 $tahap = $item->pembangunanUnit?->unit?->tahap?->nama_tahap ?? '';
+                                                 $unit = $item->pembangunanUnit?->unit?->nama_unit ?? '-';
+                                             @endphp
+                                             <p class="font-bold text-gray-900 dark:text-white">
+                                                 {{ $tahap ? $tahap . ', ' : '' }}{{ $unit }}
+                                             </p>
+                                             <p class="font-medium text-gray-600 dark:text-gray-300 mt-0.5">
+                                                 {{ $item->pembangunanUnit->qcContainer->nama_container ?? '-' }}
+                                             </p>
+                                             <p class="text-gray-400 italic font-normal tracking-tighter">
+                                                 {{ $item->pembangunanUnitQc->nama_qc ?? '-' }}
+                                             </p>
+                                         </div>
+                                     </td>
                                     <td class="px-4 py-4 text-right font-mono">
                                         <div class="flex flex-col items-end leading-tight">
                                             <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">

@@ -74,7 +74,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type Unit</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipe Unit</label>
                             <select name="type_id" required id="selectTypeUnit"
                                 class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 transition">
                                 @foreach ($allType ?? [] as $item)
@@ -89,7 +89,7 @@
                         <script>
                             $(document).ready(function() {
                                 $('#selectTypeUnit').select2({
-                                    placeholder: "-- Pilih Type --",
+                                    placeholder: "-- Pilih Tipe --",
                                     theme: 'bootstrap4',
                                     allowClear: true,
                                     width: '100%'

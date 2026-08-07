@@ -14,7 +14,7 @@ class PersetujuanUpahPropertiController extends Controller
         $filter = $request->query('filter', 'menunggu');
 
         $query = PembangunanUnitUpahPengajuan::with([
-            'pembangunanUnit.unit',
+            'pembangunanUnit.unit.tahap.perumahaan',
             'pembangunanUnit.qcContainer',
             'pembangunanUnitQc',
             'rapUpah'
@@ -43,7 +43,7 @@ class PersetujuanUpahPropertiController extends Controller
             'allUpahPengajuan' => $allUpahPengajuan,
             'filter'           => $filter,
             'breadcrumbs'      => [
-                ['label' => 'Persetujuan Upah Pemb. Unit', 'url' => route('akuntan.persetujuanUpahProperti.index')]
+                ['label' => 'Konfirmasi Upah Borongan', 'url' => route('akuntan.persetujuanUpahProperti.index')]
             ],
         ]);
     }

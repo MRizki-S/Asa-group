@@ -5,7 +5,7 @@
 @section('content')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{}">
-    @include('partials.breadcrumb', ['breadcrumbs' => [['label' => 'Project Baru Kontraktor', 'url' => route('produksi.projectBaru.index')]]])
+    @include('partials.breadcrumb', ['breadcrumbs' => [['label' => 'Proyek Baru Kontraktor', 'url' => route('produksi.projectBaru.index')]]])
 
     @if(session('success'))
         <script>
@@ -36,12 +36,12 @@
     <div class="flex flex-col gap-6 mt-6">
         <!-- Form Create -->
         <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Project Kontraktor Baru</h3>
+            <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Buat Proyek Kontraktor Baru</h3>
             <form action="{{ route('produksi.projectBaru.store') }}" method="POST" id="form-create-project" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ simpanMulai: '{{ date('Y-m-d') }}', simpanSelesai: '', endPickerProject: null }">
                     <div>
-                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Nama Project <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Nama Proyek <span class="text-red-500">*</span></label>
                         <input type="text" name="nama" required class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                     </div>
 
@@ -88,7 +88,7 @@
 
                     <div class="md:col-span-2 flex justify-end pt-2">
                         <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''" class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-sm">
-                            <span x-text="submitting ? 'Memproses...' : 'Simpan Project'"></span>
+                            <span x-text="submitting ? 'Memproses...' : 'Simpan Proyek'"></span>
                         </button>
                     </div>
                 </div>
@@ -98,12 +98,12 @@
         <!-- Tabel -->
         <div>
             <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Daftar Project Kontraktor</h3>
+                <h3 class="mb-4 text-lg font-bold text-gray-900 dark:text-white">Daftar Proyek Kontraktor</h3>
                 <div class="overflow-x-auto">
                     <table id="table-project-baru" class="w-full text-left text-sm text-gray-500 dark:text-gray-400" style="min-width: 680px;">
                         <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th class="px-6 py-3">Nama Project</th>
+                                <th class="px-6 py-3">Nama Proyek</th>
                                 <th class="px-6 py-3">Pengawas</th>
                                 <th class="px-6 py-3">Rentang Waktu</th>
                                 <th class="px-6 py-3">Status</th>
@@ -171,7 +171,7 @@
         if (e.target.closest('.btn-delete')) {
             const form = e.target.closest('.confirm-delete-form');
             Swal.fire({
-                title: 'Yakin hapus project ini?',
+                title: 'Yakin hapus proyek ini?',
                 text: "Data yang terhapus tidak dapat dikembalikan!",
                 icon: 'warning',
                 showCancelButton: true,
@@ -189,8 +189,8 @@
         if (e.target.closest('.btn-process')) {
             const form = e.target.closest('.confirm-process-form');
             Swal.fire({
-                title: 'Mulai proses project ini?',
-                text: "Project akan masuk ke daftar pembangunan berjalan.",
+                title: 'Mulai proses proyek ini?',
+                text: "Proyek akan masuk ke daftar pembangunan berjalan.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#10B981',
