@@ -48,11 +48,13 @@
                                 </a>
                             @endforeach
                         </div>
-
-                        <a href="{{ route('gudang.barangRusak.create') }}"
-                            class="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
-                            + Tambah Barang Rusak
-                        </a>
+                        
+                        @can('gudang.barang-rusak.create')
+                            <a href="{{ route('gudang.barangRusak.create') }}"
+                                class="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+                                + Tambah Barang Rusak
+                            </a>
+                        @endcan
                     </div>
                 </div>
 

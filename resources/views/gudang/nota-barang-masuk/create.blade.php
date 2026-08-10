@@ -272,6 +272,7 @@
         </div>
 
         <!-- Tombol Aksi -->
+        @can('gudang.nota-masuk.tambah.submit-draft')
         <div class="flex justify-end gap-2">
             <button type="submit"
                 class="px-8 py-2.5 text-sm font-bold text-yellow-900 rounded-lg bg-yellow-400 hover:bg-yellow-500
@@ -284,6 +285,7 @@
                 </div>
             </button>
         </div>
+        @endcan
     </form>
 </div>
 

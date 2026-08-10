@@ -186,11 +186,13 @@
         </a>
 
         @if ($barangRusak->status === 'posted')
-            <button type="button" @click="cancelOpen = true"
-                class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700">
-                Cancel / Kembalikan ke Stock
-            </button>
-
+           @can('gudang.barang-rusak.kembalikan-ke-stok')
+                <button type="button" @click="cancelOpen = true"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700">
+                    Cancel / Kembalikan ke Stock
+                </button>
+            @endcan
+            
             <div x-show="cancelOpen" x-cloak class="fixed inset-0 z-[99999] flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-gray-900/50" @click="cancelOpen = false"></div>
                 <div class="relative w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">

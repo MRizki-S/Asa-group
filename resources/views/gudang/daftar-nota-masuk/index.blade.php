@@ -100,12 +100,14 @@
                         Reset
                     </a>
 
+                    @can('gudang.nota-masuk.draft-nota-masuk.read')
                     <div class="h-10 w-[1px] bg-gray-300 dark:bg-gray-700 mx-1 hidden sm:block"></div>
-
+ 
                     <a href="{{route('gudang.draftNotaMasuk.index') }}"
                         class="inline-flex items-center gap-2 rounded-lg bg-yellow-400 px-4 py-2 text-sm font-bold text-yellow-900 hover:bg-yellow-500 transition shadow-sm">
                         Draft Nota
                     </a>
+                    @endcan
                 </form>
 
 
@@ -160,7 +162,9 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Cara Bayar</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -194,12 +198,14 @@
                                     <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                 <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
                                     Detail
                                 </a>
                             </td>
+                            @endcan
                         </tr>
                         @endforeach
                     </tbody>
@@ -217,7 +223,9 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Cara Bayar</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -247,12 +255,14 @@
                                     <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                 <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
                                     Detail
                                 </a>
                             </td>
+                            @endcan
                         </tr>
                         @endforeach
                     </tbody>
@@ -270,7 +280,9 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Cara Bayar</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -300,12 +312,14 @@
                                     <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                 <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
                                     Detail
                                 </a>
                             </td>
+                            @endcan
                         </tr>
                         @endforeach
                     </tbody>
@@ -322,7 +336,9 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Jenis Nota</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Gudang Tujuan</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal Posting</th>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -360,12 +376,14 @@
                                     <span class="text-xs text-gray-400">-</span>
                                 @endif
                             </td>
+                            @can('gudang.nota-masuk.daftar-nota-masuk.detail')
                             <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
                                 <a href="{{ route('gudang.daftarNotaMasuk.show', $nota->nomor_nota) }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95">
                                     Detail
                                 </a>
                             </td>
+                            @endcan
                         </tr>
                         @endforeach
                     </tbody>

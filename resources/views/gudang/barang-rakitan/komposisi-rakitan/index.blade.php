@@ -40,11 +40,12 @@
                 <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
                     Komposisi Rakitan
                 </h3>
-
-                <a href="{{ route('gudang.komposisiRakitan.create') }}"
-                    class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                    + Tambah Komposisi
-                </a>
+                @can('gudang.barang-rakitan.komposisi-rakitan.create')
+                    <a href="{{ route('gudang.komposisiRakitan.create') }}"
+                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        + Tambah Komposisi
+                    </a>
+                @endcan
             </div>
 
 
@@ -84,9 +85,11 @@
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                             Cretaed By
                         </th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
-                            Aksi
-                        </th>
+                        @canany(['gudang.barang-rakitan.komposisi-rakitan.edit', 'gudang.barang-rakitan.komposisi-rakitan.delete'])
+                            <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
+                                Aksi
+                            </th>
+                        @endcanany
                     </tr>
                 </thead>
                 <tbody>
@@ -147,24 +150,30 @@
                         </td>
 
                         {{-- Aksi --}}
+                        @canany(['gudang.barang-rakitan.komposisi-rakitan.edit', 'gudang.barang-rakitan.komposisi-rakitan.delete'])
                         <td class="px-6 py-4">
                             <div class="flex flex-wrap gap-2 justify-center">
-                                <a href="{{ route('gudang.komposisiRakitan.edit', $item) }}"
-                                    class="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1 active:scale-95">
-                                    Edit
-                                </a>
+                                @can('gudang.barang-rakitan.komposisi-rakitan.edit')
+                                    <a href="{{ route('gudang.komposisiRakitan.edit', $item) }}"
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1 active:scale-95">
+                                        Edit
+                                    </a>
+                                @endcan
 
-                                <form action="{{ route('gudang.komposisiRakitan.destroy', $item) }}"
-                                    method="POST" class="delete-form">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button"
-                                        class="delete-btn px-3 py-1.5 text-xs text-white bg-red-600 rounded-md hover:bg-red-700">
-                                        Delete
-                                    </button>
-                                </form>
+                                @can('gudang.barang-rakitan.komposisi-rakitan.delete')
+                                    <form action="{{ route('gudang.komposisiRakitan.destroy', $item) }}"
+                                        method="POST" class="delete-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button"
+                                            class="delete-btn px-3 py-1.5 text-xs text-white bg-red-600 rounded-md hover:bg-red-700">
+                                            Delete
+                                        </button>
+                                    </form>
+                                @endcan
                             </div>
                         </td>
+                        @endcanany
                     </tr>
                     @empty
                     @endforelse

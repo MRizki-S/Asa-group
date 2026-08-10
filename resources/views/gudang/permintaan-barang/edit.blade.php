@@ -306,8 +306,10 @@
 
             <!-- Cart Items Container -->
             <div class="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3">
-                <template x-for="(item, idx) in filteredCartItems()" :key="idx">
-                    <div class="p-3.5 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-2 relative">
+                <template x-for="(item, idx) in cart" :key="item.barang_id + '-' + (item.rap_id ?? 'null')">
+                    <div
+                        x-show="cartMatchesSearch(item)"
+                        class="p-3.5 bg-gray-50/80 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/80 shadow-sm space-y-2 relative">
                         <button type="button" @click="removeFromCart(idx)" class="absolute top-3 right-3 text-red-500 hover:text-red-700 text-xs font-bold p-1" title="Hapus Barang">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
@@ -983,15 +985,30 @@ function createOrderUnitComponent() {
             return (totalOrderedBase + inputBase) > (rapTotalBase + 0.0001);
         },
 
+        // Helper untuk x-show filter di cart items (agar index asli terjaga)
+        cartMatchesSearch(item) {
+            let q = this.cartSearchQuery.toLowerCase().trim();
+            if (!q) return true;
+            return (item.nama_barang && item.nama_barang.toLowerCase().includes(q)) ||
+                   (item.kode_barang && item.kode_barang.toLowerCase().includes(q));
+        },
+
         // Handler validasi max input stok — hanya cap ke stok max, tidak reset paksa ke 0.01
+        // Dipanggil @change (saat user selesai mengetik dan keluar dari field)
         validateQtyOnChange(item) {
+            // Normalisasi koma ke titik (untuk input gaya Indonesia seperti "0,5")
             let raw = String(item.qty || '').replace(',', '.');
             let val = parseFloat(raw);
+
+            // Kalau tidak valid atau negatif — biarkan saja, jangan paksa reset
             if (isNaN(val) || val <= 0) return;
+
+            // Cap ke stok maksimum jika melebihi
             let maxStok = this.getConvertedStock(item);
             if (maxStok > 0 && val > maxStok) {
                 item.qty = maxStok;
             } else {
+                // Simpan kembali sebagai angka bersih (dot sebagai desimal)
                 item.qty = val;
             }
         },
@@ -1000,6 +1017,7 @@ function createOrderUnitComponent() {
         incrementQty(item) {
             let raw = String(item.qty || '0').replace(',', '.');
             let current = parseFloat(raw) || 0;
+            // Deteksi apakah desimal
             let isDecimal = current % 1 !== 0;
             let step = isDecimal ? 0.1 : 1;
             let newVal = Math.round((current + step) * 10000) / 10000;
@@ -1017,6 +1035,11 @@ function createOrderUnitComponent() {
             item.qty = Math.max(newVal, 0.01);
         },
 
+        // Helper parse qty dari string/number (handle koma desimal gaya Indonesia)
+        parseQty(val) {
+            let num = parseFloat(String(val || '0').replace(',', '.'));
+            return isNaN(num) ? 0 : num;
+        },
         removeFromCart(index) {
             this.cart.splice(index, 1);
         },
@@ -1118,7 +1141,7 @@ function createOrderUnitComponent() {
                             nama_barang: c.nama_barang,
                             satuan_id: c.satuan_id,
                             satuan: st ? st.nama_satuan : c.satuan_nama,
-                            jumlah_input: c.qty,
+                            jumlah_input: this.parseQty(c.qty),
                             faktor_konversi: st ? st.konversi_ke_base : 1,
                             pembangunan_unit_rap_bahan_id: c.rap_id,
                             alasan: c.alasan
@@ -1133,7 +1156,7 @@ function createOrderUnitComponent() {
                         return {
                             id: c.barang_id,
                             satuan_id: c.satuan_id,
-                            jumlah_input: c.qty
+                            jumlah_input: this.parseQty(c.qty)
                         };
                     })
                 };

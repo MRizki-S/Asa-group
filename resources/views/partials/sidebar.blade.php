@@ -878,7 +878,7 @@
                 </div>
             @endif
 
-            {{-- Menu Keuangan Akutansi --}}
+            {{-- Menu Keuangan --}}
             @php
                 $keuanganMenu = [
                     'keuangan.periode.read',
@@ -888,6 +888,8 @@
                     'keuangan.laporan-jurnal.read',
                     'keuangan.buku-besar.read',
                     'keuangan.neraca-saldo.read',
+                    'keuangan.upah-harian-tukang.daftar-pengajuan.read',
+                    'keuangan.upah-harian-tukang.riwayat-pengajuan.read',
                 ];
             @endphp
             @if (auth()->user()->canAny($keuanganMenu))
@@ -958,7 +960,7 @@
                         @endcan
                         <!-- Menu Item Kategori Akun -->
 
-                        <!-- Menu Item Akun Akutansi -->
+                        <!-- Menu Item Akun -->
                         @can('keuangan.akun-keuangan.read')
                             <li>
                                 <a href="{{ route('keuangan.akunKeuangan.index') }}"
@@ -982,7 +984,7 @@
                                 </a>
                             </li>
                         @endcan
-                        <!-- Menu Item Akun Akutansi -->
+                        <!-- Menu Item Akun -->
 
                         <!-- Menu Item Jurnal -->
                         @can('keuangan.transaksi-jurnal.create')
@@ -1163,15 +1165,15 @@
 
 
                         <!-- Upah Harian Tukang -->
-                        @if(
-                            auth()->user()->hasAnyRole(['Staff Keuangan', 'Superadmin']) ||
-                            auth()->user()->can('keuangan.upahHarianTukang.read')
-                        )
+                        @canany([
+                            'keuangan.upah-harian-tukang.daftar-pengajuan.read',
+                            'keuangan.upah-harian-tukang.riwayat-pengajuan.read'
+                        ])
                         <li>
                             <a href="#" @click.prevent="selected = (selected === 'upahHarianTukangKeuangan' ? '':'upahHarianTukangKeuangan')"
                                 class="menu-item group"
-                                :class="(selected === 'upahHarianTukangKeuangan') || (page === 'DaftarPengajuanUpahHarianKeuangan') ? 'menu-item-active' : 'menu-item-inactive'">
-                                <svg :class="(selected === 'upahHarianTukangKeuangan') || (page === 'DaftarPengajuanUpahHarianKeuangan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                :class="(selected === 'upahHarianTukangKeuangan') || (page === 'DaftarPengajuanUpahHarianKeuangan' || page === 'RiwayatUpahHarianKeuangan') ? 'menu-item-active' : 'menu-item-inactive'">
+                                <svg :class="(selected === 'upahHarianTukangKeuangan') || (page === 'DaftarPengajuanUpahHarianKeuangan' || page === 'RiwayatUpahHarianKeuangan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                     class="w-6 h-6 size-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                     <title>worker-daily-wage</title>
                                     <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -1185,22 +1187,26 @@
                             </a>
                             <div class="overflow-hidden transform translate" :class="(selected === 'upahHarianTukangKeuangan') ? 'block' : 'hidden'">
                                 <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                    @can('keuangan.upah-harian-tukang.daftar-pengajuan.read')
                                     <li>
                                         <a href="{{ route('keuangan.daftarUpahHarian.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'DaftarPengajuanUpahHarianKeuangan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                             Daftar Pengajuan
                                         </a>
                                     </li>
+                                    @endcan
+                                    @can('keuangan.upah-harian-tukang.riwayat-pengajuan.read')
                                     <li>
                                         <a href="{{ route('keuangan.riwayatUpahHarian.index') }}" class="menu-dropdown-item group"
                                             :class="page === 'RiwayatUpahHarianKeuangan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                             Riwayat Pengajuan
                                         </a>
                                     </li>
+                                    @endcan
                                 </ul>
                             </div>
                         </li>
-                        @endif
+                        @endcanany
 
                     </ul>
                 </div>
@@ -1208,6 +1214,26 @@
             @endif
 
             <!-- Gudang -  Group -->
+            @canany([
+                'gudang.stock-barang.read',
+                'gudang.barang-rusak.read',
+                'gudang.barang-rakitan.komposisi-rakitan.read',
+                'gudang.barang-rakitan.produksi-rakitan.read',
+                'gudang.master-gudang.master-supplier.read',
+                'gudang.master-gudang.master-satuan.read',
+                'gudang.master-gudang.master-barang.read',
+                'gudang.nota-masuk.tambah.read',
+                'gudang.nota-masuk.daftar-nota-masuk.read',
+                'gudang.permintaan-barang.pemb-unit.read',
+                'gudang.permintaan-barang.pemb-kawasan.read',
+                'gudang.permintaan-barang.pemb-mangoon.read',
+                'gudang.return-barang.return-unit.read',
+                'gudang.return-barang.return-kawasan.read',
+                'gudang.return-barang.return-mangoon.read',
+                'gudang.upah-harian-tukang.master-tukang.read',
+                'gudang.upah-harian-tukang.upah-abm.read',
+                'gudang.upah-harian-tukang.upah-mangoon.read'
+            ])
             <div>
                 <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
                     <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -1218,13 +1244,14 @@
                         class="mx-auto fill-current menu-group-icon" width="24" height="24"
                         viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
+                            d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
                             fill="" />
                     </svg>
                 </h3>
 
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- menu stock barang dan transfer stok -->
+                    @can('gudang.stock-barang.read')
                     <li>
                         <a href="{{ route('gudang.stockBarang.index') }}"
                             @click="selected = (selected === 'StokBarangGudang' ? '' : 'StokBarangGudang')"
@@ -1252,9 +1279,11 @@
                             </span>
                         </a>
                     </li>
+                    @endcan
                     <!-- menu stock barang dan transfer stok -->
 
                     <!-- Menu Barang Rusak -->
+                    @can('gudang.barang-rusak.read')
                     <li>
                         <a href="{{ route('gudang.barangRusak.index') }}"
                             @click="selected = (selected === 'DaftarBarangRusak' ? '' : 'DaftarBarangRusak')"
@@ -1274,9 +1303,11 @@
                             </span>
                         </a>
                     </li>
+                    @endcan
                     <!-- Menu Barang Rusak -->
 
                     <!-- Menu Group Item Barang Rakitan -->
+                    @canany(['gudang.barang-rakitan.komposisi-rakitan.read', 'gudang.barang-rakitan.produksi-rakitan.read'])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'BarangRakitanGroup' ? '':'BarangRakitanGroup')"
@@ -1321,6 +1352,7 @@
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
                                 <!-- Komposisi Rakitan -->
+                                @can('gudang.barang-rakitan.komposisi-rakitan.read')
                                 <li>
                                     <a href="{{ route('gudang.komposisiRakitan.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1344,8 +1376,10 @@
                                         Komposisi Rakitan
                                     </a>
                                 </li>
+                                @endcan
 
                                 <!-- Produksi Rakitan -->
+                                @can('gudang.barang-rakitan.produksi-rakitan.read')
                                 <li>
                                     <a href="{{ route('gudang.produksiRakitan.index') }}"
                                         class="menu-dropdown-item group flex items-center"
@@ -1365,13 +1399,16 @@
                                         Produksi Rakitan
                                     </a>
                                 </li>
+                                @endcan
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
                     </li>
+                    @endcanany
                     <!-- Menu Item Barang Rakitan -->
 
                     <!-- Menu Group Item Master Gudang  -->
+                    @canany(['gudang.master-gudang.master-supplier.read', 'gudang.master-gudang.master-satuan.read', 'gudang.master-gudang.master-barang.read'])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'MasterGudang' ? '':'MasterGudang')"
@@ -1414,6 +1451,7 @@
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
                                  <!-- Master Satuan -->
+                                @can('gudang.master-gudang.master-supplier.read')
                                 <li>
                                     <a href="{{ route('gudang.masterSupplier.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1434,9 +1472,11 @@
                                         Master Supplier
                                     </a>
                                 </li>
+                                @endcan
 
 
                                 <!-- Master Satuan -->
+                                @can('gudang.master-gudang.master-satuan.read')
                                 <li>
                                     <a href="{{ route('gudang.masterSatuanBarang.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1458,8 +1498,10 @@
                                         Master Satuan
                                     </a>
                                 </li>
+                                @endcan
 
                                 <!-- Daftar Material Barang -->
+                                @can('gudang.master-gudang.master-barang.read')
                                 <li>
                                     <a href="{{ route('gudang.masterBarang.index') }}"
                                         class="menu-dropdown-item group flex items-center"
@@ -1482,13 +1524,16 @@
                                         Material/Barang
                                     </a>
                                 </li>
+                                @endcan
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
                     </li>
+                    @endcanany
                     <!-- Menu Item Master Master Gudang -->
 
                     <!-- Menu Group Item Nota Barang Masuk  -->
+                    @canany(['gudang.nota-masuk.tambah.read', 'gudang.nota-masuk.daftar-nota-masuk.read'])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'NotaMasukGroup' ? '':'NotaMasukGroup')"
@@ -1540,6 +1585,7 @@
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
+                                @can('gudang.nota-masuk.tambah.read')
                                 <li>
                                     <a href="{{ route('gudang.notaBarangMasuk.create') }}"
                                         class="menu-dropdown-item group flex items-center"
@@ -1573,8 +1619,10 @@
                                         Tambah Nota Masuk
                                     </a>
                                 </li>
+                                @endcan
 
                                 <!-- Daftar Nota Masuk -->
+                                @can('gudang.nota-masuk.daftar-nota-masuk.read')
                                 <li>
                                     <a href="{{ route('gudang.daftarNotaMasuk.index') }}"
                                         class="menu-dropdown-item group flex items-center"
@@ -1595,13 +1643,23 @@
                                         Daftar Nota Masuk
                                     </a>
                                 </li>
+                                @endcan
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
                     </li>
+                    @endcanany
                     <!-- Menu Item Nota Barang Masuk-->
 
                     <!-- Menu Group Item Material Proyek  -->
+                    @canany([
+                        'gudang.permintaan-barang.pemb-unit.read',
+                        'gudang.permintaan-barang.pemb-kawasan.read',
+                        'gudang.permintaan-barang.pemb-mangoon.read',
+                        'gudang.return-barang.return-unit.read',
+                        'gudang.return-barang.return-kawasan.read',
+                        'gudang.return-barang.return-mangoon.read'
+                    ])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'MaterialProyekGroup' ? '':'MaterialProyekGroup')"
@@ -1647,9 +1705,12 @@
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
                                 <!-- Sub-Menu Permintaan -->
+                                @canany(['gudang.permintaan-barang.pemb-unit.read', 'gudang.permintaan-barang.pemb-kawasan.read', 'gudang.permintaan-barang.pemb-mangoon.read'])
                                 <li class="text-[10px] font-semibold text-gray-400 uppercase mt-4 mb-1">
                                     Permintaan (Order)
                                 </li>
+                                @endcanany
+                                @can('gudang.permintaan-barang.pemb-unit.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_unit']) }}"
                                         class="menu-dropdown-item group"
@@ -1657,6 +1718,8 @@
                                         Pemb. Unit
                                     </a>
                                 </li>
+                                @endcan
+                                @can('gudang.permintaan-barang.pemb-kawasan.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_kawasan']) }}"
                                         class="menu-dropdown-item group"
@@ -1664,6 +1727,8 @@
                                         Pemb. Kawasan
                                     </a>
                                 </li>
+                                @endcan
+                                @can('gudang.permintaan-barang.pemb-mangoon.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_proyek_mangoon']) }}"
                                         class="menu-dropdown-item group"
@@ -1671,11 +1736,15 @@
                                         Proyek Mangoon
                                     </a>
                                 </li>
+                                @endcan
 
                                 <!-- Sub-Menu Retur -->
+                                @canany(['gudang.return-barang.return-unit.read', 'gudang.return-barang.return-kawasan.read', 'gudang.return-barang.return-mangoon.read'])
                                 <li class="text-[10px] font-semibold text-gray-400 uppercase mt-4 mb-1">
                                     Retur Barang
                                 </li>
+                                @endcanany
+                                @can('gudang.return-barang.return-unit.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.unit.index') }}"
                                         class="menu-dropdown-item group"
@@ -1683,6 +1752,8 @@
                                         Retur Unit
                                     </a>
                                 </li>
+                                @endcan
+                                @can('gudang.return-barang.return-kawasan.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.kawasan.index') }}"
                                         class="menu-dropdown-item group"
@@ -1690,6 +1761,8 @@
                                         Retur Kawasan
                                     </a>
                                 </li>
+                                @endcan
+                                @can('gudang.return-barang.return-mangoon.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.proyek.index') }}"
                                         class="menu-dropdown-item group"
@@ -1697,13 +1770,16 @@
                                         Retur Proyek Mangoon
                                     </a>
                                 </li>
+                                @endcan
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
                     </li>
+                    @endcanany
                     <!-- Menu Item Material Proyek-->
 
                     <!-- Menu Group Item Upah Harian Tukang -->
+                    @canany(['gudang.upah-harian-tukang.master-tukang.read', 'gudang.upah-harian-tukang.upah-abm.read', 'gudang.upah-harian-tukang.upah-mangoon.read'])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'UpahHarianTukangGroup' ? '':'UpahHarianTukangGroup')"
@@ -1751,6 +1827,7 @@
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
                                 <!-- Master Tukang -->
+                                @can('gudang.upah-harian-tukang.master-tukang.read')
                                 <li>
                                     <a href="{{ route('gudang.masterTukang.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1770,8 +1847,10 @@
                                         Master Tukang
                                     </a>
                                 </li>
+                                @endcan
 
                                 <!-- Daftar Pengajuan Upah ABM-->
+                                @can('gudang.upah-harian-tukang.upah-abm.read')
                                 <li>
                                     <a href="{{ route('gudang.pengajuanUpahHarianTukang.index') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1790,8 +1869,10 @@
                                         Daftar Pengajuan Upah ABM
                                     </a>
                                 </li>
+                                @endcan
 
                                 <!-- Daftar Pengajuan Upah Mangoon -->
+                                @can('gudang.upah-harian-tukang.upah-mangoon.read')
                                 <li>
                                     <a href="{{ route('gudang.pengajuanUpahHarianTukang.indexMangoon') }}"
                                         class="menu-dropdown-item group flex items-center gap-3"
@@ -1810,15 +1891,18 @@
                                         Daftar Pengajuan Upah Mangoon
                                     </a>
                                 </li>
+                                @endcan
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
                     </li>
+                    @endcanany
                     <!-- Menu Item Upah Harian Tukang -->
 
 
                 </ul>
             </div>
+            @endcanany
             <!-- Gudang -  Group -->
 
 

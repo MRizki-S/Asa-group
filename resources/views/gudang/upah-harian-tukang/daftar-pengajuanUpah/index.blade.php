@@ -41,14 +41,21 @@
                     {{ $pageTitle }}
                 </h3>
 
-                <a href="{{ $isAbm ? route('gudang.pengajuanUpahHarianTukang.create') : route('gudang.pengajuanUpahHarianTukang.createMangoon') }}"
-                    class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                    @if($isAbm)
-                    + Buat Pengajuan ABM
-                    @else
-                    + Buat Pengajuan Mangoon
-                    @endif
-                </a>
+                @if($isAbm)
+                    @can('gudang.upah-harian-tukang.upah-abm.create')
+                    <a href="{{ route('gudang.pengajuanUpahHarianTukang.create') }}"
+                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        + Buat Pengajuan ABM
+                    </a>
+                    @endcan
+                @else
+                    @can('gudang.upah-harian-tukang.upah-mangoon.create')
+                    <a href="{{ route('gudang.pengajuanUpahHarianTukang.createMangoon') }}"
+                        class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                        + Buat Pengajuan Mangoon
+                    </a>
+                    @endcan
+                @endif
             </div>
 
             <table id="table-pengajuanUpah">
@@ -153,43 +160,71 @@
                         <td class="px-6 py-4">
                             <div class="flex justify-center gap-2">
                                 @if($item->status === 'draft')
-                                <a href="{{ $isAbm
-                                        ? route('gudang.pengajuanUpahHarianTukang.edit', $item->id)
-                                        : route('gudang.pengajuanUpahHarianTukang.editMangoon', $item->id) }}"
-                                    class="inline-flex items-center gap-1 text-xs font-medium text-orange-700 bg-orange-100 hover:bg-orange-200 dark:bg-orange-800 dark:text-orange-100 dark:hover:bg-orange-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 active:scale-95">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
-                                    </svg>
-                                    Edit
-                                </a>
-                                <form id="deleteForm-{{ $item->id }}"
-                                      action="{{ $isAbm
-                                        ? route('gudang.pengajuanUpahHarianTukang.destroy', $item->id)
-                                        : route('gudang.pengajuanUpahHarianTukang.destroyMangoon', $item->id) }}"
-                                      method="POST"
-                                      class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button"
-                                        onclick="confirmDeleteDraft('{{ $item->id }}', '{{ $item->nomor_upah_harian }}')"
-                                        class="inline-flex items-center gap-1 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 active:scale-95">
+                                    @php
+                                        $canEdit = $isAbm
+                                            ? auth()->user()->can('gudang.upah-harian-tukang.upah-abm.edit')
+                                            : auth()->user()->can('gudang.upah-harian-tukang.upah-mangoon.edit');
+                                        $canDelete = $isAbm
+                                            ? auth()->user()->can('gudang.upah-harian-tukang.upah-abm.batalkan-pengajuan')
+                                            : auth()->user()->can('gudang.upah-harian-tukang.upah-mangoon.batalkan-pengajuan');
+                                    @endphp
+
+                                    @if($canEdit)
+                                    <a href="{{ $isAbm
+                                            ? route('gudang.pengajuanUpahHarianTukang.edit', $item->id)
+                                            : route('gudang.pengajuanUpahHarianTukang.editMangoon', $item->id) }}"
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-orange-700 bg-orange-100 hover:bg-orange-200 dark:bg-orange-800 dark:text-orange-100 dark:hover:bg-orange-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 active:scale-95">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
                                         </svg>
-                                        Hapus
-                                    </button>
-                                </form>
+                                        Edit
+                                    </a>
+                                    @endif
+
+                                    @if($canDelete)
+                                    <form id="deleteForm-{{ $item->id }}"
+                                          action="{{ $isAbm
+                                            ? route('gudang.pengajuanUpahHarianTukang.destroy', $item->id)
+                                            : route('gudang.pengajuanUpahHarianTukang.destroyMangoon', $item->id) }}"
+                                          method="POST"
+                                          class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button"
+                                            onclick="confirmDeleteDraft('{{ $item->id }}', '{{ $item->nomor_upah_harian }}')"
+                                            class="inline-flex items-center gap-1 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 active:scale-95">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Hapus
+                                        </button>
+                                    </form>
+                                    @endif
+
+                                    @if(!$canEdit && !$canDelete)
+                                        <span class="text-xs text-gray-400">-</span>
+                                    @endif
                                 @else
-                                <a href="{{ $isAbm
-                                        ? route('gudang.pengajuanUpahHarianTukang.detail', $item->id)
-                                        : route('gudang.pengajuanUpahHarianTukang.detailMangoon', $item->id) }}"
-                                    class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 active:scale-95">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.964-7.178Z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    </svg>
-                                    Detail
-                                </a>
+                                    @php
+                                        $canDetail = $isAbm
+                                            ? auth()->user()->can('gudang.upah-harian-tukang.upah-abm.detail')
+                                            : auth()->user()->can('gudang.upah-harian-tukang.upah-mangoon.detail');
+                                    @endphp
+
+                                    @if($canDetail)
+                                    <a href="{{ $isAbm
+                                            ? route('gudang.pengajuanUpahHarianTukang.detail', $item->id)
+                                            : route('gudang.pengajuanUpahHarianTukang.detailMangoon', $item->id) }}"
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 active:scale-95">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.964-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                        Detail
+                                    </a>
+                                    @else
+                                        <span class="text-xs text-gray-400">-</span>
+                                    @endif
                                 @endif
                             </div>
                         </td>

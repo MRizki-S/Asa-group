@@ -306,6 +306,13 @@
         </a>
 
         @if($pengajuan->status === 'diajukan')
+            @php
+                $canCancel = $isAbm
+                    ? auth()->user()->can('gudang.upah-harian-tukang.upah-abm.batalkan-pengajuan')
+                    : auth()->user()->can('gudang.upah-harian-tukang.upah-mangoon.batalkan-pengajuan');
+            @endphp
+
+            @if($canCancel)
             <form id="cancelForm" action="{{ $isAbm 
                     ? route('gudang.pengajuanUpahHarianTukang.cancel', $pengajuan->id) 
                     : route('gudang.pengajuanUpahHarianTukang.cancelMangoon', $pengajuan->id) }}" 
@@ -320,6 +327,7 @@
                     Batalkan Pengajuan
                 </button>
             </form>
+            @endif
         @endif
     </div>
 

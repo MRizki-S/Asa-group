@@ -445,10 +445,21 @@
                 </button>
                 <div class="flex flex-col items-end">
                     <div class="flex gap-3">
-                        <button type="button" @click="submitForm('draft')"
-                            class="px-8 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors">
-                            Simpan Draft
-                        </button>
+                        @if($isAbm)
+                            @can('gudang.upah-harian-tukang.upah-abm.simpan-draft')
+                            <button type="button" @click="submitForm('draft')"
+                                class="px-8 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors">
+                                Simpan Draft
+                            </button>
+                            @endcan
+                        @else
+                            @can('gudang.upah-harian-tukang.upah-mangoon.simpan-draft')
+                            <button type="button" @click="submitForm('draft')"
+                                class="px-8 py-2.5 text-sm font-semibold text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors">
+                                Simpan Draft
+                            </button>
+                            @endcan
+                        @endif
                     </div>
                 </div>
             </div>

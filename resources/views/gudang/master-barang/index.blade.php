@@ -41,10 +41,12 @@
                     Master Barang
                 </h3>
 
+                @can('gudang.master-gudang.master-barang.create')
                 <a href="{{ route('gudang.masterBarang.create') }}"
                     class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                     + Tambah Master Barang
                 </a>
+                @endcan
             </div>
 
 
@@ -81,9 +83,11 @@
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                             Jumlah Satuan
                         </th>
+                        @canany(['gudang.master-gudang.master-barang.edit', 'gudang.master-gudang.master-barang.delete'])
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                             Aksi
                         </th>
+                        @endcanany
                     </tr>
                 </thead>
                 <tbody>
@@ -126,7 +130,9 @@
                         </td>
 
                         {{-- Aksi --}}
+                        @canany(['gudang.master-gudang.master-barang.edit', 'gudang.master-gudang.master-barang.delete'])
                         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
+                            @can('gudang.master-gudang.master-barang.edit')
                             <a href="{{ route('gudang.masterBarang.edit', $item->kode_barang) }}"
                                 class="inline-flex items-center gap-1
                         text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200
@@ -136,7 +142,9 @@
                         active:scale-95">
                                 Edit
                             </a>
-
+                            @endcan
+ 
+                            @can('gudang.master-gudang.master-barang.delete')
                             <form action="{{ route('gudang.masterBarang.destroy', $item->kode_barang) }}"
                                 method="POST" class="delete-form">
                                 @csrf
@@ -146,7 +154,9 @@
                                     Delete
                                 </button>
                             </form>
+                            @endcan
                         </td>
+                        @endcanany
                     </tr>
                     @empty
                     @endforelse

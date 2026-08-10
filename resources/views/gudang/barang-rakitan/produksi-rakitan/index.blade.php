@@ -52,10 +52,12 @@
                     </button>
                 </div>
 
+                @can('gudang.barang-rakitan.produksi-rakitan.create')
                 <a href="{{ route('gudang.produksiRakitan.create') }}"
                     class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 w-fit">
                     + Tambah Produksi
                 </a>
+                @endcan
             </div>
 
             {{-- Tab Aktif --}}
@@ -70,7 +72,9 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Qty</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-right">Total Biaya</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Petugas</th>
+                            @canany(['gudang.barang-rakitan.produksi-rakitan.detail', 'gudang.barang-rakitan.produksi-rakitan.delete'])
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                            @endcanany
                         </tr>
                     </thead>
                     <tbody>
@@ -86,19 +90,25 @@
                             <td>{{ rtrim(rtrim(number_format($item->qty_hasil, 3, ',', '.'), '0'), ',') }} {{ $item->satuanHasil->nama }}</td>
                             <td class="text-right font-semibold">Rp {{ rtrim(rtrim(number_format($item->total_biaya, 2, ',', '.'), '0'), ',') }}</td>
                             <td class="text-center text-sm">{{ $item->creator->username ?? '-' }}</td>
+                            @canany(['gudang.barang-rakitan.produksi-rakitan.detail', 'gudang.barang-rakitan.produksi-rakitan.delete'])
                             <td class="px-6 py-4">
                                 <div class="flex justify-center gap-2">
+                                    @can('gudang.barang-rakitan.produksi-rakitan.detail')
                                     <a href="{{ route('gudang.produksiRakitan.show', $item) }}" class="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
+                                    @endcan
+                                    @can('gudang.barang-rakitan.produksi-rakitan.delete')
                                     <form action="{{ route('gudang.produksiRakitan.destroy', $item) }}" method="POST" class="cancel-form">
                                         @csrf @method('DELETE')
                                         <button type="button" class="cancel-btn p-1.5 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                     </form>
+                                    @endcan
                                 </div>
                             </td>
+                            @endcanany
                         </tr>
                         @endforeach
                     </tbody>
@@ -115,7 +125,9 @@
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Barang Hasil</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Alasan Pembatalan</th>
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Oleh</th>
+                            @can('gudang.barang-rakitan.produksi-rakitan.detail')
                             <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Aksi</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -131,11 +143,13 @@
                                 {{ $item->cancel_reason ?: 'Tanpa alasan' }}
                             </td>
                             <td class="text-center text-sm">{{ $item->canceller->username ?? '-' }}</td>
+                            @can('gudang.barang-rakitan.produksi-rakitan.detail')
                             <td class="text-center">
                                 <a href="{{ route('gudang.produksiRakitan.show', $item) }}" class="inline-flex p-1.5 text-gray-500 bg-gray-50 rounded-lg hover:bg-gray-100">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
                             </td>
+                            @endcan
                         </tr>
                         @endforeach
                     </tbody>

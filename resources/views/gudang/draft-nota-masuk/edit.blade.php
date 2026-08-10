@@ -302,6 +302,7 @@
                     Kembali
                 </a>
                 
+                @can('gudang.nota-masuk.draft-nota-masuk.delete-draft')
                 <button type="button" onclick="confirmDelete()"
                         class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,14 +310,18 @@
                     </svg>
                     Hapus Draft
                 </button>
+                @endcan
             </div>
-
+ 
             <div class="flex gap-3">
+                @can('gudang.nota-masuk.draft-nota-masuk.update-perubahan')
                 <button type="submit"
                         class="px-8 py-2.5 text-sm font-bold text-yellow-900 rounded-lg bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 transition-all shadow-md active:scale-95">
                     Update Change
                 </button>
-
+                @endcan
+ 
+                @can('gudang.nota-masuk.draft-nota-masuk.posting-to-stok')
                 <button type="button" onclick="confirmPosting()"
                         class="px-8 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all shadow-md active:scale-95 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,6 +329,7 @@
                     </svg>
                     Posting ke Stok
                 </button>
+                @endcan
             </div>
         </div>
     </form>

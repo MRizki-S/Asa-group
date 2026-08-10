@@ -23,6 +23,7 @@
             {{-- Header Actions --}}
             <div class="flex flex-wrap items-center gap-2">
                 {{-- Export Excel Button --}}
+                @can('keuangan.upah-harian-tukang.daftar-pengajuan.export-excel')
                 <button type="button"
                     id="btn-export-excel"
                     onclick="handleExportExcel()"
@@ -32,6 +33,7 @@
                     </svg>
                     Export Excel
                 </button>
+                @endcan
 
                 @php
                 $statusConfig = match($pengajuan->status) {
@@ -298,6 +300,7 @@
                                         Bon / Kasbon (Rp)
                                     </span>
                                 </label>
+                                @can('keuangan.upah-harian-tukang.daftar-pengajuan.input-bon')
                                 <div class="text-xs font-medium">
                                     <template x-if="saveStatus === 'saving'">
                                         <span class="text-blue-500 flex items-center gap-1">
@@ -316,9 +319,11 @@
                                         </span>
                                     </template>
                                 </div>
+                                @endcan
                             </div>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400 font-medium pointer-events-none">Rp</span>
+                                @can('keuangan.upah-harian-tukang.daftar-pengajuan.input-bon')
                                 <input
                                     type="text"
                                     id="bon_{{ $tukangId }}"
@@ -328,6 +333,15 @@
                                     @focus="$event.target.select()"
                                     placeholder="0"
                                     class="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors" />
+                                @else
+                                <input
+                                    type="text"
+                                    id="bon_{{ $tukangId }}"
+                                    name="bon[{{ $tukangId }}]"
+                                    x-model="bonDisplay"
+                                    disabled
+                                    class="w-full pl-9 pr-3 py-2 text-sm border rounded-lg bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed placeholder-gray-400 focus:outline-none" />
+                                @endcan
                             </div>
                         </div>
 
@@ -462,6 +476,7 @@
 
             {{-- ACC Pengajuan --}}
             @if($pengajuan->status === 'diajukan')
+            @can('keuangan.upah-harian-tukang.daftar-pengajuan.aksi')
             <form id="accForm" action="{{ route('keuangan.daftarUpahHarian.accPengajuan', $pengajuan->nomor_upah_harian) }}" method="POST" class="inline-block">
                 @csrf
                 @method('PATCH')
@@ -485,6 +500,7 @@
                     ACC Pengajuan
                 </button>
             </form>
+            @endcan
             @else
             <div class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-500 cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

@@ -317,6 +317,7 @@
                         {{-- Aksi --}}
                         <td class="px-4 py-3">
                             <div class="flex justify-center gap-2">
+                                @can('keuangan.upah-harian-tukang.riwayat-pengajuan.detail')
                                 <a href="{{ route('keuangan.riwayatUpahHarian.detail', $item->id) }}"
                                     id="btn-detail-{{ $item->id }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 active:scale-95">
@@ -326,6 +327,9 @@
                                     </svg>
                                     Detail
                                 </a>
+                                @else
+                                <span class="text-xs text-gray-400">-</span>
+                                @endcan
                             </div>
                         </td>
 

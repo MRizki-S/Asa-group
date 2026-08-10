@@ -461,15 +461,37 @@
                 </button>
                 <div class="flex flex-col items-end">
                     <div class="flex gap-3">
-                        <button type="button" @click="submitForm('draft')"
-                            class="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 transition-colors">
-                            Simpan Draft
-                        </button>
-                        <button type="button" @click="submitForm('diajukan')" :disabled="!canSubmitDiajukan()"
-                            :class="canSubmitDiajukan() ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' : 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'"
-                            class="px-8 py-2.5 text-sm font-semibold rounded-lg focus:ring-4 focus:ring-blue-300 transition-colors">
-                            Ajukan
-                        </button>
+                        @if($isAbm)
+                            @can('gudang.upah-harian-tukang.upah-abm.simpan-draft')
+                            <button type="button" @click="submitForm('draft')"
+                                class="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 transition-colors">
+                                Simpan Draft
+                            </button>
+                            @endcan
+
+                            @can('gudang.upah-harian-tukang.upah-abm.simpan-ajukan')
+                            <button type="button" @click="submitForm('diajukan')" :disabled="!canSubmitDiajukan()"
+                                :class="canSubmitDiajukan() ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' : 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'"
+                                class="px-8 py-2.5 text-sm font-semibold rounded-lg focus:ring-4 focus:ring-blue-300 transition-colors">
+                                Ajukan
+                            </button>
+                            @endcan
+                        @else
+                            @can('gudang.upah-harian-tukang.upah-mangoon.simpan-draft')
+                            <button type="button" @click="submitForm('draft')"
+                                class="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 transition-colors">
+                                Simpan Draft
+                            </button>
+                            @endcan
+
+                            @can('gudang.upah-harian-tukang.upah-mangoon.simpan-ajukan')
+                            <button type="button" @click="submitForm('diajukan')" :disabled="!canSubmitDiajukan()"
+                                :class="canSubmitDiajukan() ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' : 'bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'"
+                                class="px-8 py-2.5 text-sm font-semibold rounded-lg focus:ring-4 focus:ring-blue-300 transition-colors">
+                                Ajukan
+                            </button>
+                            @endcan
+                        @endif
                     </div>
                     <p x-show="!canSubmitDiajukan()" class="text-xs text-red-500 mt-2 text-right">
                         * Alokasi jam aktivitas harus lengkap & sesuai jam kerja normal untuk dapat mengajukan.

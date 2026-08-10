@@ -23,6 +23,7 @@
             {{-- Header Actions --}}
             <div class="flex flex-wrap items-center gap-2">
                 {{-- Export Excel Button --}}
+                @can('keuangan.upah-harian-tukang.riwayat-pengajuan.export-excel')
                 <button type="button"
                     id="btn-export-excel"
                     onclick="handleExportExcel()"
@@ -32,6 +33,7 @@
                     </svg>
                     Export Excel
                 </button>
+                @endcan
 
                 @php
                 $statusConfig = match($pengajuan->status) {

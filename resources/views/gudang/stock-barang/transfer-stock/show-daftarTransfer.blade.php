@@ -38,6 +38,7 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
+                    @can('gudang.transfer-stock.print-pdf')
                     <a href="{{ route('gudang.transferStockBarang.daftar.pdf', $transfer->nomor_transfer) }}"
                         target="_blank"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
@@ -46,6 +47,8 @@
                         </svg>
                         Cetak PDF
                     </a>
+                    @endcan
+
                     <a href="{{ route('gudang.transferStockBarang.daftar.index') }}"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,25 +176,27 @@
                 class="pt-4 border-t border-gray-100 dark:border-gray-800">
 
                 {{-- Trigger Buttons --}}
-                <div class="flex justify-end gap-3">
-                    {{-- Tombol Tolak --}}
-                    <button type="button" @click="openModal('tolak')"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 transition-all duration-200 active:scale-95 shadow-sm shadow-red-200 dark:shadow-none">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Tolak
-                    </button>
+                @can('gudang.transfer-stock.action')
+                    <div class="flex justify-end gap-3">
+                        {{-- Tombol Tolak --}}
+                        <button type="button" @click="openModal('tolak')"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 transition-all duration-200 active:scale-95 shadow-sm shadow-red-200 dark:shadow-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Tolak
+                        </button>
 
-                    {{-- Tombol ACC --}}
-                    <button type="button" @click="openModal('acc')"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 transition-all duration-200 active:scale-95 shadow-sm shadow-green-200 dark:shadow-none">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        ACC (Setujui)
-                    </button>
-                </div>
+                        {{-- Tombol ACC --}}
+                        <button type="button" @click="openModal('acc')"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 transition-all duration-200 active:scale-95 shadow-sm shadow-green-200 dark:shadow-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            ACC (Setujui)
+                        </button>
+                    </div>
+                @endcan
 
                 {{-- Modal Overlay --}}
                 <div x-show="showModal"

@@ -41,10 +41,12 @@
                     Master Tukang
                 </h3>
 
+                @can('gudang.upah-harian-tukang.master-tukang.create')
                 <a href="{{ route('gudang.masterTukang.create') }}"
                     class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                     + Tambah Tukang
                 </a>
+                @endcan
             </div>
 
 
@@ -155,11 +157,14 @@
                         {{-- Aksi --}}
                         <td class="px-6 py-4">
                             <div class="flex flex-wrap gap-2 justify-center">
+                                @can('gudang.upah-harian-tukang.master-tukang.edit')
                                 <a href="{{ route('gudang.masterTukang.edit', $item->id) }}"
                                     class="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1 active:scale-95">
                                     Edit
                                 </a>
+                                @endcan
 
+                                @can('gudang.upah-harian-tukang.master-tukang.delete')
                                 <form action="{{ route('gudang.masterTukang.destroy', $item->id) }}"
                                     method="POST" class="delete-form">
                                     @csrf
@@ -169,6 +174,13 @@
                                         Delete
                                     </button>
                                 </form>
+                                @endcan
+
+                                @cannot('gudang.upah-harian-tukang.master-tukang.edit')
+                                    @cannot('gudang.upah-harian-tukang.master-tukang.delete')
+                                        <span class="text-xs text-gray-400">-</span>
+                                    @endcannot
+                                @endcannot
                             </div>
                         </td>
                     </tr>

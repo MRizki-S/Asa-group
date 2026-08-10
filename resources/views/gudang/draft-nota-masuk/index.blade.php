@@ -95,9 +95,11 @@
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                             Cara Bayar
                         </th>
+                        @can('gudang.nota-masuk.draft-nota-masuk.edit')
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                             Aksi
                         </th>
+                        @endcan
                     </tr>
                 </thead>
                 <tbody>
@@ -140,6 +142,7 @@
                         </td>
 
                         {{-- Aksi --}}
+                        @can('gudang.nota-masuk.draft-nota-masuk.edit')
                         <td class="px-6 py-4 flex flex-wrap gap-2 justify-center">
 
                             {{-- EDIT --}}
@@ -153,6 +156,7 @@
                                         Edit
                                     </a>
                         </td>
+                        @endcan
 
                     </tr>
                     @empty

@@ -42,30 +42,34 @@
                 </h3>
 
                 <div class="flex items-center gap-2">
-                    @php $isFreeze = \App\Models\AppSetting::isFreeze(); @endphp
-                    <form id="form-toggle-freeze" action="{{ route('gudang.stockBarang.toggleFreeze') }}" method="POST">
-                        @csrf
-                        @if($isFreeze)
-                            <button type="button" onclick="confirmToggleFreeze(true)" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">
-                                <i class="fa-solid fa-snowflake"></i>
-                                <span>Nonaktifkan Freeze</span>
-                            </button>
-                        @else
-                            <button type="button" onclick="confirmToggleFreeze(false)" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                                <i class="fa-regular fa-snowflake"></i>
-                                <span>Freeze Stok Opname</span>
-                            </button>
-                        @endif
-                    </form>
+                    @can('gudang.stock-barang.freeze-stock')
+                        @php $isFreeze = \App\Models\AppSetting::isFreeze(); @endphp
+                        <form id="form-toggle-freeze" action="{{ route('gudang.stockBarang.toggleFreeze') }}" method="POST">
+                            @csrf
+                            @if($isFreeze)
+                                <button type="button" onclick="confirmToggleFreeze(true)" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">
+                                    <i class="fa-solid fa-snowflake"></i>
+                                    <span>Nonaktifkan Freeze</span>
+                                </button>
+                            @else
+                                <button type="button" onclick="confirmToggleFreeze(false)" class="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                                    <i class="fa-regular fa-snowflake"></i>
+                                    <span>Freeze Stok Opname</span>
+                                </button>
+                            @endif
+                        </form>
+                    @endcan
 
-                    <a href="{{ route('gudang.transferStockBarang.create') }}"
-                        target="_blank"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                        </svg>
-                        <span>Transfer Stock</span>
-                    </a>
+                    @can('gudang.transfer-stock.read')
+                        <a href="{{ route('gudang.transferStockBarang.daftar.index') }}"
+                            target="_blank"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                            </svg>
+                            <span>Transfer Stock</span>
+                        </a>
+                    @endcan
                 </div>
             </div>
 

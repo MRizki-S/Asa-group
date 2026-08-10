@@ -12,12 +12,14 @@ use Database\Seeders\Master\PerumahaanSeeder as MasterPerumahaanSeeder;
 use Database\Seeders\Master\UbsSeeder as MasterUbsSeeder;
 use Database\Seeders\Permissions\EtalasePermissionSeeder;
 use Database\Seeders\Permissions\KeuanganPermissionPart1;
+use Database\Seeders\Permissions\KeuanganUpahHarianSeeder;
 use Database\Seeders\Permissions\MarketingPermissionSeeder;
 use Database\Seeders\permissions\MasterAgenPermissionSeeder;
 use Database\Seeders\Permissions\SuperadminMenuPermissionSeeder;
 use Database\Seeders\Permissions\KpiPermissionSeeder;
 use Database\Seeders\permissions\TargetMarketingPermissionSeeder;
 use Database\Seeders\Permissions\ProduksiPermissionSeeder;
+use Database\Seeders\Permissions\MenuGudangSeeder;
 use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
 use Database\Seeders\Roles\MarketingRoleSeeder;
 use Database\Seeders\Roles\ProjectManagerRoleSeeder;
@@ -51,6 +53,7 @@ class DatabaseSeeder extends Seeder
 
             // Keuangan Sistem
             KeuanganPermissionPart1::class,
+            KeuanganUpahHarianSeeder::class,
 
             // Kpi
             KpiPermissionSeeder::class,
@@ -58,6 +61,8 @@ class DatabaseSeeder extends Seeder
             // Produksi Sistem
             ProduksiPermissionSeeder::class,
 
+            // Gudang Sistem
+            MenuGudangSeeder::class,
         ]);
 
         // Role >> Assign permission (Saat ini masih selesai di marketing sistem)
