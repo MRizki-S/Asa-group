@@ -83,7 +83,7 @@ class PembangunanUnitPengajuanUpahController extends Controller
                     ->get();
 
                 if ($allCreated->isNotEmpty()) {
-                    $groupId = env('FONNTE_ID_GROUP_PENGAJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN')));
+                    $groupId = env('FONNTE_ID_GROUP_UPAH_BORONGAN');
                     if ($groupId) {
                         $msg = view('notifications.whatsapp.pembangunan_unit.persetujuan_upah', [
                             'statusAction' => 'pengajuan',

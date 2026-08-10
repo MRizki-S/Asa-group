@@ -321,7 +321,7 @@ class DaftarUpahHarianTukangKeuanganController extends Controller
         });
 
         // 4. Kirim Notifikasi WhatsApp (Dilakukan di luar transaction agar aman dari timeout API)
-        $groupId = '120363426645097874@g.us';
+        $groupId = env('FONNTE_ID_GROUP_DUKUNGAN_LAYANAN');
         $label = $pengajuan->jenis_referensi === 'perumahan' ? 'ABM' : 'Mangoon';
         $nomor = $pengajuan->nomor_upah_harian;
         $mulai = $pengajuan->tanggal_mulai ? $pengajuan->tanggal_mulai->translatedFormat('d F Y') : '-';

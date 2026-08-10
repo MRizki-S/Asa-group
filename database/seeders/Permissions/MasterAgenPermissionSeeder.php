@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\permissions;
+namespace Database\Seeders\Permissions;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;

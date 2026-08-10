@@ -127,7 +127,7 @@ class PersetujuanUpahController extends Controller
     private function sendWaNotificationResponseBulk($pengajuans, bool $isApprove, string $roleName): void
     {
         try {
-            $groupId = env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN'));
+            $groupId = env('FONNTE_ID_GROUP_UPAH_BORONGAN');
             if (!$groupId) return;
 
             $pengajuans->load(['pembangunanUnit.unit.tahap.perumahaan', 'pembangunanUnitQc']);

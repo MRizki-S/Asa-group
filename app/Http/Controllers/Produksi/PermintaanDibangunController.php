@@ -315,7 +315,7 @@ class PermintaanDibangunController extends Controller
         $namaUnit = $unit->nama_unit ?? '-';
         $pembatal = Auth::user()->nama_lengkap ?? Auth::user()->name;
 
-        $groupId = env('FONNTE_ID_GROUP_BATAL_PERMINTAAN_DIBANGUN');
+        $groupId = env('FONNTE_ID_GROUP_PERMINTAAN_DIBANGUN');
 
         $messageGroup = view('notifications.whatsapp.pembangunan_unit.batal_permintaan_dibangun', [
             'namaPerumahan' => $namaPerumahan,

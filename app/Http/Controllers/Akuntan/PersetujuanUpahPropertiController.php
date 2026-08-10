@@ -103,7 +103,7 @@ class PersetujuanUpahPropertiController extends Controller
     private function sendWaNotificationResponseBulk(array $ids, bool $isApprove, string $roleName): void
     {
         try {
-            $groupId = env('FONNTE_ID_GROUP_PERSETUJUAN_UPAH_UNIT', env('FONNTE_ID_GROUP_KONFIRMASI_PEMBANGUNAN'));
+            $groupId = env('FONNTE_ID_GROUP_UPAH_BORONGAN');
             if (!$groupId) return;
 
             $items = PembangunanUnitUpahPengajuan::with(['pembangunanUnit.unit.tahap.perumahaan', 'pembangunanUnitQc'])
