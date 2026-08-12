@@ -199,6 +199,39 @@ class RoleHakAksesController extends Controller
         return redirect()->route('superadmin.roleHakAkses.index')
             ->with('success', "Role '{$role->name}' berhasil dihapus.");
     }
+
+    public function duplicate($id)
+    {
+        $role = Role::with('permissions')->findOrFail($id);
+
+        DB::beginTransaction();
+        try {
+            $baseName = $role->name . ' - copy';
+            $newName = $baseName;
+            $counter = 1;
+            while (Role::where('name', $newName)->exists()) {
+                $counter++;
+                $newName = $baseName . ' ' . $counter;
+            }
+
+            $newRole = Role::create([
+                'name' => $newName,
+                'devisi_id' => $role->devisi_id,
+                'guard_name' => $role->guard_name ?? 'web',
+            ]);
+
+            $permissions = $role->permissions;
+            $newRole->syncPermissions($permissions);
+
+            DB::commit();
+
+            return redirect()->route('superadmin.roleHakAkses.index')
+                ->with('success', "Role '{$role->name}' berhasil diduplikat menjadi '{$newRole->name}'.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Gagal menduplikat role: ' . $e->getMessage()]);
+        }
+    }
 }
 
 

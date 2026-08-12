@@ -882,6 +882,7 @@ Route::post('kpi/user/export', [KpiExportController::class, 'export'])->name('kp
 Route::get('/kpi/dashboard/export', [KpiDashboardController::class, 'exportExcel'])->name('kpi.dashboard.export');
 
 Route::middleware('auth')->prefix('superadmin')->group(function () {
+    Route::post('role-hakakses/{id}/duplicate', [RoleHakAksesController::class, 'duplicate'])->name('superadmin.roleHakAkses.duplicate');
     Route::resource('role-hakakses', RoleHakAksesController::class)->names('superadmin.roleHakAkses');
     Route::resource('akun-karyawan', AkunKaryawanController::class)->names('superadmin.akunKaryawan');
     Route::resource('devisi', DevisiController::class)->names('superadmin.devisi');

@@ -154,7 +154,7 @@
                                 </span>
                             </th>
 
-                            @canany(['superadmin.role.update', 'superadmin.role.delete'])
+                            @canany(['superadmin.role.update', 'superadmin.role.delete', 'superadmin.role.create'])
                                 <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">
                                     Aksi
                                 </th>
@@ -177,8 +177,27 @@
                                     {{ $item->permissions_count }}
                                 </td>
 
-                                @canany(['superadmin.role.update', 'superadmin.role.delete'])
+                                @canany(['superadmin.role.update', 'superadmin.role.delete', 'superadmin.role.create'])
                                     <td class="px-6 py-4 flex flex-wrap gap-2 justify-center items-center text-center">
+                                        @can('superadmin.role.create')
+                                            <form action="{{ route('superadmin.roleHakAkses.duplicate', $item->id) }}"
+                                                method="POST" class="duplicate-form inline">
+                                                @csrf
+                                                <button type="button"
+                                                    class="duplicate-btn inline-flex items-center gap-1
+                            text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200
+                            dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700
+                            px-2.5 py-1.5 rounded-md transition-colors duration-200
+                            focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
+                            active:scale-95">
+                                                    <svg class="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                    Duplikat
+                                                </button>
+                                            </form>
+                                        @endcan
+
                                         @can('superadmin.role.update')
                                             <a href="{{ route('superadmin.roleHakAkses.edit', $item->id) }}"
                                                 class="btn-edit inline-flex items-center gap-1
@@ -216,7 +235,7 @@
     </div>
     <!-- ===== Main Content End ===== -->
 
-    {{-- sweatalert 2 for delete data --}}
+    {{-- sweetalert 2 for delete & duplicate data --}}
     <script>
         document.addEventListener('click', function(e) {
             if (e.target.closest('.delete-btn')) {
@@ -225,12 +244,32 @@
 
                 Swal.fire({
                     title: 'Yakin hapus data ini?',
-                    text: "Apakah anda yakin menghapus Akun User & Booking Unit ini?",
+                    text: "Apakah anda yakin menghapus role ini?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#3085d6',
                     confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            }
+
+            if (e.target.closest('.duplicate-btn')) {
+                const btn = e.target.closest('.duplicate-btn');
+                const form = btn.closest('.duplicate-form');
+
+                Swal.fire({
+                    title: 'Duplikat Role & Hak Akses?',
+                    text: "Role baru akan dibuat dengan salinan hak akses yang sama.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Duplikat!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {

@@ -26,7 +26,7 @@ class KpiKomponenController extends Controller
         }
 
         $allKpi = $query->get();
-        $allRoles = Role::all();
+        $allRoles = Role::orderBy('name', 'asc')->get();
         $roleFilter = $request->query('roleFil');
 
         return view('kpi.master-kpi.index', [
@@ -42,7 +42,7 @@ class KpiKomponenController extends Controller
      */
     public function create()
     {
-        $allRoles = Role::all();
+        $allRoles = Role::orderBy('name', 'asc')->get();
         $tipePerhitungan = ['KEPATUHAN', 'DEVIASI_BUDGET', 'SELISIH_STOK', 'KONDISI_LANGSUNG', 'AKKUMULASI_NILAI'];
 
         return view('kpi.master-kpi.create', [
@@ -111,7 +111,7 @@ class KpiKomponenController extends Controller
         // Mengambil data komponen beserta relasi tasks-nya
         $komponen = KpiKomponen::with('tasks')->findOrFail($id);
 
-        $allRoles = Role::all();
+        $allRoles = Role::orderBy('name', 'asc')->get();
         $tipePerhitungan = ['KEPATUHAN', 'DEVIASI_BUDGET', 'SELISIH_STOK', 'KONDISI_LANGSUNG', 'AKKUMULASI_NILAI'];
 
         return view('kpi.master-kpi.edit', [
