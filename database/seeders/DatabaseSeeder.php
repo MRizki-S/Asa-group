@@ -103,6 +103,9 @@ class DatabaseSeeder extends Seeder
 
             // Devisi
             \Database\Seeders\Master\DevisiSeeder::class,
+
+            // Supplier
+            \Database\Seeders\Master\MasterSupplierSeeder::class,
         ]);
 
         // 4. Users
