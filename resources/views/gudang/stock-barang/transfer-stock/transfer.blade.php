@@ -244,7 +244,7 @@
 
                                     <!-- Jumlah Transfer -->
                                     <td class="border p-1 text-center">
-                                        <input type="number" step="any" min="0.001" :max="item.stock_hub_saat_ini" :name="`items[${index}][jumlah_masuk]`"
+                                        <input type="number" step="any" min="0.0001" :max="item.stock_hub_saat_ini" :name="`items[${index}][jumlah_masuk]`"
                                             x-model.number="item.jumlah"
                                             :disabled="!dariUbsId"
                                             class="w-full text-center border border-gray-300 rounded p-1" required>

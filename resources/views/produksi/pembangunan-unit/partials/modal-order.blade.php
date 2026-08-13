@@ -82,7 +82,7 @@
                                                             <label
                                                                 class="block text-[9px] font-black text-gray-400 uppercase mb-1">Jumlah
                                                                 Order</label>
-                                                            <input type="number" step="0.001"
+                                                            <input type="number" step="any" min="0.0001"
                                                                 x-model.number="item.jumlah_input"
                                                                 class="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500/20 outline-none">
                                                         </div>
@@ -159,7 +159,7 @@
                                                 <div>
                                                     <label
                                                         class="block text-[9px] font-black text-gray-400 uppercase mb-1">Jumlah</label>
-                                                    <input type="number" step="0.001"
+                                                    <input type="number" step="any" min="0.0001"
                                                         x-model.number="extra.jumlah_input"
                                                         class="w-full text-xs p-2 bg-white border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20">
                                                 </div>

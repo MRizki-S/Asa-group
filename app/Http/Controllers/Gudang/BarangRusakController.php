@@ -132,7 +132,7 @@ class BarangRusakController extends Controller
             'tgl_rusak' => ['required', 'date'],
             'barang_id' => ['required', 'exists:master_barang,id'],
             'satuan_id' => ['required', 'exists:master_satuan,id'],
-            'qty_out' => ['required', 'numeric', 'min:0.001'],
+            'qty_out' => ['required', 'numeric', 'min:0.0001'],
             'keterangan' => ['nullable', 'string'],
         ]);
 

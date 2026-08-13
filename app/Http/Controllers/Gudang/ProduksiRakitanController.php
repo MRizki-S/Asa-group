@@ -125,7 +125,7 @@ class ProduksiRakitanController extends Controller
             'stock_type' => ['required', Rule::in(['HUB', 'UBS'])],
             'ubs_id' => ['nullable', 'required_if:stock_type,UBS', 'exists:ubs,id'],
             'barang_rakitan_id' => ['required', 'exists:barang_rakitan,id'],
-            'qty_hasil' => ['required', 'numeric', 'min:0.001'],
+            'qty_hasil' => ['required', 'numeric', 'min:0.0001'],
             'keterangan' => ['nullable', 'string', 'max:1000'],
         ]);
 

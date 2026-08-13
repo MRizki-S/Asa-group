@@ -818,7 +818,7 @@
                                             </div>
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Retur</label>
-                                                <input type="number" step="any" min="0.001" :max="item.sisa_retur_disp" :name="'items['+index+'][jumlah_input]'" x-model.number="item.jumlah_input" required class="block w-full rounded border-gray-300 bg-white text-xs font-bold text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+                                                <input type="number" step="any" min="0.0001" :max="item.sisa_retur_disp" :name="'items['+index+'][jumlah_input]'" x-model.number="item.jumlah_input" required class="block w-full rounded border-gray-300 bg-white text-xs font-bold text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500">
                                             </div>
                                         </div>
                                         <div class="mt-2">

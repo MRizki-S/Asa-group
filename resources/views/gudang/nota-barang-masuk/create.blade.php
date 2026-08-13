@@ -223,7 +223,7 @@
 
                                     <!-- Jumlah Masuk -->
                                     <td class="border p-1 text-center">
-                                        <input type="number" min="1" :name="`items[${index}][jumlah_masuk]`"
+                                        <input type="number" step="any" min="0.0001" :name="`items[${index}][jumlah_masuk]`"
                                             x-model.number="item.jumlah" @input="hitungTotal(index)"
                                             class="w-20 text-center border rounded p-1" required>
                                     </td>

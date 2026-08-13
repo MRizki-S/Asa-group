@@ -161,7 +161,7 @@
                         <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
                             Qty Rusak <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" step="any" min="0.001" :max="stockSaatIni || null" name="qty_out" x-model.number="qtyOut"
+                        <input type="number" step="any" min="0.0001" :max="stockSaatIni || null" name="qty_out" x-model.number="qtyOut"
                             value="{{ old('qty_out') }}" required
                             class="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
                     </div>

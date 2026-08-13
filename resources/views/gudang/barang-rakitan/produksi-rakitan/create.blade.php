@@ -110,7 +110,7 @@
                             Jumlah Produksi <span class="text-red-500">*</span>
                         </label>
                         <div class="flex">
-                            <input type="number" id="qty_hasil" name="qty_hasil" step="0.001" min="1"
+                            <input type="number" id="qty_hasil" name="qty_hasil" step="any" min="0.0001"
                                 x-model.number="qtyHasil" @input="hitungKomposisi"
                                 class="w-full rounded-l-lg bg-gray-50 border border-gray-300 text-gray-900 text-sm p-2.5 dark:bg-gray-700 dark:text-white"
                                 required>

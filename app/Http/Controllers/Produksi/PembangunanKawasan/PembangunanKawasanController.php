@@ -295,7 +295,7 @@ class PembangunanKawasanController extends Controller
             'catatan' => 'nullable|string',
             'barang' => 'required|array',
             'barang.*.id' => 'required',
-            'barang.*.jumlah_input' => 'required|numeric|min:0.01',
+            'barang.*.jumlah_input' => 'required|numeric|min:0.0001',
             'barang.*.satuan_id' => 'required'
         ]);
 
@@ -385,7 +385,7 @@ class PembangunanKawasanController extends Controller
             'items' => 'required|array',
             'items.*.barang_id' => 'required|exists:master_barang,id',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
-            'items.*.jumlah_input' => 'required|numeric|min:0.001',
+            'items.*.jumlah_input' => 'required|numeric|min:0.0001',
             'items.*.keterangan' => 'nullable|string'
         ]);
 

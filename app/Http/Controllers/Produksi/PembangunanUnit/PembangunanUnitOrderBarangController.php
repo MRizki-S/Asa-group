@@ -67,8 +67,8 @@ class PembangunanUnitOrderBarangController extends Controller
             'items.*.nama_barang' => 'required',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
             'items.*.satuan' => 'required',
-            'items.*.jumlah_input' => 'required|numeric|min:0.001',
-            'items.*.faktor_konversi' => 'nullable|numeric|min:0.001',
+            'items.*.jumlah_input' => 'required|numeric|min:0.0001',
+            'items.*.faktor_konversi' => 'nullable|numeric|min:0.0001',
             'jenis_order' => 'required|string|in:stock,direct'
         ]);
 

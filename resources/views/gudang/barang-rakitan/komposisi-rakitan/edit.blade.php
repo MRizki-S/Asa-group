@@ -79,7 +79,7 @@
                         <label for="qty_hasil" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Jumlah Hasil <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="qty_hasil" name="qty_hasil" step="0.001" min="0.001"
+                        <input type="number" id="qty_hasil" name="qty_hasil" step="any" min="0.0001"
                             x-model.number="qtyHasil" @input="hitungQtyHasilBase"
                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-white"
                             required>
@@ -169,7 +169,7 @@
                                     </td>
 
                                     <td class="border border-gray-300 dark:border-gray-700 p-1">
-                                        <input type="number" step="0.001" min="0.001" :name="`items[${index}][qty]`"
+                                        <input type="number" step="any" min="0.0001" :name="`items[${index}][qty]`"
                                             x-model.number="item.qty" @input="hitungItemBase(index)"
                                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2 dark:bg-gray-700 dark:text-white text-center"
                                             required>

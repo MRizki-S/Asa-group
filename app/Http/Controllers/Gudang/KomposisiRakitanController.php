@@ -210,13 +210,13 @@ class KomposisiRakitanController extends Controller
         $validated = $request->validate([
             'barang_hasil_id' => 'required|exists:master_barang,id',
             'satuan_hasil_id' => 'required|exists:master_satuan,id',
-            'qty_hasil' => 'required|numeric|min:0.001',
+            'qty_hasil' => 'required|numeric|min:0.0001',
             'status' => 'nullable|in:active',
             'keterangan' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
             'items.*.barang_bahan_id' => 'required|exists:master_barang,id',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
-            'items.*.qty' => 'required|numeric|min:0.001',
+            'items.*.qty' => 'required|numeric|min:0.0001',
         ]);
 
         foreach ($validated['items'] as $index => $item) {

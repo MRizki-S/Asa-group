@@ -74,7 +74,7 @@ class NotaBarangMasukController extends Controller
             'items.*.barang_id' => 'required|exists:master_barang,id',
             'items.*.merk' => 'nullable|string|max:255',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
-            'items.*.jumlah_masuk' => 'required|numeric|min:0.001',
+            'items.*.jumlah_masuk' => 'required|numeric|min:0.0001',
             'items.*.harga_satuan' => 'required|numeric|min:0',
             'items.*.harga_total' => 'required|numeric|min:0',
         ]);

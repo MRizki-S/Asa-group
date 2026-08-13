@@ -132,7 +132,7 @@
                                         <div>
                                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Jumlah Retur</label>
                                             <div class="relative">
-                                                <input type="number" x-model.number="item.jumlah_input" step="any" min="0.001"
+                                                <input type="number" x-model.number="item.jumlah_input" step="any" min="0.0001"
                                                     :max="item.max_jumlah_input"
                                                     :class="item.jumlah_input > item.max_jumlah_input && item.max_jumlah_input > 0 ? 'border-red-400 text-red-600 ring-2 ring-red-500/20' : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200'"
                                                     class="w-full text-xs font-semibold border rounded-xl p-2.5 pr-12 bg-gray-50/50 dark:bg-gray-800 focus:ring-2 focus:ring-red-500/20 outline-none font-mono">

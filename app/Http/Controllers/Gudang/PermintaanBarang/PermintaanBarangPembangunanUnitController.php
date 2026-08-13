@@ -1439,7 +1439,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.barang_id' => 'required|exists:master_barang,id',
                 'items.*.satuan_id' => 'required|exists:master_satuan,id',
-                'items.*.jumlah_input' => 'required|numeric|min:0.001',
+                'items.*.jumlah_input' => 'required|numeric|min:0.0001',
             ]);
 
             try {
@@ -1530,7 +1530,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.barang_id' => 'required|exists:master_barang,id',
                 'items.*.satuan_id' => 'required|exists:master_satuan,id',
-                'items.*.jumlah_input' => 'required|numeric|min:0.001',
+                'items.*.jumlah_input' => 'required|numeric|min:0.0001',
             ]);
 
             try {
@@ -1617,7 +1617,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.barang_id' => 'required|exists:master_barang,id',
                 'items.*.satuan_id' => 'required|exists:master_satuan,id',
-                'items.*.jumlah_input' => 'required|numeric|min:0.001',
+                'items.*.jumlah_input' => 'required|numeric|min:0.0001',
             ]);
 
             try {
@@ -1751,7 +1751,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:master_barang,id',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
-            'items.*.jumlah_input' => 'required|numeric|min:0.001',
+            'items.*.jumlah_input' => 'required|numeric|min:0.0001',
         ]);
 
         try {
