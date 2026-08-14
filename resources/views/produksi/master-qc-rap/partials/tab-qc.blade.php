@@ -4,8 +4,15 @@
             <div class="flex flex-col md:flex-row md:items-end gap-4 mb-6">
                  <div class="w-full md:w-24">
                     <label class="block mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Urutan</label>
-                    <input type="text" :name="`qc[${index}][qc_ke]`" x-model="qc.qc_ke" readonly
-                        class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 text-center font-bold text-gray-600 dark:text-gray-300 rounded-lg p-2.5 cursor-not-allowed" />
+                    <template x-if="index === 0">
+                        <input type="number" :name="`qc[${index}][qc_ke]`" x-model.number="qc.qc_ke" min="0" step="1"
+                            @input="recalculateQcKe()"
+                            class="w-full bg-white dark:bg-gray-700 border border-blue-400 dark:border-blue-500 text-center font-bold text-blue-600 dark:text-blue-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500/30" />
+                    </template>
+                    <template x-if="index !== 0">
+                        <input type="text" :name="`qc[${index}][qc_ke]`" x-model="qc.qc_ke" readonly
+                            class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 text-center font-bold text-gray-600 dark:text-gray-300 rounded-lg p-2.5 cursor-not-allowed" />
+                    </template>
                 </div>
                 <div class="flex-1">
                     <label class="block mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nama Langkah

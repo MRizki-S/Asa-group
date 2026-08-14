@@ -14,7 +14,7 @@
     <h3 class="text-lg font-bold text-gray-700 dark:text-white px-1">Daftar Quality Control</h3>
 
     @php
-        $qcNumber = 1;
+        $qcNumber = 0;
         $regularQcs = $data->pembangunanUnitQc->where('is_servis', false);
         $servisQc = $data->pembangunanUnitQc->where('is_servis', true)->first();
     @endphp

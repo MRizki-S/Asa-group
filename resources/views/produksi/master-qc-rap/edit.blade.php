@@ -204,7 +204,8 @@
                 },
 
                 addQc() {
-                    const next = this.qcGroups.length + 1;
+                    const startNum = this.qcGroups.length > 0 ? parseInt(this.qcGroups[0].qc_ke) || 0 : 0;
+                    const next = startNum + this.qcGroups.length;
                     this.qcGroups.push({
                         qc_ke: next,
                         nama_qc: `QC-${next}`,
@@ -225,7 +226,7 @@
                     }).then((r) => {
                         if (r.isConfirmed) {
                             this.qcGroups.splice(index, 1);
-                            this.qcGroups.forEach((g, i) => g.qc_ke = i + 1);
+                            this.recalculateQcKe();
                             this.bahanGroups = this.bahanGroups.filter(b => b.urutan_idx !== index);
                             this.upahGroups = this.upahGroups.filter(u => u.urutan_idx !== index);
 
@@ -237,6 +238,14 @@
                             });
                         }
                     });
+                },
+
+                recalculateQcKe() {
+                    if (this.qcGroups.length === 0) return;
+                    const startNum = parseInt(this.qcGroups[0].qc_ke) || 0;
+                    for (let i = 1; i < this.qcGroups.length; i++) {
+                        this.qcGroups[i].qc_ke = startNum + i;
+                    }
                 },
 
                 addTugas(idx) {
