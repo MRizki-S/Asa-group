@@ -176,14 +176,23 @@
                                         <span class="text-gray-400 whitespace-nowrap" x-text="item.tanggal_respon"></span>
                                     </div>
                                 </div>
-                                <template x-if="item.can_edit">
-                                    @can('produksi.properti.permintaan-dibangun.edit')
-                                    <a :href="'/produksi/permintaan-dibangun/' + item.id + '/edit'"
-                                        class="block w-full text-center py-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg transition-colors border border-blue-100 dark:border-blue-800 shadow-sm">
-                                        <i class="fa-solid fa-edit mr-1"></i> Edit Pembangunan
-                                    </a>
+                                <div class="flex gap-2 w-full">
+                                    <template x-if="item.can_edit">
+                                        @can('produksi.properti.permintaan-dibangun.edit')
+                                        <a :href="'/produksi/permintaan-dibangun/' + item.id + '/edit'"
+                                            class="flex-grow text-center py-2.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg transition-colors border border-blue-100 dark:border-blue-800 shadow-sm">
+                                            <i class="fa-solid fa-edit mr-1"></i> Edit
+                                        </a>
+                                        @endcan
+                                    </template>
+                                    @can('produksi.properti.permintaan-dibangun.batal')
+                                    <button @click="confirmCancel(item.id)"
+                                        title="Batalkan Pembangunan"
+                                        class="px-4 py-2.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100 dark:bg-red-950/20 dark:border-red-900 dark:text-red-400 shadow-sm">
+                                        Batalkan
+                                    </button>
                                     @endcan
-                                </template>
+                                </div>
                             </div>
                         </template>
                     </div>

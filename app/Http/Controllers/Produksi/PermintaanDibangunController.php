@@ -274,15 +274,24 @@ class PermintaanDibangunController extends Controller
     public function destroy(string $id)
     {
         $pengajuanPembangunanUnit = PengajuanPembangunanUnit::findOrFail($id);
+        $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
 
-        if ($pengajuanPembangunanUnit->status_pengajuan == 'dibangun') {
-            return back()->with('error', 'Gagal membatalkan! Data ini sudah dalam tahap pembangunan.');
+        if ($pengajuanPembangunanUnit->status_pengajuan == 'dibangun' && $pembangunan) {
+            // Cek apakah sudah ada transaksi terkait pembangunan ini
+            $hasTransactions = \App\Models\PembangunanUnitBarangOrder::where('pembangunan_unit_id', $pembangunan->id)->exists()
+                || \App\Models\PembangunanUnitUpahPengajuan::where('pembangunan_unit_id', $pembangunan->id)->exists()
+                || \App\Models\PembangunanUnitUpah::where('pembangunan_unit_id', $pembangunan->id)->exists()
+                || \App\Models\PembangunanUnitBahan::where('pembangunan_unit_id', $pembangunan->id)->exists()
+                || \App\Models\PembangunanUnitBarangReturn::where('pembangunan_unit_id', $pembangunan->id)->exists();
+
+            if ($hasTransactions) {
+                return back()->with('error', 'Gagal membatalkan! Unit ini sudah memiliki transaksi (order barang, pengajuan upah, atau retur). Silakan batalkan transaksi tersebut terlebih dahulu.');
+            }
         }
 
         try {
             DB::beginTransaction();
 
-            $pembangunan = $pengajuanPembangunanUnit->pembangunanUnit;
             if ($pembangunan) {
                 $this->sendGroupNotificationBatal($pembangunan);
 
