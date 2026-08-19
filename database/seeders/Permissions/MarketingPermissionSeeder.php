@@ -54,6 +54,10 @@ class MarketingPermissionSeeder extends Seeder
             'marketing.setting-ppjb.kelola.action',
             'marketing.setting-ppjb.kelola.cancel',
             'marketing.setting-ppjb.kelola.nonaktif',
+
+            // Ganti Unit (Private)
+            'marketing.ganti-unit-private.read',
+            'marketing.ganti-unit-private.create',
         ];
 
         foreach ($permissions as $permission) {

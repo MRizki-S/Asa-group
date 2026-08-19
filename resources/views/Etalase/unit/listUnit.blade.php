@@ -212,23 +212,33 @@
                                 @can('etalase.unit.detail')
                                     <td class="text-center">
                                         @if ($item->status_pembangunan === 'belum dibangun')
-                                            <button type="button"
-                                                class="btn-ajukan-pembangunan inline-flex justify-center items-center gap-1
-                                            text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200
-                                            dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700
-                                            px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95"
-                                                data-unit-id="{{ $item->id }}"
-                                                data-perumahaan-id="{{ $perumahaan->id }}"
-                                                data-tahap-id="{{ $item->tahap_id }}"
-                                                data-nama-unit="{{ $item->nama_unit }}">
-                                                Ajukan
-                                            </button>
+                                            @can('etalase.unit.pengajuan-pembangunan')
+                                                <button type="button"
+                                                    class="btn-ajukan-pembangunan inline-flex justify-center items-center gap-1
+                                                text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200
+                                                dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700
+                                                px-2.5 py-1.5 rounded-md transition-colors duration-200 active:scale-95"
+                                                    data-unit-id="{{ $item->id }}"
+                                                    data-perumahaan-id="{{ $perumahaan->id }}"
+                                                    data-tahap-id="{{ $item->tahap_id }}"
+                                                    data-nama-unit="{{ $item->nama_unit }}">
+                                                    Ajukan
+                                                </button>
+                                            @else
+                                                <button type="button" disabled
+                                                    class="inline-flex justify-center items-center gap-1
+                                                text-xs font-medium text-gray-400 bg-gray-100 dark:bg-gray-800/40 dark:text-gray-500
+                                                px-2.5 py-1.5 rounded-md cursor-not-allowed opacity-60"
+                                                    title="Anda tidak memiliki akses untuk mengajukan pembangunan">
+                                                    Ajukan
+                                                </button>
+                                            @endcan
                                         @elseif ($item->status_pembangunan === 'diajukan')
                                             <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-800/30 dark:text-yellow-400">Diajukan</span>
                                         @elseif ($item->status_pembangunan === 'dalam pembangunan')
-                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-800/30 dark:text-blue-400">Dlm pemb.</span>
+                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-800/30 dark:text-blue-400">Dalam Pembangunan</span>
                                         @elseif ($item->status_pembangunan === 'selesai dibangun')
-                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400">Selesai</span>
+                                            <span class="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400">Selesai Dibangun</span>
                                         @endif
                                     </td>
                                 @endcan

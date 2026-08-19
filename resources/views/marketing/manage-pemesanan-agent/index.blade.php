@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('pageActive', 'ManagePemesanan')
+@section('pageActive', 'ManagePemesananAgent')
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb Start -->
-        <div x-data="{ pageName: 'ManagePemesanan' }">
+        <div x-data="{ pageName: 'Manage Pemesanan Agent' }">
             @include('partials.breadcrumb')
         </div>
         <!-- Breadcrumb End -->
@@ -40,7 +40,7 @@
 
             if ($namaPerumahaanAktif === 'Asa Dreamland') {
                 // Khusus ADL → ROLE
-                                $bolehPrintPPJB = $user->hasRole(['Proyek Manager (ADL)', 'Marketing (ADL)', 'Superadmin', 'Staff KPR (ADL)']);
+                $bolehPrintPPJB = $user->hasRole(['Proyek Manager (ADL)', 'SPV Penjualan (ADL)', 'Superadmin', 'Staff KPR (ADL)']);
             } else {
                 // Selain ADL → PERMISSION
                 $bolehPrintPPJB = $user->can('marketing.kelola-pemesanan.print-ppjb');
@@ -49,7 +49,7 @@
 
         <div class="space-y-6">
             {{-- Filter Bulan & Tahun --}}
-            <form method="GET" action="{{ route('marketing.managePemesanan.index') }}"
+            <form method="GET" action="{{ route('marketing.managePemesananAgent.index') }}"
                 class="flex flex-wrap items-end gap-3 bg-white dark:bg-white/[0.03] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
                 
                 <div class="flex flex-col gap-1.5">
@@ -90,12 +90,12 @@
                         Filter
                     </button>
                     @if($bulan !== '' || (int)$tahun !== (int)date('Y'))
-                        <a href="{{ route('marketing.managePemesanan.index') }}"
+                        <a href="{{ route('marketing.managePemesananAgent.index') }}"
                             class="inline-flex items-center gap-1.5 rounded-lg bg-gray-200 dark:bg-gray-700 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                             Reset
                         </a>
                     @endif
-                    <a href="{{ route('marketing.managePemesanan.exportExcel', ['tahun' => $tahun, 'bulan' => $bulan]) }}"
+                    <a href="{{ route('marketing.managePemesananAgent.exportExcel', ['tahun' => $tahun, 'bulan' => $bulan]) }}"
                         class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 transition focus:ring-4 focus:ring-emerald-300 active:scale-95 shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -111,17 +111,17 @@
                 <div class="mb-4 flex items-center justify-between">
                     <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
                         <span class="px-2.5 py-1 font-medium bg-indigo-100 text-indigo-700 rounded-full">
-                            Manage Pemesanan - KPR
+                            Manage Pemesanan Agent - KPR
                         </span>
                     </h3>
                 </div>
                 <div class="overflow-x-auto">
-                    <table id="table-managePemesananKpr" class="w-full text-left border-collapse">
+                    <table id="table-managePemesananAgentKpr" class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                 <th class="px-4 py-3 w-[200px]">Nama User</th>
                                 <th class="px-4 py-3">Unit</th>
-                                <th class="px-4 py-3">Nama Sales</th>
+                                <th class="px-4 py-3">Nama Agent</th>
                                 <th class="px-4 py-3">Tgl Pemesanan</th>
                                 <th class="px-4 py-3 text-center">Detail</th>
 
@@ -138,10 +138,6 @@
                                 @can('marketing.kelola-pemesanan.read-berkas')
                                     <th class="px-4 py-3 text-center">Berkas KPR</th>
                                 @endcan
-
-                                {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
-                                    <th class="px-4 py-3 text-center">Adendum</th>
-                                @endcan --}}
 
                                 @can('marketing.kelola-pemesanan.tagihan.read')
                                     <th class="px-4 py-3 text-center">Rincian Tagihan</th>
@@ -160,12 +156,14 @@
                                         {{ $item->customer->nama_lengkap ?? $item->customer->username ?? '-' }}
                                     </td>
                                     <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
-                                    <td class="px-4 py-2">{{ $item->sales->nama_lengkap ?? $item->sales->username ?? '-' }}</td>
+                                    <td class="px-4 py-2 font-medium text-blue-600 dark:text-blue-400">
+                                        {{ $item->agent->nama_agent ?? '-' }}
+                                    </td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                                         {{ $item->tanggal_pemesanan ? \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d M Y') : '-' }}
                                     </td>
                                     <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.managePemesanan.show', $item->id) }}"
+                                        <a href="{{ route('marketing.managePemesananAgent.show', $item->id) }}"
                                             class="inline-flex items-center gap-1 px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition text-xs font-medium shadow-sm">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -237,18 +235,6 @@
                                         </td>
                                     @endcan
 
-
-                                    {{-- 🟡 Pengajuan Adendum --}}
-                                    {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
-                                        <td class="px-4 py-2 text-center">
-                                            <button
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
-                                                <i class="ri-repeat-line"></i>Adendum
-                                            </button>
-                                        </td>
-                                    @endcan --}}
-
-
                                     {{-- 🟢 Rincian Tagihan --}}
                                     @can('marketing.kelola-pemesanan.tagihan.read')
                                         <td class="px-4 py-2 text-center">
@@ -259,9 +245,7 @@
                                         </td>
                                     @endcan
 
-
-
-                                    @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
+                                    @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
                                         {{-- 🔴 Pengajuan Pembatalan --}}
                                         <td class="px-4 py-2 text-center">
                                             <button data-modal-target="modal-pembatalan"
@@ -276,189 +260,168 @@
                                         </td>
                                     @endcan
 
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-
-
-        {{-- ==================== CASH SECTION ==================== --}}
-        <div
-            class="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="mb-4 flex items-center justify-between">
-                <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
-                    <span class="px-2.5 py-1 font-medium bg-emerald-100 text-emerald-700 rounded-full">
-                        Manage Pemesanan - Cash
-                    </span>
-                </h3>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table id="table-managePemesananCash" class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                            <th class="px-4 py-3 w-[200px]">Nama User</th>
-                            <th class="px-4 py-3">Unit</th>
-                            <th class="px-4 py-3">Nama Sales</th>
-                            <th class="px-4 py-3">Tgl Pemesanan</th>
-                            <th class="px-4 py-3 text-center">Detail</th>
+            {{-- ==================== CASH SECTION ==================== --}}
+            <div
+                class="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
+                        <span class="px-2.5 py-1 font-medium bg-emerald-100 text-emerald-700 rounded-full">
+                            Manage Pemesanan Agent - Cash
+                        </span>
+                    </h3>
+                </div>
 
-                            @if ($bolehPrintPPJB)
-                                <th class="px-4 py-3 text-center">PPJB</th>
-                            @endif
-
-                            <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
-                            <th class="px-4 py-3 text-center">Progress Bangunan</th>
-                            <th class="px-4 py-3">Status Unit Pemesanan</th>
-
-                            @can('marketing.kelola-pemesanan.read-berkas')
-                                <th class="px-4 py-3 text-center">Berkas Cash</th>
-                            @endcan
-
-                            {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
-                                    <th class="px-4 py-3 text-center">Adendum</th>
-                                @endcan --}}
-
-                            @can('marketing.kelola-pemesanan.tagihan.read')
-                                <th class="px-4 py-3 text-center">Rincian Tagihan</th>
-                            @endcan
-
-                            @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
-                                <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
-                            @endcan
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach ($pemesananCash as $item)
-                            <tr class="border-b hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                <td class="px-4 py-2 font-medium text-gray-800 dark:text-white truncate max-w-[200px]" title="{{ $item->customer->nama_lengkap ?? $item->customer->username ?? '-' }}">
-                                    {{ $item->customer->nama_lengkap ?? $item->customer->username ?? '-' }}
-                                </td>
-                                <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $item->sales->nama_lengkap ?? $item->sales->username ?? '-' }}</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $item->tanggal_pemesanan ? \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d M Y') : '-' }}
-                                </td>
-                                <td class="px-4 py-2 text-center">
-                                    <a href="{{ route('marketing.managePemesanan.show', $item->id) }}"
-                                        class="inline-flex items-center gap-1 px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition text-xs font-medium shadow-sm">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        Detail
-                                    </a>
-                                </td>
+                <div class="overflow-x-auto">
+                    <table id="table-managePemesananAgentCash" class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                <th class="px-4 py-3 w-[200px]">Nama User</th>
+                                <th class="px-4 py-3">Unit</th>
+                                <th class="px-4 py-3">Nama Agent</th>
+                                <th class="px-4 py-3">Tgl Pemesanan</th>
+                                <th class="px-4 py-3 text-center">Detail</th>
 
                                 @if ($bolehPrintPPJB)
-                                    <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
-                                            class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
-                                            PPJB
-                                        </a>
-                                    </td>
+                                    <th class="px-4 py-3 text-center">PPJB</th>
                                 @endif
 
-                                <td class="px-4 py-2 text-center">
-                                    <span class=text-gray-600">{{ $item->kelengkapan_berkas ?? 0 }}</span>
-                                </td>
-                                <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? '-' }}</td>
-                                <td class="px-4 py-2 text-center">
-                                    @php
-                                        $status = $item->status_pemesanan ?? '-';
-                                        $classes = match ($status) {
-                                            'proses' => 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded',
-                                            'LPA' => 'bg-blue-100 text-blue-800 px-2 py-1 rounded',
-                                            'serah_terima' => 'bg-green-100 text-green-800 px-2 py-1 rounded',
-                                            default => 'bg-gray-100 text-gray-600 px-2 py-1 rounded',
-                                        };
-                                    @endphp
-                                    <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
-                                </td>
+                                <th class="px-4 py-3 text-center">Kelengkapan Berkas</th>
+                                <th class="px-4 py-3 text-center">Progress Bangunan</th>
+                                <th class="px-4 py-3">Status Unit Pemesanan</th>
 
-
-                                {{-- 🔵 Update Data Cash --}}
                                 @can('marketing.kelola-pemesanan.read-berkas')
-                                    <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
-                                            <i class="ri-edit-line"></i> Berkas Cash
-                                        </a>
-                                    </td>
+                                    <th class="px-4 py-3 text-center">Berkas Cash</th>
                                 @endcan
 
-                                {{-- 🟡 Adendum --}}
-                                {{-- @can('marketing.kelola-pemesanan.pengajuan-adendum')
+                                @can('marketing.kelola-pemesanan.tagihan.read')
+                                    <th class="px-4 py-3 text-center">Rincian Tagihan</th>
+                                @endcan
+
+                                @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
+                                    <th class="px-4 py-3 text-center">Pengajuan Pembatalan</th>
+                                @endcan
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($pemesananCash as $item)
+                                <tr class="border-b hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                    <td class="px-4 py-2 font-medium text-gray-800 dark:text-white truncate max-w-[200px]" title="{{ $item->customer->nama_lengkap ?? $item->customer->username ?? '-' }}">
+                                        {{ $item->customer->nama_lengkap ?? $item->customer->username ?? '-' }}
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap">{{ $item->unit->nama_unit ?? '-' }}</td>
+                                    <td class="px-4 py-2 font-medium text-blue-600 dark:text-blue-400">
+                                        {{ $item->agent->nama_agent ?? '-' }}
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $item->tanggal_pemesanan ? \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d M Y') : '-' }}
+                                    </td>
+                                    <td class="px-4 py-2 text-center">
+                                        <a href="{{ route('marketing.managePemesananAgent.show', $item->id) }}"
+                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition text-xs font-medium shadow-sm">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Detail
+                                        </a>
+                                    </td>
+
+                                    @if ($bolehPrintPPJB)
                                         <td class="px-4 py-2 text-center">
-                                            <a href="{{ route('marketing.pindahUnit.createPengajuan', $item->id) }}"
-                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-orange-500 rounded hover:bg-orange-600 transition">
-                                                <i class="ri-repeat-line"></i> Adendum
+                                            <a href="{{ route('ppjbCASH.export.word', $item->id) }}"
+                                                class="inline-flex items-center px-3 py-1 text-white bg-blue-600 rounded hover:bg-blue-700 transition">
+                                                PPJB
                                             </a>
                                         </td>
-                                    @endcan --}}
+                                    @endif
 
-
-
-
-                                {{-- 🟢 Rincian Tagihan --}}
-                                @can('marketing.kelola-pemesanan.tagihan.read')
                                     <td class="px-4 py-2 text-center">
-                                        <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
-                                            <i class="ri-file-list-3-line"></i> Lihat
-                                        </a>
+                                        <span class="text-gray-600">{{ $item->kelengkapan_berkas ?? 0 }}</span>
                                     </td>
-                                @endcan
-
-                                @can(abilities: 'marketing.kelola-pemesanan.pengajuan-pembatalan')
-                                    {{-- 🔴 Pengajuan Pembatalan --}}
+                                    <td class="px-4 py-2 text-center">{{ $item->progress_bangunan ?? '-' }}</td>
                                     <td class="px-4 py-2 text-center">
-                                        <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
-                                            data-id="{{ $item->id }}"
-                                            data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
-                                            data-nama-user="{{ $item->customer->username ?? '-' }}"
-                                            data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
-                                            data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
-                                            <i class="ri-close-circle-line"></i> Pembatalan
-                                        </button>
+                                        @php
+                                            $status = $item->status_pemesanan ?? '-';
+                                            $classes = match ($status) {
+                                                'proses' => 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded',
+                                                'LPA' => 'bg-blue-100 text-blue-800 px-2 py-1 rounded',
+                                                'serah_terima' => 'bg-green-100 text-green-800 px-2 py-1 rounded',
+                                                default => 'bg-gray-100 text-gray-600 px-2 py-1 rounded',
+                                            };
+                                        @endphp
+                                        <span class="{{ $classes }}">{{ ucfirst($status) }}</span>
                                     </td>
-                                @endcan
 
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                    {{-- 🔵 Update Data Cash --}}
+                                    @can('marketing.kelola-pemesanan.read-berkas')
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.kelengkapanBerkasCash.editCash', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-indigo-600 rounded hover:bg-indigo-700 transition">
+                                                <i class="ri-edit-line"></i> Berkas Cash
+                                            </a>
+                                        </td>
+                                    @endcan
+
+                                    {{-- 🟢 Rincian Tagihan --}}
+                                    @can('marketing.kelola-pemesanan.tagihan.read')
+                                        <td class="px-4 py-2 text-center">
+                                            <a href="{{ route('marketing.rincianTagihan', $item->id) }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-green-600 rounded hover:bg-green-700 transition">
+                                                <i class="ri-file-list-3-line"></i> Lihat
+                                            </a>
+                                        </td>
+                                    @endcan
+
+                                    @can('marketing.kelola-pemesanan.pengajuan-pembatalan')
+                                        {{-- 🔴 Pengajuan Pembatalan --}}
+                                        <td class="px-4 py-2 text-center">
+                                            <button data-modal-target="modal-pembatalan" data-modal-toggle="modal-pembatalan"
+                                                data-id="{{ $item->id }}"
+                                                data-nama-unit="{{ $item->unit->nama_unit ?? '-' }}"
+                                                data-nama-user="{{ $item->customer->username ?? '-' }}"
+                                                data-cara-bayar="{{ ucfirst($item->cara_bayar) }}"
+                                                data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700 transition">
+                                                <i class="ri-close-circle-line"></i> Pembatalan
+                                            </button>
+                                        </td>
+                                    @endcan
+
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </div>
 
     </div>
+    <!-- ===== Main Content End ===== -->
 
-</div>
-<!-- ===== Main Content End ===== -->
+    @include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
 
+    <script>
+        if (document.getElementById("table-managePemesananAgentKpr") && typeof simpleDatatables.DataTable !== 'undefined') {
+            const dataTable = new simpleDatatables.DataTable("#table-managePemesananAgentKpr", {
+                searchable: true,
+                sortable: true,
+            });
+        }
 
-@include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
-
-{{-- sweatalert 2 for delete data --}}
-<script>
-    if (document.getElementById("table-managePemesananKpr") && typeof simpleDatatables.DataTable !== 'undefined') {
-        const dataTable = new simpleDatatables.DataTable("#table-managePemesananKpr", {
-            searchable: true,
-            sortable: true,
-
-        });
-    }
-
-    if (document.getElementById("table-managePemesananCash") && typeof simpleDatatables.DataTable !== 'undefined') {
-        const dataTable = new simpleDatatables.DataTable("#table-managePemesananCash", {
-            searchable: true,
-            sortable: true,
-        });
-    }
-</script>
+        if (document.getElementById("table-managePemesananAgentCash") && typeof simpleDatatables.DataTable !== 'undefined') {
+            const dataTable = new simpleDatatables.DataTable("#table-managePemesananAgentCash", {
+                searchable: true,
+                sortable: true,
+            });
+        }
+    </script>
 @endsection

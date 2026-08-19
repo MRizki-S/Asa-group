@@ -53,6 +53,7 @@ class EtalasePermissionSeeder extends Seeder
             'etalase.unit.detail',
             'etalase.unit.update',
             'etalase.unit.delete',
+            'etalase.unit.pengajuan-pembangunan',
 
              // Perubahan Harga (ETALASE)
             'etalase.perubahaan-harga.type-unit.read',

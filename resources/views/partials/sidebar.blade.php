@@ -517,8 +517,53 @@
                                     </span>
                                 </a>
                             </li>
+
+                            <li>
+                                <a href="/marketing/manage-pemesanan-agent"
+                                    @click="selected = (selected === 'ManagePemesananAgent' ? '':'ManagePemesananAgent')"
+                                    class="menu-item group"
+                                    :class="(selected === 'ManagePemesananAgent') && (page === 'ManagePemesananAgent') ?
+                                    'menu-item-active' :
+                                    'menu-item-inactive'">
+                                    <svg :class="(selected === 'ManagePemesananAgent') && (page === 'ManagePemesananAgent') ?
+                                    'menu-item-icon-active' :
+                                    'menu-item-icon-inactive'"
+                                        width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
+                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                    </svg>
+                                    <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                        Kelola Pemesanan Agent
+                                    </span>
+                                </a>
+                            </li>
                         @endcan
                         <!-- Menu Item Kelola Pemesanan -->
+
+                        <!-- Menu Item Ganti Unit (Private) -->
+                        @can('marketing.ganti-unit-private.read')
+                            <li>
+                                <a href="/marketing/ganti-unit"
+                                    @click="selected = (selected === 'GantiUnit' ? '':'GantiUnit')"
+                                    class="menu-item group"
+                                    :class="(selected === 'GantiUnit') && (page === 'GantiUnit') ?
+                                    'menu-item-active' :
+                                    'menu-item-inactive'">
+                                    <svg :class="(selected === 'GantiUnit') && (page === 'GantiUnit') ?
+                                    'menu-item-icon-active' :
+                                    'menu-item-icon-inactive'"
+                                        width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
+                                    </svg>
+                                    <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                        Ganti Unit
+                                    </span>
+                                </a>
+                            </li>
+                        @endcan
 
                         <!-- Menu Item Pengajuan -->
                         @canany(['marketing.pengajuan-pemesanan.read', 'marketing.pengajuan-pembatalan.read'])

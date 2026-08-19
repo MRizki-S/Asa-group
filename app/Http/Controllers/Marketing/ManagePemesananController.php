@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MasterKprDokumen;
 use App\Models\PemesananUnit;
 use App\Models\Perumahaan;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\TemplateProcessor;
 
@@ -19,7 +20,7 @@ class ManagePemesananController extends Controller
             : $user->perumahaan_id;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $perumahaanId = $this->currentPerumahaanId();
@@ -30,11 +31,16 @@ class ManagePemesananController extends Controller
             $namaPerumahaan = Perumahaan::where('id', $perumahaanId)->value('nama_perumahaan');
         }
 
-        // query pemesanan unit kpr
-        $pemesananKpr = PemesananUnit::with([
+        // Filter Tahun dan Bulan berdasarkan tanggal_pemesanan (Default: Tahun ini, Semua Bulan)
+        $tahun = $request->input('tahun', date('Y'));
+        $bulan = $request->input('bulan', '');
+
+        // query pemesanan unit kpr (Internal)
+        $pemesananKprQuery = PemesananUnit::with([
             'customer',
             'sales',
             'unit.blok',
+            'unit.pembangunanUnit.pembangunanUnitQc',
             'kpr.dokumen',
             'kpr.bank',
             'kpr.pemesananUnit',
@@ -42,37 +48,64 @@ class ManagePemesananController extends Controller
             ->where('cara_bayar', 'kpr')
             ->where('status_pengajuan', 'acc')
             ->where('perumahaan_id', $perumahaanId)
+            ->where(function ($q) {
+                $q->where('source', 'internal')->orWhereNull('source');
+            })
             // ⛔ Filter sama juga untuk cash
             ->whereDoesntHave('pengajuanPembatalan', function ($q) {
                 $q->where('status_pengajuan', '!=', 'ditolak');
             });
 
-        if ($user->hasRole('Marketing')) {
-            $pemesananKpr->where('sales_id', $user->id);
+        if ($tahun) {
+            $pemesananKprQuery->whereYear('tanggal_pemesanan', $tahun);
+        }
+        if ($bulan !== '' && $bulan !== null && $bulan !== 'all') {
+            $pemesananKprQuery->whereMonth('tanggal_pemesanan', (int) $bulan);
         }
 
-        $pemesananKpr = $pemesananKpr->get();
+        if ($user->hasRole('Marketing')) {
+            $pemesananKprQuery->where('sales_id', $user->id);
+        }
 
-        // query pemesanan unit cash
-        $pemesananCash = PemesananUnit::with([
+        $pemesananKpr = $pemesananKprQuery
+            ->orderBy('tanggal_pemesanan', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        // query pemesanan unit cash (Internal)
+        $pemesananCashQuery = PemesananUnit::with([
             'customer',
             'sales',
             'unit.blok',
+            'unit.pembangunanUnit.pembangunanUnitQc',
             'cash.dokumen',
             'cash.pemesananUnit',
         ])
             ->where('cara_bayar', 'cash')
             ->where('status_pengajuan', 'acc')
             ->where('perumahaan_id', $perumahaanId)
+            ->where(function ($q) {
+                $q->where('source', 'internal')->orWhereNull('source');
+            })
             ->whereDoesntHave('pengajuanPembatalan', function ($q) {
                 $q->where('status_pengajuan', '!=', 'ditolak');
             });
 
-        if ($user->hasRole('Marketing')) {
-            $pemesananCash->where('sales_id', $user->id);
+        if ($tahun) {
+            $pemesananCashQuery->whereYear('tanggal_pemesanan', $tahun);
+        }
+        if ($bulan !== '' && $bulan !== null && $bulan !== 'all') {
+            $pemesananCashQuery->whereMonth('tanggal_pemesanan', (int) $bulan);
         }
 
-        $pemesananCash = $pemesananCash->get();
+        if ($user->hasRole('Marketing')) {
+            $pemesananCashQuery->where('sales_id', $user->id);
+        }
+
+        $pemesananCash = $pemesananCashQuery
+            ->orderBy('tanggal_pemesanan', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
 
         // hitung kelengkapan berkas dari pemesanan kpr dan cash
         foreach ($pemesananKpr as $item) {
@@ -112,11 +145,51 @@ class ManagePemesananController extends Controller
             'pemesananKpr' => $pemesananKpr,
             'pemesananCash' => $pemesananCash,
             'namaPerumahaanAktif' => $namaPerumahaan,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
             'breadcrumbs' => [
                 [
                     'label' => 'Manage Pemesanan - ' . ($namaPerumahaan ?? '-'),
                     'url' => route('marketing.managePemesanan.index'),
                 ],
+            ],
+        ]);
+    }
+
+    public function show($id)
+    {
+        $pengajuan = PemesananUnit::with([
+            'customer',
+            'sales',
+            'perumahaan',
+            'tahap',
+            'unit',
+            'dataDiri',
+            'cash',
+            'kpr.bank',
+            'caraBayar',
+            'cicilan',
+            'promo',
+            'keterlambatan',
+            'pembatalan',
+            'bonusCash',
+            'bonusKpr',
+            'feeAgent.masterAgentFee',
+            'agent',
+        ])->findOrFail($id);
+
+        return view('marketing.manage-pemesanan.show', [
+            'pengajuan'     => $pengajuan,
+            'keterlambatan' => $pengajuan->keterlambatan,
+            'pembatalan'    => $pengajuan->pembatalan,
+            'bonusCash'     => $pengajuan->bonusCash,
+            'bonusKpr'      => $pengajuan->bonusKpr,
+            'isAgent'       => false,
+            'backUrl'       => route('marketing.managePemesanan.index'),
+            'pageActive'    => 'ManagePemesanan',
+            'breadcrumbs'   => [
+                ['label' => 'Kelola Pemesanan', 'url' => route('marketing.managePemesanan.index')],
+                ['label' => 'Detail Pemesanan Unit: ' . ($pengajuan->unit->nama_unit ?? '-'), 'url' => '#'],
             ],
         ]);
     }
@@ -647,5 +720,24 @@ class ManagePemesananController extends Controller
         $triliun = (int) floor($angka / 1000000000000);
         $sisa = $angka % 1000000000000;
         return trim($this->terbilang($triliun) . ' triliun ' . ($sisa ? $this->terbilang($sisa) : ''));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $tahun = $request->input('tahun', date('Y'));
+        $bulan = $request->input('bulan', '');
+
+        $perumahaanId = $this->currentPerumahaanId();
+        $namaPerumahaan = null;
+        if ($perumahaanId) {
+            $namaPerumahaan = Perumahaan::where('id', $perumahaanId)->value('nama_perumahaan');
+        }
+
+        $fileName = 'Data_Closing_Unit_' . ($bulan ? $bulan . '_' : '') . $tahun . '.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\DataClosingUnitExport($tahun, $bulan, $perumahaanId, $namaPerumahaan),
+            $fileName
+        );
     }
 }

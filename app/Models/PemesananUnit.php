@@ -162,4 +162,29 @@ class PemesananUnit extends Model
     {
         return $this->hasMany(PemesananUnitFeeAgent::class, 'pemesanan_unit_id');
     }
+
+    public function getProgressBangunanAttribute()
+    {
+        if (!$this->unit) {
+            return '-';
+        }
+
+        $pembangunan = $this->unit->pembangunanUnit->sortByDesc('created_at')->first();
+
+        if (!$pembangunan) {
+            return '-';
+        }
+
+        $totalQc = $pembangunan->pembangunanUnitQc->count();
+        $sumProgressQc = 0;
+
+        foreach ($pembangunan->pembangunanUnitQc as $qc) {
+            $qcProgress = $qc->total_task > 0 ? ($qc->task_selesai_count / $qc->total_task) * 100 : 0;
+            $sumProgressQc += $qcProgress;
+        }
+
+        $progress = $totalQc > 0 ? round($sumProgressQc / $totalQc, 2) : 0;
+
+        return $progress . '%';
+    }
 }

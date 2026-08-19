@@ -48,8 +48,10 @@ use App\Http\Controllers\Marketing\AdendumListController;
 use App\Http\Controllers\Marketing\AgenController;
 use App\Http\Controllers\Marketing\AkunUserController;
 use App\Http\Controllers\Marketing\AnggaranPromosiController;
+use App\Http\Controllers\Marketing\GantiUnitController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasCashController;
 use App\Http\Controllers\Marketing\KelengkapanBerkasKprController;
+use App\Http\Controllers\Marketing\ManagePemesananAgentController;
 use App\Http\Controllers\Marketing\ManagePemesananController;
 use App\Http\Controllers\Marketing\PemesananUnitController;
 use App\Http\Controllers\Marketing\PengajuanPembatalanController;
@@ -227,13 +229,17 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
             ->name('ppjbKPR.export.word');
         Route::get('/export/ppjbCASH/{id}', [ManagePemesananController::class, 'exportWordCASH'])
             ->name('ppjbCASH.export.word');
+        Route::get('/export-excel', [ManagePemesananController::class, 'exportExcel'])
+            ->name('marketing.managePemesanan.exportExcel');
 
         // 🔹 Rincian Tagihan
         Route::get('/rincian-tagihan/{id}', [ManagePemesananController::class, 'rincianTagihan'])
             ->name('marketing.rincianTagihan');
 
-        Route::resource('/', ManagePemesananController::class)
-            ->names('marketing.managePemesanan');
+        Route::get('/', [ManagePemesananController::class, 'index'])
+            ->name('marketing.managePemesanan.index');
+        Route::get('/{id}', [ManagePemesananController::class, 'show'])
+            ->name('marketing.managePemesanan.show');
 
         // kpr pilih bank dulu jika belum ada
         Route::post('/kelengkapan-berkas-kpr/set-bank/{id}', [KelengkapanBerkasKprController::class, 'setBank'])->name('marketing.managePemesanan.kelengkapanBerkasKpr.setBank');
@@ -256,6 +262,18 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         // Route::post('/pemesanan/pindah-unit', [PindahUnitController::class, 'store'])
         //     ->name('marketing.pemesanan.pindahUnit.store');
     });
+
+    // Kelola Pemesanan Agent
+    Route::get('/manage-pemesanan-agent/export-excel', [ManagePemesananAgentController::class, 'exportExcel'])
+        ->name('marketing.managePemesananAgent.exportExcel');
+    Route::get('/manage-pemesanan-agent', [ManagePemesananAgentController::class, 'index'])
+        ->name('marketing.managePemesananAgent.index');
+    Route::get('/manage-pemesanan-agent/{id}', [ManagePemesananAgentController::class, 'show'])
+        ->name('marketing.managePemesananAgent.show');
+
+    // Ganti Unit (Private)
+    Route::get('/ganti-unit', [GantiUnitController::class, 'index'])->name('marketing.gantiUnit.index');
+    Route::post('/ganti-unit', [GantiUnitController::class, 'store'])->name('marketing.gantiUnit.store');
 
     // pengajuan pemesanan unit
     Route::resource('/pengajuan-pemesanan', PengajuanPemesananController::class)->names('marketing.pengajuanPemesanan');
@@ -754,10 +772,13 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     // Permintaan Dibangun
     Route::middleware('can:produksi.properti.permintaan-dibangun.read')->group(function () {
-        Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->names('produksi.pengajuanPembangunanUnit');
+        Route::resource('permintaan-dibangun', PermintaanDibangunController::class)->except(['store'])->names('produksi.pengajuanPembangunanUnit');
         Route::get('/tahap/{tahapId}/unit-json', [PermintaanDibangunController::class, 'getUnitsByTahap']);
         Route::post('/konfirmasi-pembangunan', [KonfirmasiPembangunanController::class, 'konfirmasi'])->name('produksi.konfirmasiPembangunan');
     });
+    Route::post('permintaan-dibangun', [PermintaanDibangunController::class, 'store'])
+        ->middleware('can:etalase.unit.pengajuan-pembangunan')
+        ->name('produksi.pengajuanPembangunanUnit.store');
 
     // Pembangunan Unit
     Route::middleware('can:produksi.properti.pembangunan-unit.read')->group(function () {

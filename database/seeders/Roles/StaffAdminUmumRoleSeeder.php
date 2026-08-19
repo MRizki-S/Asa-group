@@ -53,6 +53,7 @@ class StaffAdminUmumRoleSeeder extends Seeder
                 'etalase.unit.detail',
                 'etalase.unit.update',
                 'etalase.unit.delete',
+                'etalase.unit.pengajuan-pembangunan',
             ];
 
             // Ambil permission
