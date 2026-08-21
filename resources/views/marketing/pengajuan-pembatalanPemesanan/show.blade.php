@@ -263,8 +263,8 @@
         </div>
         {{-- 🔹 Tombol Aksi Proyek Manager --}}
         <div x-data="{ openModal: false, actionType: '' }">
-            {{-- Tombol aksi hanya untuk Proyek Manager dan status masih pending --}}
-            @role('Proyek Manager')
+            {{-- Tombol aksi hanya untuk Proyek Manager (permission) dan status masih pending --}}
+            @can('marketing.pengajuan-pembatalan.keputusan-pm')
                 @if ($pengajuanPembatalan->status_mgr_pemasaran === 'pending')
                     <div class="flex justify-end gap-3 mt-6">
                         <button @click="actionType = 'tolak'; openModal = true" type="button"
@@ -280,7 +280,7 @@
                         </button>
                     </div>
                 @endif
-            @endrole
+            @endcan
 
             <!-- Modal -->
             <div x-show="openModal" x-transition
@@ -451,7 +451,7 @@
 
             {{-- 🔹 Tombol Aksi Manager Keuangan --}}
             <div x-data="{ openModal: false, actionType: '' }">
-                @role('Manager Dukungan & Layanan')
+                @can('marketing.pengajuan-pembatalan.keputusan-mdl')
                     @if ($pengajuanPembatalan->status_mgr_pemasaran !== 'pending' && $pengajuanPembatalan->status_mgr_keuangan === 'pending')
                         <div class="flex justify-end gap-3 mt-6">
                             <button @click="actionType = 'tolak'; openModal = true" type="button"
@@ -467,7 +467,7 @@
                             </button>
                         </div>
                     @endif
-                @endrole
+                @endcan
 
                 <!-- Modal -->
                 <div x-show="openModal" x-transition

@@ -42,6 +42,8 @@ class MarketingPermissionSeeder extends Seeder
 
             'marketing.pengajuan-pembatalan.read',
             'marketing.pengajuan-pembatalan.action',
+            'marketing.pengajuan-pembatalan.keputusan-pm',
+            'marketing.pengajuan-pembatalan.keputusan-mdl',
 
             // Adendum
             'marketing.adendum.pengajuan-adendum.read',

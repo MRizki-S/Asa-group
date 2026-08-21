@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Unit;
 use App\Services\NotificationPribadiService;
 use App\Models\PengajuanPembatalanPemesananUnit;
 
@@ -182,8 +183,8 @@ class PengajuanPembatalanController extends Controller
 
         $pengajuan = PengajuanPembatalanPemesananUnit::findOrFail($id);
 
-        // Pastikan hanya Proyek Manager yang bisa akses
-        if (! Auth::user()->hasRole('Proyek Manager')) {
+        // Pastikan user memiliki permission keputusan PM
+        if (! Auth::user()->can('marketing.pengajuan-pembatalan.keputusan-pm')) {
             abort(403, 'Anda tidak memiliki izin untuk melakukan tindakan ini.');
         }
 
@@ -200,15 +201,20 @@ class PengajuanPembatalanController extends Controller
             ->with('success', 'Keputusan Proyek Manager berhasil disimpan.');
     }
 
-    // 🔹 Keputusan Manager Keuangan
+    // 🔹 Keputusan Manager Keuangan (Manager Dukungan & Layanan)
     public function keputusanKeuangan(Request $request, $id)
     {
         $request->validate([
             'status_mgr_keuangan'  => 'required|in:acc,tolak',
             'catatan_mgr_keuangan' => 'required|string',
         ]);
-        // dd($request->all());
+
         $pengajuan = PengajuanPembatalanPemesananUnit::findOrFail($id);
+
+        // Pastikan user memiliki permission keputusan MDL
+        if (! Auth::user()->can('marketing.pengajuan-pembatalan.keputusan-mdl')) {
+            abort(403, 'Anda tidak memiliki izin untuk melakukan tindakan ini.');
+        }
 
         $pengajuan->update([
             'status_mgr_keuangan'     => $request->status_mgr_keuangan,
@@ -219,7 +225,7 @@ class PengajuanPembatalanController extends Controller
             'status_pengajuan'        => $request->status_mgr_keuangan,
         ]);
 
-        // 🔹 Jika disetujui (ACC), ubah status pemesanan unit menjadi "batal"
+        // 🔹 Jika disetujui (ACC), ubah status pemesanan unit menjadi "batal" dan status unit menjadi "available"
         if ($request->status_mgr_keuangan === 'acc') {
             $pemesanan = PemesananUnit::find($pengajuan->pemesanan_unit_id);
 
@@ -227,6 +233,12 @@ class PengajuanPembatalanController extends Controller
                 $pemesanan->update([
                     'status_pemesanan' => 'batal',
                 ]);
+
+                if ($pemesanan->unit_id) {
+                    Unit::where('id', $pemesanan->unit_id)->update([
+                        'status_unit' => 'available',
+                    ]);
+                }
             }
         }
 
