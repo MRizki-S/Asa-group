@@ -119,7 +119,7 @@
                 <!-- Timeline Section -->
                 <div class="mb-4">
                     <h4 class="text-sm font-semibold text-gray-700 mb-3">Timeline Tanggal Proses</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Tanggal Masuk Berkas -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
