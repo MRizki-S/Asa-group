@@ -61,67 +61,197 @@
             @endphp
 
             {{-- Form Ganti Bank & Status KPR --}}
-            <div
-                class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {{-- Proses & Timeline KPR --}}
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-6">
+                <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Proses & Timeline KPR
+                </h3>
 
-                <!-- Bank -->
-                <div>
-                    <label for="bank_id" class="block text-sm font-medium text-gray-700 mb-1">
-                        Bank
-                    </label>
-                    <select id="bank_id" name="bank_id"
-                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
-                        {{ $bolehUpdate ? '' : 'disabled' }}>
-                        @foreach ($bankList as $bank)
-                            <option value="{{ $bank->id }}"
-                                {{ $pemesanan->kpr->bank_id == $bank->id ? 'selected' : '' }}>
-                                {{ $bank->nama_bank }} ({{ $bank->kode_bank }})
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Bank -->
+                    <div>
+                        <label for="bank_id" class="block text-sm font-medium text-gray-700 mb-1">
+                            Bank
+                        </label>
+                        <select id="bank_id" name="bank_id"
+                            class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                            {{ $bolehUpdate ? '' : 'disabled' }}>
+                            @foreach ($bankList as $bank)
+                                <option value="{{ $bank->id }}"
+                                    {{ $pemesanan->kpr->bank_id == $bank->id ? 'selected' : '' }}>
+                                    {{ $bank->nama_bank }} ({{ $bank->kode_bank }})
+                                </option>
+                            @endforeach
+                        </select>
 
-                    @if ($bolehUpdate)
-                        <div class="mt-2 text-sm text-gray-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
-                            💬 Jika ingin mengganti bank, pilih bank baru, lalu klik
-                            <span class="font-semibold text-blue-700">Simpan Perubahan</span>.
-                        </div>
-                    @endif
+                        @if ($bolehUpdate)
+                            <div class="mt-2 text-xs text-gray-700 bg-blue-50 border border-blue-100 rounded-lg p-2">
+                                💬 Jika ingin mengganti bank, pilih bank baru, lalu klik
+                                <span class="font-semibold text-blue-700">Simpan Perubahan</span>.
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Status KPR -->
+                    <div>
+                        <label for="status_kpr" class="block text-sm font-medium text-gray-700 mb-1">
+                            Status KPR
+                        </label>
+                        <select id="status_kpr" name="status_kpr"
+                            class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
+                            {{ $bolehUpdate ? '' : 'disabled' }}>
+                            @foreach ($statusList as $value => $label)
+                                <option value="{{ $value }}"
+                                    {{ $pemesanan->kpr->status_kpr == $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Status KPR -->
-                <div>
-                    <label for="status_kpr" class="block text-sm font-medium text-gray-700 mb-1">
-                        Status KPR
-                    </label>
-                    <select id="status_kpr" name="status_kpr"
-                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2"
-                        {{ $bolehUpdate ? '' : 'disabled' }}>
-                        @foreach ($statusList as $value => $label)
-                            <option value="{{ $value }}"
-                                {{ $pemesanan->kpr->status_kpr == $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
+                <!-- Divider -->
+                <div class="border-t border-gray-100 my-6"></div>
 
-                    @if ($bolehUpdate)
-                        <div
-                            class="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2 text-sm text-blue-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
-                            </svg>
-                            <p>
-                                Jika <span class="font-semibold">status KPR</span> diubah menjadi
-                                <span class="font-semibold text-blue-600">"ACC"</span>, sistem akan
-                                <span class="font-semibold">mengirimkan notifikasi WhatsApp</span> secara otomatis ke
-                                customer.
-                            </p>
+                <!-- Timeline Section -->
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Timeline Tanggal Proses</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <!-- Tanggal Masuk Berkas -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal Masuk Berkas
+                            </label>
+                            <div class="relative" x-data="{
+                                tampil: '{{ $pemesanan->kpr->tanggal_masuk_berkas ? $pemesanan->kpr->tanggal_masuk_berkas->format('d-m-Y') : '' }}',
+                                simpan: '{{ $pemesanan->kpr->tanggal_masuk_berkas ? $pemesanan->kpr->tanggal_masuk_berkas->format('Y-m-d') : '' }}'
+                            }">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-500" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                                    </svg>
+                                </div>
+                                <input type="text" x-model="tampil" x-init="flatpickr($el, {
+                                    dateFormat: 'd-m-Y',
+                                    defaultDate: tampil || null,
+                                    onChange: (dates, dateStr) => {
+                                        tampil = dateStr;
+                                        if (dates.length > 0) {
+                                            const d = dates[0];
+                                            simpan = d.getFullYear() + '-' +
+                                                ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+                                                ('0' + d.getDate()).slice(-2);
+                                        } else {
+                                            simpan = '';
+                                        }
+                                    }
+                                })" placeholder="Pilih tanggal"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 @error('tanggal_masuk_berkas') border-red-500 focus:ring-red-500 @enderror"
+                                    {{ $bolehUpdate ? '' : 'disabled' }}>
+                                <input type="hidden" name="tanggal_masuk_berkas" x-model="simpan">
+                            </div>
+                            @error('tanggal_masuk_berkas')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
-                    @endif
+
+                        <!-- Tanggal ACC -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal ACC
+                            </label>
+                            <div class="relative" x-data="{
+                                tampil: '{{ $pemesanan->kpr->tanggal_acc ? $pemesanan->kpr->tanggal_acc->format('d-m-Y') : '' }}',
+                                simpan: '{{ $pemesanan->kpr->tanggal_acc ? $pemesanan->kpr->tanggal_acc->format('Y-m-d') : '' }}'
+                            }">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-500" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                                    </svg>
+                                </div>
+                                <input type="text" x-model="tampil" x-init="flatpickr($el, {
+                                    dateFormat: 'd-m-Y',
+                                    defaultDate: tampil || null,
+                                    onChange: (dates, dateStr) => {
+                                        tampil = dateStr;
+                                        if (dates.length > 0) {
+                                            const d = dates[0];
+                                            simpan = d.getFullYear() + '-' +
+                                                ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+                                                ('0' + d.getDate()).slice(-2);
+                                        } else {
+                                            simpan = '';
+                                        }
+                                    }
+                                })" placeholder="Pilih tanggal"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 @error('tanggal_acc') border-red-500 focus:ring-red-500 @enderror"
+                                    {{ $bolehUpdate ? '' : 'disabled' }}>
+                                <input type="hidden" name="tanggal_acc" x-model="simpan">
+                            </div>
+                            @error('tanggal_acc')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Tanggal Realisasi -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal Realisasi
+                            </label>
+                            <div class="relative" x-data="{
+                                tampil: '{{ $pemesanan->kpr->tanggal_realisasi ? $pemesanan->kpr->tanggal_realisasi->format('d-m-Y') : '' }}',
+                                simpan: '{{ $pemesanan->kpr->tanggal_realisasi ? $pemesanan->kpr->tanggal_realisasi->format('Y-m-d') : '' }}'
+                            }">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-500" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                                    </svg>
+                                </div>
+                                <input type="text" x-model="tampil" x-init="flatpickr($el, {
+                                    dateFormat: 'd-m-Y',
+                                    defaultDate: tampil || null,
+                                    onChange: (dates, dateStr) => {
+                                        tampil = dateStr;
+                                        if (dates.length > 0) {
+                                            const d = dates[0];
+                                            simpan = d.getFullYear() + '-' +
+                                                ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+                                                ('0' + d.getDate()).slice(-2);
+                                        } else {
+                                            simpan = '';
+                                        }
+                                    }
+                                })" placeholder="Pilih tanggal"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 @error('tanggal_realisasi') border-red-500 focus:ring-red-500 @enderror"
+                                    {{ $bolehUpdate ? '' : 'disabled' }}>
+                                <input type="hidden" name="tanggal_realisasi" x-model="simpan">
+                            </div>
+                            @error('tanggal_realisasi')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
 
+                {{-- Alur visual --}}
+                <div class="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-3">
+                    <span class="font-medium text-blue-600">Urutan Proses:</span>
+                    <span>Masuk Berkas</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span>ACC</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span>Realisasi</span>
+                </div>
+
+                <p class="mt-3 text-xs text-gray-500 italic">
+                    "Catat tanggal setiap tahapan proses KPR untuk kebutuhan monitoring dan laporan realisasi bulanan."
+                </p>
             </div>
 
 

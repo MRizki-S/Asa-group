@@ -93,31 +93,36 @@ class KelengkapanBerkasKprController extends Controller
      */
     public function updateKpr(Request $request, $id)
     {
+        $pemesanan = PemesananUnit::with('kpr')->findOrFail($id);
+        $kpr       = $pemesanan->kpr;
+
+        if (! $kpr) {
+            return back()->with('error', 'Data KPR tidak ditemukan.');
+        }
+
+        // Cek apakah bank berubah
+        $bankBerubah = $request->bank_id != $kpr->bank_id;
+        $statusKpr = $bankBerubah ? 'proses' : $request->input('status_kpr');
+
         $request->validate([
-            'bank_id'    => 'required|exists:master_bank,id',
-            'status_kpr' => 'required|string',
-            'dokumen'    => 'nullable|array',
+            'bank_id'              => 'required|exists:master_bank,id',
+            'status_kpr'           => 'required|string|in:proses,acc,realisasi',
+            'dokumen'              => 'nullable|array',
+            'tanggal_masuk_berkas' => $statusKpr === 'proses' ? 'nullable|date' : 'required|date',
+            'tanggal_acc'          => $statusKpr === 'proses' ? 'nullable|date' : 'required|date',
+            'tanggal_realisasi'    => ($statusKpr === 'proses' || $statusKpr === 'acc') ? 'nullable|date' : 'required|date',
         ]);
 
-        DB::transaction(function () use ($request, $id) {
-            $pemesanan = PemesananUnit::with('kpr')->findOrFail($id);
-            $kpr       = $pemesanan->kpr;
-
-            if (! $kpr) {
-                throw new \Exception('Data KPR tidak ditemukan.');
-            }
-
+        DB::transaction(function () use ($request, $pemesanan, $kpr, $bankBerubah) {
             // Simpan status lama untuk deteksi perubahan
             $oldStatus = $kpr->status_kpr;
-
-            // 🧩 Cek apakah bank berubah
-            $bankBerubah = $request->bank_id != $kpr->bank_id;
 
             if ($bankBerubah) {
                 // 🚮 Hapus semua dokumen lama
                 PemesananUnitKprDokumen::where('pemesanan_unit_kpr_id', $kpr->id)->delete();
 
                 // 🔁 Reset status_kpr jadi "proses" dan update bank_id baru
+                // Menjaga data tanggal sebelumnya dengan tidak menyertakannya dalam update
                 $kpr->update([
                     'bank_id'    => $request->bank_id,
                     'status_kpr' => 'proses',
@@ -142,9 +147,12 @@ class KelengkapanBerkasKprController extends Controller
                     PemesananUnitKprDokumen::insert($insertData);
                 }
             } else {
-                // 🔸 Kalau bank tidak berubah, update status_kpr dari form
+                // 🔸 Kalau bank tidak berubah, update status_kpr dan tanggal dari form
                 $kpr->update([
-                    'status_kpr' => $request->status_kpr,
+                    'status_kpr'           => $request->status_kpr,
+                    'tanggal_masuk_berkas' => $request->tanggal_masuk_berkas,
+                    'tanggal_acc'          => $request->tanggal_acc,
+                    'tanggal_realisasi'    => $request->tanggal_realisasi,
                 ]);
 
                 // 🔹 Update status dokumen

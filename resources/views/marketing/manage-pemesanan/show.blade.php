@@ -393,6 +393,82 @@
                 @endif
             </div>
 
+            {{-- 🏦 Status & Informasi Berkas KPR (Hanya jika cara bayar KPR) --}}
+            @if ($pengajuan->cara_bayar === 'kpr')
+                <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+                    <div class="px-5 py-4 sm:px-6 sm:py-5">
+                        <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                            <h3 class="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
+                                <span>Status & Progres Berkas KPR</span>
+                            </h3>
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300">
+                                Bank & Progres KPR
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {{-- Bank KPR --}}
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Bank KPR
+                                </label>
+                                <input type="text" readonly value="{{ $pengajuan->kpr->bank->nama_bank ?? '-' }}"
+                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600 font-medium">
+                            </div>
+
+                            {{-- Status KPR --}}
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Status KPR
+                                </label>
+                                @php
+                                    $statusKpr = strtolower($pengajuan->kpr->status_kpr ?? '');
+                                    $statusBadgeClass = match($statusKpr) {
+                                        'acc' => 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-700',
+                                        'realisasi' => 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700',
+                                        'tolak', 'ditolak' => 'bg-red-50 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-400 dark:border-red-700',
+                                        'proses', 'masuk berkas' => 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-700',
+                                        default => 'bg-gray-50 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
+                                    };
+                                @endphp
+                                <input type="text" readonly value="{{ $pengajuan->kpr->status_kpr ? strtoupper($pengajuan->kpr->status_kpr) : '-' }}"
+                                    class="w-full {{ $statusBadgeClass }} border text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed uppercase">
+                            </div>
+
+                            {{-- Tanggal Masuk Berkas --}}
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tanggal Masuk Berkas
+                                </label>
+                                <input type="text" readonly
+                                    value="{{ $pengajuan->kpr->tanggal_masuk_berkas ? \Carbon\Carbon::parse($pengajuan->kpr->tanggal_masuk_berkas)->format('d M Y') : '-' }}"
+                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                            </div>
+
+                            {{-- Tanggal ACC KPR --}}
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tanggal ACC KPR
+                                </label>
+                                <input type="text" readonly
+                                    value="{{ $pengajuan->kpr->tanggal_acc ? \Carbon\Carbon::parse($pengajuan->kpr->tanggal_acc)->format('d M Y') : '-' }}"
+                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                            </div>
+
+                            {{-- Tanggal Realisasi --}}
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tanggal Realisasi
+                                </label>
+                                <input type="text" readonly
+                                    value="{{ $pengajuan->kpr->tanggal_realisasi ? \Carbon\Carbon::parse($pengajuan->kpr->tanggal_realisasi)->format('d M Y') : '-' }}"
+                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- 💸 Bonus Cash (muncul kalau cash dipilih) -->
             @if ($pengajuan->cara_bayar === 'cash' && $pengajuan->bonusCash->isNotEmpty())
                 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">

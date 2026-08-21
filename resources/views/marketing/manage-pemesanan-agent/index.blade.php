@@ -4,7 +4,7 @@
 
 @section('content')
     <!-- ===== Main Content Start ===== -->
-    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
+    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{ showExportModal: false, exportSource: 'agent', exportTitle: 'Export Data Closing (Agent)' }">
 
         <!-- Breadcrumb Start -->
         <div x-data="{ pageName: 'Manage Pemesanan Agent' }">
@@ -95,13 +95,59 @@
                             Reset
                         </a>
                     @endif
-                    <a href="{{ route('marketing.managePemesananAgent.exportExcel', ['tahun' => $tahun, 'bulan' => $bulan]) }}"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 transition focus:ring-4 focus:ring-emerald-300 active:scale-95 shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Export Excel
-                    </a>
+                    @can('marketing.kelola-pemesanan-agent.export-closing')
+                        <div class="relative" x-data="{ openExportDropdown: false }" @click.away="openExportDropdown = false">
+                            <button type="button" @click="openExportDropdown = !openExportDropdown"
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 transition focus:ring-4 focus:ring-emerald-300 active:scale-95 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Export Excel</span>
+                                <svg class="w-3.5 h-3.5 ml-0.5 transition-transform" :class="openExportDropdown ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {{-- Dropdown Menu --}}
+                            <div x-show="openExportDropdown" x-cloak
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-72 rounded-xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 p-1.5 z-50">
+                                
+                                <button type="button" @click="exportSource = 'agent'; exportTitle = 'Export Data Closing (Agent)'; showExportModal = true; openExportDropdown = false"
+                                    class="group w-full flex items-center gap-3 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition">
+                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="font-medium text-gray-900 dark:text-white">Export Agent</div>
+                                        <div class="text-[11px] text-gray-400 font-normal">Transaksi broker / agent</div>
+                                    </div>
+                                </button>
+
+                                <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+
+                                <button type="button" @click="exportSource = 'all'; exportTitle = 'Export Rekap Closing (All)'; showExportModal = true; openExportDropdown = false"
+                                    class="group w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition">
+                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="font-semibold text-emerald-800 dark:text-emerald-300">Export Rekap Closing (All)</div>
+                                        <div class="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-normal">Gabungan Internal & Agent</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    @endcan
                 </div>
             </form>
 
@@ -207,7 +253,9 @@
                                             ? 'bg-green-100 text-green-700'
                                             : ($item->kpr->status_kpr === 'proses'
                                                 ? 'bg-yellow-100 text-yellow-700'
-                                                : 'bg-gray-100 text-gray-700') }}">
+                                                : ($item->kpr->status_kpr === 'realisasi'
+                                                    ? 'bg-sky-100 text-sky-700'
+                                                    : 'bg-gray-100 text-gray-700')) }}">
                                             {{ ucfirst($item->kpr->status_kpr ?? '-') }}
                                         </span>
                                     </td>
@@ -402,12 +450,131 @@
                 </div>
             </div>
 
-        </div>
-
     </div>
-    <!-- ===== Main Content End ===== -->
 
-    @include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
+    {{-- Modal Export Custom Excel --}}
+    <div x-show="showExportModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50" x-cloak>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl p-6 border border-gray-200 dark:border-gray-700"
+             @click.away="showExportModal = false">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4" x-text="exportTitle"></h3>
+            
+            <form action="{{ route('marketing.managePemesananAgent.exportExcel') }}" method="GET" @submit="showExportModal = false">
+                <input type="hidden" name="tahun" value="{{ $tahun }}">
+                <input type="hidden" name="bulan" value="{{ $bulan }}">
+                <input type="hidden" name="source" :value="exportSource">
+                
+                <p class="text-xs text-gray-400 mb-3 uppercase font-bold tracking-wider">Pilih Kolom Yang Ingin Di-export</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Nama Unit (Wajib) -->
+                    <input type="hidden" name="columns[]" value="nama_unit">
+                    <label class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg cursor-not-allowed border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" checked disabled class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Nama Unit</span>
+                            <span class="block text-xs text-gray-400">Wajib disertakan</span>
+                        </div>
+                    </label>
+
+                    <!-- Nama Customer -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="nama_user" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Nama Customer</span>
+                            <span class="block text-xs text-gray-400">Nama lengkap customer</span>
+                        </div>
+                    </label>
+
+                    <!-- Sales / Agent -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="nama_agent_sales" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Sales / Agent</span>
+                            <span class="block text-xs text-gray-400">Nama marketing atau nama agen</span>
+                        </div>
+                    </label>
+
+                    <!-- Tanggal Closing -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="tanggal_closing" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Tanggal Closing</span>
+                            <span class="block text-xs text-gray-400">Tanggal pemesanan unit</span>
+                        </div>
+                    </label>
+
+                    <!-- Cara Bayar -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="cara_bayar" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Cara Bayar</span>
+                            <span class="block text-xs text-gray-400">Metode pembayaran (KPR atau CASH)</span>
+                        </div>
+                    </label>
+
+                    <!-- Status KPR -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="status_kpr" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Status KPR</span>
+                            <span class="block text-xs text-gray-400">Status berkas KPR unit</span>
+                        </div>
+                    </label>
+
+                    <!-- Data Diri WhatsApp / Phone -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="no_hp" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">No. HP / WA</span>
+                            <span class="block text-xs text-gray-400">Nomor WhatsApp customer</span>
+                        </div>
+                    </label>
+
+                    <!-- Data Diri NIK KTP -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="no_ktp" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">NIK / No. KTP</span>
+                            <span class="block text-xs text-gray-400">Nomor KTP terdaftar</span>
+                        </div>
+                    </label>
+
+                    <!-- Data Diri Pekerjaan -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="pekerjaan" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Pekerjaan</span>
+                            <span class="block text-xs text-gray-400">Pekerjaan customer</span>
+                        </div>
+                    </label>
+
+                    <!-- Data Diri Alamat -->
+                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" name="columns[]" value="alamat" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Alamat Lengkap</span>
+                            <span class="block text-xs text-gray-400">Alamat detail tempat tinggal</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="flex justify-end gap-2">
+                    <button type="button" @click="showExportModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition">Batal</button>
+                    <button type="submit" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+<!-- ===== Main Content End ===== -->
+
+@include('marketing.manage-pemesanan.modal.modal-pengajuan-pembatalanPemesanan')
 
     <script>
         if (document.getElementById("table-managePemesananAgentKpr") && typeof simpleDatatables.DataTable !== 'undefined') {

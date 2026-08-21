@@ -101,16 +101,6 @@
                                         </li>
                                     @endcan
                                     {{-- Link menu Dashboard - Produksi --}}
-
-                                    {{-- Link menu Dashboard - Gudang > Stock Gudang --}}
-                                    <li>
-                                        <a href="index.html" class="menu-dropdown-item group"
-                                            :class="page === 'Stock Gudang' ? 'menu-dropdown-item-active' :
-                                                'menu-dropdown-item-inactive'">
-                                            Stock Gudang
-                                        </a>
-                                    </li>
-                                    {{-- Link menu Dashboard - Gudang > Stock Gudang --}}
                                 </ul>
                             </div>
                             <!-- Dropdown Menu End -->
@@ -483,7 +473,7 @@
                                     </svg>
                                     </svg>
                                     <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                        Pemesanan Unit
+                                        Tambah Pemesanan Unit
                                     </span>
                                 </a>
                             </li>
@@ -517,7 +507,9 @@
                                     </span>
                                 </a>
                             </li>
+                        @endcan
 
+                        @can('marketing.kelola-pemesanan-agent.read')
                             <li>
                                 <a href="/marketing/manage-pemesanan-agent"
                                     @click="selected = (selected === 'ManagePemesananAgent' ? '':'ManagePemesananAgent')"

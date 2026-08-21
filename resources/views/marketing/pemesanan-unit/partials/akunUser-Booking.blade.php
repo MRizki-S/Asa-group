@@ -21,10 +21,10 @@
             </select>
         </div>
 
-        <!-- Tanggal Pemesanan -->
+        <!-- Tanggal Closing -->
         <div>
             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Tanggal Pemesanan <span class="text-red-500">*</span>
+                Tanggal Closing <span class="text-red-500">*</span>
             </label>
 
             <div class="relative" x-data="{

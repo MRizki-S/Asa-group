@@ -54,6 +54,11 @@ class MarketingRoleSeeder extends Seeder
                 'marketing.kelola-pemesanan.read-berkas',
                 'marketing.kelola-pemesanan.pengajuan-pembatalan',
                 'marketing.kelola-pemesanan.pengajuan-adendum',
+                'marketing.kelola-pemesanan.export-closing',
+
+                // Kelola Pemesanan Agent
+                'marketing.kelola-pemesanan-agent.read',
+                'marketing.kelola-pemesanan-agent.export-closing',
 
                 // Pengajuan
                 'marketing.pengajuan-pemesanan.read',

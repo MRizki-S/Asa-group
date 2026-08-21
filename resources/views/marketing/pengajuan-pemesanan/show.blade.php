@@ -4,7 +4,8 @@
 
 @section('content')
 
-    {{-- <link rel="stylesheet"
+    {{--
+    <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css"> --}}
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
@@ -34,14 +35,12 @@
         @endif
 
         <!-- Informasi Promo & Ketentuan -->
-        <div x-data="{ openInfo: false, openPromo: false }"
-            class="mt-6 mb-6 rounded-xl border border-gray-200 dark:border-gray-700
-            bg-white dark:bg-gray-800/50 shadow-sm text-gray-800 dark:text-gray-100 overflow-hidden">
+        <div x-data="{ openInfo: false, openPromo: false }" class="mt-6 mb-6 rounded-xl border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-gray-800/50 shadow-sm text-gray-800 dark:text-gray-100 overflow-hidden">
 
             <!-- Header -->
-            <button @click="openInfo = !openInfo"
-                class="w-full flex justify-between items-center px-5 py-3 bg-gray-50 dark:bg-gray-800/70
-                   hover:bg-gray-100 dark:hover:bg-gray-700 transition font-semibold text-sm">
+            <button @click="openInfo = !openInfo" class="w-full flex justify-between items-center px-5 py-3 bg-gray-50 dark:bg-gray-800/70
+                       hover:bg-gray-100 dark:hover:bg-gray-700 transition font-semibold text-sm">
                 <span>📄 Informasi Terkait PPJB</span>
                 <svg :class="{ 'rotate-180': openInfo }" xmlns="http://www.w3.org/2000/svg"
                     class="w-5 h-5 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24"
@@ -90,20 +89,18 @@
 
                 @if ($pengajuan->promo->count())
                     <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                        <button @click="openPromo = !openPromo"
-                            class="w-full flex justify-between items-center px-4 py-2.5
-                               bg-gray-50 dark:bg-gray-700/40 text-sm font-medium
-                               hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <button @click="openPromo = !openPromo" class="w-full flex justify-between items-center px-4 py-2.5
+                                       bg-gray-50 dark:bg-gray-700/40 text-sm font-medium
+                                       hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                             <span><b>Promo — {{ ucfirst($caraBayar) }}</b></span>
                             <svg :class="{ 'rotate-180': openPromo }" xmlns="http://www.w3.org/2000/svg"
-                                class="w-4 h-4 transform transition-transform duration-200" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                                class="w-4 h-4 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
-                        <div x-show="openPromo" x-transition x-cloak
-                            class="p-4 bg-white dark:bg-gray-800 text-sm leading-snug">
+                        <div x-show="openPromo" x-transition x-cloak class="p-4 bg-white dark:bg-gray-800 text-sm leading-snug">
                             <ul class="list-disc ml-5 space-y-1">
                                 @foreach ($pengajuan->promo as $item)
                                     <li>{{ $item->nama_promo }}</li>
@@ -316,9 +313,8 @@
 
             {{-- sistem pembayaran --}}
             <div x-data="{
-                caraBayar: '{{ $pengajuan->cara_bayar }}',
-            }"
-                class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+                    caraBayar: '{{ $pengajuan->cara_bayar }}',
+                }" class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
 
                 <!-- 🔘 Pilihan Cara Bayar -->
                 <div class="px-5 py-4 sm:px-6 sm:py-5">
@@ -334,9 +330,8 @@
                             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Pilih Cara Bayar
                             </label>
-                            <select disabled name="cara_bayar" x-model="caraBayar"
-                                class="w-full bg-gray-100 border text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                        dark:bg-gray-700 dark:text-gray-400 border-gray-300">
+                            <select disabled name="cara_bayar" x-model="caraBayar" class="w-full bg-gray-100 border text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                            dark:bg-gray-700 dark:text-gray-400 border-gray-300">
                                 <option value="">Pilih Cara Bayar</option>
                                 <option value="cash">CASH</option>
                                 <option value="kpr">KPR</option>
@@ -358,22 +353,21 @@
                     </div>
 
                     <div x-data="{
-                        hargaRumah: '{{ number_format($pengajuan->cash->harga_rumah ?? 0, 0, ',', '.') }}',
-                        nominalKelebihan: {{ $pengajuan->cash->nominal_kelebihan ?? 0 }},
-                        get hargaJadi() {
-                            const rumah = parseInt(this.hargaRumah.replace(/\D/g, '')) || 0;
-                            return formatRupiah((rumah + this.nominalKelebihan).toString());
-                        },
-                    }" class="space-y-4">
+                            hargaRumah: '{{ number_format($pengajuan->cash->harga_rumah ?? 0, 0, ',', '.') }}',
+                            nominalKelebihan: {{ $pengajuan->cash->nominal_kelebihan ?? 0 }},
+                            get hargaJadi() {
+                                const rumah = parseInt(this.hargaRumah.replace(/\D/g, '')) || 0;
+                                return formatRupiah((rumah + this.nominalKelebihan).toString());
+                            },
+                        }" class="space-y-4">
 
                         <!-- Harga Rumah -->
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Harga Rumah
                             </label>
-                            <input type="text" x-model="hargaRumah" readonly
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                        dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
+                            <input type="text" x-model="hargaRumah" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
                         </div>
 
                         <!-- Kelebihan Tanah -->
@@ -382,14 +376,12 @@
                                 Kelebihan Tanah
                             </label>
                             <div class="grid grid-cols-2 gap-4">
-                                <input type="text" readonly
-                                    class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
+                                <input type="text" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                                dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
                                     value="{{ $pengajuan->cash->luas_kelebihan ?? '-' }}">
 
-                                <input type="text" readonly
-                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600"
+                                <input type="text" readonly class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                                dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600"
                                     :value="formatRupiah(nominalKelebihan.toString())">
                             </div>
                         </div>
@@ -399,9 +391,8 @@
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Harga Jadi
                             </label>
-                            <input type="text" readonly :value="hargaJadi"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                        dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
+                            <input type="text" readonly :value="hargaJadi" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
                         </div>
                     </div>
                 </div>
@@ -417,34 +408,33 @@
                     </div>
 
                     <div x-data="{
-                        sbumPemerintah: 4000000,
-                        dpRumahInduk: '{{ number_format($pengajuan->kpr->dp_rumah_induk ?? 0, 0, ',', '.') }}',
-                        nominalKelebihan: {{ $pengajuan->kpr->nominal_kelebihan ?? 0 }},
-                        hargaTotal: {{ $pengajuan->kpr->harga_total ?? 0 }},
-                        get dpRumahIndukNumber() {
-                            return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
-                        },
-                        get totalDpNumber() {
-                            return this.dpRumahIndukNumber + (this.nominalKelebihan || 0);
-                        },
-                        get dpPembeliNumber() {
-                            const hasil = this.totalDpNumber - this.sbumPemerintah;
-                            return hasil > 0 ? hasil : 0;
-                        },
-                        get hargaKprNumber() {
-                            const total = this.hargaTotal - this.totalDpNumber;
-                            return total > 0 ? total : 0;
-                        },
-                        get totalDp() { return formatRupiah(this.totalDpNumber.toString()); },
-                        get dpPembeli() { return formatRupiah(this.dpPembeliNumber.toString()); },
-                        get hargaKpr() { return formatRupiah(this.hargaKprNumber.toString()); },
-                        get hargaTotalFormatted() { return formatRupiah(this.hargaTotal.toString()); },
-                    }" class="space-y-5">
+                            sbumPemerintah: 4000000,
+                            dpRumahInduk: '{{ number_format($pengajuan->kpr->dp_rumah_induk ?? 0, 0, ',', '.') }}',
+                            nominalKelebihan: {{ $pengajuan->kpr->nominal_kelebihan ?? 0 }},
+                            hargaTotal: {{ $pengajuan->kpr->harga_total ?? 0 }},
+                            get dpRumahIndukNumber() {
+                                return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
+                            },
+                            get totalDpNumber() {
+                                return this.dpRumahIndukNumber + (this.nominalKelebihan || 0);
+                            },
+                            get dpPembeliNumber() {
+                                const hasil = this.totalDpNumber - this.sbumPemerintah;
+                                return hasil > 0 ? hasil : 0;
+                            },
+                            get hargaKprNumber() {
+                                const total = this.hargaTotal - this.totalDpNumber;
+                                return total > 0 ? total : 0;
+                            },
+                            get totalDp() { return formatRupiah(this.totalDpNumber.toString()); },
+                            get dpPembeli() { return formatRupiah(this.dpPembeliNumber.toString()); },
+                            get hargaKpr() { return formatRupiah(this.hargaKprNumber.toString()); },
+                            get hargaTotalFormatted() { return formatRupiah(this.hargaTotal.toString()); },
+                        }" class="space-y-5">
 
                         <!-- Info SBUM -->
-                        <div
-                            class="mt-3 flex items-center gap-3 px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50
-                    dark:bg-yellow-900/30 dark:border-yellow-700">
+                        <div class="mt-3 flex items-center gap-3 px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50
+                        dark:bg-yellow-900/30 dark:border-yellow-700">
                             <div
                                 class="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-500 text-white font-bold text-sm">
                                 💡
@@ -463,9 +453,8 @@
                             <label class="block mt-4 mb-1 text-sm font-medium text-gray-900 dark:text-white">
                                 DP Rumah Induk
                             </label>
-                            <input type="text" x-model="dpRumahInduk" readonly
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                        dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
+                            <input type="text" x-model="dpRumahInduk" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
                         </div>
 
                         <!-- Kelebihan Tanah -->
@@ -474,18 +463,16 @@
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Luas Kelebihan Tanah (m²)
                                 </label>
-                                <input type="text" readonly
-                                    class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
+                                <input type="text" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                                dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
                                     value="{{ $pengajuan->kpr->luas_kelebihan ?? '-' }}">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Nominal Kelebihan (Rp)
                                 </label>
-                                <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())"
-                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
+                                <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
+                                dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                             </div>
                         </div>
 
@@ -494,9 +481,8 @@
                             <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
                                 Total DP
                             </label>
-                            <input type="text" readonly :value="totalDp"
-                                class="w-full bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
-                        dark:bg-green-900/30 dark:border-green-700">
+                            <input type="text" readonly :value="totalDp" class="w-full bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
+                            dark:bg-green-900/30 dark:border-green-700">
                         </div>
 
                         <!-- DP Dibayarkan Pembeli -->
@@ -504,9 +490,8 @@
                             <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
                                 DP Dibayarkan Pembeli
                             </label>
-                            <input type="text" readonly :value="dpPembeli"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-600 text-sm rounded-lg p-2.5 cursor-not-allowed
-                        dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                            <input type="text" readonly :value="dpPembeli" class="w-full bg-gray-100 border border-gray-300 text-gray-600 text-sm rounded-lg p-2.5 cursor-not-allowed
+                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
                         </div>
 
                         <!-- Harga Total & Nilai KPR -->
@@ -515,17 +500,15 @@
                                 <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
                                     Harga Total Rumah
                                 </label>
-                                <input type="text" readonly :value="hargaTotalFormatted"
-                                    class="w-full bg-indigo-50 border border-indigo-300 text-indigo-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-indigo-900/30 dark:border-indigo-700">
+                                <input type="text" readonly :value="hargaTotalFormatted" class="w-full bg-indigo-50 border border-indigo-300 text-indigo-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
+                                dark:bg-indigo-900/30 dark:border-indigo-700">
                             </div>
                             <div>
                                 <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
                                     Nilai KPR
                                 </label>
-                                <input type="text" readonly :value="hargaKpr"
-                                    class="w-full bg-blue-50 border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-blue-900/30 dark:border-blue-700">
+                                <input type="text" readonly :value="hargaKpr" class="w-full bg-blue-50 border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
+                                dark:bg-blue-900/30 dark:border-blue-700">
                             </div>
                         </div>
                     </div>
@@ -540,9 +523,8 @@
 
                         @foreach ($pengajuan->bonusCash as $bonus)
                             <div class="flex gap-2 items-center">
-                                <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}"
-                                    class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                             </div>
                         @endforeach
                     </div>
@@ -554,9 +536,8 @@
 
                         @foreach ($pengajuan->bonusKpr as $bonus)
                             <div class="flex gap-2 items-center">
-                                <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}"
-                                    class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                             </div>
                         @endforeach
                     </div>
@@ -579,9 +560,8 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Berapa Kali Angsur
                             </label>
-                            <input type="text" readonly value="{{ $pengajuan->caraBayar->jumlah_cicilan ?? '-' }}"
-                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                            <input type="text" readonly value="{{ $pengajuan->caraBayar->jumlah_cicilan ?? '-' }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                        dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                         </div>
 
                         <!-- Minimal DP -->
@@ -592,7 +572,7 @@
                             <input type="text" readonly
                                 value="{{ isset($pengajuan->caraBayar->minimal_dp) ? 'Rp ' . number_format($pengajuan->caraBayar->minimal_dp, 0, ',', '.') : '-' }}"
                                 class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                        dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                         </div>
 
                         <!-- Daftar Angsuran -->
@@ -608,10 +588,9 @@
 
                                         <!-- Pembayaran Ke -->
                                         <div class="w-full md:w-1/4">
-                                            <input type="text" readonly
-                                                value="{{ 'Pembayaran ke - ' . $cicilan->pembayaran_ke }}"
+                                            <input type="text" readonly value="{{ 'Pembayaran ke - ' . $cicilan->pembayaran_ke }}"
                                                 class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                                         </div>
 
                                         <!-- Tanggal Jatuh Tempo -->
@@ -619,15 +598,14 @@
                                             <input type="text" readonly
                                                 value="{{ $cicilan->tanggal_jatuh_tempo ? $cicilan->tanggal_jatuh_tempo->format('d M Y') : '-' }}"
                                                 class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                                         </div>
 
                                         <!-- Nominal -->
                                         <div class="w-full md:w-1/3">
                                             <input type="text" readonly
-                                                value="Rp {{ number_format($cicilan->nominal, 0, ',', '.') }}"
-                                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                    dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                                value="Rp {{ number_format($cicilan->nominal, 0, ',', '.') }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
+                                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                                         </div>
 
                                     </div>
@@ -650,7 +628,7 @@
 
                 if ($namaPerumahaan === 'Asa Dreamland') {
                     // Khusus ADL → Proyek Manager saja
-                    $bolehAction = $user->hasRole(['Proyek Manager', 'Superadmin', 'Staff KPR']);
+                    $bolehAction = $user->hasRole(['Proyek Manager', 'Superadmin', 'Staff KPR (ADL)']);
                 } else {
                     // Selain ADL → pakai permission (Staff KPR)
                     $bolehAction = $user->can('marketing.pengajuan-pemesanan.action');
@@ -664,9 +642,8 @@
                         class="tolak-form">
                         @csrf
                         @method('PATCH')
-                        <button type="button"
-                            class="tolak-btn px-4 py-2 text-sm font-medium text-gray-800 bg-gray-300 rounded-lg shadow-md
-                hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
+                        <button type="button" class="tolak-btn px-4 py-2 text-sm font-medium text-gray-800 bg-gray-300 rounded-lg shadow-md
+                        hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
                             Tolak
                         </button>
                     </form>
@@ -676,9 +653,8 @@
                         class="approve-form">
                         @csrf
                         @method('PATCH')
-                        <button type="button"
-                            class="approve-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md
-                hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
+                        <button type="button" class="approve-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md
+                        hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
                             Acc / Approve
                         </button>
                     </form>
@@ -690,7 +666,7 @@
 
 
     <script>
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             // Tombol Tolak
             if (e.target.closest('.tolak-btn')) {
                 const btn = e.target.closest('.tolak-btn');

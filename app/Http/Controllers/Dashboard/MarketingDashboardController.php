@@ -121,15 +121,15 @@ class MarketingDashboardController extends Controller
             ->toArray();
 
         $realisasiKprBulananList = PemesananUnitKpr::query()
-            ->selectRaw('MONTH(p.tanggal_pemesanan) as bulan, COUNT(*) as total')
+            ->selectRaw('MONTH(pemesanan_unit_kpr.tanggal_realisasi) as bulan, COUNT(*) as total')
             ->join('pemesanan_unit as p', 'pemesanan_unit_kpr.pemesanan_unit_id', '=', 'p.id')
             ->where('pemesanan_unit_kpr.status_kpr', 'realisasi')
             ->where('p.perumahaan_id', $currentPerumahaanId)
             ->where('p.status_pengajuan', 'acc')
             ->where('p.cara_bayar', 'kpr')
-            ->whereIn(DB::raw('MONTH(p.tanggal_pemesanan)'), $quarterMonths)
-            ->whereYear('p.tanggal_pemesanan', $selectedYear)
-            ->groupBy(DB::raw('MONTH(p.tanggal_pemesanan)'))
+            ->whereIn(DB::raw('MONTH(pemesanan_unit_kpr.tanggal_realisasi)'), $quarterMonths)
+            ->whereYear('pemesanan_unit_kpr.tanggal_realisasi', $selectedYear)
+            ->groupBy(DB::raw('MONTH(pemesanan_unit_kpr.tanggal_realisasi)'))
             ->pluck('total', 'bulan')
             ->toArray();
 
@@ -264,11 +264,11 @@ class MarketingDashboardController extends Controller
 
         return PemesananUnitKpr::query()
             ->where('status_kpr', 'realisasi')
-            ->whereHas('pemesananUnit', function ($query) use ($perumahaanId, $start, $end) {
+            ->whereBetween('tanggal_realisasi', [$start->toDateString(), $end->toDateString()])
+            ->whereHas('pemesananUnit', function ($query) use ($perumahaanId) {
                 $query->where('perumahaan_id', $perumahaanId)
                     ->where('status_pengajuan', 'acc')
-                    ->where('cara_bayar', 'kpr')
-                    ->whereBetween('tanggal_pemesanan', [$start->toDateString(), $end->toDateString()]);
+                    ->where('cara_bayar', 'kpr');
             })
             ->count();
     }

@@ -29,6 +29,11 @@ class MarketingPermissionSeeder extends Seeder
             'marketing.kelola-pemesanan.read-berkas',
             'marketing.kelola-pemesanan.update-berkas',
             'marketing.kelola-pemesanan.pengajuan-adendum', // masih belum ada fiturnya
+            'marketing.kelola-pemesanan.export-closing',
+
+            // Kelola Pemesanan Agent
+            'marketing.kelola-pemesanan-agent.read',
+            'marketing.kelola-pemesanan-agent.export-closing',
 
             // Pengajuan
             'marketing.pengajuan-pemesanan.read',

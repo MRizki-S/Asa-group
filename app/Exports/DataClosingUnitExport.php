@@ -36,7 +36,13 @@ class DataClosingUnitExport implements FromArray, WithStyles, WithCustomStartCel
         $this->namaPerumahaan = $namaPerumahaan;
         $this->isAgent = $isAgent;
 
-        $prefix = $this->isAgent ? 'Data Closing Unit Agent ' : 'Data Closing Unit ';
+        if ($this->isAgent === true || $this->isAgent === 'agent') {
+            $prefix = 'Data Closing Unit Agent ';
+        } elseif ($this->isAgent === 'all') {
+            $prefix = 'Data Closing Unit All ';
+        } else {
+            $prefix = 'Data Closing Unit ';
+        }
 
         if ($this->bulan !== '' && $this->bulan !== null && $this->bulan !== 'all') {
             $this->months = [(int)$this->bulan];
@@ -67,9 +73,9 @@ class DataClosingUnitExport implements FromArray, WithStyles, WithCustomStartCel
                 $q->where('status_pengajuan', '!=', 'ditolak');
             });
 
-        if ($this->isAgent) {
+        if ($this->isAgent === true || $this->isAgent === 'agent') {
             $query->where('source', 'agent');
-        } else {
+        } elseif ($this->isAgent === false || $this->isAgent === 'internal') {
             $query->where(function ($q) {
                 $q->where('source', 'internal')->orWhereNull('source');
             });
@@ -83,7 +89,7 @@ class DataClosingUnitExport implements FromArray, WithStyles, WithCustomStartCel
             $query->whereMonth('tanggal_pemesanan', (int) $this->bulan);
         }
 
-        if (!$this->isAgent && $user->hasRole('Marketing')) {
+        if (($this->isAgent === false || $this->isAgent === 'internal') && $user->hasRole('Marketing')) {
             $query->where('sales_id', $user->id);
         }
 
@@ -99,7 +105,7 @@ class DataClosingUnitExport implements FromArray, WithStyles, WithCustomStartCel
             $m = (int) \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('n');
             if (isset($monthData[$m])) {
                 if (count($monthData[$m]) < 30) {
-                    $marketingName = $this->isAgent
+                    $marketingName = ($item->source === 'agent' || ($this->isAgent === true && !$item->sales))
                         ? ($item->agent->nama_agent ?? '-')
                         : ($item->sales->nama_lengkap ?? $item->sales->username ?? '-');
                     

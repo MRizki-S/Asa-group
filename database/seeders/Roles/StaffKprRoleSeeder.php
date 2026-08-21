@@ -55,6 +55,11 @@ class StaffKprRoleSeeder extends Seeder
                 'marketing.kelola-pemesanan.print-ppjb',
                 'marketing.kelola-pemesanan.read-berkas',
                 'marketing.kelola-pemesanan.update-berkas',
+                'marketing.kelola-pemesanan.export-closing',
+
+                // Kelola Pemesanan Agent
+                'marketing.kelola-pemesanan-agent.read',
+                'marketing.kelola-pemesanan-agent.export-closing',
 
                 // Pengajuan
                 'marketing.pengajuan-pemesanan.read',

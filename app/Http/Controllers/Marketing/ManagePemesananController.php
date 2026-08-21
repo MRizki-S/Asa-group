@@ -726,6 +726,7 @@ class ManagePemesananController extends Controller
     {
         $tahun = $request->input('tahun', date('Y'));
         $bulan = $request->input('bulan', '');
+        $source = $request->input('source', 'internal');
 
         $perumahaanId = $this->currentPerumahaanId();
         $namaPerumahaan = null;
@@ -733,10 +734,52 @@ class ManagePemesananController extends Controller
             $namaPerumahaan = Perumahaan::where('id', $perumahaanId)->value('nama_perumahaan');
         }
 
-        $fileName = 'Data_Closing_Unit_' . ($bulan ? $bulan . '_' : '') . $tahun . '.xlsx';
+        $namaBulan = [
+            1  => 'Januari',
+            2  => 'Februari',
+            3  => 'Maret',
+            4  => 'April',
+            5  => 'Mei',
+            6  => 'Juni',
+            7  => 'Juli',
+            8  => 'Agustus',
+            9  => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $periode = '(' . $tahun . ')';
+        if ($bulan !== '' && $bulan !== null && $bulan !== 'all') {
+            $bulanName = $namaBulan[(int) $bulan] ?? $bulan;
+            $periode = '(' . $bulanName . ' ' . $tahun . ')';
+        }
+
+        $prefix = match ($source) {
+            'agent' => 'Data-Closing-Unit-Agent',
+            'all'   => 'Data-Closing-Unit-All',
+            default => 'Data-Closing-Unit',
+        };
+
+        $perumahaanSuffix = $namaPerumahaan ? '-' . $namaPerumahaan : '';
+        $fileName = $prefix . $perumahaanSuffix . ' ' . $periode . '.xlsx';
+
+        // Check if custom columns are selected
+        $columns = $request->input('columns', []);
+        if (is_string($columns)) {
+            $columns = explode(',', $columns);
+        }
+        $columns = array_filter(array_map('trim', $columns));
+
+        if (!empty($columns)) {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                new \App\Exports\CustomClosingUnitExport($tahun, $bulan, $perumahaanId, $namaPerumahaan, $columns, $source),
+                $fileName
+            );
+        }
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\DataClosingUnitExport($tahun, $bulan, $perumahaanId, $namaPerumahaan),
+            new \App\Exports\DataClosingUnitExport($tahun, $bulan, $perumahaanId, $namaPerumahaan, $source),
             $fileName
         );
     }
