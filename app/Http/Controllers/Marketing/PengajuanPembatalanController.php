@@ -108,7 +108,7 @@ class PengajuanPembatalanController extends Controller
         ->orderByDesc('created_at');
 
         // 🔸 Filter tambahan kalau login sebagai Marketing
-        if ($user->hasRole('Marketing')) {
+        if ($user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
             $query->where('diajukan_oleh', $user->id);
         }
 

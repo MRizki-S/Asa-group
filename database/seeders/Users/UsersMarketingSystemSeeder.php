@@ -83,7 +83,7 @@ class UsersMarketingSystemSeeder extends Seeder
 
             // Marketing ADL
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (ADL)',
                 'data' => [
                     'username' => 'nizar.mrk',
                     'nama_lengkap' => 'NIZAR MARKETING',
@@ -96,7 +96,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (ADL)',
                 'data' => [
                     'username' => 'rizki.mrk',
                     'nama_lengkap' => 'RIZKI MARKETING',
@@ -109,7 +109,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (ADL)',
                 'data' => [
                     'username' => 'zakiyah.mrk',
                     'nama_lengkap' => 'ZAKIYAH MARKETING',
@@ -122,7 +122,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (ADL)',
                 'data' => [
                     'username' => 'amar.mrk',
                     'nama_lengkap' => 'MOCHAMAD AMARUDDIN MARKETING',
@@ -135,7 +135,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (ADL)',
                 'data' => [
                     'username' => 'ruli.mrk',
                     'nama_lengkap' => 'NARULITA DEWI MARKETING',
@@ -148,7 +148,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (ADL)',
                 'data' => [
                     'username' => 'andini.mrk',
                     'nama_lengkap' => 'ANDINI NABILAH MARKETING',
@@ -205,7 +205,7 @@ class UsersMarketingSystemSeeder extends Seeder
 
             // Marketing LHR
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (LHR)',
                 'data' => [
                     'username' => 'irham.mrk',
                     'nama_lengkap' => 'IRHAM AFANDI MARKETING',
@@ -218,7 +218,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (LHR)',
                 'data' => [
                     'username' => 'iyan.mrk',
                     'nama_lengkap' => 'WAHYU FAJAR SUGIYANTO MARKETING',
@@ -231,7 +231,7 @@ class UsersMarketingSystemSeeder extends Seeder
                 ],
             ],
             [
-                'role' => 'Marketing',
+                'role' => 'Marketing (LHR)',
                 'data' => [
                     'username' => 'devi.mrk',
                     'nama_lengkap' => 'FANDO DEVI MARKETING',

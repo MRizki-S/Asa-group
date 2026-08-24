@@ -89,7 +89,7 @@ class DataClosingUnitExport implements FromArray, WithStyles, WithCustomStartCel
             $query->whereMonth('tanggal_pemesanan', (int) $this->bulan);
         }
 
-        if (($this->isAgent === false || $this->isAgent === 'internal') && $user->hasRole('Marketing')) {
+        if (($this->isAgent === false || $this->isAgent === 'internal') && $user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
             $query->where('sales_id', $user->id);
         }
 

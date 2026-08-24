@@ -38,6 +38,8 @@ class DevisiSeeder extends Seeder
             'Staff Admin Umum' => 'Marketing',
             'Staff KPR' => 'Marketing',
             'Marketing' => 'Marketing',
+            'Marketing (ADL)' => 'Marketing',
+            'Marketing (LHR)' => 'Marketing',
             'Staff Akuntansi' => 'Keuangan',
             'Manager Dukungan & Layanan' => 'Dukungan & Layanan',
             'Superadmin' => 'IT / Superadmin'

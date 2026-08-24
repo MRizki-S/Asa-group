@@ -50,7 +50,7 @@ class AkunUserController extends Controller
             ->latest();
 
         // 🔸 Filter tambahan jika login adalah Marketing
-        if (Auth::user()->hasAnyRole(['Marketing'])) {
+        if (Auth::user()->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
             $query->whereHas('booking', function ($q) {
                 $q->where('sales_id', Auth::id())
                     ->where('source', 'internal');
@@ -95,7 +95,7 @@ class AkunUserController extends Controller
             ])
             ->latest();
 
-        if (Auth::user()->hasAnyRole(['Marketing'])) {
+        if (Auth::user()->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
             $query->whereHas('booking', function ($q) {
                 $q->where('sales_id', Auth::id())
                     ->where('source', 'internal');

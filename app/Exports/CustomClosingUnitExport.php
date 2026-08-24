@@ -1075,7 +1075,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
         if (
             ($this->isAgent === false || $this->isAgent === 'internal')
             && $user
-            && $user->hasRole('Marketing')
+            && $user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])
         ) {
 
             $query->where(

@@ -14,11 +14,12 @@ class MarketingRoleSeeder extends Seeder
     {
         DB::transaction(function () {
 
-            // Role
-            $role = Role::firstOrCreate([
-                'name' => 'Marketing',
-                'guard_name' => 'web',
-            ]);
+            // Roles
+            $roleNames = [
+                'Marketing',
+                'Marketing (ADL)',
+                'Marketing (LHR)',
+            ];
 
             // Permission yang boleh diakses
             $permissionNames = [
@@ -89,7 +90,13 @@ class MarketingRoleSeeder extends Seeder
             }
 
             // Assign
-            $role->syncPermissions($permissions);
+            foreach ($roleNames as $name) {
+                $role = Role::firstOrCreate([
+                    'name' => $name,
+                    'guard_name' => 'web',
+                ]);
+                $role->syncPermissions($permissions);
+            }
         });
     }
 }
