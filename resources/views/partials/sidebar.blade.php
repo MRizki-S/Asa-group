@@ -1253,6 +1253,7 @@
             <!-- Gudang -  Group -->
             @canany([
                 'gudang.stock-barang.read',
+                'gudang.audit-log.read',
                 'gudang.barang-rusak.read',
                 'gudang.barang-rakitan.komposisi-rakitan.read',
                 'gudang.barang-rakitan.produksi-rakitan.read',
@@ -1318,6 +1319,32 @@
                     </li>
                     @endcan
                     <!-- menu stock barang dan transfer stok -->
+
+                    <!-- Menu Audit Log Stok -->
+                    @canany(['gudang.audit-log.read', 'gudang.stock-barang.read'])
+                    <li>
+                        <a href="{{ route('gudang.auditLog.index') }}"
+                            @click="selected = (selected === 'AuditLogStock' ? '' : 'AuditLogStock')"
+                            class="menu-item group"
+                            :class="(selected === 'AuditLogStock') && (page === 'AuditLogStock') ?
+                            'menu-item-active' :
+                            'menu-item-inactive'">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                :class="(selected === 'AuditLogStock') && (page === 'AuditLogStock') ? 'menu-item-icon-active' : ''"
+                                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
+                                <title>audit-log</title>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                Audit Log Stok
+                            </span>
+                        </a>
+                    </li>
+                    @endcanany
+                    <!-- Menu Audit Log Stok -->
 
                     <!-- Menu Barang Rusak -->
                     @can('gudang.barang-rusak.read')
@@ -2267,7 +2294,7 @@
                 </div>
             @endcanany
 
-            @canany(['superadmin.role.read', 'superadmin.akun-karyawan.read'])
+            @canany(['hr-management.karyawan.read'])
                 <!-- HR Management - Group -->
                 <div>
                     <h3 class="mb-2 text-xs uppercase leading-[20px] text-gray-400">
@@ -2285,27 +2312,29 @@
                     </h3>
 
                     <ul class="flex flex-col gap-2 mb-6">
-                        <!-- Menu Item Karyawan -->
-                        <li>
-                            <a href="{{ route('superadmin.karyawan.index') }}"
-                                @click="selected = (selected === 'karyawan' ? '':'karyawan')"
-                                class="menu-item group"
-                                :class="(selected === 'karyawan') && (page === 'karyawan') ? 'menu-item-active' :
-                                'menu-item-inactive'">
+                        @can('hr-management.karyawan.read')
+                            <!-- Menu Item Karyawan -->
+                            <li>
+                                <a href="{{ route('superadmin.karyawan.index') }}"
+                                    @click="selected = (selected === 'karyawan' ? '':'karyawan')"
+                                    class="menu-item group"
+                                    :class="(selected === 'karyawan') && (page === 'karyawan') ? 'menu-item-active' :
+                                    'menu-item-inactive'">
 
-                                <svg :class="(selected === 'karyawan') && (page === 'karyawan') ? 'menu-item-icon-active' :
-                                ''"
-                                    width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" stroke="currentColor" stroke-width="1.5"
-                                    class="size-6">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm14 10v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 1 1 0 8" />
-                                </svg>
-                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                    Karyawan
-                                </span>
-                            </a>
-                        </li>
+                                    <svg :class="(selected === 'karyawan') && (page === 'karyawan') ? 'menu-item-icon-active' :
+                                    ''"
+                                        width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" stroke="currentColor" stroke-width="1.5"
+                                        class="size-6">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm14 10v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 1 1 0 8" />
+                                    </svg>
+                                    <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                        Karyawan
+                                    </span>
+                                </a>
+                            </li>
+                        @endcan
                     </ul>
                 </div>
             @endcanany

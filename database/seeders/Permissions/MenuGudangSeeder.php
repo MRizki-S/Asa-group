@@ -17,6 +17,9 @@ class MenuGudangSeeder extends Seeder
             'gudang.stock-barang.read',
             'gudang.stock-barang.freeze-stock',
 
+            // Audit Log Stock
+            'gudang.audit-log.read',
+
             // Transfer Stock
             'gudang.transfer-stock.read',
             'gudang.transfer-stock.create',
