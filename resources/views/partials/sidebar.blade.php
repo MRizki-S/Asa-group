@@ -1253,7 +1253,7 @@
             <!-- Gudang -  Group -->
             @canany([
                 'gudang.stock-barang.read',
-                'gudang.audit-log.read',
+                // 'gudang.audit-log.read',
                 'gudang.barang-rusak.read',
                 'gudang.barang-rakitan.komposisi-rakitan.read',
                 'gudang.barang-rakitan.produksi-rakitan.read',
@@ -1321,7 +1321,7 @@
                     <!-- menu stock barang dan transfer stok -->
 
                     <!-- Menu Audit Log Stok -->
-                    @canany(['gudang.audit-log.read', 'gudang.stock-barang.read'])
+                    <!-- @canany(['gudang.audit-log.read', 'gudang.stock-barang.read'])
                     <li>
                         <a href="{{ route('gudang.auditLog.index') }}"
                             @click="selected = (selected === 'AuditLogStock' ? '' : 'AuditLogStock')"
@@ -1343,7 +1343,7 @@
                             </span>
                         </a>
                     </li>
-                    @endcanany
+                    @endcanany -->
                     <!-- Menu Audit Log Stok -->
 
                     <!-- Menu Barang Rusak -->
