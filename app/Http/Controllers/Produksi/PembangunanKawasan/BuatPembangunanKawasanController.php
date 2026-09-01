@@ -53,7 +53,7 @@ class BuatPembangunanKawasanController extends Controller
         $perumahaans = Perumahaan::all();
 
         $currentPerumId = $this->currentPerumahaanId();
-        $users = \App\Models\User::role('Pengawas Kawasan')
+        $users = \App\Models\User::role('PENGAWAS PROYEK (S&P)')
             ->where(function ($q) use ($currentPerumId) {
                 $q->whereNull('perumahaan_id');
                 if ($currentPerumId) {
@@ -90,7 +90,7 @@ class BuatPembangunanKawasanController extends Controller
         $perumahaans = Perumahaan::all();
 
         $currentPerumId = $this->currentPerumahaanId();
-        $users = \App\Models\User::role('Pengawas Kawasan')
+        $users = \App\Models\User::role('PENGAWAS PROYEK (S&P)')
             ->where(function ($q) use ($currentPerumId) {
                 $q->whereNull('perumahaan_id');
                 if ($currentPerumId) {

@@ -41,14 +41,14 @@ class PermintaanDibangunController extends Controller
         $query = PengajuanPembangunanUnit::with(['perumahaan', 'pembangunanUnit', 'pembangunanUnit.unit', 'pembangunanUnit.tahap', 'pembangunanUnit.qcContainer', 'pembangunanUnit.spv', 'pembangunanUnit.pengawas', 'diajukanOleh'])
             ->where('perumahaan_id', $this->currentPerumahaanId());
 
-        if ($user->hasRole('SPV Drafting, Teknis & Estimasi')) {
+        if ($user->hasRole('SPV TEKNIS & ESTIMASI')) {
             $query->where(function ($q) use ($user) {
                 $q->where('status_pengajuan', 'pending')
                   ->orWhereHas('pembangunanUnit', function ($sub) use ($user) {
                       $sub->where('spv_id', $user->id);
                   });
             });
-        } elseif ($user->hasRole('Pengawas Unit')) {
+        } elseif ($user->hasRole('PENGAWAS PROYEK (UNIT)')) {
             $query->where(function ($q) use ($user) {
                 $q->where('status_pengajuan', 'pending')
                   ->orWhereHas('pembangunanUnit', function ($sub) use ($user) {
@@ -113,14 +113,14 @@ class PermintaanDibangunController extends Controller
         }
 
         $user = Auth::user();
-        // Check if user is SPV Drafting, Teknis & Estimasi and if this unit is assigned to them
-        if ($user->hasRole('SPV Drafting, Teknis & Estimasi') && $pembangunan->spv_id !== $user->id) {
+        // Check if user is SPV TEKNIS & ESTIMASI and if this unit is assigned to them
+        if ($user->hasRole('SPV TEKNIS & ESTIMASI') && $pembangunan->spv_id !== $user->id) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit pembangunan ini.');
         }
 
         $allPerumahaan = Perumahaan::all();
-        $allPengawas = User::select('id', 'nama_lengkap')->role('Pengawas Unit')->orderBy('nama_lengkap', 'asc')->get();
-        $allSpv = User::select('id', 'nama_lengkap')->role('SPV Drafting, Teknis & Estimasi')->orderBy('nama_lengkap', 'asc')->get();
+        $allPengawas = User::select('id', 'nama_lengkap')->role('PENGAWAS PROYEK (UNIT)')->orderBy('nama_lengkap', 'asc')->get();
+        $allSpv = User::select('id', 'nama_lengkap')->role('SPV TEKNIS & ESTIMASI')->orderBy('nama_lengkap', 'asc')->get();
         $allQcContainer = MasterQcContainer::all();
 
         return view('produksi.permintaan-dibangun.edit', [
@@ -151,8 +151,8 @@ class PermintaanDibangunController extends Controller
         }
 
         $user = Auth::user();
-        // Check if user is SPV Drafting, Teknis & Estimasi and if this unit is assigned to them
-        if ($user->hasRole('SPV Drafting, Teknis & Estimasi') && $pembangunan->spv_id !== $user->id) {
+        // Check if user is SPV TEKNIS & ESTIMASI and if this unit is assigned to them
+        if ($user->hasRole('SPV TEKNIS & ESTIMASI') && $pembangunan->spv_id !== $user->id) {
             abort(403, 'Anda tidak memiliki akses untuk mengupdate pembangunan ini.');
         }
 

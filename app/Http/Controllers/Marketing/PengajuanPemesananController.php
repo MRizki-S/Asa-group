@@ -42,7 +42,7 @@ class PengajuanPemesananController extends Controller
             ->orderByDesc('created_at');
 
         // 🔸 Filter tambahan jika login adalah Marketing
-        if ($user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
+        if ($user->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
             $query->where('sales_id', $user->id);
         }
 

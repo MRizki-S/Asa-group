@@ -794,7 +794,7 @@
                 </span>
             @endif
 
-            @hasrole(['Super Admin', 'Manager Keuangan'])
+            @hasrole(['superadmin', 'MANAJER LAYANAN & DUKUNGAN'])
 
             @if ($dataAdendum->status === 'pending')
 

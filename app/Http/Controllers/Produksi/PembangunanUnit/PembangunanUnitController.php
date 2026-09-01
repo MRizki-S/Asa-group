@@ -36,15 +36,15 @@ class PembangunanUnitController extends Controller
     {
         $user = Auth::user();
         $perumahaanId = $this->currentPerumahaanId();
-        $isStaffMutu = $user->hasRole(['Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR']);
+        $isStaffMutu = $user->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']);
 
-        if ($user->hasRole('Pengawas Unit')) {
+        if ($user->hasRole('PENGAWAS PROYEK (UNIT)')) {
             $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
                 ->where('perumahaan_id', $perumahaanId)
                 ->where('pengawas_id', $user->id)
                 ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
                 ->latest('created_at');
-        } elseif ($user->hasRole('SPV Drafting, Teknis & Estimasi')) {
+        } elseif ($user->hasRole('SPV TEKNIS & ESTIMASI')) {
             $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
                 ->where('perumahaan_id', $perumahaanId)
                 ->where('spv_id', $user->id)
@@ -133,7 +133,7 @@ class PembangunanUnitController extends Controller
         // Filter status visibilitas QC Servis untuk non-Staff Mutu / Superadmin:
         // Role lain hanya melihat QC Servis jika QC Servis tersebut sudah memiliki order barang.
         $user = Auth::user();
-        $isMutuOrAdmin = $user && ($user->hasRole('Superadmin') || $user->hasRole('Staff Mutu (QC) ADL') || $user->hasRole('Staff Mutu (QC) LHR'));
+        $isMutuOrAdmin = $user && ($user->hasRole('Superadmin') || $user->hasRole('STAF MUTU & LAYANAN KONSUMEN (ADL)') || $user->hasRole('STAF MUTU & LAYANAN KONSUMEN (LHR)'));
 
         if (!$isMutuOrAdmin) {
             $filteredQc = $data->pembangunanUnitQc->filter(function ($qc) {
@@ -214,7 +214,7 @@ class PembangunanUnitController extends Controller
     public function createServis($id)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['Superadmin', 'Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR'])) {
+        if (!$user->hasRole(['Superadmin', 'STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)'])) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk membuat servis unit.');
         }
 

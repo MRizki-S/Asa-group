@@ -63,7 +63,7 @@ class ManagePemesananController extends Controller
             $pemesananKprQuery->whereMonth('tanggal_pemesanan', (int) $bulan);
         }
 
-        if ($user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
+        if ($user->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
             $pemesananKprQuery->where('sales_id', $user->id);
         }
 
@@ -98,7 +98,7 @@ class ManagePemesananController extends Controller
             $pemesananCashQuery->whereMonth('tanggal_pemesanan', (int) $bulan);
         }
 
-        if ($user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
+        if ($user->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
             $pemesananCashQuery->where('sales_id', $user->id);
         }
 

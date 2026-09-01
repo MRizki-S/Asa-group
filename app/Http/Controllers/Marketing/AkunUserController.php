@@ -50,7 +50,7 @@ class AkunUserController extends Controller
             ->latest();
 
         // 🔸 Filter tambahan jika login adalah Marketing
-        if (Auth::user()->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
+        if (Auth::user()->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
             $query->whereHas('booking', function ($q) {
                 $q->where('sales_id', Auth::id())
                     ->where('source', 'internal');
@@ -95,7 +95,7 @@ class AkunUserController extends Controller
             ])
             ->latest();
 
-        if (Auth::user()->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
+        if (Auth::user()->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
             $query->whereHas('booking', function ($q) {
                 $q->where('sales_id', Auth::id())
                     ->where('source', 'internal');
@@ -132,8 +132,8 @@ class AkunUserController extends Controller
             ? Perumahaan::all()
             : Perumahaan::where('id', $user->perumahaan_id)->get();
 
-        // Cek apakah login sebagai SPV Pembiayaan KPR
-        $isSPVKPR = $user->hasRole('SPV Pembiayaan KPR');
+        // Cek apakah login sebagai SPV PEMBIAYAAN KPR & BANK
+        $isSPVKPR = $user->hasRole('SPV PEMBIAYAAN KPR & BANK');
 
         // Ambil semua agen aktif untuk select option (hanya jika SPV KPR)
         $masterAgen = $isSPVKPR
@@ -159,7 +159,7 @@ class AkunUserController extends Controller
      */
     public function store(Request $request)
     {
-        $isSPVKPR = Auth::user()->hasRole('SPV Pembiayaan KPR');
+        $isSPVKPR = Auth::user()->hasRole('SPV PEMBIAYAAN KPR & BANK');
 
         $rules = [
             'nama_lengkap'  => 'required|string|max:255',

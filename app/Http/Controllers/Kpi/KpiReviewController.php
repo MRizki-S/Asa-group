@@ -111,7 +111,7 @@ class KpiReviewController extends Controller
             'kpi_user_id' => $id
         ]);
 
-        // $manager = User::role('Manager Dukungan & Layanan')->first();
+        // $manager = User::role('MANAJER STRATEGI & KEPATUHAN')->first();
 
         // if (!$manager || !$manager->no_hp) {
         //     return;
@@ -123,7 +123,7 @@ class KpiReviewController extends Controller
         $komponenNol = $kpiUser->details->where('skor', 0)->pluck('nama_komponen')->implode(', ');
 
         $message = "⚠️ *REQUEST REVIEW KPI*\n\n" .
-            "Halo Manager Strategi & Kepatuhan, terdapat penilaian KPI karyawan yang membutuhkan review (Skor 0).\n\n" .
+            "Halo Manajer Strategi & Kepatuhan, terdapat penilaian KPI karyawan yang membutuhkan review (Skor 0).\n\n" .
             "```\n" .
             "👤 Karyawan  : {$namaKaryawan}\n" .
             "📅 Periode   : {$periode}\n" .
@@ -134,7 +134,7 @@ class KpiReviewController extends Controller
 
         try {
             // $this->notificationPribadi->sendWhatsApp($manager->no_hp, $message);
-            $this->notificationPribadi->sendWhatsApp("085238617670", $message);
+            $this->notificationPribadi->sendWhatsApp("089685813512", $message);
             return back()->with('success', 'Permintaan dikirim');
         } catch (\Exception $e) {
         }

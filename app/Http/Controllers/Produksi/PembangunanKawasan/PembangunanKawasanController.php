@@ -83,7 +83,7 @@ class PembangunanKawasanController extends Controller
         $query = PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes.pengawas'])
             ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
 
-        if ($user->hasRole('Pengawas Kawasan')) {
+        if ($user->hasRole('PENGAWAS PROYEK (S&P)')) {
             $query->where('pengawas_id', $user->id);
         }
 

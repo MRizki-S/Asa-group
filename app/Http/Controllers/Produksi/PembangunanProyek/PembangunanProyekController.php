@@ -80,7 +80,7 @@ class PembangunanProyekController extends Controller
         $query = PembangunanProyek::with(['pengawas'])
             ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
 
-        if ($user->hasRole('Pengawas Proyek Mangoon')) {
+        if ($user->hasRole('PENGAWAS PROYEK (KONTRAKTOR)')) {
             $query->where('pengawas_id', $user->id);
         }
 

@@ -77,7 +77,7 @@
                             Ditolak
                         </span>
                         {{-- Tombol Edit — hanya untuk Admin --}}
-                        @if(Auth::user()->hasRole(['admin', 'admin_gudang', 'administrator']))
+                        @if(Auth::user()->hasRole(['superadmin', 'STAF ADMINISTRASI GUDANG']))
                         <a href="{{ route('gudang.transferStockBarang.edit', $transfer->nomor_transfer) }}"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:ring-4 focus:ring-orange-300 transition active:scale-95">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

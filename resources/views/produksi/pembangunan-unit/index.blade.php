@@ -84,7 +84,7 @@
                         </script>
                     </div>
 
-                    @unless(auth()->user()->hasRole(['Staff Mutu (QC) ADL', 'Staff Mutu (QC) LHR']))
+                    @unless(auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']))
                         <!-- Select Status Pembangunan -->
                         <div class="w-full sm:w-64">
                             <select name="statusFil" id="selectStatusFil"

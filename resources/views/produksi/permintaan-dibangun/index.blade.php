@@ -31,8 +31,8 @@
                     : '',
                 'can_edit' => (
                     $p->status_pengajuan === 'dibangun' && auth()->user()->can('produksi.properti.permintaan-dibangun.edit') && (
-                        auth()->user()->hasRole(['Superadmin', 'Manager Produksi']) || 
-                        (auth()->user()->hasRole('SPV TEKNIK & ESTIMASI') && $p->pembangunanUnit->spv_id === auth()->user()->id)
+                        auth()->user()->hasRole(['Superadmin', 'MANAJER PRODUKSI']) || 
+                        (auth()->user()->hasRole('SPV TEKNIS & ESTIMASI') && $p->pembangunanUnit->spv_id === auth()->user()->id)
                     )
                 ),
             ],

@@ -27,7 +27,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @if (auth()->user()->hasRole(['Superadmin', 'Manager Produksi']))
+                    @if (auth()->user()->hasRole(['Superadmin', 'MANAJER PRODUKSI']))
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">SPV Drafting, Teknis & Estimasi</label>
                             <select name="spv_id" required id="selectSpv"

@@ -75,7 +75,7 @@ class PemesananUnitController extends Controller
             ->whereDoesntHave('user.pemesananSebagaiCustomer');
 
         // 🔐 Role restriction
-        if ($user->hasAnyRole(['Marketing', 'Marketing (ADL)', 'Marketing (LHR)'])) {
+        if ($user->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
             $query->where('sales_id', $user->id);
         }
 
@@ -148,7 +148,7 @@ class PemesananUnitController extends Controller
             ->first();
 
         // ===== 5️⃣ Fee Agen Aktif (Hanya SPV KPR) =====
-        $isSPVKPR = $user->hasRole('SPV Pembiayaan KPR');
+        $isSPVKPR = $user->hasRole('SPV PEMBIAYAAN KPR & BANK');
         $feeAgens = collect();
         if ($isSPVKPR) {
             $feeAgens = MasterAgentFee::where('status_pengajuan', 'acc')
@@ -186,7 +186,7 @@ class PemesananUnitController extends Controller
      */
     public function store(Request $request)
     {
-        $isSPVKPR = Auth::user()->hasRole('SPV Pembiayaan KPR');
+        $isSPVKPR = Auth::user()->hasRole('SPV PEMBIAYAAN KPR & BANK');
 
         // 🧩 VALIDASI SEBELUM TRANSAKSI
         $rules = [
