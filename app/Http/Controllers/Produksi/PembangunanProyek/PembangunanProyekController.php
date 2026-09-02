@@ -303,12 +303,25 @@ class PembangunanProyekController extends Controller
             }
             $nomorOrder = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
 
+            $tglDiajukan = now();
+            if ($request->filled('tanggal_order')) {
+                $tglStr = $request->tanggal_order;
+                if ($request->filled('waktu_order')) {
+                    $tglStr .= ' ' . $request->waktu_order;
+                }
+                try {
+                    $tglDiajukan = \Carbon\Carbon::parse($tglStr);
+                } catch (\Exception $e) {
+                    $tglDiajukan = now();
+                }
+            }
+
             $order = PembangunanProyekBarangOrder::create([
                 'nomor_order' => $nomorOrder,
                 'pembangunan_proyek_id' => $request->pembangunan_proyek_id,
                 'jenis_order' => $request->jenis_order,
                 'catatan' => $request->catatan,
-                'tanggal_diajukan' => now(),
+                'tanggal_diajukan' => $tglDiajukan,
                 'status_order' => 'diproses',
                 'created_by' => Auth::id(),
                 'ubs_id' => \App\Models\Ubs::where('kode_ubs', 'MGN')->value('id') ?? 3

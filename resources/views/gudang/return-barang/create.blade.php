@@ -83,6 +83,50 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Tanggal & Waktu Retur (1 Kolom) -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">
+                    Tanggal & Waktu Retur <span class="text-red-500">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- Input Tanggal -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                            </svg>
+                        </div>
+                        <input type="text"
+                            name="tanggal_return_display"
+                            x-init="flatpickr($el, {
+                                dateFormat: 'd-m-Y',
+                                defaultDate: '{{ now()->format('d-m-Y') }}',
+                                onChange: (selectedDates, dateStr, instance) => {
+                                    tanggalReturnTampil = dateStr;
+                                    tanggalReturnSimpan = instance.formatDate(selectedDates[0], 'Y-m-d');
+                                }
+                            })"
+                            class="w-full rounded-xl border border-gray-300 bg-gray-50 p-3 pl-8 text-xs sm:text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                            placeholder="Tanggal Retur">
+                    </div>
+
+                    <!-- Live Clock Otomatis -->
+                    <div class="relative flex items-center">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <input type="text" readonly :value="waktuLive + ' WIB'"
+                            class="w-full rounded-xl border border-blue-200 bg-blue-50/50 p-3 pl-8 pr-6 text-xs sm:text-sm text-blue-800 font-semibold dark:bg-gray-800 dark:border-blue-900/50 dark:text-blue-300 cursor-not-allowed select-none shadow-sm">
+                        <span class="absolute right-2.5 flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
             @if($category === 'pembangunan_unit')
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tipe Pembangunan <span class="text-red-500">*</span></label>
@@ -116,12 +160,6 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
-                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
-                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-                </div>
-
-                <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Unit</label>
                     <input type="text" disabled :value="selectedUnitInfo?.pengawas_nama || '-'"
                         class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
@@ -151,12 +189,6 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
-                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
-                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
-                </div>
-
-                <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Kawasan</label>
                     <input type="text" disabled :value="selectedKawasanInfo?.pengawas_nama || '-'"
                         class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
@@ -177,12 +209,6 @@
                             <option value="{{ $pp->id }}">{{ $pp->nama }}</option>
                         @endforeach
                     </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Retur <span class="text-red-500">*</span></label>
-                    <input type="datetime-local" name="tanggal_return" x-model="tanggalReturn" required
-                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
                 </div>
 
                 <div>
@@ -373,7 +399,7 @@
                         <input type="hidden" name="pembangunan_proyek_id" :value="targetId">
                     @endif
 
-                    <input type="hidden" name="tanggal_return" :value="tanggalReturn">
+                    <input type="hidden" name="tanggal_return" :value="tanggalReturnSimpan + ' ' + waktuLive">
                     <input type="hidden" name="catatan" :value="catatan">
 
                     <template x-for="(item, idx) in cart" :key="idx">
@@ -408,70 +434,62 @@
                 </div>
             </form>
         </div>
-        <!-- Modal Konfirmasi Ringkasan Retur Barang -->
-    <template x-teleport="body">
-        <div x-show="showConfirmModal" x-cloak class="fixed inset-0 z-[999999] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-            <!-- Overlay -->
-            <div x-show="showConfirmModal"
-                x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                class="absolute inset-0 bg-gray-900/60"
-                @click="showConfirmModal = false"></div>
 
-            <!-- Modal Content -->
-            <div x-show="showConfirmModal"
-                x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                class="relative z-10 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-gray-100 dark:border-gray-700">
-
-                <!-- Header -->
-                <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-blue-100 text-blue-600 rounded-xl dark:bg-blue-900/50 dark:text-blue-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+    <!-- Modal Konfirmasi Retur -->
+    <template x-if="showConfirmModal">
+        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-xs transition-opacity">
+            <div class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]"
+                @click.away="showConfirmModal = false">
+                
+                <!-- Header Modal -->
+                <div class="flex items-center justify-between border-b border-gray-100 p-4 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 rounded-xl">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                         </div>
                         <div>
-                            <h4 class="text-base font-bold text-gray-800 dark:text-white">Konfirmasi Ringkasan Retur Barang</h4>
-                            <p class="text-xs text-gray-500">Tinjau kembali rincian barang yang akan diajukan retur ke gudang</p>
+                            <h3 class="text-sm font-bold text-gray-800 dark:text-white">Konfirmasi Pengajuan Retur</h3>
+                            <p class="text-xs text-gray-400">Pastikan rincian retur barang sudah sesuai</p>
                         </div>
                     </div>
-                    <button type="button" @click="showConfirmModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-lg">
+                    <button type="button" @click="showConfirmModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
-                <!-- Body -->
-                <div class="p-5 overflow-y-auto flex-1 space-y-4">
-                    <div class="flex items-center justify-between p-3 bg-blue-50/50 rounded-xl border border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/40 text-xs">
-                        <div>
-                            <span class="text-gray-500">Total Item Retur:</span>
-                            <span class="font-bold text-gray-800 dark:text-white ml-1" x-text="formatNumber(cart.length) + ' Barang'"></span>
+                <!-- Body Modal -->
+                <div class="p-5 overflow-y-auto space-y-4">
+                    <div class="p-3 bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-100 dark:border-gray-700 text-xs space-y-1.5">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Tanggal & Waktu Retur:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" x-text="tanggalReturnTampil + ' ' + waktuLive + ' WIB'"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Total Macam Barang:</span>
+                            <span class="font-bold text-gray-800 dark:text-white" x-text="cart.length + ' item'"></span>
+                        </div>
+                        <div class="flex justify-between" x-show="catatan">
+                            <span class="text-gray-500">Catatan:</span>
+                            <span class="font-semibold text-gray-700 dark:text-gray-300" x-text="catatan"></span>
                         </div>
                     </div>
-                    <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-gray-100 text-gray-700 uppercase font-bold dark:bg-gray-700 dark:text-gray-300">
+
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Daftar Barang yang Diretur</h4>
+                        <table class="w-full text-left text-xs border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                            <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold">
                                 <tr>
-                                    <th class="p-3">No</th>
-                                    <th class="p-3">Barang</th>
-                                    <th class="p-3 text-center">Jumlah Retur</th>
-                                    <th class="p-3">Catatan</th>
+                                    <th class="p-2.5">Barang</th>
+                                    <th class="p-2.5 text-right">Jumlah Retur</th>
+                                    <th class="p-2.5">Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                                <template x-for="(c, i) in cart" :key="i">
-                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30">
-                                        <td class="p-3 font-medium text-gray-500" x-text="i + 1"></td>
-                                        <td class="p-3">
-                                            <p class="font-bold text-gray-800 dark:text-white" x-text="c.nama_barang"></p>
-                                            <p class="text-[10px] text-gray-400" x-text="c.kode_barang"></p>
-                                        </td>
-                                        <td class="p-3 text-center font-bold text-gray-800 dark:text-white whitespace-nowrap">
-                                            <span x-text="formatNumber(c.jumlah_input) + ' ' + c.satuan_nama"></span>
-                                        </td>
-                                        <td class="p-3 text-gray-600 dark:text-gray-300 italic">
-                                            <span x-text="c.catatan ? c.catatan : '-'"></span>
-                                        </td>
+                                <template x-for="(c, idx) in cart" :key="idx">
+                                    <tr>
+                                        <td class="p-2.5 font-medium text-gray-800 dark:text-white" x-text="c.nama_barang"></td>
+                                        <td class="p-2.5 text-right font-bold text-blue-600 dark:text-blue-400" x-text="formatNumber(c.jumlah_input) + ' ' + c.satuan_nama"></td>
+                                        <td class="p-2.5 text-gray-500 italic" x-text="c.catatan ? c.catatan : '-'"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -479,16 +497,13 @@
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="bg-gray-50 p-4 dark:bg-gray-800/80 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-2 shrink-0">
-                    <button type="button" @click="showConfirmModal = false"
-                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-xl dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition">
+                <!-- Footer Modal -->
+                <div class="flex justify-end gap-2 p-4 bg-gray-50 dark:bg-gray-800/80 border-t border-gray-100 dark:border-gray-700">
+                    <button type="button" @click="showConfirmModal = false" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-semibold">
                         Batal
                     </button>
-                    <button type="button" @click="processSubmitReturn()" :disabled="submitting"
-                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span x-text="submitting ? 'Memproses...' : 'Ya, Simpan & Pengajuan Retur'"></span>
+                    <button type="button" @click="processSubmitReturn()" :disabled="submitting" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5">
+                        <span x-text="submitting ? 'Memproses...' : 'Ya, Ajukan Retur'"></span>
                     </button>
                 </div>
             </div>
@@ -504,6 +519,10 @@
     function createReturnComponent() {
         return {
             category: '{{ $category }}',
+            tanggalReturnTampil: '{{ now()->format('d-m-Y') }}',
+            tanggalReturnSimpan: '{{ now()->format('Y-m-d') }}',
+            waktuLive: '{{ now()->format('H:i:s') }}',
+            clockInterval: null,
             pembangunanUnits: @json($pembangunanUnits),
             pembangunanKawasan: @json($pembangunanKawasan),
             pembangunanProyek: @json($pembangunanProyek),
@@ -553,7 +572,6 @@
             
             availableBarangList: [],
             searchQuery: '',
-            tanggalReturn: new Date().toISOString().slice(0,16),
             catatan: '',
             loadingSummary: false,
             cart: [],
@@ -562,6 +580,17 @@
             showConfirmModal: false,
 
             initSelect2() {
+                // Jalankan Live Clock otomatis update tiap detik/menit
+                const updateClock = () => {
+                    const now = new Date();
+                    const h = String(now.getHours()).padStart(2, '0');
+                    const m = String(now.getMinutes()).padStart(2, '0');
+                    const s = String(now.getSeconds()).padStart(2, '0');
+                    this.waktuLive = `${h}:${m}:${s}`;
+                };
+                updateClock();
+                this.clockInterval = setInterval(updateClock, 1000);
+
                 this.$nextTick(() => {
                     const category = this.category;
 

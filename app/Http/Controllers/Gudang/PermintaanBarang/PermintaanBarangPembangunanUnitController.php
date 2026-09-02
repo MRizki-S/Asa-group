@@ -960,8 +960,36 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
         $barangGudang = $barangGudangQuery->get()->map(function ($b) {
             $stokTotal = $b->stock ? $b->stock->sum('jumlah_stock') : 0;
-            $b->stok_gudang_aktif = (float) $stokTotal;
-            return $b;
+            $satuans = collect();
+            if ($b->baseUnit) {
+                $satuans->push([
+                    'id' => $b->base_unit_id,
+                    'nama_satuan' => $b->baseUnit->nama,
+                    'konversi_ke_base' => 1
+                ]);
+            }
+            if ($b->satuanKonversi) {
+                foreach ($b->satuanKonversi as $sk) {
+                    if ($sk->satuan) {
+                        $satuans->push([
+                            'id' => $sk->satuan_id,
+                            'nama_satuan' => $sk->satuan->nama,
+                            'konversi_ke_base' => (float) $sk->konversi_ke_base
+                        ]);
+                    }
+                }
+            }
+
+            return [
+                'id' => $b->id,
+                'kode_barang' => $b->kode_barang,
+                'nama_barang' => $b->nama_barang,
+                'is_stock' => (bool) $b->is_stock,
+                'base_unit_id' => $b->base_unit_id,
+                'base_unit_nama' => $b->baseUnit->nama ?? '',
+                'stok_gudang' => (float) $stokTotal,
+                'satuans' => $satuans->unique('id')->values()->toArray(),
+            ];
         });
 
         $titles = [
@@ -1014,7 +1042,15 @@ class PermintaanBarangPembangunanUnitController extends Controller
             return true;
         });
 
-        $qcs = $filteredQcs->map(function($qc) {
+        // Preload total akumulasi barang yang sudah diajukan/diorder untuk semua RAP dalam 1 query
+        $allRapIds = $filteredQcs->flatMap->pembangunanUnitRapBahan->pluck('id');
+        $totalOrderedBaseMap = \App\Models\PembangunanUnitBarangOrderDetail::whereIn('rap_bahan_id', $allRapIds)
+            ->whereHas('order', fn($q) => $q->where('status_order', '!=', 'ditolak'))
+            ->groupBy('rap_bahan_id')
+            ->selectRaw('rap_bahan_id, SUM(jumlah_base) as total_base')
+            ->pluck('total_base', 'rap_bahan_id');
+
+        $qcs = $filteredQcs->map(function($qc) use ($totalOrderedBaseMap) {
             $nama = $qc->nama_qc;
             if (!$nama) {
                 $nama = $qc->masterQc->nama_qc ?? $qc->masterQc->nama ?? ('QC Ke-' . ($qc->qc_urutan_ke ?? $qc->id));
@@ -1024,7 +1060,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'id' => $qc->id,
                 'nama' => $nama,
                 'is_servis' => (bool) $qc->is_servis,
-                'rap_bahan' => $qc->pembangunanUnitRapBahan->map(function($rap) {
+                'rap_bahan' => $qc->pembangunanUnitRapBahan->map(function($rap) use ($totalOrderedBaseMap) {
                     $satuans = collect();
                     if ($rap->barang && $rap->barang->baseUnit) {
                         $satuans->push([
@@ -1055,10 +1091,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                         $stokGudang = (float) $rap->barang->stock->sum('jumlah_stock');
                     }
 
-                    // Hitung total akumulasi barang yang sudah diajukan/diorder dari RAP ini (abaikan order ditolak)
-                    $totalOrderedBase = (float) \App\Models\PembangunanUnitBarangOrderDetail::where('rap_bahan_id', $rap->id)
-                        ->whereHas('order', fn($q) => $q->where('status_order', '!=', 'ditolak'))
-                        ->sum('jumlah_base');
+                    $totalOrderedBase = (float) ($totalOrderedBaseMap->get($rap->id) ?? 0);
 
                     return [
                         'id' => $rap->id,
@@ -1069,8 +1102,10 @@ class PermintaanBarangPembangunanUnitController extends Controller
                         'volume' => (float) ($rap->jumlah_standar ?? $rap->volume ?? 0),
                         'faktor_konversi' => (float) ($rap->faktor_konversi ?? 1),
                         'total_ordered_base' => $totalOrderedBase,
-                        'base_unit_id' => $rap->satuan_id ?? ($rap->barang->base_unit_id ?? null),
-                        'base_unit_nama' => $satuanNama ?? ($rap->barang->baseUnit->nama ?? ''),
+                        'rap_satuan_id' => $rap->satuan_id,
+                        'rap_satuan_nama' => $satuanNama ?? '',
+                        'base_unit_id' => $rap->barang->base_unit_id ?? null,
+                        'base_unit_nama' => $rap->barang->baseUnit->nama ?? '',
                         'satuans' => $satuans->unique('id')->values()->toArray(),
                         'is_stock' => (bool) ($rap->barang->is_stock ?? true)
                     ];
@@ -1093,6 +1128,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
             $order = PembangunanUnitBarangOrder::with([
                 'details.barang.baseUnit',
                 'details.barang.satuanKonversi.satuan',
+                'details.barang.stock',
                 'details.rapBahan',
                 'pembangunanUnit.unit.tahap.perumahaan',
                 'qc'
@@ -1101,12 +1137,16 @@ class PermintaanBarangPembangunanUnitController extends Controller
             $order = \App\Models\PembangunanKawasanBarangOrder::with([
                 'details.barang.baseUnit',
                 'details.barang.satuanKonversi.satuan',
+                'details.barang.stock',
                 'kawasan.perumahan'
             ])->findOrFail($id);
         } elseif ($category === 'pembangunan_proyek_mangoon') {
             $order = \App\Models\PembangunanProyekBarangOrder::with([
                 'details.barang.baseUnit',
                 'details.barang.satuanKonversi.satuan',
+                'details.barang.stock' => function($q) {
+                    $q->where('stock_type', 'UBS')->where('ubs_id', 3);
+                },
                 'proyek'
             ])->findOrFail($id);
         }
@@ -1133,23 +1173,54 @@ class PermintaanBarangPembangunanUnitController extends Controller
         if ($category === 'pembangunan_unit') {
             $queryUnits = \App\Models\PembangunanUnit::with([
                 'unit.tahap.perumahaan',
-                'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
-                'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan'
+                'pengawas'
             ]);
             if ($perumahaanId) {
                 $queryUnits->where('perumahaan_id', $perumahaanId);
             }
-            $pembangunanUnits = $queryUnits->get();
+            $pembangunanUnits = $queryUnits->get()->map(function($pu) {
+                $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
+                $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
+                $namaUnit = $pu->unit->nama_unit ?? '-';
+                $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
+                return [
+                    'id' => $pu->id,
+                    'is_selesai' => $isSelesai,
+                    'label_formatted' => "{$namaPerumahan} - {$namaTahap} - {$namaUnit}",
+                    'pengawas_nama' => $pu->pengawas->nama_lengkap ?? '-',
+                    'subcon_nama' => $pu->subcon ?? '-',
+                ];
+            });
         } elseif ($category === 'pembangunan_kawasan') {
-            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'periodes' => function($q) {
+            $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes' => function($q) {
                 $q->where('status', 'proses');
             }]);
             if ($perumahaanId) {
                 $queryKawasan->where('perumahaan_id', $perumahaanId);
             }
-            $pembangunanKawasan = $queryKawasan->get();
+            $pembangunanKawasan = $queryKawasan->get()->map(function($pk) {
+                $activePeriode = $pk->periodes->first();
+                return [
+                    'id' => $pk->id,
+                    'nama_kawasan' => $pk->nama_kawasan ?? $pk->perumahan->nama_perumahaan ?? '-',
+                    'pengawas_nama' => $pk->pengawas->nama_lengkap ?? '-',
+                    'subcon_nama' => $activePeriode->subcon ?? '-',
+                    'periodes' => $pk->periodes->map(function($p) {
+                        return [
+                            'tanggal_mulai' => $p->tanggal_mulai,
+                            'tanggal_selesai' => $p->tanggal_selesai,
+                        ];
+                    })->toArray()
+                ];
+            });
         } elseif ($category === 'pembangunan_proyek_mangoon') {
-            $pembangunanProyek = \App\Models\PembangunanProyek::query()->get();
+            $pembangunanProyek = \App\Models\PembangunanProyek::with('pengawas')->get()->map(function($pp) {
+                return [
+                    'id' => $pp->id,
+                    'nama_proyek' => $pp->nama_proyek ?? '-',
+                    'pengawas_nama' => $pp->pengawas->nama_lengkap ?? '-',
+                ];
+            });
         }
 
         $barangGudangQuery = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan']);
@@ -1171,8 +1242,36 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
         $barangGudang = $barangGudangQuery->get()->map(function ($b) {
             $stokTotal = $b->stock ? $b->stock->sum('jumlah_stock') : 0;
-            $b->stok_gudang_aktif = (float) $stokTotal;
-            return $b;
+            $satuans = collect();
+            if ($b->baseUnit) {
+                $satuans->push([
+                    'id' => $b->base_unit_id,
+                    'nama_satuan' => $b->baseUnit->nama,
+                    'konversi_ke_base' => 1
+                ]);
+            }
+            if ($b->satuanKonversi) {
+                foreach ($b->satuanKonversi as $sk) {
+                    if ($sk->satuan) {
+                        $satuans->push([
+                            'id' => $sk->satuan_id,
+                            'nama_satuan' => $sk->satuan->nama,
+                            'konversi_ke_base' => (float) $sk->konversi_ke_base
+                        ]);
+                    }
+                }
+            }
+
+            return [
+                'id' => $b->id,
+                'kode_barang' => $b->kode_barang,
+                'nama_barang' => $b->nama_barang,
+                'is_stock' => (bool) ($b->is_stock ?? true),
+                'base_unit_id' => $b->base_unit_id,
+                'base_unit_nama' => $b->baseUnit->nama ?? '',
+                'stok_gudang' => (float) $stokTotal,
+                'satuans' => $satuans->unique('id')->values()->toArray(),
+            ];
         });
 
         $titles = [
@@ -1459,12 +1558,14 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     $seq = $lastReturn ? ((int) substr($lastReturn->nomor_return, strlen($datePrefix)) + 1) : 1;
                     $nomorReturn = $datePrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
 
+                    $tglReturn = $request->filled('tanggal_return') ? \Carbon\Carbon::parse($request->tanggal_return) : now();
+
                     $return = PembangunanUnitBarangReturn::create([
                         'nomor_return'           => $nomorReturn,
                         'pembangunan_unit_id'    => $pembangunanUnit->id,
                         'pembangunan_unit_qc_id' => $qc->id,
                         'created_by'             => Auth::id(),
-                        'tanggal_return'         => $request->tanggal_return,
+                        'tanggal_return'         => $tglReturn,
                         'catatan'                => $request->catatan,
                         'status'                 => 'diproses',
                     ]);
@@ -1548,13 +1649,15 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     $seq = $lastReturn ? ((int) substr($lastReturn->nomor_return, strlen($datePrefix)) + 1) : 1;
                     $nomorReturn = $datePrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
 
+                    $tglReturn = $request->filled('tanggal_return') ? \Carbon\Carbon::parse($request->tanggal_return) : now();
+
                     $return = \App\Models\PembangunanKawasanBarangReturn::create([
                         'nomor_return'                   => $nomorReturn,
                         'pembangunan_kawasan_id'         => $kawasan->id,
                         'pembangunan_kawasan_periode_id' => $periodeActive?->id,
                         'diajukan_oleh'                  => Auth::id(),
                         'tanggal_diajukan'               => now(),
-                        'tanggal_return'                 => $request->tanggal_return,
+                        'tanggal_return'                 => $tglReturn,
                         'catatan'                        => $request->catatan,
                         'status'                         => 'diproses',
                     ]);
@@ -1634,12 +1737,14 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     $seq = $lastReturn ? ((int) substr($lastReturn->nomor_return, strlen($datePrefix)) + 1) : 1;
                     $nomorReturn = $datePrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
 
+                    $tglReturn = $request->filled('tanggal_return') ? \Carbon\Carbon::parse($request->tanggal_return) : now();
+
                     $return = \App\Models\PembangunanProyekBarangReturn::create([
                         'nomor_return'          => $nomorReturn,
                         'pembangunan_proyek_id' => $proyek->id,
                         'diajukan_oleh'         => Auth::id(),
                         'tanggal_diajukan'      => now(),
-                        'tanggal_return'        => $request->tanggal_return,
+                        'tanggal_return'        => $tglReturn,
                         'catatan'               => $request->catatan,
                         'status'                => 'diproses',
                     ]);
@@ -1756,13 +1861,15 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
         try {
             DB::transaction(function () use ($id, $category, $request) {
+                $tglReturn = $request->filled('tanggal_return') ? \Carbon\Carbon::parse($request->tanggal_return) : now();
+
                 if ($category === 'pembangunan_unit') {
                     $return = PembangunanUnitBarangReturn::findOrFail($id);
                     if ($return->status !== 'ditolak') {
                         throw new \Exception('Hanya retur berstatus ditolak yang dapat diubah.');
                     }
                     $return->update([
-                        'tanggal_return' => $request->tanggal_return,
+                        'tanggal_return' => $tglReturn,
                         'catatan' => $request->catatan,
                     ]);
                     $return->details()->delete();
@@ -1794,7 +1901,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                         throw new \Exception('Hanya retur berstatus ditolak yang dapat diubah.');
                     }
                     $return->update([
-                        'tanggal_return' => $request->tanggal_return,
+                        'tanggal_return' => $tglReturn,
                         'catatan' => $request->catatan,
                     ]);
                     $return->details()->delete();
@@ -1827,7 +1934,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                         throw new \Exception('Hanya retur berstatus ditolak yang dapat diubah.');
                     }
                     $return->update([
-                        'tanggal_return' => $request->tanggal_return,
+                        'tanggal_return' => $tglReturn,
                         'catatan' => $request->catatan,
                     ]);
                     $return->details()->delete();

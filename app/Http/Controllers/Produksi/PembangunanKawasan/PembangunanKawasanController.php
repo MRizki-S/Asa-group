@@ -333,14 +333,27 @@ class PembangunanKawasanController extends Controller
                 ->latest()
                 ->first();
 
+            $tglDiajukan = now();
+            if ($request->filled('tanggal_order')) {
+                $tglStr = $request->tanggal_order;
+                if ($request->filled('waktu_order')) {
+                    $tglStr .= ' ' . $request->waktu_order;
+                }
+                try {
+                    $tglDiajukan = \Carbon\Carbon::parse($tglStr);
+                } catch (\Exception $e) {
+                    $tglDiajukan = now();
+                }
+            }
+
             $order = PembangunanKawasanBarangOrder::create([
                 'nomor_order' => $nomorOrder,
                 'pembangunan_kawasan_id' => $request->pembangunan_kawasan_id,
                 'pembangunan_kawasan_periode_id' => $activePeriode?->id,
                 'jenis_order' => $request->jenis_order,
-                'catatan' => $request->catatan,
-                'tanggal_diajukan' => now(),
+                'tanggal_diajukan' => $tglDiajukan,
                 'status_order' => 'diproses',
+                'catatan' => $request->catatan,
                 'created_by' => Auth::id(),
                 'ubs_id' => $ubsId
             ]);

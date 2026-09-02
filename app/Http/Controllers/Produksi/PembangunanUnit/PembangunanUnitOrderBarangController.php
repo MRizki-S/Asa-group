@@ -102,12 +102,25 @@ class PembangunanUnitOrderBarangController extends Controller
             }
             $nomorOrder = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
 
+            $tglDiajukan = now();
+            if ($request->filled('tanggal_order')) {
+                $tglStr = $request->tanggal_order;
+                if ($request->filled('waktu_order')) {
+                    $tglStr .= ' ' . $request->waktu_order;
+                }
+                try {
+                    $tglDiajukan = \Carbon\Carbon::parse($tglStr);
+                } catch (\Exception $e) {
+                    $tglDiajukan = now();
+                }
+            }
+
             $order = PembangunanUnitBarangOrder::create([
                 'nomor_order' => $nomorOrder,
                 'pembangunan_unit_id' => $request->pembangunan_unit_id,
                 'pembangunan_unit_qc_id' => $request->pembangunan_unit_qc_id,
                 'jenis_order' => $request->jenis_order,
-                'tanggal_diajukan' => now(),
+                'tanggal_diajukan' => $tglDiajukan,
                 'status_order' => 'diproses',
                 'catatan' => $request->catatan,
                 'created_by' => Auth::id(),

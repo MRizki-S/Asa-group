@@ -61,6 +61,50 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Tanggal & Waktu NBK (1 Kolom) -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">
+                    Tanggal & Waktu NBK <span class="text-red-500">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- Input Tanggal -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                            </svg>
+                        </div>
+                        <input type="text"
+                            name="tanggal_nota_display"
+                            x-init="flatpickr($el, {
+                                dateFormat: 'd-m-Y',
+                                defaultDate: '{{ $order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('d-m-Y') : now()->format('d-m-Y') }}',
+                                onChange: (selectedDates, dateStr, instance) => {
+                                    tanggalNbkTampil = dateStr;
+                                    tanggalNbkSimpan = instance.formatDate(selectedDates[0], 'Y-m-d');
+                                }
+                            })"
+                            class="w-full rounded-xl border border-gray-300 bg-gray-50 p-3 pl-8 text-xs sm:text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                            placeholder="Tanggal NBK">
+                        <input type="hidden" name="tanggal_nota" x-model="tanggalNbkSimpan">
+                    </div>
+
+                    <!-- Live Clock Otomatis -->
+                    <div class="relative flex items-center">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <input type="text" readonly :value="waktuLive + ' WIB'"
+                            class="w-full rounded-xl border border-blue-200 bg-blue-50/50 p-3 pl-8 pr-6 text-xs sm:text-sm text-blue-800 font-semibold dark:bg-gray-800 dark:border-blue-900/50 dark:text-blue-300 cursor-not-allowed select-none shadow-sm">
+                        <span class="absolute right-2.5 flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
             @if($category === 'pembangunan_unit')
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pembangunan Unit (Proses) <span class="text-xs text-gray-400 font-normal">(Diset)</span></label>
@@ -224,12 +268,12 @@
                                     </div>
                                     <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate mt-1" x-text="rap.nama_barang"></h5>
                                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-gray-500 font-medium mt-1">
-                                        <span x-text="'RAP: ' + formatNumber(rap.volume) + ' ' + rap.base_unit_nama"></span>
+                                        <span x-text="'RAP: ' + formatNumber(rap.volume) + ' ' + (rap.rap_satuan_nama || rap.base_unit_nama)"></span>
                                         <span class="text-gray-300 dark:text-gray-600">•</span>
-                                        <span class="text-blue-600 dark:text-blue-400 font-bold" x-text="'Terorder: ' + formatNumber((rap.total_ordered_base || 0) / (rap.faktor_konversi || 1)) + ' ' + rap.base_unit_nama"></span>
+                                        <span class="text-blue-600 dark:text-blue-400 font-bold" x-text="'Terorder: ' + formatNumber((rap.total_ordered_base || 0) / (rap.faktor_konversi || 1)) + ' ' + (rap.rap_satuan_nama || rap.base_unit_nama)"></span>
                                         <span class="text-gray-300 dark:text-gray-600">•</span>
                                         <span class="font-bold" :class="((rap.volume - ((rap.total_ordered_base || 0) / (rap.faktor_konversi || 1))) > 0) ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600 dark:text-amber-400'"
-                                            x-text="'Sisa RAP: ' + formatNumber(Math.max(0, rap.volume - ((rap.total_ordered_base || 0) / (rap.faktor_konversi || 1)))) + ' ' + rap.base_unit_nama"></span>
+                                            x-text="'Sisa RAP: ' + formatNumber(Math.max(0, rap.volume - ((rap.total_ordered_base || 0) / (rap.faktor_konversi || 1)))) + ' ' + (rap.rap_satuan_nama || rap.base_unit_nama)"></span>
                                         <span class="text-gray-300 dark:text-gray-600">•</span>
                                         <span class="text-emerald-600 dark:text-emerald-400 font-bold" x-text="'Stok: ' + formatNumber(rap.stok_gudang || 0) + ' ' + rap.base_unit_nama"></span>
                                     </div>
@@ -527,6 +571,10 @@ function createOrderUnitComponent() {
     return {
         orderId: {{ $order->id }},
         category: '{{ $category }}',
+        tanggalNbkTampil: '{{ $order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('d-m-Y') : now()->format('d-m-Y') }}',
+        tanggalNbkSimpan: '{{ $order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('Y-m-d') : now()->format('Y-m-d') }}',
+        waktuLive: '{{ now()->format('H:i:s') }}',
+        clockInterval: null,
         pembangunanUnitId: '{{ $order->pembangunan_unit_id ?? '' }}',
         pembangunanKawasanId: '{{ $order->pembangunan_kawasan_id ?? '' }}',
         pembangunanProyekId: '{{ $order->pembangunan_proyek_id ?? '' }}',
@@ -578,7 +626,9 @@ function createOrderUnitComponent() {
                 'satuan_id' => $d->satuan_id,
                 'satuan_nama' => $d->satuan,
                 'qty' => (float)$d->jumlah_input,
-                'stok_gudang_base' => (float)($d->barang->stok_gudang_aktif ?? 0),
+                'stok_gudang_base' => (float)($d->barang && $d->barang->stock ? $d->barang->stock->sum('jumlah_stock') : 0),
+                'base_unit_id' => $d->barang->base_unit_id ?? null,
+                'base_unit_nama' => $d->barang->baseUnit->nama ?? '',
                 'is_rap' => (bool)$d->rap_bahan_id,
                 'rap_id' => $d->rap_bahan_id,
                 'volume_rap' => $volumeRap,
@@ -589,37 +639,7 @@ function createOrderUnitComponent() {
                 'is_stock' => (bool) ($d->barang->is_stock ?? true)
             ];
         })->toJson() !!},
-        allBarangGudang: {!! $barangGudang->map(function($b) {
-            $satuans = collect();
-            if ($b->baseUnit) {
-                $satuans->push([
-                    'id' => $b->base_unit_id,
-                    'nama_satuan' => $b->baseUnit->nama,
-                    'konversi_ke_base' => 1
-                ]);
-            }
-            if ($b->satuanKonversi) {
-                foreach ($b->satuanKonversi as $sk) {
-                    if ($sk->satuan) {
-                        $satuans->push([
-                            'id' => $sk->satuan_id,
-                            'nama_satuan' => $sk->satuan->nama,
-                            'konversi_ke_base' => (float)$sk->konversi_ke_base
-                        ]);
-                    }
-                }
-            }
-            return [
-                'id' => $b->id,
-                'nama_barang' => $b->nama_barang,
-                'kode_barang' => $b->kode_barang,
-                'base_unit_id' => $b->base_unit_id,
-                'base_unit_nama' => $b->baseUnit->nama ?? '',
-                'stok_gudang' => (float) ($b->stok_gudang_aktif ?? 0),
-                'satuans' => $satuans->unique('id')->values()->toArray(),
-                'is_stock' => (bool) ($b->is_stock ?? true)
-            ];
-        })->toJson() !!},
+        allBarangGudang: {!! $barangGudang->toJson() !!},
         searchQuery: '',
         cartSearchQuery: '',
         loadingQc: false,
@@ -627,6 +647,17 @@ function createOrderUnitComponent() {
         showConfirmModal: false,
 
         async init() {
+            // Jalankan Live Clock otomatis update tiap detik/menit
+            const updateClock = () => {
+                const now = new Date();
+                const h = String(now.getHours()).padStart(2, '0');
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                this.waktuLive = `${h}:${m}:${s}`;
+            };
+            updateClock();
+            this.clockInterval = setInterval(updateClock, 1000);
+
             // Load detail barang ke keranjang checkout
             this.cart = JSON.parse(JSON.stringify(this.initialDetails));
 
@@ -881,6 +912,17 @@ function createOrderUnitComponent() {
                     let defaultSatuanId = rap.base_unit_id;
                     let defaultSatuanNama = rap.base_unit_nama;
                     let availableSatuans = rap.satuans || [];
+                    let stokBase = rap.stok_gudang || 0;
+
+                    let defaultQty = 1;
+                    if (rap.volume) {
+                        let st = availableSatuans.find(s => s.id == defaultSatuanId);
+                        let konversi = st ? (parseFloat(st.konversi_ke_base) || 1) : 1;
+                        let rapTotalBase = (parseFloat(rap.volume) || 0) * (parseFloat(rap.faktor_konversi) || 1);
+                        let rapInSelectedUnit = rapTotalBase / konversi;
+                        let maxStok = stokBase / konversi;
+                        defaultQty = maxStok > 0 ? Math.min(rapInSelectedUnit, maxStok) : 1;
+                    }
 
                     this.cart.push({
                         barang_id: rap.barang_id,
@@ -891,8 +933,8 @@ function createOrderUnitComponent() {
                         volume_rap: rap.volume,
                         faktor_konversi_rap: rap.faktor_konversi || 1,
                         total_ordered_base: rap.total_ordered_base || 0,
-                        stok_gudang_base: rap.stok_gudang || 0,
-                        qty: rap.volume > 0 ? rap.volume : 1,
+                        stok_gudang_base: stokBase,
+                        qty: defaultQty,
                         satuan_id: defaultSatuanId,
                         satuan_nama: defaultSatuanNama,
                         satuans: availableSatuans,
@@ -914,6 +956,16 @@ function createOrderUnitComponent() {
             let availableSatuans = rapObj ? (rapObj.satuans || []) : (barang.satuans || []);
             let stokBase = rapObj ? (rapObj.stok_gudang || 0) : (barang.stok_gudang || 0);
 
+            let defaultQty = 1;
+            if (rapObj && rapObj.volume) {
+                let st = availableSatuans.find(s => s.id == defaultSatuanId);
+                let konversi = st ? (parseFloat(st.konversi_ke_base) || 1) : 1;
+                let rapTotalBase = (parseFloat(rapObj.volume) || 0) * (parseFloat(rapObj.faktor_konversi) || 1);
+                let rapInSelectedUnit = rapTotalBase / konversi;
+                let maxStok = stokBase / konversi;
+                defaultQty = maxStok > 0 ? Math.min(rapInSelectedUnit, maxStok) : 1;
+            }
+
             this.cart.push({
                 barang_id: rapObj ? rapObj.barang_id : barang.id,
                 nama_barang: rapObj ? rapObj.nama_barang : barang.nama_barang,
@@ -924,7 +976,7 @@ function createOrderUnitComponent() {
                 faktor_konversi_rap: rapObj ? (rapObj.faktor_konversi || 1) : 1,
                 total_ordered_base: rapObj ? (rapObj.total_ordered_base || 0) : 0,
                 stok_gudang_base: stokBase,
-                qty: rapObj ? (rapObj.volume > 0 ? rapObj.volume : 1) : 1,
+                qty: defaultQty,
                 satuan_id: defaultSatuanId,
                 satuan_nama: defaultSatuanNama,
                 satuans: availableSatuans,
