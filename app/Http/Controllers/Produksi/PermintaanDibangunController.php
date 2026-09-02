@@ -62,7 +62,7 @@ class PermintaanDibangunController extends Controller
         $currentPerumId = $this->currentPerumahaanId();
 
         $allPengawas = User::select('id', 'nama_lengkap')
-            ->role('Pengawas Unit')
+            ->role('PENGAWAS PROYEK (UNIT)')
             ->where(function ($q) use ($currentPerumId) {
                 $q->whereNull('perumahaan_id');
                 if ($currentPerumId) {
@@ -73,7 +73,7 @@ class PermintaanDibangunController extends Controller
             ->get();
 
         $allSpv = User::select('id', 'nama_lengkap')
-            ->role('SPV Drafting, Teknis & Estimasi')
+            ->role('SPV TEKNIS & ESTIMASI')
             ->where(function ($q) use ($currentPerumId) {
                 $q->whereNull('perumahaan_id');
                 if ($currentPerumId) {
