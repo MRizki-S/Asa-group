@@ -160,7 +160,7 @@
                                         {{ $item->karyawan->role?->devisi?->nama_devisi ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 text-sm text-center">
-                                        <p>{{ (float) $item->total_nilai }}</p>
+                                        <p>{{ round((float) $item->total_nilai) }}</p>
                                     </td>
                                     <td class="py-4 px-4 text-sm text-center">
                                         <span
@@ -254,7 +254,7 @@
                                 </p>
                             </div>
                             <span class="text-xs font-semibold text-gray-600 dark:text-gray-400 shrink-0">
-                                {{ number_format((float) $item->total_nilai, 2) }}
+                                {{ round((float) $item->total_nilai) }}
                             </span>
                         </label>
                     @endif

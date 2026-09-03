@@ -82,7 +82,7 @@ class KpiDashboardController extends Controller
             $rawBulan = strtolower(trim($score->bulan));
             $bulanBaku = $monthMap[$rawBulan] ?? null;
             if ($bulanBaku) {
-                $scoresMap[$score->user_id][$bulanBaku] = (float) $score->total_nilai;
+                $scoresMap[$score->user_id][$bulanBaku] = round((float) $score->total_nilai);
             }
         }
 
@@ -134,7 +134,7 @@ class KpiDashboardController extends Controller
             'q4' => ['oktober', 'november', 'desember'],
         ];
 
-        foreach ($dashboardData as $jabatanName => &$users) {
+        foreach ($dashboardData as $devisiName => &$users) {
             foreach ($users as &$data) {
                 foreach ($quarters as $q => $months) {
                     $scores = [];
@@ -143,9 +143,19 @@ class KpiDashboardController extends Controller
                             $scores[] = $data['bulan'][$month];
                         }
                     }
-                    $data[$q] = count($scores) > 0 ? (array_sum($scores) / count($scores)) : null;
+                    $data[$q] = count($scores) > 0 ? round(array_sum($scores) / count($scores)) : null;
                 }
             }
+            // Default sort users in devisi by Q3 score descending (highest first, null at bottom)
+            usort($users, function ($a, $b) {
+                $valA = $a['q3'];
+                $valB = $b['q3'];
+                if ($valA === null && $valB === null) return 0;
+                if ($valA === null) return 1;
+                if ($valB === null) return -1;
+                if ($valA == $valB) return 0;
+                return ($valA > $valB) ? -1 : 1;
+            });
         }
 
         unset($users);
@@ -229,7 +239,7 @@ class KpiDashboardController extends Controller
             $rawBulan = strtolower(trim($score->bulan));
             $bulanBaku = $monthMap[$rawBulan] ?? null;
             if ($bulanBaku) {
-                $scoresMap[$score->user_id][$bulanBaku] = (float) $score->total_nilai;
+                $scoresMap[$score->user_id][$bulanBaku] = round((float) $score->total_nilai);
             }
         }
 
@@ -275,16 +285,26 @@ class KpiDashboardController extends Controller
             'q4' => ['oktober', 'november', 'desember'],
         ];
 
-        foreach ($dashboardData as $jabatanName => &$users) {
+        foreach ($dashboardData as $devisiName => &$users) {
             foreach ($users as &$data) {
                 foreach ($quarters as $q => $months) {
                     $scores = [];
                     foreach ($months as $month) {
                         if (!is_null($data['bulan'][$month])) $scores[] = $data['bulan'][$month];
                     }
-                    $data[$q] = count($scores) > 0 ? (array_sum($scores) / count($scores)) : null;
+                    $data[$q] = count($scores) > 0 ? round(array_sum($scores) / count($scores)) : null;
                 }
             }
+            // Default sort users in devisi by Q3 score descending (highest first, null at bottom)
+            usort($users, function ($a, $b) {
+                $valA = $a['q3'];
+                $valB = $b['q3'];
+                if ($valA === null && $valB === null) return 0;
+                if ($valA === null) return 1;
+                if ($valB === null) return -1;
+                if ($valA == $valB) return 0;
+                return ($valA > $valB) ? -1 : 1;
+            });
         }
         unset($users);
         unset($data);

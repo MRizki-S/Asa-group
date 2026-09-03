@@ -23,7 +23,7 @@
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
                 <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Total Nilai Akhir</p>
                 <p class="text-sm font-bold text-gray-800 dark:text-white"
-                    x-text="results._total ?? {{ (float) $kpiUser->total_nilai }}">
+                    x-text="results._total ?? {{ round((float) $kpiUser->total_nilai) }}">
                 </p>
             </div>
             <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -71,13 +71,13 @@
                                 <div class="text-right">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Skor</span>
                                     <span class="text-base font-black text-green-600"
-                                        x-text="results[{{ $komponen->id }}]?.skor ?? {{ (float) $komponen->skor }}">
+                                        x-text="results[{{ $komponen->id }}]?.skor ?? {{ round((float) $komponen->skor) }}">
                                     </span>
                                 </div>
                                 <div class="text-right border-l pl-4 sm:pl-6 border-gray-200 dark:border-gray-700">
                                     <span class="text-[10px] text-orange-500 uppercase font-bold block">Nilai</span>
                                     <span class="text-base font-black text-orange-600"
-                                        x-text="results[{{ $komponen->id }}]?.nilaiAkhir ?? {{ (float) $komponen->nilai_akhir }}">
+                                        x-text="results[{{ $komponen->id }}]?.nilaiAkhir ?? {{ round((float) $komponen->nilai_akhir) }}">
                                     </span>
                                 </div>
                             </div>
@@ -388,12 +388,12 @@
 
                         out[k.id] = {
                             persen: Math.round(persen * 10) / 10,
-                            skor: Math.round(skor * 100) / 100,
-                            nilaiAkhir: Math.round(nilaiAkhir * 100) / 100,
+                            skor: Math.round(skor),
+                            nilaiAkhir: Math.round(nilaiAkhir),
                         };
                     }
 
-                    out._total = Math.round(totalNilaiAkhir * 100) / 100;
+                    out._total = Math.round(totalNilaiAkhir);
                     return out;
                 },
 

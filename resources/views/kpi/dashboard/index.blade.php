@@ -3,7 +3,33 @@
 @section('pageActive', 'Dashboard-KPI')
 
 @section('content')
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{ openModal: false, modalContent: { name: '', tasks: [] } }">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="{
+    openModal: false,
+    modalContent: { name: '', tasks: [] },
+    dashboardData: {{ json_encode($dashboardData) }},
+    sortCol: 'q3',
+    sortDir: 'desc',
+    sortBy(col) {
+        if (this.sortCol === col) {
+            this.sortDir = this.sortDir === 'desc' ? 'asc' : 'desc';
+        } else {
+            this.sortCol = col;
+            this.sortDir = 'desc';
+        }
+    },
+    sortedUsers(devisiName) {
+        let users = this.dashboardData[devisiName] || [];
+        return [...users].sort((a, b) => {
+            let valA = a[this.sortCol];
+            let valB = b[this.sortCol];
+            if (valA === null && valB === null) return 0;
+            if (valA === null) return 1;
+            if (valB === null) return -1;
+            if (valA === valB) return 0;
+            return this.sortDir === 'desc' ? (valB - valA) : (valA - valB);
+        });
+    }
+}">
 
     <div x-data="{ pageName: 'Master KPI' }">
         @include('partials.breadcrumb')
@@ -86,20 +112,60 @@
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Jan</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Feb</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Mar</th>
-                    <th class="px-1 py-2 border-r border-gray-300 bg-yellow-300 text-black dark:bg-yellow-600/40 dark:text-yellow-200 dark:border-gray-700">AVG Q1</th>
+                    <th @click="sortBy('q1')" class="px-1 py-2 border-r border-gray-300 bg-yellow-300 text-black dark:bg-yellow-600/40 dark:text-yellow-200 dark:border-gray-700 cursor-pointer select-none hover:opacity-90">
+                        <div class="flex items-center justify-center gap-1">
+                            <span>AVG Q1</span>
+                            <template x-if="sortCol === 'q1'">
+                                <span x-text="sortDir === 'desc' ? '▼' : '▲'" class="text-[10px]"></span>
+                            </template>
+                            <template x-if="sortCol !== 'q1'">
+                                <span class="text-[10px] opacity-40">↕</span>
+                            </template>
+                        </div>
+                    </th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Apr</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Mei</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Jun</th>
-                    <th class="px-1 py-2 border-r border-gray-300 bg-[#00b050] text-white dark:bg-green-600/40 dark:text-green-200 dark:border-gray-700">AVG Q2</th>
+                    <th @click="sortBy('q2')" class="px-1 py-2 border-r border-gray-300 bg-[#00b050] text-white dark:bg-green-600/40 dark:text-green-200 dark:border-gray-700 cursor-pointer select-none hover:opacity-90">
+                        <div class="flex items-center justify-center gap-1">
+                            <span>AVG Q2</span>
+                            <template x-if="sortCol === 'q2'">
+                                <span x-text="sortDir === 'desc' ? '▼' : '▲'" class="text-[10px]"></span>
+                            </template>
+                            <template x-if="sortCol !== 'q2'">
+                                <span class="text-[10px] opacity-40">↕</span>
+                            </template>
+                        </div>
+                    </th>
                     @endif
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Jul</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Agu</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Sep</th>
-                    <th class="px-1 py-2 border-r border-gray-300 bg-[#5b9bd5] text-white dark:bg-blue-600/40 dark:text-blue-200 dark:border-gray-700">AVG Q3</th>
+                    <th @click="sortBy('q3')" class="px-1 py-2 border-r border-gray-300 bg-[#5b9bd5] text-white dark:bg-blue-600/40 dark:text-blue-200 dark:border-gray-700 cursor-pointer select-none hover:opacity-90">
+                        <div class="flex items-center justify-center gap-1">
+                            <span>AVG Q3</span>
+                            <template x-if="sortCol === 'q3'">
+                                <span x-text="sortDir === 'desc' ? '▼' : '▲'" class="text-[10px]"></span>
+                            </template>
+                            <template x-if="sortCol !== 'q3'">
+                                <span class="text-[10px] opacity-40">↕</span>
+                            </template>
+                        </div>
+                    </th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Okt</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Nov</th>
                     <th class="px-1 py-2 border-r border-gray-300 dark:border-gray-700">Des</th>
-                    <th class="px-1 py-2 bg-red-600 text-white dark:bg-red-600/40 dark:text-red-200">AVG Q4</th>
+                    <th @click="sortBy('q4')" class="px-1 py-2 bg-red-600 text-white dark:bg-red-600/40 dark:text-red-200 cursor-pointer select-none hover:opacity-90">
+                        <div class="flex items-center justify-center gap-1">
+                            <span>AVG Q4</span>
+                            <template x-if="sortCol === 'q4'">
+                                <span x-text="sortDir === 'desc' ? '▼' : '▲'" class="text-[10px]"></span>
+                            </template>
+                            <template x-if="sortCol !== 'q4'">
+                                <span class="text-[10px] opacity-40">↕</span>
+                            </template>
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -110,66 +176,34 @@
                             🏢 {{ $devisiName }}
                         </td>
                     </tr>
-                    @foreach($users as $user)
+                    <template x-for="(user, idx) in sortedUsers('{{ addslashes($devisiName) }}')" :key="'u-' + idx">
                         <tr class="hover:bg-gray-50 border-b border-gray-200 dark:hover:bg-white/[0.02] dark:border-gray-800">
-                            <td class="px-2 py-1.5 border-r border-gray-300 font-medium text-gray-900 dark:text-white dark:border-gray-700" title="{{ $user['nama'] }}">{{ $user['nama'] }}</td>
-                            <td class="px-2 py-1.5 border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" title="{{ $user['jabatan'] }}">{{ $user['jabatan'] }}</td>
+                            <td class="px-2 py-1.5 border-r border-gray-300 font-medium text-gray-900 dark:text-white dark:border-gray-700" x-text="user.nama" :title="user.nama"></td>
+                            <td class="px-2 py-1.5 border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.jabatan" :title="user.jabatan"></td>
 
                             @if(!$is2026)
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['januari']) ? rtrim(rtrim(number_format($user['bulan']['januari'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['februari']) ? rtrim(rtrim(number_format($user['bulan']['februari'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['maret']) ? rtrim(rtrim(number_format($user['bulan']['maret'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-yellow-100 font-bold text-yellow-900 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-gray-700">
-                                {{ !is_null($user['q1']) ? rtrim(rtrim(number_format($user['q1'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.januari !== null ? user.bulan.januari : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.februari !== null ? user.bulan.februari : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.maret !== null ? user.bulan.maret : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-yellow-100 font-bold text-yellow-900 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-gray-700" x-text="user.q1 !== null ? user.q1 : '-'"></td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['april']) ? rtrim(rtrim(number_format($user['bulan']['april'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['mei']) ? rtrim(rtrim(number_format($user['bulan']['mei'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['juni']) ? rtrim(rtrim(number_format($user['bulan']['juni'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-green-100 font-bold text-green-900 dark:bg-green-950/20 dark:text-green-400 dark:border-gray-700">
-                                {{ !is_null($user['q2']) ? rtrim(rtrim(number_format($user['q2'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.april !== null ? user.bulan.april : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.mei !== null ? user.bulan.mei : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.juni !== null ? user.bulan.juni : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-green-100 font-bold text-green-900 dark:bg-green-950/20 dark:text-green-400 dark:border-gray-700" x-text="user.q2 !== null ? user.q2 : '-'"></td>
                             @endif
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['juli']) ? rtrim(rtrim(number_format($user['bulan']['juli'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['agustus']) ? rtrim(rtrim(number_format($user['bulan']['agustus'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['september']) ? rtrim(rtrim(number_format($user['bulan']['september'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-blue-100 font-bold text-blue-900 dark:bg-blue-950/20 dark:text-blue-400 dark:border-gray-700">
-                                {{ !is_null($user['q3']) ? rtrim(rtrim(number_format($user['q3'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.juli !== null ? user.bulan.juli : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.agustus !== null ? user.bulan.agustus : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.september !== null ? user.bulan.september : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 bg-blue-100 font-bold text-blue-900 dark:bg-blue-950/20 dark:text-blue-400 dark:border-gray-700" x-text="user.q3 !== null ? user.q3 : '-'"></td>
 
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['oktober']) ? rtrim(rtrim(number_format($user['bulan']['oktober'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['november']) ? rtrim(rtrim(number_format($user['bulan']['november'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700">
-                                {{ !is_null($user['bulan']['desember']) ? rtrim(rtrim(number_format($user['bulan']['desember'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
-                            <td class="px-1 py-1.5 text-center bg-red-100 font-bold text-red-900 dark:bg-red-950/20 dark:text-red-400">
-                                {{ !is_null($user['q4']) ? rtrim(rtrim(number_format($user['q4'], 2, ',', '.'), '0'), ',') : '-' }}
-                            </td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.oktober !== null ? user.bulan.oktober : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.november !== null ? user.bulan.november : '-'"></td>
+                            <td class="px-1 py-1.5 text-center border-r border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-700" x-text="user.bulan.desember !== null ? user.bulan.desember : '-'"></td>
+                            <td class="px-1 py-1.5 text-center bg-red-100 font-bold text-red-900 dark:bg-red-950/20 dark:text-red-400" x-text="user.q4 !== null ? user.q4 : '-'"></td>
                         </tr>
-                    @endforeach
+                    </template>
                 @empty
                     <tr>
                         <td colspan="{{ $colspan }}" class="px-4 py-8 text-center text-sm text-gray-500 italic bg-gray-50 dark:bg-gray-800/20 dark:text-gray-400">

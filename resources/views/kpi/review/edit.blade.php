@@ -23,7 +23,7 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Total Nilai Saat Ini</p>
             <p class="text-sm font-bold text-gray-800 dark:text-white">
-                {{ (float) $kpiUser->total_nilai }}
+                {{ round((float) $kpiUser->total_nilai) }}
             </p>
         </div>
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">

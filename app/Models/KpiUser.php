@@ -27,7 +27,7 @@ class KpiUser extends Model
 
     public function getTotalNilaiAttribute()
     {
-        return $this->details()->sum('nilai_akhir') ?? 0;
+        return round($this->details()->sum('nilai_akhir') ?? 0);
     }
 
     public function reviewRequests()

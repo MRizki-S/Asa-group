@@ -64,7 +64,7 @@ class BuatPembangunanProyekController extends Controller
         if ($project->status_pembangunan !== 'pending') {
             abort(403, 'Hanya proyek pending yang dapat diedit');
         }
-        $users = \App\Models\User::role('PPengawas Proyek (Kontraktor)')->get();
+        $users = \App\Models\User::role('Pengawas Proyek (Kontraktor)')->get();
         return view('produksi.project_baru.edit', compact('project', 'users'));
     }
 
