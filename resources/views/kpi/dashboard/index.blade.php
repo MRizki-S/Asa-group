@@ -7,7 +7,7 @@
     openModal: false,
     modalContent: { name: '', tasks: [] },
     dashboardData: {{ json_encode($dashboardData) }},
-    sortCol: 'q3',
+    sortCol: '{{ $defaultQuarter ?? "q1" }}',
     sortDir: 'desc',
     sortBy(col) {
         if (this.sortCol === col) {

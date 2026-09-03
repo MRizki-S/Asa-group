@@ -146,10 +146,32 @@ class KpiDashboardController extends Controller
                     $data[$q] = count($scores) > 0 ? round(array_sum($scores) / count($scores)) : null;
                 }
             }
-            // Default sort users in devisi by Q3 score descending (highest first, null at bottom)
-            usort($users, function ($a, $b) {
-                $valA = $a['q3'];
-                $valB = $b['q3'];
+        }
+        unset($users);
+        unset($data);
+
+        // Determine the latest quarter that has non-null data across all users
+        $defaultQuarter = 'q1';
+        foreach (['q4', 'q3', 'q2', 'q1'] as $q) {
+            $hasData = false;
+            foreach ($dashboardData as $devisiUsers) {
+                foreach ($devisiUsers as $u) {
+                    if (!is_null($u[$q])) {
+                        $hasData = true;
+                        break 2;
+                    }
+                }
+            }
+            if ($hasData) {
+                $defaultQuarter = $q;
+                break;
+            }
+        }
+
+        foreach ($dashboardData as $devisiName => &$users) {
+            usort($users, function ($a, $b) use ($defaultQuarter) {
+                $valA = $a[$defaultQuarter];
+                $valB = $b[$defaultQuarter];
                 if ($valA === null && $valB === null) return 0;
                 if ($valA === null) return 1;
                 if ($valB === null) return -1;
@@ -157,9 +179,7 @@ class KpiDashboardController extends Controller
                 return ($valA > $valB) ? -1 : 1;
             });
         }
-
         unset($users);
-        unset($data);
 
         return view('kpi.dashboard.index', [
             'tahun' => $tahun,
@@ -167,6 +187,7 @@ class KpiDashboardController extends Controller
             'roles' => $roles,
             'devisis' => $devisis,
             'dashboardData' => $dashboardData,
+            'defaultQuarter' => $defaultQuarter,
             'breadcrumbs' => [
                 ['label' => 'Dashboard KPI', 'url' => route('kpi.dashboard.index')],
             ],
@@ -295,10 +316,32 @@ class KpiDashboardController extends Controller
                     $data[$q] = count($scores) > 0 ? round(array_sum($scores) / count($scores)) : null;
                 }
             }
-            // Default sort users in devisi by Q3 score descending (highest first, null at bottom)
-            usort($users, function ($a, $b) {
-                $valA = $a['q3'];
-                $valB = $b['q3'];
+        }
+        unset($users);
+        unset($data);
+
+        // Determine the latest quarter that has non-null data across all users
+        $defaultQuarter = 'q1';
+        foreach (['q4', 'q3', 'q2', 'q1'] as $q) {
+            $hasData = false;
+            foreach ($dashboardData as $devisiUsers) {
+                foreach ($devisiUsers as $u) {
+                    if (!is_null($u[$q])) {
+                        $hasData = true;
+                        break 2;
+                    }
+                }
+            }
+            if ($hasData) {
+                $defaultQuarter = $q;
+                break;
+            }
+        }
+
+        foreach ($dashboardData as $devisiName => &$users) {
+            usort($users, function ($a, $b) use ($defaultQuarter) {
+                $valA = $a[$defaultQuarter];
+                $valB = $b[$defaultQuarter];
                 if ($valA === null && $valB === null) return 0;
                 if ($valA === null) return 1;
                 if ($valB === null) return -1;
@@ -307,7 +350,6 @@ class KpiDashboardController extends Controller
             });
         }
         unset($users);
-        unset($data);
 
         // Sort devisi names alphabetically, but ensure 'LAINNYA' is always at the very bottom
         uksort($dashboardData, function ($a, $b) {
