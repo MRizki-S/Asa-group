@@ -84,6 +84,7 @@ class MenuGudangSeeder extends Seeder
             'gudang.permintaan-barang.pemb-unit.create',
             'gudang.permintaan-barang.pemb-unit.aksi',
             'gudang.permintaan-barang.pemb-unit.edit',
+            'gudang.permintaan-barang.pemb-unit.delete',
             'gudang.permintaan-barang.pemb-unit.ajukan-kembali',
             'gudang.permintaan-barang.pemb-unit.history',
 
@@ -92,6 +93,7 @@ class MenuGudangSeeder extends Seeder
             'gudang.permintaan-barang.pemb-kawasan.create',
             'gudang.permintaan-barang.pemb-kawasan.aksi',
             'gudang.permintaan-barang.pemb-kawasan.edit',
+            'gudang.permintaan-barang.pemb-kawasan.delete',
             'gudang.permintaan-barang.pemb-kawasan.ajukan-kembali',
             'gudang.permintaan-barang.pemb-kawasan.history',
 
@@ -100,6 +102,7 @@ class MenuGudangSeeder extends Seeder
             'gudang.permintaan-barang.pemb-mangoon.create',
             'gudang.permintaan-barang.pemb-mangoon.aksi',
             'gudang.permintaan-barang.pemb-mangoon.edit',
+            'gudang.permintaan-barang.pemb-mangoon.delete',
             'gudang.permintaan-barang.pemb-mangoon.ajukan-kembali',
             'gudang.permintaan-barang.pemb-mangoon.history',
 

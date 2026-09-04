@@ -13,6 +13,7 @@ use App\Http\Controllers\Etalase\TahapTypeController;
 use App\Http\Controllers\Etalase\TypeController;
 use App\Http\Controllers\Etalase\UnitController;
 use App\Http\Controllers\FeeAgenController;
+use App\Http\Controllers\Gudang\AuditLogStockController;
 use App\Http\Controllers\Gudang\BarangRusakController;
 use App\Http\Controllers\Gudang\DaftarNotaMasukController;
 use App\Http\Controllers\Gudang\DraftNotaMasukController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Gudang\PengajuanUpahHarianTukangController;
 use App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangController;
 use App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanUnitController;
 use App\Http\Controllers\Gudang\ProduksiRakitanController;
+use App\Http\Controllers\Gudang\RekapNotaMasukController;
 use App\Http\Controllers\Gudang\StockBarangController;
 use App\Http\Controllers\Gudang\TransferPenyesuainStockController;
 use App\Http\Controllers\Gudang\TransferStockBarangController;
@@ -525,6 +527,12 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/stok-barang/export-pdf', [StockBarangController::class, 'exportPdf'])->name('gudang.stockBarang.exportPdf');
     Route::get('/stok-barang/export-excel', [StockBarangController::class, 'exportExcel'])->name('gudang.stockBarang.exportExcel');
 
+    // Audit Log Stok
+    Route::get('/audit-log', [AuditLogStockController::class, 'index'])
+        ->name('gudang.auditLog.index');
+    Route::get('/audit-log/detail/{refType}/{refId}', [AuditLogStockController::class, 'getDocDetail'])
+        ->name('gudang.auditLog.docDetail');
+
 
     // Route bertransaksi stok / barang yang dibatasi oleh Freeze Mode
     Route::middleware('check.freeze')->group(function () {
@@ -567,6 +575,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
         Route::patch('/permintaan-barang/{id}/tolak', [PermintaanBarangController::class, 'tolak'])->name('gudang.permintaanBarang.tolak');
         Route::patch('/permintaan-barang/{id}/resubmit', [PermintaanBarangController::class, 'resubmit'])->name('gudang.permintaanBarang.resubmit');
         Route::put('/permintaan-barang/{id}', [PermintaanBarangPembangunanUnitController::class, 'update'])->name('gudang.permintaanBarang.update');
+        Route::delete('/permintaan-barang/{id}', [PermintaanBarangController::class, 'destroy'])->name('gudang.permintaanBarang.destroy');
         Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.accReturn');
         Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.rejectReturn');
         Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.accReturn');
@@ -629,8 +638,9 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::patch('/draft-nota-masuk/{id}/post', [DraftNotaMasukController::class, 'post'])->name('gudang.draftNotaMasuk.submit'); /// submit draft nota masuk menjadi posting
     Route::delete('/draft-nota-masuk/{id}', [DraftNotaMasukController::class, 'destroy'])->name('gudang.draftNotaMasuk.destroy');
 
-    // Daftar Nota Masuk
+    // Daftar & Rekap Nota Masuk
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
+    Route::get('/rekap-nota-masuk', [RekapNotaMasukController::class, 'index'])->name('gudang.rekapNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
 
     // Barang Rusak

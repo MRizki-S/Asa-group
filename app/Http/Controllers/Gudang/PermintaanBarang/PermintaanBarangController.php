@@ -130,6 +130,10 @@ class PermintaanBarangController extends Controller
             $query->where('jenis_order', $filterJenis);
         }
 
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal_diajukan', $request->tanggal);
+        }
+
         $orders = $query->get();
 
         return view('gudang.permintaan-barang.index', [
@@ -137,6 +141,7 @@ class PermintaanBarangController extends Controller
             'status' => $status,
             'category' => $category,
             'jenisOrder' => $filterJenis,
+            'tanggal' => $request->get('tanggal'),
             'statusOptions' => $this->statusOptions(),
             'isHistory' => false,
             'titlePage' => $config['title'],
@@ -176,6 +181,10 @@ class PermintaanBarangController extends Controller
 
         if ($filterJenis !== 'all') {
             $query->where('jenis_order', $filterJenis);
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal_diajukan', $request->tanggal);
         }
 
         $orders = $query->get();
@@ -671,6 +680,32 @@ class PermintaanBarangController extends Controller
                 'jumlah_pakai' => (float) $detail->jumlah_base,
                 'harga_total_snapshot' => $hargaTotal,
             ]);
+        }
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $category = $request->get('category', 'pembangunan_unit');
+        $config   = $this->getOrderConfig($category);
+
+        $order = $config['model']::with(['details'])->findOrFail($id);
+
+        if ($order->status_order === 'selesai') {
+            return back()->with('error', 'Permintaan barang yang sudah di-ACC (Selesai) tidak dapat dihapus.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $order->details()->delete();
+            $order->delete();
+
+            DB::commit();
+
+            return back()->with('success', 'Permintaan barang berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus permintaan barang: ' . $e->getMessage());
         }
     }
 }

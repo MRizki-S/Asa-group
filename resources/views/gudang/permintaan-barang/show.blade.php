@@ -77,6 +77,29 @@
     $resubmitRoute = $category === 'pembangunan_unit'
         ? route('gudang.permintaanBarang.pembangunanUnit.resubmit', ['id' => $order->id])
         : route('gudang.permintaanBarang.resubmit', ['id' => $order->id, 'jenis_order' => $category]);
+
+    $aksiPermMap = [
+        'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.aksi',
+        'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.aksi',
+        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi',
+        'pembangunan_proyek' => 'gudang.permintaan-barang.pemb-mangoon.aksi',
+    ];
+    $editPermMap = [
+        'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.edit',
+        'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.edit',
+        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.edit',
+        'pembangunan_proyek' => 'gudang.permintaan-barang.pemb-mangoon.edit',
+    ];
+    $ajukanKembaliPermMap = [
+        'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.ajukan-kembali',
+        'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.ajukan-kembali',
+        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.ajukan-kembali',
+        'pembangunan_proyek' => 'gudang.permintaan-barang.pemb-mangoon.ajukan-kembali',
+    ];
+
+    $permissionAksi = $aksiPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi';
+    $permissionEdit = $editPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.edit';
+    $permissionAjukanKembali = $ajukanKembaliPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.ajukan-kembali';
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
@@ -359,13 +382,85 @@
                                 </td>
                             </tr>
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
+            {{-- Content Header Info ... --}}
         </div>
     </div>
 
-    <div class="flex flex-wrap justify-between gap-3 items-center bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6 mb-6">
+        <div class="mb-4">
+            <h4 class="text-base font-semibold text-gray-800 dark:text-white">Daftar Barang Permintaan</h4>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                    <tr>
+                        <th class="px-4 py-3">No</th>
+                        <th class="px-4 py-3">Nama Barang</th>
+                        <th class="px-4 py-3 text-right">Jumlah Order</th>
+                        <th class="px-4 py-3 text-center">Satuan</th>
+                        <th class="px-4 py-3 text-center">Tipe RAP</th>
+                        <th class="px-4 py-3">Keterangan / Alasan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse ($order->details as $index => $detail)
+                        @php
+                            $tipeClass = $detail->is_diluar_rap
+                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                : ($detail->is_melebihi_rap
+                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                    : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400');
+                            $tipeLabel = $detail->is_diluar_rap ? 'Diluar RAP' : ($detail->is_melebihi_rap ? 'Melebihi RAP' : 'Sesuai RAP');
+                        @endphp
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $index + 1 }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                                {{ $detail->nama_barang ?? $detail->barang->nama_barang }}
+                            </td>
+                            <td class="px-4 py-3 text-right font-semibold text-gray-800 dark:text-gray-200">
+                                {{ $formatQty($detail->jumlah_order) }}
+                            </td>
+                            <td class="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-400">
+                                {{ $detail->satuan_order ?? $detail->barang?->baseUnit?->nama ?? '-' }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="inline-block px-2.5 py-1 text-[11px] font-bold rounded-full {{ $tipeClass }}">
+                                    {{ $tipeLabel }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                                {{ $detail->alasan_permintaan ?? '-' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-6 text-center text-gray-400">
+                                Tidak ada detail barang dalam permintaan ini.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Catatan Penolakan / Status Info --}}
+    @if ($order->status_order === 'ditolak' && $order->alasan_tolak)
+        <div class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-950/20 mb-6">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                    <h5 class="text-sm font-semibold text-red-800 dark:text-red-300">Alasan Penolakan:</h5>
+                    <p class="text-sm text-red-700 dark:text-red-400 mt-1">{{ $order->alasan_tolak }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Action Footer --}}
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm">
         <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
             class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all dark:text-white dark:bg-gray-700 dark:hover:bg-gray-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,46 +470,52 @@
         </a>
 
         @if ($order->status_order === 'diproses')
-            <div class="flex gap-2">
-                {{-- Tombol Tolak --}}
-                <button type="button" @click="openTolakModal = true"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    Tolak
-                </button>
-
-                {{-- Tombol ACC --}}
-                <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
-                    @submit="accSubmitting = true">
-                    @csrf
-                    @method('PATCH')
-                    <button type="button" @click="openAccModal = true"
-                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        ACC
+            @can($permissionAksi)
+                <div class="flex gap-2">
+                    {{-- Tombol Tolak --}}
+                    <button type="button" @click="openTolakModal = true"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        Tolak
                     </button>
-                </form>
-            </div>
+
+                    {{-- Tombol ACC --}}
+                    <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
+                        @submit="accSubmitting = true">
+                        @csrf
+                        @method('PATCH')
+                        <button type="button" @click="openAccModal = true"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            ACC
+                        </button>
+                    </form>
+                </div>
+            @endcan
         @endif
 
         @if ($order->status_order === 'ditolak')
             <div class="flex gap-2">
-                <a href="{{ route('gudang.permintaanBarang.edit', ['id' => $order->id, 'category' => $category]) }}"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all focus:outline-none focus:ring-4 focus:ring-amber-300 active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    Edit Permintaan
-                </a>
-                <button type="button" @click="openResubmitModal = true"
-                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    Ajukan Ulang
-                </button>
+                @can($permissionEdit)
+                    <a href="{{ route('gudang.permintaanBarang.edit', ['id' => $order->id, 'category' => $category]) }}"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all focus:outline-none focus:ring-4 focus:ring-amber-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Edit Permintaan
+                    </a>
+                @endcan
+
+                @can($permissionAjukanKembali)
+                    <button type="button" @click="openResubmitModal = true"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        Ajukan Ulang
+                    </button>
+                @endcan
             </div>
         @endif
     </div>
 
     @if ($order->status_order === 'diproses')
-        {{-- Modal ACC --}}
         <div x-show="openAccModal" x-cloak x-transition
             class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
             <div @click.away="openAccModal = false"

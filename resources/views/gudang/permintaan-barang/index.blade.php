@@ -80,6 +80,26 @@
                         </select>
                     </div>
 
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Per Hari (Opsional)</label>
+                        <div class="relative" x-data="{ tanggal: '{{ request('tanggal') }}' }">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                                </svg>
+                            </div>
+                            <input type="text" name="tanggal" x-ref="tanggal" x-init="flatpickr($refs.tanggal, {
+                                    defaultDate: tanggal,
+                                    dateFormat: 'Y-m-d',
+                                    altInput: true,
+                                    altFormat: 'd-m-Y',
+                                    allowInput: true
+                                })"
+                                placeholder="Pilih Tanggal"
+                                class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-900 dark:border-gray-700 dark:text-white min-w-[150px]">
+                        </div>
+                    </div>
+
                     <button type="submit"
                         class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition focus:ring-4 focus:ring-blue-300 active:scale-95 shadow-sm">
                         Tampilkan
@@ -172,6 +192,26 @@
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 active:scale-95">
                                     Detail
                                 </a>
+                                @php
+                                    $deletePermMap = [
+                                        'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.delete',
+                                        'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.delete',
+                                        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.delete',
+                                    ];
+                                    $deletePermission = $deletePermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.delete';
+                                @endphp
+
+                                @can($deletePermission)
+                                    @if ($order->status_order !== 'selesai')
+                                        <form action="{{ route('gudang.permintaanBarang.destroy', ['id' => $order->id, 'category' => $category]) }}" method="POST" class="inline delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="delete-btn inline-flex items-center gap-1 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:text-red-100 dark:hover:bg-red-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 active:scale-95">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endcan
                             </td>
                         </tr>
                     @empty
@@ -190,5 +230,27 @@
             perPageSelect: [5, 10, 20, 50],
         });
     }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-btn')) {
+            const btn = e.target.closest('.delete-btn');
+            const form = btn.closest('.delete-form');
+
+            Swal.fire({
+                title: 'Yakin hapus permintaan barang ini?',
+                text: "Data permintaan barang akan dihapus. Langkah ini tidak dapat dibatalkan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    });
 </script>
 @endsection

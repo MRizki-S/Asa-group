@@ -75,6 +75,13 @@
         }
         return rtrim(rtrim(number_format($number, 3, ',', '.'), '0'), ',');
     };
+
+    $aksiPermMap = [
+        'pembangunan_unit' => 'gudang.return-barang.return-unit.aksi',
+        'pembangunan_kawasan' => 'gudang.return-barang.return-kawasan.aksi',
+        'pembangunan_proyek' => 'gudang.return-barang.return-mangoon.aksi',
+    ];
+    $permissionAksi = $aksiPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.return-barang.return-unit.aksi';
 @endphp
 
 @section('pageActive', $cfg['active'])
@@ -371,21 +378,23 @@
         </a>
 
         @if ($return->status === 'diproses')
-            <div class="flex gap-2">
-                {{-- Tombol Tolak --}}
-                <button type="button" @click="openTolakModal = true"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    Tolak
-                </button>
+            @can($permissionAksi)
+                <div class="flex gap-2">
+                    {{-- Tombol Tolak --}}
+                    <button type="button" @click="openTolakModal = true"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        Tolak
+                    </button>
 
-                {{-- Tombol ACC --}}
-                <button type="button" @click="openAccModal = true"
-                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    ACC
-                </button>
-            </div>
+                    {{-- Tombol ACC --}}
+                    <button type="button" @click="openAccModal = true"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        ACC
+                    </button>
+                </div>
+            @endcan
         @endif
 
         @if ($return->status === 'ditolak')
