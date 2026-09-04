@@ -708,4 +708,27 @@ class PermintaanBarangController extends Controller
             return back()->with('error', 'Gagal menghapus permintaan barang: ' . $e->getMessage());
         }
     }
+
+    public function updateTanggal(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal_diajukan' => 'required|date',
+            'category' => 'required|string',
+        ]);
+
+        $category = $request->category;
+        $config = $this->getOrderConfig($category);
+        
+        $order = $config['model']::findOrFail($id);
+
+        if ($order->status_order !== 'diproses') {
+            return back()->with('error', 'Hanya permintaan barang dengan status menunggu yang dapat diubah tanggalnya.');
+        }
+
+        $order->update([
+            'tanggal_diajukan' => $request->tanggal_diajukan,
+        ]);
+
+        return back()->with('success', 'Tanggal permintaan barang berhasil diperbarui.');
+    }
 }

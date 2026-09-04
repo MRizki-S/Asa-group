@@ -39,7 +39,8 @@ class PembangunanProyekController extends Controller
             'namaProyek' => $project->nama_project ?? $project->nama ?? '-',
             'pengawas' => $project->pengawas?->nama_lengkap ?? $project->pengawas?->name ?? '-',
             'pengaju' => Auth::user()->nama_lengkap ?? Auth::user()->name,
-            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            'tanggalDiajukan' => ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') : now()->format('d/m/Y H:i')) . ' WIB',
+            'tanggalNbk' => ($order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('d/m/Y H:i') : ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') : now()->format('d/m/Y H:i'))) . ' WIB',
             'order' => $order
         ])->render();
 

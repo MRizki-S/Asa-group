@@ -11,7 +11,8 @@
 @section('pageActive', $pageActive)
 
 @section('content')
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
+    x-data="{ isEditTanggalOpen: false, editOrderId: null, editTanggalVal: '', editNomorOrder: '', editSubmitting: false, openEditTanggalModal(id, tgl, nomor) { this.editOrderId = id; this.editTanggalVal = tgl; this.editNomorOrder = nomor; this.isEditTanggalOpen = true; } }">
 
     <div x-data="{ pageName: '{{ $isHistory ? 'Riwayat Permintaan Barang' : 'Permintaan Barang' }}' }">
         @include('partials.breadcrumb')
@@ -193,6 +194,23 @@
                                     Detail
                                 </a>
                                 @php
+                                    $editPermMap = [
+                                        'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.edit',
+                                        'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.edit',
+                                        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.edit',
+                                    ];
+                                    $editPermission = $editPermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.edit';
+                                @endphp
+
+                                @can($editPermission)
+                                    @if ($order->status_order === 'diproses')
+                                        <button type="button" @click="openEditTanggalModal({{ $order->id }}, '{{ $order->tanggal_diajukan ? $order->tanggal_diajukan->format('Y-m-d\TH:i') : '' }}', '{{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}')"
+                                            class="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 active:scale-95">
+                                            Edit Tanggal
+                                        </button>
+                                    @endif
+                                @endcan
+                                @php
                                     $deletePermMap = [
                                         'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.delete',
                                         'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.delete',
@@ -219,6 +237,49 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+{{-- Modal Edit Tanggal --}}
+<div x-show="isEditTanggalOpen" x-cloak x-transition
+    class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+    <div @click.away="isEditTanggalOpen = false"
+        class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white">Edit Tanggal Permintaan</h3>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold" x-text="editNomorOrder"></p>
+                </div>
+                <button type="button" @click="isEditTanggalOpen = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                </button>
+            </div>
+        </div>
+        <form method="POST" :action="'/gudang/permintaan-barang/' + editOrderId + '/update-tanggal'" @submit="editSubmitting = true">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="category" value="{{ $category }}">
+
+            <div class="p-5 space-y-4">
+                <div class="rounded-xl border border-amber-100 bg-amber-50 p-4 dark:bg-amber-900/20 dark:border-amber-800">
+                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Ubah tanggal pengajuan permintaan barang (status Menunggu).</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Diajukan <span class="text-red-500">*</span></label>
+                    <input type="datetime-local" name="tanggal_diajukan" required :value="editTanggalVal"
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-amber-500 focus:ring-amber-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                <button type="button" @click="isEditTanggalOpen = false"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                <button type="submit" :disabled="editSubmitting"
+                    class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 shadow-sm transition disabled:opacity-60">
+                    <span x-text="editSubmitting ? 'Memproses...' : 'Simpan Tanggal'"></span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

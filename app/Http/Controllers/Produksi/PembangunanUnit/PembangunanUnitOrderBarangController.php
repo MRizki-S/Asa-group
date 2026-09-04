@@ -46,7 +46,8 @@ class PembangunanUnitOrderBarangController extends Controller
             'namaUnit' => $namaUnit,
             'namaQc' => $order->qc->nama_qc ?? null,
             'pengaju' => $pengaju,
-            'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
+            'tanggalDiajukan' => ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') : now()->format('d/m/Y H:i')) . ' WIB',
+            'tanggalNbk' => ($order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('d/m/Y H:i') : ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') : now()->format('d/m/Y H:i'))) . ' WIB',
             'order' => $order
         ])->render();
 

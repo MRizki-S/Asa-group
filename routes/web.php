@@ -575,6 +575,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
         Route::patch('/permintaan-barang/{id}/tolak', [PermintaanBarangController::class, 'tolak'])->name('gudang.permintaanBarang.tolak');
         Route::patch('/permintaan-barang/{id}/resubmit', [PermintaanBarangController::class, 'resubmit'])->name('gudang.permintaanBarang.resubmit');
         Route::put('/permintaan-barang/{id}', [PermintaanBarangPembangunanUnitController::class, 'update'])->name('gudang.permintaanBarang.update');
+        Route::patch('/permintaan-barang/{id}/update-tanggal', [PermintaanBarangController::class, 'updateTanggal'])->name('gudang.permintaanBarang.updateTanggal');
         Route::delete('/permintaan-barang/{id}', [PermintaanBarangController::class, 'destroy'])->name('gudang.permintaanBarang.destroy');
         Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.accReturn');
         Route::patch('/permintaan-barang/pembangunan-kawasan/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanKawasanController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanKawasan.rejectReturn');

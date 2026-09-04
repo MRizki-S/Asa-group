@@ -103,7 +103,7 @@
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
-    x-data="{ openAccModal: false, accSubmitting: false, openTolakModal: false, tolakSubmitting: false, openResubmitModal: false, resubmitSubmitting: false }">
+    x-data="{ openAccModal: false, accSubmitting: false, openTolakModal: false, tolakSubmitting: false, openResubmitModal: false, resubmitSubmitting: false, openEditTanggalModal: false, editTanggalSubmitting: false }">
 
     <div x-data="{ pageName: 'Detail Permintaan Barang' }">
         @include('partials.breadcrumb')
@@ -124,7 +124,18 @@
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal Diajukan</label>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-medium text-gray-900 dark:text-white">Tanggal Diajukan</label>
+                        @if ($order->status_order === 'diproses')
+                            @can($permissionEdit)
+                                <button type="button" @click="openEditTanggalModal = true"
+                                    class="text-xs font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    Edit Tanggal
+                                </button>
+                            @endcan
+                        @endif
+                    </div>
                     <div class="w-full bg-gray-100 border border-gray-300 text-gray-700 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:text-gray-200">
                         {{ $order->tanggal_diajukan?->format('d-m-Y H:i') ?? '-' }}
                     </div>
@@ -382,65 +393,9 @@
                                 </td>
                             </tr>
                         @endforelse
-            {{-- Content Header Info ... --}}
-        </div>
-    </div>
-
-    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6 mb-6">
-        <div class="mb-4">
-            <h4 class="text-base font-semibold text-gray-800 dark:text-white">Daftar Barang Permintaan</h4>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                <thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                    <tr>
-                        <th class="px-4 py-3">No</th>
-                        <th class="px-4 py-3">Nama Barang</th>
-                        <th class="px-4 py-3 text-right">Jumlah Order</th>
-                        <th class="px-4 py-3 text-center">Satuan</th>
-                        <th class="px-4 py-3 text-center">Tipe RAP</th>
-                        <th class="px-4 py-3">Keterangan / Alasan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @forelse ($order->details as $index => $detail)
-                        @php
-                            $tipeClass = $detail->is_diluar_rap
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                : ($detail->is_melebihi_rap
-                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                    : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400');
-                            $tipeLabel = $detail->is_diluar_rap ? 'Diluar RAP' : ($detail->is_melebihi_rap ? 'Melebihi RAP' : 'Sesuai RAP');
-                        @endphp
-                        <tr>
-                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $index + 1 }}</td>
-                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                                {{ $detail->nama_barang ?? $detail->barang->nama_barang }}
-                            </td>
-                            <td class="px-4 py-3 text-right font-semibold text-gray-800 dark:text-gray-200">
-                                {{ $formatQty($detail->jumlah_order) }}
-                            </td>
-                            <td class="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-400">
-                                {{ $detail->satuan_order ?? $detail->barang?->baseUnit?->nama ?? '-' }}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-block px-2.5 py-1 text-[11px] font-bold rounded-full {{ $tipeClass }}">
-                                    {{ $tipeLabel }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
-                                {{ $detail->alasan_permintaan ?? '-' }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-6 text-center text-gray-400">
-                                Tidak ada detail barang dalam permintaan ini.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -470,8 +425,15 @@
         </a>
 
         @if ($order->status_order === 'diproses')
-            @can($permissionAksi)
-                <div class="flex gap-2">
+            <div class="flex gap-2">
+                @can($permissionEdit)
+                    <button type="button" @click="openEditTanggalModal = true"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-amber-800 bg-amber-100 rounded-lg hover:bg-amber-200 transition-all dark:bg-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/60 focus:outline-none focus:ring-4 focus:ring-amber-300 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Edit Tanggal
+                    </button>
+                @endcan
+                @can($permissionAksi)
                     {{-- Tombol Tolak --}}
                     <button type="button" @click="openTolakModal = true"
                         class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
@@ -683,6 +645,53 @@
                         <button type="submit" :disabled="resubmitSubmitting"
                             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition disabled:opacity-60">
                             <span x-text="resubmitSubmitting ? 'Memproses...' : 'Ya, Ajukan Ulang'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+    @if ($order->status_order === 'diproses')
+        {{-- Modal Edit Tanggal --}}
+        <div x-show="openEditTanggalModal" x-cloak x-transition
+            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+            <div @click.away="openEditTanggalModal = false"
+                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Edit Tanggal Permintaan</h3>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                            </p>
+                        </div>
+                        <button type="button" @click="openEditTanggalModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke-currentColor stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('gudang.permintaanBarang.updateTanggal', ['id' => $order->id]) }}" @submit="editTanggalSubmitting = true">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="category" value="{{ $category }}">
+
+                    <div class="p-5 space-y-4">
+                        <div class="rounded-xl border border-amber-100 bg-amber-50 p-4 dark:bg-amber-900/20 dark:border-amber-800">
+                            <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Ubah tanggal pengajuan permintaan barang (status Menunggu).</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Tanggal Diajukan <span class="text-red-500">*</span></label>
+                            <input type="datetime-local" name="tanggal_diajukan" required
+                                value="{{ $order->tanggal_diajukan ? $order->tanggal_diajukan->format('Y-m-d\TH:i') : date('Y-m-d\TH:i') }}"
+                                class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-amber-500 focus:ring-amber-500">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+                        <button type="button" @click="openEditTanggalModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
+                        <button type="submit" :disabled="editTanggalSubmitting"
+                            class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 shadow-sm transition disabled:opacity-60">
+                            <span x-text="editTanggalSubmitting ? 'Memproses...' : 'Simpan Tanggal'"></span>
                         </button>
                     </div>
                 </form>

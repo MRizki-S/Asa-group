@@ -7,7 +7,8 @@ Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Pengawas:* {{ $pengawas }}
 • *Diajukan Oleh:* {{ $pengaju }}
-• *Tanggal:* {{ $tanggal }}
+• *Tanggal diajukan:* {{ $tanggalDiajukan ?? ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') }}
+• *Tanggal nbk:* {{ $tanggalNbk ?? ($order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('d/m/Y H:i') . ' WIB' : ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB')) }}
 @php
    $hasExceededRap = $order->details->contains(function($item) {
        return !empty($item->alasan_permintaan_tidak_sesuai_rap);

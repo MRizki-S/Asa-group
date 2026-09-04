@@ -10,7 +10,8 @@ Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
 • *QC:* {{ $namaQc }}
 @endif
 • *Diajukan Oleh:* {{ $pengaju }}
-• *Tanggal:* {{ $tanggal }}
+• *Tanggal diajukan:* {{ $tanggalDiajukan ?? ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') }}
+• *Tanggal nbk:* {{ $tanggalNbk ?? ($order->tanggal_diajukan ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('d/m/Y H:i') . ' WIB' : ($order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB')) }}
 @php
    $hasLuarRap = $order->details->contains(function($item) {
        return empty($item->rap_bahan_id);
