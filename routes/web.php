@@ -643,6 +643,7 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
     Route::get('/nota-barang-masuk', [DaftarNotaMasukController::class, 'index'])->name('gudang.daftarNotaMasuk.index');
     Route::get('/rekap-nota-masuk', [RekapNotaMasukController::class, 'index'])->name('gudang.rekapNotaMasuk.index');
     Route::get('/nota-barang-masuk/{nomorNota}', [DaftarNotaMasukController::class, 'show'])->name('gudang.daftarNotaMasuk.show');
+    Route::patch('/nota-barang-masuk/{nomorNota}/update-tanggal', [DaftarNotaMasukController::class, 'updateTanggal'])->name('gudang.daftarNotaMasuk.updateTanggal');
 
     // Barang Rusak
     Route::get('/barang-rusak', [BarangRusakController::class, 'index'])->name('gudang.barangRusak.index');

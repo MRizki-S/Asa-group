@@ -11,10 +11,19 @@ use App\Models\StockGudang;
 use App\Models\Ubs;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\NotificationGroupService;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StockBarangController extends Controller
 {
+    protected NotificationGroupService $notificationGroup;
+
+    public function __construct(NotificationGroupService $notificationGroup)
+    {
+        $this->notificationGroup = $notificationGroup;
+    }
+
     private function getStockBarangData(Request $request)
     {
         $ubsId = $request->get('ubs_id', 'all');
@@ -131,9 +140,34 @@ class StockBarangController extends Controller
         $newStatus = $current ? '0' : '1';
         \App\Models\AppSetting::setValue('is_freeze_stok', $newStatus);
 
-        $msg = $newStatus === '1' 
-            ? 'Mode Freeze Pencocokan Stok Opname berhasil diaktifkan! Seluruh transaksi barang, order, retur, dan edit stok sementara dibekukan.' 
-            : 'Mode Freeze Pencocokan Stok Opname berhasil dinonaktifkan! Transaksi barang telah dibuka kembali.';
+        $user = Auth::user();
+        $userName = $user ? $user->name : 'Sistem/Admin';
+        $waktu = now()->translatedFormat('d F Y H:i');
+
+        if ($newStatus === '1') {
+            $msg = 'Mode Freeze Pencocokan Stok Opname berhasil diaktifkan! Seluruh transaksi barang, order, retur, dan edit stok sementara dibekukan.';
+            $waMessage = "*PEMBERITAHUAN FREEZE STOK OPNAME* ❄️\n\n"
+                       . "Perhatian Tim Gudang & Operasional,\n\n"
+                       . "Status Stok Barang telah *DIFREEZE (DIBEKUKAN)* untuk persiapan pencocokan *Stok Opname* dalam waktu dekat.\n\n"
+                       . "⚠️ *Seluruh transaksi barang (order, retur, pengeluaran, penerimaan, & edit stok) sementara DITOLAK / DIBEKUKAN.*\n\n"
+                       . "• Oleh: *{$userName}*\n"
+                       . "• Waktu: *{$waktu} WIB*\n\n"
+                       . "Mohon kerjasamanya. Terima kasih! 🙏";
+        } else {
+            $msg = 'Mode Freeze Pencocokan Stok Opname berhasil dinonaktifkan! Transaksi barang telah dibuka kembali.';
+            $waMessage = "*PEMBERITAHUAN UNFREEZE STOK BARANG* 🔓\n\n"
+                       . "Perhatian Tim Gudang & Operasional,\n\n"
+                       . "Status Stok Barang telah *UNFREEZE (DIBUKA KEMBALI)*.\n\n"
+                       . "✅ *Seluruh transaksi barang & mutasi stok gudang dapat dilakukan kembali seperti biasa.*\n\n"
+                       . "• Oleh: *{$userName}*\n"
+                       . "• Waktu: *{$waktu} WIB*\n\n"
+                       . "Terima kasih atas kerjasamanya! 🙏";
+        }
+
+        $groupId = env('FONNTE_ID_GROUP_GUDANG_STOCK');
+        if ($groupId) {
+            $this->notificationGroup->send($groupId, $waMessage);
+        }
 
         return redirect()->back()->with('success', $msg);
     }

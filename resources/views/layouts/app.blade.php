@@ -39,7 +39,8 @@
     sidebarToggle: false,
     scrollTop: false
 }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
-$watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))" @sidebar-minimize.window="sidebarToggle = true"
+$watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)));
+if (page === 'RekapNotaMasuk') { sidebarToggle = true; }" @sidebar-minimize.window="sidebarToggle = true"
     :class="{ 'dark bg-gray-900': darkMode === true }">
 
     <!-- Preloader -->
