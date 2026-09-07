@@ -22,3 +22,4 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+resources/views/gudang/rekap-nota-masuk/index.blade.php
