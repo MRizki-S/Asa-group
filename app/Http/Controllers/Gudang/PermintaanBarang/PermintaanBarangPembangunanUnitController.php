@@ -1183,13 +1183,11 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
                 $namaUnit = $pu->unit->nama_unit ?? '-';
                 $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
-                return [
-                    'id' => $pu->id,
-                    'is_selesai' => $isSelesai,
-                    'label_formatted' => "{$namaPerumahan} - {$namaTahap} - {$namaUnit}",
-                    'pengawas_nama' => $pu->pengawas->nama_lengkap ?? '-',
-                    'subcon_nama' => $pu->subcon ?? '-',
-                ];
+                $pu->is_selesai = $isSelesai;
+                $pu->label_formatted = "{$namaPerumahan} - {$namaTahap} - {$namaUnit}";
+                $pu->pengawas_nama = $pu->pengawas->nama_lengkap ?? '-';
+                $pu->subcon_nama = $pu->subcon ?? '-';
+                return $pu;
             });
         } elseif ($category === 'pembangunan_kawasan') {
             $queryKawasan = \App\Models\PembangunanKawasan::with(['perumahan', 'pengawas', 'periodes' => function($q) {
@@ -1200,26 +1198,14 @@ class PermintaanBarangPembangunanUnitController extends Controller
             }
             $pembangunanKawasan = $queryKawasan->get()->map(function($pk) {
                 $activePeriode = $pk->periodes->first();
-                return [
-                    'id' => $pk->id,
-                    'nama_kawasan' => $pk->nama_kawasan ?? $pk->perumahan->nama_perumahaan ?? '-',
-                    'pengawas_nama' => $pk->pengawas->nama_lengkap ?? '-',
-                    'subcon_nama' => $activePeriode->subcon ?? '-',
-                    'periodes' => $pk->periodes->map(function($p) {
-                        return [
-                            'tanggal_mulai' => $p->tanggal_mulai,
-                            'tanggal_selesai' => $p->tanggal_selesai,
-                        ];
-                    })->toArray()
-                ];
+                $pk->pengawas_nama = $pk->pengawas->nama_lengkap ?? '-';
+                $pk->subcon_nama = $activePeriode->subcon ?? '-';
+                return $pk;
             });
         } elseif ($category === 'pembangunan_proyek_mangoon') {
             $pembangunanProyek = \App\Models\PembangunanProyek::with('pengawas')->get()->map(function($pp) {
-                return [
-                    'id' => $pp->id,
-                    'nama_proyek' => $pp->nama_proyek ?? '-',
-                    'pengawas_nama' => $pp->pengawas->nama_lengkap ?? '-',
-                ];
+                $pp->pengawas_nama = $pp->pengawas->nama_lengkap ?? '-';
+                return $pp;
             });
         }
 

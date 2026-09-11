@@ -113,12 +113,18 @@
                         <option value="">-- Pilih Pembangunan Unit --</option>
                         @foreach($pembangunanUnits as $pu)
                             @php
-                                $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
-                                $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
-                                $namaUnit = $pu->unit->nama_unit ?? '-';
-                                $tglMulai = $pu->tanggal_mulai ? \Carbon\Carbon::parse($pu->tanggal_mulai)->format('d/m/Y') : '-';
+                                $puId = is_array($pu) ? ($pu['id'] ?? '') : ($pu->id ?? '');
+                                if (is_array($pu)) {
+                                    $labelFormatted = $pu['label_formatted'] ?? '-';
+                                } else {
+                                    $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
+                                    $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
+                                    $namaUnit = $pu->unit->nama_unit ?? '-';
+                                    $tglMulai = $pu->tanggal_mulai ? \Carbon\Carbon::parse($pu->tanggal_mulai)->format('d/m/Y') : '-';
+                                    $labelFormatted = "{$namaPerumahan} - {$namaTahap} ({$namaUnit}) - {$tglMulai}";
+                                }
                             @endphp
-                            <option value="{{ $pu->id }}">{{ $namaPerumahan }} - {{ $namaTahap }} ({{ $namaUnit }}) - {{ $tglMulai }}</option>
+                            <option value="{{ $puId }}">{{ $labelFormatted }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -152,7 +158,11 @@
                         class="w-full rounded-xl border-gray-300 bg-gray-100 p-3 text-sm text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white opacity-75 cursor-not-allowed">
                         <option value="">-- Pilih Pembangunan Kawasan --</option>
                         @foreach($pembangunanKawasan as $pk)
-                            <option value="{{ $pk->id }}">{{ $pk->nama }}</option>
+                            @php
+                                $pkId = is_array($pk) ? ($pk['id'] ?? '') : ($pk->id ?? '');
+                                $pkNama = is_array($pk) ? ($pk['nama_kawasan'] ?? $pk['nama'] ?? '-') : ($pk->nama_kawasan ?? $pk->perumahan->nama_perumahaan ?? $pk->nama ?? '-');
+                            @endphp
+                            <option value="{{ $pkId }}">{{ $pkNama }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -181,7 +191,11 @@
                         class="w-full rounded-xl border-gray-300 bg-gray-100 p-3 text-sm text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-white opacity-75 cursor-not-allowed">
                         <option value="">-- Pilih Pembangunan Proyek --</option>
                         @foreach($pembangunanProyek as $pp)
-                            <option value="{{ $pp->id }}">{{ $pp->nama }}</option>
+                            @php
+                                $ppId = is_array($pp) ? ($pp['id'] ?? '') : ($pp->id ?? '');
+                                $ppNama = is_array($pp) ? ($pp['nama_proyek'] ?? $pp['nama'] ?? '-') : ($pp->nama_proyek ?? $pp->nama ?? '-');
+                            @endphp
+                            <option value="{{ $ppId }}">{{ $ppNama }}</option>
                         @endforeach
                     </select>
                 </div>
