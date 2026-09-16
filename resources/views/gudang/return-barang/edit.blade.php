@@ -738,7 +738,7 @@
                         Swal.fire('Peringatan', `Jumlah retur untuk barang "${c.nama_barang}" tidak boleh kosong atau 0.`, 'warning');
                         return;
                     }
-                    if (val > c.sisa_display) {
+                    if ((val - parseFloat(c.sisa_display || 0)) > 0.0001) {
                         c.jumlah_input = c.sisa_display;
                         Swal.fire('Peringatan', `Jumlah retur "${c.nama_barang}" melebihi batas sisa maks (${c.sisa_display} ${c.satuan_nama}). Disesuaikan ke batas maksimum.`, 'warning');
                         return;
@@ -750,7 +750,11 @@
 
             processSubmitReturn() {
                 this.submitting = true;
-                this.$refs.returnForm.submit();
+                this.$nextTick(() => {
+                    if (this.$refs.returnForm) {
+                        HTMLFormElement.prototype.submit.call(this.$refs.returnForm);
+                    }
+                });
             }
         };
     }

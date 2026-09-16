@@ -436,10 +436,19 @@
         </div>
 
     <!-- Modal Konfirmasi Retur -->
-    <template x-if="showConfirmModal">
-        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-xs transition-opacity">
-            <div class="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]"
-                @click.away="showConfirmModal = false">
+    <template x-teleport="body">
+        <div x-show="showConfirmModal" x-cloak class="fixed inset-0 z-[999999] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+            <!-- Overlay -->
+            <div x-show="showConfirmModal"
+                x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="absolute inset-0 bg-gray-900/60"
+                @click="showConfirmModal = false"></div>
+
+            <div x-show="showConfirmModal"
+                x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                class="relative z-10 w-full max-w-xl rounded-2xl bg-white shadow-2xl dark:bg-gray-800 border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
                 
                 <!-- Header Modal -->
                 <div class="flex items-center justify-between border-b border-gray-100 p-4 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 shrink-0">
@@ -852,7 +861,7 @@
                         Swal.fire('Peringatan', `Jumlah retur untuk barang "${c.nama_barang}" tidak boleh kosong atau 0.`, 'warning');
                         return;
                     }
-                    if (val > c.sisa_display) {
+                    if ((val - parseFloat(c.sisa_display || 0)) > 0.0001) {
                         c.jumlah_input = c.sisa_display;
                         Swal.fire('Peringatan', `Jumlah retur "${c.nama_barang}" melebihi batas sisa maks (${c.sisa_display} ${c.satuan_nama}). Disesuaikan ke batas maksimum.`, 'warning');
                         return;
@@ -864,7 +873,11 @@
 
             processSubmitReturn() {
                 this.submitting = true;
-                this.$refs.returnForm.submit();
+                this.$nextTick(() => {
+                    if (this.$refs.returnForm) {
+                        HTMLFormElement.prototype.submit.call(this.$refs.returnForm);
+                    }
+                });
             }
         };
     }

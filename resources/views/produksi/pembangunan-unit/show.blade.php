@@ -115,10 +115,11 @@
             const item = this.returnItems[index];
             const faktor = item.faktor > 0 ? item.faktor : 1;
 
-            item.total_diterima_display = this.formatQty(item.total_diterima_base / faktor);
-            item.sudah_retur_display = this.formatQty(item.sudah_retur_base / faktor);
-            item.sisa_retur_display = this.formatQty(item.sisa_retur_base / faktor);
-            item.max_jumlah_input = item.sisa_retur_display;
+            const maxNumeric = Math.round(((item.sisa_retur_base || 0) / faktor) * 1000) / 1000;
+            item.total_diterima_display = this.formatQty((item.total_diterima_base || 0) / faktor);
+            item.sudah_retur_display = this.formatQty((item.sudah_retur_base || 0) / faktor);
+            item.sisa_retur_display = this.formatQty(maxNumeric);
+            item.max_jumlah_input = maxNumeric;
         },
 
         addReturnItem() {
@@ -180,7 +181,7 @@
                 return;
             }
 
-            const overLimit = validItems.some(i => i.jumlah_input > i.max_jumlah_input && i.max_jumlah_input > 0);
+            const overLimit = validItems.some(i => (parseFloat(i.jumlah_input || 0) - parseFloat(i.max_jumlah_input || 0)) > 0.0001 && i.max_jumlah_input > 0);
             if (overLimit) {
                 alert('Salah satu item melebihi sisa yang dapat dikembalikan.');
                 return;

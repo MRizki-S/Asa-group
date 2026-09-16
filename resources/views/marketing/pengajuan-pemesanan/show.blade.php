@@ -628,7 +628,7 @@
 
                 if ($namaPerumahaan === 'Asa Dreamland') {
                     // Khusus ADL → Proyek Manager saja
-                    $bolehAction = $user->hasRole(['PROYEK MANAJER (ADL)', 'superadmin', 'STAF SOLUSI KPR & PENJUALAN (ADL)']);
+                    $bolehAction = $user->hasRole(['PROYEK MANAJER (ADL)', 'superadmin', 'STAF SOLUSI KPR & PENJUALAN (ADL)', 'SPV PEMBIAYAAN KPR & BANK']);
                 } else {
                     // Selain ADL → pakai permission (Staff KPR)
                     $bolehAction = $user->can('marketing.pengajuan-pemesanan.action');
