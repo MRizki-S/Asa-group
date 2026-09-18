@@ -12,7 +12,28 @@
 
 @section('content')
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
-    x-data="{ isEditTanggalOpen: false, editOrderId: null, editTanggalVal: '', editNomorOrder: '', editSubmitting: false, openEditTanggalModal(id, tgl, nomor) { this.editOrderId = id; this.editTanggalVal = tgl; this.editNomorOrder = nomor; this.isEditTanggalOpen = true; } }">
+    x-data="{ 
+        isEditTanggalOpen: false, 
+        editOrderId: null, 
+        editTanggalVal: '', 
+        editNomorOrder: '', 
+        editSubmitting: false, 
+        openEditTanggalModal(id, tgl, nomor) { this.editOrderId = id; this.editTanggalVal = tgl; this.editNomorOrder = nomor; this.isEditTanggalOpen = true; },
+        isItemModalOpen: false,
+        modalNomorOrder: '',
+        modalItems: [],
+        openItemModal(nomorOrder, items) {
+            this.modalNomorOrder = nomorOrder;
+            this.modalItems = items;
+            this.isItemModalOpen = true;
+        },
+        formatNumber(val) {
+            if (val === null || val === undefined) return '0';
+            let num = parseFloat(val);
+            if (isNaN(num)) return '0';
+            return num.toLocaleString('id-ID', { maximumFractionDigits: 4 });
+        }
+    }">
 
     <div x-data="{ pageName: '{{ $isHistory ? 'Riwayat Permintaan Barang' : 'Permintaan Barang' }}' }">
         @include('partials.breadcrumb')
@@ -160,6 +181,15 @@
                             ];
                             $statusClass = $statusMap[$order->status_order] ?? 'bg-gray-100 text-gray-700';
                             $statusLabel = $statusLabels[$order->status_order] ?? str_replace('_', ' ', $order->status_order);
+
+                            $itemsData = $order->details->map(function ($detail) {
+                                return [
+                                    'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
+                                    'kode_barang' => $detail->barang?->kode_barang ?? '',
+                                    'jumlah' => (float) ($detail->jumlah_input ?? 0),
+                                    'satuan' => $detail->satuan ?? ($detail->satuanModel?->nama ?? $detail->barang?->baseUnit?->nama ?? '-'),
+                                ];
+                            })->values();
                         @endphp
                         <tr>
                             <td class="font-medium text-gray-900 dark:text-white">
@@ -181,7 +211,15 @@
                                 </span>
                             </td>
                             <td class="text-center font-medium text-gray-900 dark:text-white">
-                                {{ $order->details_count }}
+                                <button type="button"
+                                    @click="openItemModal('{{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}', {{ json_encode($itemsData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) }})"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 text-xs font-semibold transition border border-blue-200/60 dark:border-blue-800/50 group cursor-pointer"
+                                    title="Lihat Daftar Barang">
+                                    <svg class="w-3.5 h-3.5 text-blue-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                    </svg>
+                                    <span>{{ $order->details_count }} Item</span>
+                                </button>
                             </td>
                             <td class="text-center">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
@@ -280,6 +318,79 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+{{-- Modal Daftar Barang Diminta --}}
+<div x-show="isItemModalOpen" x-cloak x-transition
+    class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+    <div @click.away="isItemModalOpen = false"
+        class="w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/50">
+            <div>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                    Daftar Barang Diminta
+                </h3>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    No. Order: <span class="font-semibold text-gray-700 dark:text-gray-300" x-text="modalNomorOrder"></span>
+                </p>
+            </div>
+            <button type="button" @click="isItemModalOpen = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+            </button>
+        </div>
+
+        <div class="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <template x-if="modalItems.length > 0">
+                <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 dark:bg-gray-900/60 text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 w-12 text-center">No</th>
+                                <th class="px-4 py-3">Nama Barang</th>
+                                <th class="px-4 py-3 text-right w-32">Jumlah</th>
+                                <th class="px-4 py-3 text-center w-28">Satuan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60 bg-white dark:bg-gray-800">
+                            <template x-for="(item, index) in modalItems" :key="index">
+                                <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-700/40 transition">
+                                    <td class="px-4 py-3 text-center font-medium text-gray-500 dark:text-gray-400" x-text="index + 1"></td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-gray-900 dark:text-white" x-text="item.nama_barang"></div>
+                                        <template x-if="item.kode_barang">
+                                            <div class="text-xs text-gray-400 dark:text-gray-500" x-text="item.kode_barang"></div>
+                                        </template>
+                                    </td>
+                                    <td class="px-4 py-3 text-right font-bold text-blue-600 dark:text-blue-400" x-text="formatNumber(item.jumlah)"></td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300" x-text="item.satuan"></span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+            <template x-if="modalItems.length === 0">
+                <div class="py-8 text-center text-gray-500 dark:text-gray-400">
+                    Tidak ada barang dalam permintaan ini.
+                </div>
+            </template>
+        </div>
+
+        <div class="flex justify-between items-center gap-3 px-5 py-3.5 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+                Total: <strong class="text-gray-700 dark:text-gray-300" x-text="modalItems.length"></strong> jenis barang
+            </span>
+            <button type="button" @click="isItemModalOpen = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 shadow-sm">
+                Tutup
+            </button>
+        </div>
     </div>
 </div>
 

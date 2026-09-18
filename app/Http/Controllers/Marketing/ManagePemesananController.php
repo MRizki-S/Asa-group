@@ -40,7 +40,7 @@ class ManagePemesananController extends Controller
             'customer',
             'sales',
             'unit.blok',
-            'unit.pembangunanUnit.pembangunanUnitQc',
+            'unit.pembangunanUnit.pembangunanUnitQc.pembangunanUnitQcTask',
             'kpr.dokumen',
             'kpr.bank',
             'kpr.pemesananUnit',
@@ -77,7 +77,7 @@ class ManagePemesananController extends Controller
             'customer',
             'sales',
             'unit.blok',
-            'unit.pembangunanUnit.pembangunanUnitQc',
+            'unit.pembangunanUnit.pembangunanUnitQc.pembangunanUnitQcTask',
             'cash.dokumen',
             'cash.pemesananUnit',
         ])

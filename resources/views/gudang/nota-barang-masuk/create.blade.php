@@ -183,8 +183,8 @@
                         </thead>
 
                         <tbody>
-                            <template x-for="(item, index) in items" :key="index">
-                                <tr x-init="$nextTick(() => initSelect2($refs.barangSelect, index))">
+                            <template x-for="(item, index) in items" :key="item.ui_id">
+                                <tr x-init="$nextTick(() => initSelect2($refs.barangSelect, item))">
 
                                     <!-- Barang -->
                                     <td class="border p-1">
@@ -210,31 +210,32 @@
 
                                     <!-- Satuan -->
                                     <td class="border p-1">
-                                        <select x-init="$nextTick(() => initSatuanSelect2($el, index))"
-                                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2"
+                                        <select x-ref="satuanSelect"
+                                            x-init="$nextTick(() => initSatuanSelect2($refs.satuanSelect, item))"
+                                            class="select-satuan w-full bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2"
                                             :name="`items[${index}][satuan_id]`" required>
-
-                                            <option value="">Pilih</option>
+                                            <option value="">Pilih Satuan</option>
                                             <template x-for="sat in item.satuanList" :key="sat.id">
                                                 <option :value="sat.id" x-text="sat.nama"></option>
                                             </template>
                                         </select>
                                     </td>
 
-                                    <!-- Jumlah Masuk -->
-                                    <td class="border p-1 text-center">
-                                        <input type="number" step="any" min="0.0001" :name="`items[${index}][jumlah_masuk]`"
-                                            x-model.number="item.jumlah" @input="hitungTotal(index)"
-                                            class="w-20 text-center border rounded p-1" required>
+                                    <!-- Jumlah -->
+                                    <td class="border p-1">
+                                        <input type="number" step="any" min="0.0001"
+                                            class="w-full text-center border-none focus:ring-0 bg-transparent text-sm font-bold"
+                                            :name="`items[${index}][jumlah_masuk]`" x-model.number="item.jumlah"
+                                            @input="hitungTotal(item)" required>
                                     </td>
 
                                     <!-- Harga Satuan -->
                                     <td class="border p-1">
-                                        <input type="text" x-model="item.harga_satuan_display"
-                                            @input="formatHargaSatuan(index)" class="w-full border rounded p-1"
-                                            required>
+                                        <input type="text"
+                                            class="w-full text-right border-none focus:ring-0 bg-transparent text-sm"
+                                            x-model="item.harga_satuan_display" @input="formatHargaSatuan(item)" required>
                                         <input type="hidden" :name="`items[${index}][harga_satuan]`"
-                                            :value="item.harga_satuan" required>
+                                            :value="item.harga_satuan">
                                     </td>
 
                                     <!-- Harga Total -->
@@ -295,6 +296,7 @@
             masterBarangs,
 
             items: [{
+                ui_id: 'ui_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
                 barang_id: '',
                 merk: '',
                 satuan_id: '',
@@ -311,11 +313,11 @@
             /* =======================
              * INIT SELECT2
              * ======================= */
-            initSelect2(selectEl, index) {
+            initSelect2(selectEl, item) {
                 if (!selectEl) return
 
                 // Simpan reference select
-                this.items[index]._selectEl = selectEl
+                item._selectEl = selectEl
 
                 // Cegah double init
                 if ($(selectEl).hasClass('select2-hidden-accessible')) return
@@ -328,27 +330,27 @@
                 })
 
                 $(selectEl).on('change', async (e) => {
-                    this.items[index].barang_id = e.target.value
+                    item.barang_id = e.target.value
                     this.refreshDisabledOptions()
 
                     // RESET semua input row
-                    this.resetRow(index)
-                    if (this.items[index]._satuanSelectEl) {
-                        $(this.items[index]._satuanSelectEl).val('').trigger('change.select2');
+                    this.resetRow(item)
+                    if (item._satuanSelectEl) {
+                        $(item._satuanSelectEl).val('').trigger('change.select2');
                     }
 
                     if (e.target.value) {
                         try {
                             const response = await fetch(`/gudang/barang/${e.target.value}/satuan`);
                             const data = await response.json();
-                            this.items[index].satuanList = data;
+                            item.satuanList = data;
 
                             // Auto select jika ada yang is_default
                             const defaultSatuan = data.find(s => s.is_default == 1);
-                            if (defaultSatuan && this.items[index]._satuanSelectEl) {
-                                this.items[index].satuan_id = defaultSatuan.id;
+                            if (defaultSatuan && item._satuanSelectEl) {
+                                item.satuan_id = defaultSatuan.id;
                                 setTimeout(() => {
-                                    $(this.items[index]._satuanSelectEl).val(defaultSatuan.id).trigger('change.select2');
+                                    $(item._satuanSelectEl).val(defaultSatuan.id).trigger('change.select2');
                                 }, 100);
                             }
                         } catch (err) {
@@ -390,10 +392,10 @@
             /* =======================
              * INIT SATUAN SELECT2
              * ======================= */
-            initSatuanSelect2(selectEl, index) {
+            initSatuanSelect2(selectEl, item) {
                 if (!selectEl) return
 
-                this.items[index]._satuanSelectEl = selectEl
+                item._satuanSelectEl = selectEl
 
                 if ($(selectEl).hasClass('select2-hidden-accessible')) return
 
@@ -405,7 +407,7 @@
                 })
 
                 $(selectEl).on('change', (e) => {
-                    this.items[index].satuan_id = e.target.value
+                    item.satuan_id = e.target.value
                 })
             },
 
@@ -414,6 +416,7 @@
              * ======================= */
             addRow() {
                 this.items.push({
+                    ui_id: 'ui_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
                     barang_id: '',
                     merk: '',
                     satuan_id: '',
@@ -456,40 +459,37 @@
             },
 
             // reset semua inputan ketika ganti barang
-            resetRow(index) {
-                this.items[index].merk = ''
-                this.items[index].jumlah = 1
-                this.items[index].harga_satuan = ''
-                this.items[index].harga_satuan_display = ''
-                this.items[index].harga_total = ''
-                this.items[index].harga_total_display = ''
+            resetRow(item) {
+                item.merk = ''
+                item.jumlah = 1
+                item.harga_satuan = ''
+                item.harga_satuan_display = ''
+                item.harga_total = ''
+                item.harga_total_display = ''
+                item.satuan_id = ''
+                item.satuanList = []
 
-                this.items[index].satuan_id = ''
-                this.items[index].satuanList = []
-
-                // reset select2 satuan
-                if (this.items[index]._satuanSelectEl) {
-                    $(this.items[index]._satuanSelectEl).val('').trigger('change.select2')
+                if (item._satuanSelectEl) {
+                    $(item._satuanSelectEl).val('').trigger('change.select2')
                 }
             },
 
             /* =======================
              * HARGA & TOTAL
              * ======================= */
-            formatHargaSatuan(index) {
-                let raw = this.items[index].harga_satuan_display.replace(/\D/g, '')
-                this.items[index].harga_satuan = raw
-                this.items[index].harga_satuan_display = this.formatRupiah(raw)
-                this.hitungTotal(index)
+            formatHargaSatuan(item) {
+                let raw = (item.harga_satuan_display || '').toString().replace(/\D/g, '')
+                item.harga_satuan = raw
+                item.harga_satuan_display = this.formatRupiah(raw)
+                this.hitungTotal(item)
             },
 
-            hitungTotal(index) {
-                let qty = this.items[index].jumlah || 0
-                let harga = this.items[index].harga_satuan || 0
+            hitungTotal(item) {
+                let qty = parseFloat(item.jumlah) || 0
+                let harga = parseFloat(item.harga_satuan) || 0
                 let total = qty * harga
-
-                this.items[index].harga_total = total
-                this.items[index].harga_total_display = this.formatRupiah(total)
+                item.harga_total = total
+                item.harga_total_display = this.formatRupiah(Math.round(total))
             },
 
             formatRupiah(angka) {

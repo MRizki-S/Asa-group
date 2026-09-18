@@ -20,7 +20,7 @@ class DaftarNotaMasukController extends Controller
         $tahun = $request->get('tahun', now()->year);
         $tanggal = $request->get('tanggal');
 
-        $query = NotaBarangMasuk::with(['details.barang', 'supplier', 'ubs'])
+        $query = NotaBarangMasuk::with(['details.barang', 'details.satuan', 'supplier', 'ubs'])
             ->where('status', 'posted')
             ->orderBy('posted_at', 'desc');
 

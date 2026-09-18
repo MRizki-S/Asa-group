@@ -172,6 +172,7 @@
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Nomor Nota</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Masuk</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Supplier</th>
+                                <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Daftar Barang</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Gudang Tujuan</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Cara Bayar</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Posting</th>
@@ -186,6 +187,18 @@
                                 <td class="px-3 py-3 font-mono font-bold text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->supplier->nama_supplier ?? '-' }}</td>
+                                <td class="px-2.5 py-2 min-w-[180px]">
+                                    <div class="max-h-20 overflow-y-auto custom-scrollbar space-y-0.5 pr-0.5">
+                                        @foreach ($nota->details as $detail)
+                                            <div class="text-[11px] font-normal leading-tight text-gray-700 dark:text-gray-300 flex items-center justify-between gap-1.5 border-b border-gray-100/70 dark:border-gray-800/30 pb-0.5 last:border-0">
+                                                <span>{{ $detail->barang->nama_barang ?? '-' }}</span>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap shrink-0">
+                                                    {{ (float)$detail->jumlah_input + 0 }} {{ $detail->satuan->nama ?? '' }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     @if ($nota->stock_type === 'HUB')
                                         <span class="px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 rounded-md text-xs font-bold">Gudang HUB</span>
@@ -295,6 +308,7 @@
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Nomor Nota</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Masuk</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Supplier</th>
+                                <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Daftar Barang</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Gudang Tujuan</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Cara Bayar</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Posting</th>
@@ -309,6 +323,18 @@
                                 <td class="px-3 py-3 font-mono font-bold text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->supplier->nama_supplier ?? '-' }}</td>
+                                <td class="px-2.5 py-2 min-w-[180px]">
+                                    <div class="max-h-20 overflow-y-auto custom-scrollbar space-y-0.5 pr-0.5">
+                                        @foreach ($nota->details as $detail)
+                                            <div class="text-[11px] font-normal leading-tight text-gray-700 dark:text-gray-300 flex items-center justify-between gap-1.5 border-b border-gray-100/70 dark:border-gray-800/30 pb-0.5 last:border-0">
+                                                <span>{{ $detail->barang->nama_barang ?? '-' }}</span>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap shrink-0">
+                                                    {{ (float)$detail->jumlah_input + 0 }} {{ $detail->satuan->nama ?? '' }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     @if ($nota->stock_type === 'HUB')
                                         <span class="px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 rounded-md text-xs font-bold">Gudang HUB</span>
@@ -398,6 +424,7 @@
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Nomor Nota</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Masuk</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Supplier</th>
+                                <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Daftar Barang</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Gudang Tujuan</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Cara Bayar</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Posting</th>
@@ -412,6 +439,18 @@
                                 <td class="px-3 py-3 font-mono font-bold text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->nomor_nota }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ \Carbon\Carbon::parse($nota->tanggal_nota)->format('d-M-Y') }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $nota->supplier->nama_supplier ?? '-' }}</td>
+                                <td class="px-2.5 py-2 min-w-[180px]">
+                                    <div class="max-h-20 overflow-y-auto custom-scrollbar space-y-0.5 pr-0.5">
+                                        @foreach ($nota->details as $detail)
+                                            <div class="text-[11px] font-normal leading-tight text-gray-700 dark:text-gray-300 flex items-center justify-between gap-1.5 border-b border-gray-100/70 dark:border-gray-800/30 pb-0.5 last:border-0">
+                                                <span>{{ $detail->barang->nama_barang ?? '-' }}</span>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap shrink-0">
+                                                    {{ (float)$detail->jumlah_input + 0 }} {{ $detail->satuan->nama ?? '' }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     @if ($nota->stock_type === 'HUB')
                                         <span class="px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 rounded-md text-xs font-bold">Gudang HUB</span>
@@ -501,6 +540,7 @@
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Nomor Nota</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Masuk</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700 text-center">Jenis Nota</th>
+                                <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Daftar Barang</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Gudang Tujuan</th>
                                 <th class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">Tanggal Posting</th>
                                 @can('gudang.nota-masuk.daftar-nota-masuk.detail')
@@ -526,6 +566,18 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $jenis['class'] }}">
                                         {{ $jenis['label'] }}
                                     </span>
+                                </td>
+                                <td class="px-2.5 py-2 min-w-[180px]">
+                                    <div class="max-h-20 overflow-y-auto custom-scrollbar space-y-0.5 pr-0.5">
+                                        @foreach ($nota->details as $detail)
+                                            <div class="text-[11px] font-normal leading-tight text-gray-700 dark:text-gray-300 flex items-center justify-between gap-1.5 border-b border-gray-100/70 dark:border-gray-800/30 pb-0.5 last:border-0">
+                                                <span>{{ $detail->barang->nama_barang ?? '-' }}</span>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap shrink-0">
+                                                    {{ (float)$detail->jumlah_input + 0 }} {{ $detail->satuan->nama ?? '' }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </td>
                                 <td class="px-3 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     @if ($nota->stock_type === 'HUB')

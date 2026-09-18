@@ -203,11 +203,11 @@
                         </thead>
 
                         <tbody>
-                            <template x-for="(item, index) in items" :key="index">
+                            <template x-for="(item, index) in items" :key="item.ui_id">
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/10 transition-colors">
                                     <!-- Barang -->
                                     <td class="border border-gray-300 p-1">
-                                        <select x-init="$nextTick(() => initSelect2($el, index))"
+                                        <select x-init="$nextTick(() => initSelect2($el, item))"
                                             class="w-full bg-gray-50 dark:bg-gray-700 border-none text-sm"
                                             :name="`items[${index}][barang_id]`" required>
                                             <option value="">Pilih</option>
@@ -227,7 +227,7 @@
 
                                     <!-- Satuan -->
                                     <td class="border border-gray-300 p-1">
-                                        <select x-init="$nextTick(() => initSatuanSelect2($el, index))"
+                                        <select x-init="$nextTick(() => initSatuanSelect2($el, item))"
                                             class="w-full bg-gray-50 dark:bg-gray-700 border-none text-sm"
                                             :name="`items[${index}][satuan_id]`" required>
                                             <option value="">Pilih</option>
@@ -240,14 +240,14 @@
                                     <!-- Jumlah -->
                                     <td class="border border-gray-300 p-1">
                                         <input type="number" step="any" min="0.0001" :name="`items[${index}][jumlah_masuk]`"
-                                            x-model.number="item.jumlah" @input="hitungTotal(index)"
+                                            x-model.number="item.jumlah" @input="hitungTotal(item)"
                                             class="w-full text-center border-none focus:ring-0 bg-transparent text-sm font-bold" required>
                                     </td>
 
                                     <!-- Harga Satuan -->
                                     <td class="border border-gray-300 p-1">
                                         <input type="text" x-model="item.harga_satuan_display"
-                                            @input="formatHargaSatuan(index)" 
+                                            @input="formatHargaSatuan(item)" 
                                             class="w-full text-right border-none focus:ring-0 bg-transparent text-sm" required>
                                         <input type="hidden" :name="`items[${index}][harga_satuan]`" :value="item.harga_satuan">
                                     </td>
@@ -350,8 +350,9 @@
             init() {
                 // Konfigurasi data awal dari controller
                 if (existingItems && existingItems.length > 0) {
-                    this.items = existingItems.map(item => ({
+                    this.items = existingItems.map((item, idx) => ({
                         ...item,
+                        ui_id: item.ui_id || ('ui_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 6)),
                         _loading: false,
                         _selectEl: null,
                         _satuanSelectEl: null
@@ -366,10 +367,11 @@
                 });
             },
 
-            initSelect2(el, index) {
+            initSelect2(el, item) {
+                if (!el) return;
+                item._selectEl = el;
+
                 if ($(el).hasClass('select2-hidden-accessible')) return;
-                
-                this.items[index]._selectEl = el;
 
                 $(el).select2({ 
                     theme: 'bootstrap4', 
@@ -378,38 +380,38 @@
                 });
 
                 // Set value awal jika ada
-                if (this.items[index].barang_id) {
-                    $(el).val(this.items[index].barang_id).trigger('change.select2');
+                if (item.barang_id) {
+                    $(el).val(item.barang_id).trigger('change.select2');
                 }
 
                 $(el).on('change', async (e) => {
                     let val = e.target.value;
-                    if (this.items[index].barang_id == val && this.items[index].satuanList.length > 0) return;
+                    if (item.barang_id == val && item.satuanList.length > 0) return;
                     
-                    this.items[index].barang_id = val;
-                    this.resetRow(index);
+                    item.barang_id = val;
+                    this.resetRow(item);
                     this.refreshDisabledOptions();
 
                     if (val) {
                         try {
                             const response = await fetch(`/gudang/barang/${val}/satuan`);
                             const data = await response.json();
-                            this.items[index].satuanList = data;
+                            item.satuanList = data;
 
                             // OTOMATIS PILIH DEFAULT SATUAN
                             const defaultSatuan = data.find(s => s.is_default == 1);
                             if (defaultSatuan) {
-                                this.items[index].satuan_id = defaultSatuan.id;
+                                item.satuan_id = defaultSatuan.id;
                                 this.$nextTick(() => {
-                                    if (this.items[index]._satuanSelectEl) {
-                                        $(this.items[index]._satuanSelectEl).val(defaultSatuan.id).trigger('change.select2');
+                                    if (item._satuanSelectEl) {
+                                        $(item._satuanSelectEl).val(defaultSatuan.id).trigger('change.select2');
                                     }
                                 });
                             }
 
                             this.$nextTick(() => {
-                                if (this.items[index]._satuanSelectEl) {
-                                    $(this.items[index]._satuanSelectEl).trigger('change.select2');
+                                if (item._satuanSelectEl) {
+                                    $(item._satuanSelectEl).trigger('change.select2');
                                 }
                                 this.refreshDisabledOptions();
                             });
@@ -449,8 +451,10 @@
                 });
             },
 
-            initSatuanSelect2(el, index) {
-                this.items[index]._satuanSelectEl = el;
+            initSatuanSelect2(el, item) {
+                if (!el) return;
+                item._satuanSelectEl = el;
+
                 if ($(el).hasClass('select2-hidden-accessible')) return;
                 
                 $(el).select2({ 
@@ -460,15 +464,16 @@
                 });
 
                 // Set value awal jika ada
-                if (this.items[index].satuan_id) {
-                    $(el).val(this.items[index].satuan_id).trigger('change.select2');
+                if (item.satuan_id) {
+                    $(el).val(item.satuan_id).trigger('change.select2');
                 }
 
-                $(el).on('change', (e) => { this.items[index].satuan_id = e.target.value; });
+                $(el).on('change', (e) => { item.satuan_id = e.target.value; });
             },
 
             addRow() {
                 this.items.push({
+                    ui_id: 'ui_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
                     barang_id: '', merk: '', satuan_id: '', satuanList: [], jumlah: 1, 
                     harga_satuan: '', harga_satuan_display: '', harga_total: '', harga_total_display: '',
                     _selectEl: null, _satuanSelectEl: null
@@ -479,42 +484,52 @@
             removeRow(index) {
                 if (this.items.length > 1) {
                     let item = this.items[index];
-                    if (item._selectEl) $(item._selectEl).select2('destroy');
-                    if (item._satuanSelectEl) $(item._satuanSelectEl).select2('destroy');
+                    if (item && item._selectEl) {
+                        let $el = $(item._selectEl);
+                        if ($el.hasClass('select2-hidden-accessible')) {
+                            $el.select2('destroy');
+                        }
+                    }
+                    if (item && item._satuanSelectEl) {
+                        let $satEl = $(item._satuanSelectEl);
+                        if ($satEl.hasClass('select2-hidden-accessible')) {
+                            $satEl.select2('destroy');
+                        }
+                    }
                     
                     this.items.splice(index, 1);
                     this.$nextTick(() => this.refreshDisabledOptions());
                 }
             },
 
-            resetRow(index) {
-                this.items[index].merk = '';
-                this.items[index].jumlah = 1;
-                this.items[index].harga_satuan = '';
-                this.items[index].harga_satuan_display = '';
-                this.items[index].harga_total = '';
-                this.items[index].harga_total_display = '';
-                this.items[index].satuan_id = '';
-                this.items[index].satuanList = [];
+            resetRow(item) {
+                item.merk = '';
+                item.jumlah = 1;
+                item.harga_satuan = '';
+                item.harga_satuan_display = '';
+                item.harga_total = '';
+                item.harga_total_display = '';
+                item.satuan_id = '';
+                item.satuanList = [];
 
-                if (this.items[index]._satuanSelectEl) {
-                    $(this.items[index]._satuanSelectEl).val('').trigger('change.select2');
+                if (item._satuanSelectEl) {
+                    $(item._satuanSelectEl).val('').trigger('change.select2');
                 }
             },
 
-            formatHargaSatuan(index) {
-                let raw = this.items[index].harga_satuan_display.toString().replace(/\D/g, '');
-                this.items[index].harga_satuan = raw;
-                this.items[index].harga_satuan_display = this.formatRupiah(raw);
-                this.hitungTotal(index);
+            formatHargaSatuan(item) {
+                let raw = (item.harga_satuan_display || '').toString().replace(/\D/g, '');
+                item.harga_satuan = raw;
+                item.harga_satuan_display = this.formatRupiah(raw);
+                this.hitungTotal(item);
             },
 
-            hitungTotal(index) {
-                let qty = parseFloat(this.items[index].jumlah) || 0;
-                let harga = parseFloat(this.items[index].harga_satuan) || 0;
+            hitungTotal(item) {
+                let qty = parseFloat(item.jumlah) || 0;
+                let harga = parseFloat(item.harga_satuan) || 0;
                 let total = qty * harga;
-                this.items[index].harga_total = total;
-                this.items[index].harga_total_display = this.formatRupiah(Math.round(total));
+                item.harga_total = total;
+                item.harga_total_display = this.formatRupiah(Math.round(total));
             },
 
             formatRupiah(angka) {

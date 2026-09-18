@@ -9,12 +9,21 @@ use App\Models\NotaBarangMasuk;
 use App\Models\NotaBarangMasukDetail;
 use App\Models\MasterSupplier;
 use App\Models\Ubs;
+use App\Services\NotificationGroupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class NotaBarangMasukController extends Controller
 {
+    protected NotificationGroupService $notificationGroup;
+
+    public function __construct(NotificationGroupService $notificationGroup)
+    {
+        $this->notificationGroup = $notificationGroup;
+    }
+
     public function getSatuan($id)
     {
         $satuans = DB::table('barang_satuan_konversi as bsk')
@@ -80,7 +89,8 @@ class NotaBarangMasukController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            $nota = null;
+            DB::transaction(function () use ($validated, &$nota) {
 
                 // 1. INSERT HEADER (NOTA) — nomor_nota NULL, akan di-generate saat posting
                 $nota = NotaBarangMasuk::create([
@@ -126,6 +136,21 @@ class NotaBarangMasukController extends Controller
                     ]);
                 }
             });
+
+            // Kirim Notifikasi WA ke group
+            try {
+                $groupId = env('FONNTE_ID_GROUP_GUDANG_STOCK') ?: '120363414745460066@g.us';
+                if ($groupId && $nota) {
+                    $nota->load(['supplier', 'ubs', 'creator', 'details.barang', 'details.satuan']);
+                    $messageGroup = view('notifications.whatsapp.gudang.pengajuan_draft_nota_masuk', [
+                        'nota' => $nota,
+                    ])->render();
+
+                    $this->notificationGroup->send($groupId, $messageGroup);
+                }
+            } catch (\Throwable $th) {
+                Log::error('Gagal mengirim WA pengajuan draft nota barang masuk: ' . $th->getMessage());
+            }
 
             return redirect()
                 ->route('gudang.notaBarangMasuk.create')

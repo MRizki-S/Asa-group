@@ -175,16 +175,6 @@ class PemesananUnit extends Model
             return '-';
         }
 
-        $totalQc = $pembangunan->pembangunanUnitQc->count();
-        $sumProgressQc = 0;
-
-        foreach ($pembangunan->pembangunanUnitQc as $qc) {
-            $qcProgress = $qc->total_task > 0 ? ($qc->task_selesai_count / $qc->total_task) * 100 : 0;
-            $sumProgressQc += $qcProgress;
-        }
-
-        $progress = $totalQc > 0 ? round($sumProgressQc / $totalQc, 2) : 0;
-
-        return $progress . '%';
+        return $pembangunan->total_progres . '%';
     }
 }
