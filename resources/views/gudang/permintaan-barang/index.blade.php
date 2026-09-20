@@ -32,6 +32,65 @@
             let num = parseFloat(val);
             if (isNaN(num)) return '0';
             return num.toLocaleString('id-ID', { maximumFractionDigits: 4 });
+        },
+        selectedOrders: [],
+        toggleOrder(id) {
+            id = parseInt(id);
+            const idx = this.selectedOrders.indexOf(id);
+            if (idx > -1) {
+                this.selectedOrders.splice(idx, 1);
+            } else {
+                this.selectedOrders.push(id);
+            }
+            this.syncHeaderCheckbox();
+        },
+        toggleSelectAll(e) {
+            const isChecked = e.target.checked;
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(cb => {
+                const id = parseInt(cb.value);
+                cb.checked = isChecked;
+                const idx = this.selectedOrders.indexOf(id);
+                if (isChecked) {
+                    if (idx === -1) {
+                        this.selectedOrders.push(id);
+                    }
+                } else {
+                    if (idx > -1) {
+                        this.selectedOrders.splice(idx, 1);
+                    }
+                }
+            });
+        },
+        syncHeaderCheckbox() {
+            const headCb = document.getElementById('select-all-header');
+            if (!headCb) return;
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            if (checkboxes.length === 0) {
+                headCb.checked = false;
+                return;
+            }
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            headCb.checked = allChecked;
+        },
+        submitBulkPrint() {
+            if (this.selectedOrders.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Data',
+                    text: 'Silakan pilih minimal satu permintaan barang yang berstatus selesai untuk dicetak.'
+                });
+                return;
+            }
+            if (this.selectedOrders.length > 50) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Batas Terlampaui',
+                    text: 'Maksimal 50 nota per sekali cetak untuk menjaga performa sistem. Silakan kurangi pilihan atau gunakan filter tanggal.'
+                });
+                return;
+            }
+            document.getElementById('bulk-print-form').submit();
         }
     }">
 
@@ -49,24 +108,54 @@
 
                     <div class="flex flex-wrap items-center gap-2">
                         @if (!$isHistory)
-                            <a href="{{ route('gudang.permintaanBarang.pembangunanUnit.create', ['category' => $category]) }}"
-                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg> Tambah Barang Keluar
-                            </a>
+                            @php
+                                $createPermMap = [
+                                    'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.create',
+                                    'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.create',
+                                    'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.create',
+                                ];
+                                $createPermission = $createPermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.create';
+                            @endphp
+                            @can($createPermission)
+                                <a href="{{ route('gudang.permintaanBarang.pembangunanUnit.create', ['category' => $category]) }}"
+                                    class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg> Tambah Barang Keluar
+                                </a>
+                            @endcan
                         @endif
 
                         @if ($isHistory)
+                            @can('gudang.permintaan-barang.cetak-nbk')
+                                <button type="button" @click="submitBulkPrint()"
+                                    class="inline-flex w-fit items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700 transition shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    <span>Cetak NBK Terpilih</span>
+                                    <span x-show="selectedOrders.length > 0" class="ml-1 px-2 py-0.5 text-xs bg-purple-800 rounded-full" x-text="selectedOrders.length"></span>
+                                </button>
+                            @endcan
                             <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => $category]) }}"
                                 class="inline-flex w-fit items-center gap-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                                 Kembali ke Permintaan
                             </a>
                         @else
-                            <a href="{{ route('gudang.permintaanBarang.history', ['jenis_order' => $category]) }}"
-                                class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
-                                Riwayat Permintaan Barang
-                            </a>
+                            @php
+                                $historyPermMap = [
+                                    'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.history',
+                                    'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.history',
+                                    'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.history',
+                                ];
+                                $historyPermission = $historyPermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.history';
+                            @endphp
+                            @can($historyPermission)
+                                <a href="{{ route('gudang.permintaanBarang.history', ['jenis_order' => $category]) }}"
+                                    class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
+                                    Riwayat Permintaan Barang
+                                </a>
+                            @endcan
                         @endif
                     </div>
                 </div>
@@ -132,10 +221,33 @@
                         Reset
                     </a>
                 </form>
+
+                @if ($isHistory)
+                    @can('gudang.permintaan-barang.cetak-nbk')
+                        <form id="bulk-print-form" action="{{ route('gudang.permintaanBarang.cetakBulkNbk') }}" method="POST" target="_blank" class="hidden">
+                            @csrf
+                            <input type="hidden" name="category" value="{{ $category }}">
+                            <template x-for="id in selectedOrders" :key="id">
+                                <input type="hidden" name="order_ids[]" :value="id">
+                            </template>
+                        </form>
+                    @endcan
+                @endif
+
             <div class="overflow-x-auto custom-scrollbar">
                 <table id="table-permintaanBarang" class="min-w-full" style="min-width: 800px;">
                 <thead>
                     <tr>
+                        @if ($isHistory)
+                            @can('gudang.permintaan-barang.cetak-nbk')
+                                <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center w-10">
+                                    <input type="checkbox" id="select-all-header"
+                                        @click="toggleSelectAll($event)"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 cursor-pointer"
+                                        title="Pilih Semua di Halaman Ini">
+                                </th>
+                            @endcan
+                        @endif
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No Order</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Lokasi / Proyek</th>
@@ -171,11 +283,13 @@
 
                             $statusMap = [
                                 'diproses' => 'bg-blue-100 text-blue-700',
+                                'menunggu_spv' => 'bg-amber-100 text-amber-700',
                                 'selesai' => 'bg-green-100 text-green-700',
                                 'ditolak' => 'bg-red-100 text-red-700',
                             ];
                             $statusLabels = [
-                                'diproses' => 'Menunggu',
+                                'diproses' => 'Menunggu Gudang',
+                                'menunggu_spv' => 'Menunggu ACC SPV',
                                 'selesai' => 'Selesai',
                                 'ditolak' => 'Ditolak',
                             ];
@@ -192,6 +306,20 @@
                             })->values();
                         @endphp
                         <tr>
+                            @if ($isHistory)
+                                @can('gudang.permintaan-barang.cetak-nbk')
+                                    <td class="text-center w-10">
+                                        @if ($order->status_order === 'selesai')
+                                            <input type="checkbox" value="{{ $order->id }}"
+                                                class="order-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                                                :checked="selectedOrders.includes({{ $order->id }})"
+                                                @change="toggleOrder({{ $order->id }})">
+                                        @else
+                                            <span class="text-gray-300 dark:text-gray-600" title="Hanya order yang selesai dapat dicetak">-</span>
+                                        @endif
+                                    </td>
+                                @endcan
+                            @endif
                             <td class="font-medium text-gray-900 dark:text-white">
                                 {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                             </td>
@@ -231,6 +359,26 @@
                                     class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 active:scale-95">
                                     Detail
                                 </a>
+
+                                @if ($order->status_order === 'selesai')
+                                    @can('gudang.permintaan-barang.cetak-nbk')
+                                        @php
+                                            $notaPdfSingleRoute = $category === 'pembangunan_unit'
+                                                ? route('gudang.permintaanBarang.pembangunanUnit.notaPdf', $order->id)
+                                                : ($category === 'pembangunan_kawasan'
+                                                    ? route('gudang.permintaanBarang.pembangunanKawasan.notaPdf', $order->id)
+                                                    : route('gudang.permintaanBarang.pembangunanProyek.notaPdf', $order->id));
+                                        @endphp
+                                        <a href="{{ $notaPdfSingleRoute }}" target="_blank"
+                                            class="inline-flex items-center gap-1 text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1 active:scale-95"
+                                            title="Cetak NBK">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            </svg>
+                                            Cetak NBK
+                                        </a>
+                                    @endcan
+                                @endif
                                 @php
                                     $editPermMap = [
                                         'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.edit',
@@ -396,10 +544,25 @@
 
 <script>
     if (document.getElementById("table-permintaanBarang") && typeof simpleDatatables.DataTable !== 'undefined') {
-        new simpleDatatables.DataTable("#table-permintaanBarang", {
+        const dt = new simpleDatatables.DataTable("#table-permintaanBarang", {
             searchable: true,
             sortable: true,
             perPageSelect: [5, 10, 20, 50],
+            columns: [
+                @if ($isHistory)
+                { select: 0, sortable: false }
+                @endif
+            ]
+        });
+
+        // Tangani sinkronisasi checkbox saat pindah halaman atau sorting di datatable
+        dt.on('datatable.page', function() {
+            setTimeout(() => {
+                const alpineEl = document.querySelector('[x-data]');
+                if (alpineEl && alpineEl._x_dataStack) {
+                    alpineEl._x_dataStack[0].syncHeaderCheckbox();
+                }
+            }, 50);
         });
     }
 

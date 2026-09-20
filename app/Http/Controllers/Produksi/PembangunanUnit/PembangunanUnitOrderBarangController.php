@@ -58,6 +58,160 @@ class PembangunanUnitOrderBarangController extends Controller
         }
     }
 
+    protected function currentPerumahaanId()
+    {
+        $user = Auth::user();
+        return $user->is_global ? session('current_perumahaan_id', null) : $user->perumahaan_id;
+    }
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $perumahaanId = $this->currentPerumahaanId();
+
+        $query = PembangunanUnitBarangOrder::with([
+            'pembangunanUnit.unit.tahap.perumahaan',
+            'qc',
+            'user',
+            'details'
+        ])->latest('tanggal_diajukan');
+
+        if ($user->hasRole('PENGAWAS PROYEK (UNIT)')) {
+            $query->whereHas('pembangunanUnit', function ($q) use ($user, $perumahaanId) {
+                $q->where('pengawas_id', $user->id);
+                if ($perumahaanId) {
+                    $q->where('perumahaan_id', $perumahaanId);
+                }
+            });
+        } elseif ($perumahaanId) {
+            $query->whereHas('pembangunanUnit', function ($q) use ($perumahaanId) {
+                $q->where('perumahaan_id', $perumahaanId);
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status_order', $request->status);
+        }
+
+        $orders = $query->paginate(15);
+
+        return view('produksi.pembangunan-unit.order-barang.index', [
+            'orders' => $orders,
+            'breadcrumbs' => [
+                ['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')],
+                ['label' => 'Order Barang Unit', 'url' => route('produksi.pembangunanUnit.orderIndex')],
+            ],
+        ]);
+    }
+
+    public function create(Request $request)
+    {
+        $user = Auth::user();
+        $perumahaanId = $this->currentPerumahaanId();
+
+        $queryUnits = PembangunanUnit::with([
+            'unit.tahap.perumahaan',
+            'pengawas',
+            'pembangunanUnitQc.pembangunanUnitRapBahan.barang.baseUnit',
+            'pembangunanUnitQc.pembangunanUnitRapBahan.barang.satuanKonversi.satuan'
+        ]);
+
+        $preselectUnitId = $request->get('pembangunan_unit_id');
+        if ($preselectUnitId) {
+            $targetUnit = PembangunanUnit::find($preselectUnitId);
+            if ($targetUnit && $targetUnit->perumahaan_id) {
+                $perumahaanId = $targetUnit->perumahaan_id;
+            }
+        }
+
+        if ($user->hasRole('PENGAWAS PROYEK (UNIT)')) {
+            $queryUnits->where(function ($q) use ($user, $preselectUnitId) {
+                $q->where('pengawas_id', $user->id);
+                if ($preselectUnitId) {
+                    $q->orWhere('id', $preselectUnitId);
+                }
+            });
+        }
+
+        if ($perumahaanId) {
+            $queryUnits->where(function ($q) use ($perumahaanId, $preselectUnitId) {
+                $q->where('perumahaan_id', $perumahaanId);
+                if ($preselectUnitId) {
+                    $q->orWhere('id', $preselectUnitId);
+                }
+            });
+        }
+
+        $pembangunanUnits = $queryUnits->get()->map(function ($pu) {
+            $namaPerumahan = $pu->unit->tahap->perumahaan->nama_perumahaan ?? '';
+            $namaTahap = $pu->unit->tahap->nama_tahap ?? '';
+            $namaUnit = $pu->unit->nama_unit ?? '-';
+            $isSelesai = in_array($pu->status_pembangunan, ['selesai', 'selesai dengan catatan']);
+            $pu->is_selesai = $isSelesai;
+            $pu->label_formatted = "{$namaPerumahan} - {$namaTahap} - {$namaUnit}";
+            $pu->pengawas_nama = $pu->pengawas->nama_lengkap ?? '-';
+            $pu->subcon_nama = $pu->subcon ?? '-';
+            return $pu;
+        });
+
+        // Ambil stok gudang
+        $barangGudangQuery = MasterBarang::with(['baseUnit', 'satuanKonversi.satuan']);
+
+        if ($perumahaanId) {
+            $barangGudangQuery->with(['stock' => function ($q) use ($perumahaanId) {
+                $q->where('stock_type', 'UBS')->where('ubs_id', $perumahaanId);
+            }]);
+        } else {
+            $barangGudangQuery->with(['stock' => function ($q) {
+                $q->where('stock_type', 'UBS');
+            }]);
+        }
+
+        $barangGudang = $barangGudangQuery->get()->map(function ($b) {
+            $stokTotal = $b->stock ? $b->stock->sum('jumlah_stock') : 0;
+            $satuans = collect();
+            if ($b->baseUnit) {
+                $satuans->push([
+                    'id' => $b->base_unit_id,
+                    'nama_satuan' => $b->baseUnit->nama,
+                    'konversi_ke_base' => 1
+                ]);
+            }
+            if ($b->satuanKonversi) {
+                foreach ($b->satuanKonversi as $sk) {
+                    if ($sk->satuan) {
+                        $satuans->push([
+                            'id' => $sk->satuan_id,
+                            'nama_satuan' => $sk->satuan->nama,
+                            'konversi_ke_base' => (float) $sk->konversi_ke_base
+                        ]);
+                    }
+                }
+            }
+
+            return [
+                'id' => $b->id,
+                'kode_barang' => $b->kode_barang,
+                'nama_barang' => $b->nama_barang,
+                'is_stock' => (bool) $b->is_stock,
+                'base_unit_id' => $b->base_unit_id,
+                'base_unit_nama' => $b->baseUnit->nama ?? '',
+                'stok_gudang' => (float) $stokTotal,
+                'satuans' => $satuans->unique('id')->values()->toArray(),
+            ];
+        });
+
+        return view('produksi.pembangunan-unit.order-barang.create', [
+            'pembangunanUnits' => $pembangunanUnits,
+            'barangGudang' => $barangGudang,
+            'breadcrumbs' => [
+                ['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')],
+                ['label' => 'Order Barang Unit', 'url' => route('produksi.pembangunanUnit.orderIndex')],
+                ['label' => 'Buat Order Barang', 'url' => route('produksi.pembangunanUnit.orderCreate')],
+            ],
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([

@@ -218,6 +218,14 @@
                 {{ $orders->count() }} Total
             </span>
         </div>
+
+        @can('produksi.properti.pembangunan-unit.order-barang.create')
+            <a href="{{ route('produksi.pembangunanUnit.orderCreate', ['pembangunan_unit_id' => $data->id, 'qc_id' => $qc->id]) }}"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all active:scale-95">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Order Barang</span>
+            </a>
+        @endcan
     </div>
 
     {{-- Tabel Order Barang --}}
@@ -254,6 +262,16 @@
                                     <p class="text-xs font-bold text-gray-700 dark:text-gray-200">
                                         {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                                     </p>
+                                    @if($order->nomor_nbk)
+                                        @can('gudang.permintaan-barang.cetak-nbk')
+                                            <a href="{{ route('gudang.permintaanBarang.pembangunanUnit.notaPdf', $order->id) }}" target="_blank"
+                                                @click.stop
+                                                class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded hover:underline">
+                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                NBK
+                                            </a>
+                                        @endcan
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-4 py-4 text-xs text-center">
@@ -270,14 +288,23 @@
                                 @php
                                     $statusMap = [
                                         'diproses' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                        'menunggu_spv' => 'bg-amber-50 text-amber-600 border-amber-100',
                                         'selesai' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
                                         'ditolak' => 'bg-red-50 text-red-600 border-red-100',
                                         'return_pending' => 'bg-orange-50 text-orange-600 border-orange-100',
                                     ];
                                     $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                    $statusLabels = [
+                                        'diproses' => 'Menunggu',
+                                        'menunggu_spv' => 'Menunggu SPV',
+                                        'selesai' => 'Selesai',
+                                        'ditolak' => 'Ditolak',
+                                        'return_pending' => 'Pengembalian',
+                                    ];
+                                    $label = $statusLabels[$order->status_order] ?? str_replace('_', ' ', $order->status_order);
                                 @endphp
-                                <span class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                    {{ str_replace('_', ' ', $order->status_order) }}
+                                <span class="inline-flex items-center px-2 py-1 rounded text-[8px] font-black uppercase border whitespace-nowrap {{ $style }}">
+                                    {{ $label }}
                                 </span>
                             </td>
                         </tr>
@@ -415,7 +442,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
-            <h5 class="text-xs font-bold text-gray-600 dark:text-gray-300">Belum Ada Riwayat Order</h5>
+            <h5 class="text-xs font-bold text-gray-600 dark:text-gray-300 mb-3">Belum Ada Riwayat Order</h5>
+            @can('produksi.properti.pembangunan-unit.order-barang.create')
+                <a href="{{ route('produksi.pembangunanUnit.orderCreate', ['pembangunan_unit_id' => $data->id, 'qc_id' => $qc->id]) }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Buat Order Barang Sekarang</span>
+                </a>
+            @endcan
         </div>
     @endif
 

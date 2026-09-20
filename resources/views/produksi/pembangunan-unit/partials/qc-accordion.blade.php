@@ -1,8 +1,17 @@
 <div class="space-y-4" x-data="{
-    selected: new URLSearchParams(window.location.search).get('qc') !== null ? parseInt(new URLSearchParams(window.location.search).get('qc')) : null,
+    selected: null,
     init() {
-        // Auto scroll ke elemen yang terbuka saat load
-        if (this.selected !== null) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const qcParam = urlParams.get('qc');
+        if (qcParam !== null) {
+            const parsed = parseInt(qcParam);
+            const elById = document.querySelector(`[data-qc-id='${qcParam}']`);
+            if (elById && elById.dataset.qcIndex !== undefined) {
+                this.selected = parseInt(elById.dataset.qcIndex);
+            } else {
+                this.selected = parsed;
+            }
+
             this.$nextTick(() => {
                 const el = document.getElementById('qc-card-' + this.selected);
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -21,10 +30,10 @@
 
     {{-- Section 1: QC Regular --}}
     @foreach ($regularQcs as $index => $qc)
-        <div id="qc-card-{{ $index }}"
+        <div id="qc-card-{{ $index }}" data-qc-id="{{ $qc->id }}" data-qc-index="{{ $index }}"
             class="rounded-2xl border border-gray-200 bg-white overflow-hidden dark:border-gray-800 dark:bg-white/[0.03]"
             x-data="{
-                tab: (new URLSearchParams(window.location.search).get('qc') == {{ $index }} && new URLSearchParams(window.location.search).get('tab')) || 'tasks'
+                tab: ((new URLSearchParams(window.location.search).get('qc') == {{ $index }} || new URLSearchParams(window.location.search).get('qc') == {{ $qc->id }}) && new URLSearchParams(window.location.search).get('tab')) || 'tasks'
             }">
 
             {{-- Header QC Klik --}}
@@ -111,11 +120,11 @@
         @endphp
         <div class="pt-6 border-t border-gray-200 dark:border-gray-800">
             <h3 class="text-lg font-bold text-gray-700 dark:text-white px-1 mb-3">Servis</h3>
-            
-            <div id="qc-card-{{ $servisIndex }}"
+
+            <div id="qc-card-{{ $servisIndex }}" data-qc-id="{{ $servisQc->id }}" data-qc-index="{{ $servisIndex }}"
                 class="rounded-2xl border border-gray-200 bg-white overflow-hidden dark:border-gray-800 dark:bg-white/[0.03]"
                 x-data="{
-                    tab: (new URLSearchParams(window.location.search).get('qc') == {{ $servisIndex }} && new URLSearchParams(window.location.search).get('tab')) || 'bahan'
+                    tab: ((new URLSearchParams(window.location.search).get('qc') == {{ $servisIndex }} || new URLSearchParams(window.location.search).get('qc') == {{ $servisQc->id }}) && new URLSearchParams(window.location.search).get('tab')) || 'bahan'
                 }">
 
                 {{-- Header QC Klik --}}
@@ -127,7 +136,7 @@
 
                     <div class="flex items-center gap-3 w-full mr-3">
                         <div class="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs shadow-md">
-                            S    
+                            S
                         </div>
                         <h4 class="flex-1 font-bold text-gray-700 dark:text-gray-200 truncate text-sm">Servis</h4>
                         <i class="fa-solid fa-chevron-down transition-transform duration-300 text-gray-400 flex-shrink-0"

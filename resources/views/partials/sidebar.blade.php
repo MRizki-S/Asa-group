@@ -1974,10 +1974,13 @@
                 'produksi.properti.master-qc-rap.read',
                 'produksi.properti.permintaan-dibangun.read',
                 'produksi.properti.pembangunan-unit.read',
+                'produksi.properti.pembangunan-unit.order-barang.read',
                 'produksi.kawasan.buat-pembangunan.read',
                 'produksi.kawasan.pembangunan-kawasan.read',
+                'produksi.kawasan.order-barang.read',
                 'produksi.kontraktor.proyek-baru.read',
                 'produksi.kontraktor.pembangunan-proyek.read',
+                'produksi.kontraktor.order-barang.read',
                 'produksi.manajemen-upah.penamaan-upah.read',
                 'produksi.manajemen-upah.upah-borongan.read'
             ])
@@ -1999,12 +2002,12 @@
 
                 <ul class="flex flex-col gap-2 mb-6">
                     <!-- Pembangunan Properti -->
-                    @canany(['produksi.properti.master-qc-rap.read', 'produksi.properti.permintaan-dibangun.read', 'produksi.properti.pembangunan-unit.read'])
+                    @canany(['produksi.properti.master-qc-rap.read', 'produksi.properti.permintaan-dibangun.read', 'produksi.properti.pembangunan-unit.read', 'produksi.properti.pembangunan-unit.order-barang.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Properti' ? '':'Properti')"
                             class="menu-item group"
-                            :class="(selected === 'Properti') || (page === 'MasterQC-RAP' || page === 'PengajuanPembangunan' || page === 'pembangunanUnit') ? 'menu-item-active' : 'menu-item-inactive'">
-                            <svg :class="(selected === 'Properti') || (page === 'MasterQC-RAP' || page === 'PengajuanPembangunan' || page === 'pembangunanUnit') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                            :class="(selected === 'Properti') || (page === 'MasterQC-RAP' || page === 'PengajuanPembangunan' || page === 'pembangunanUnit' || page === 'orderBarangUnit') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Properti') || (page === 'MasterQC-RAP' || page === 'PengajuanPembangunan' || page === 'pembangunanUnit' || page === 'orderBarangUnit') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                 class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                             </svg>
@@ -2041,18 +2044,26 @@
                                     </a>
                                 </li>
                                 @endcan
+                                @can('produksi.properti.pembangunan-unit.order-barang.read')
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanUnit.orderIndex') }}" class="menu-dropdown-item group"
+                                        :class="page === 'orderBarangUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Order Barang Unit
+                                    </a>
+                                </li>
+                                @endcan
                             </ul>
                         </div>
                     </li>
                     @endcanany
 
                     <!-- Pembangunan Kawasan -->
-                    @canany(['produksi.kawasan.buat-pembangunan.read', 'produksi.kawasan.pembangunan-kawasan.read'])
+                    @canany(['produksi.kawasan.buat-pembangunan.read', 'produksi.kawasan.pembangunan-kawasan.read', 'produksi.kawasan.order-barang.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Kawasan' ? '':'Kawasan')"
                             class="menu-item group"
-                            :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
-                            <svg :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                            :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan' || page === 'orderBarangKawasan') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Kawasan') || (page === 'buatPembangunanKawasan' || page === 'pembangunanKawasan' || page === 'orderBarangKawasan') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                 class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
                             </svg>
@@ -2081,18 +2092,26 @@
                                     </a>
                                 </li>
                                 @endcan
+                                @can('produksi.kawasan.order-barang.read')
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanKawasan.orderIndex') }}" class="menu-dropdown-item group"
+                                        :class="page === 'orderBarangKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Order Barang Kawasan
+                                    </a>
+                                </li>
+                                @endcan
                             </ul>
                         </div>
                     </li>
                     @endcanany
 
                     <!-- Proyek Kontraktor -->
-                    @canany(['produksi.kontraktor.proyek-baru.read', 'produksi.kontraktor.pembangunan-proyek.read'])
+                    @canany(['produksi.kontraktor.proyek-baru.read', 'produksi.kontraktor.pembangunan-proyek.read', 'produksi.kontraktor.order-barang.read'])
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Kontraktor' ? '':'Kontraktor')"
                             class="menu-item group"
-                            :class="(selected === 'Kontraktor') || (page === 'projectBaru' || page === 'pembangunanProyek') ? 'menu-item-active' : 'menu-item-inactive'">
-                            <svg :class="(selected === 'Kontraktor') || (page === 'projectBaru' || page === 'pembangunanProyek') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                            :class="(selected === 'Kontraktor') || (page === 'projectBaru' || page === 'pembangunanProyek' || page === 'orderBarangProyek') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'Kontraktor') || (page === 'projectBaru' || page === 'pembangunanProyek' || page === 'orderBarangProyek') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
                                 class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"></path>
                             </svg>
@@ -2118,6 +2137,14 @@
                                     <a href="{{ route('produksi.pembangunanProyek.index') }}" class="menu-dropdown-item group"
                                         :class="page === 'pembangunanProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         Pemb. Proyek
+                                    </a>
+                                </li>
+                                @endcan
+                                @can('produksi.kontraktor.order-barang.read')
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanProyek.orderIndex') }}" class="menu-dropdown-item group"
+                                        :class="page === 'orderBarangProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Order Barang Proyek
                                     </a>
                                 </li>
                                 @endcan

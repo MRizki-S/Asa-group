@@ -52,16 +52,127 @@ class PermintaanBarangPembangunanUnitController extends Controller
         ])->findOrFail($id);
 
         if ($order->status_order !== 'diproses') {
-            return back()->with('error', 'Permintaan barang unit ini sudah tidak dalam status menunggu.');
+            return back()->with('error', 'Permintaan barang unit ini sudah tidak dalam status menunggu proses gudang.');
         }
 
         try {
             DB::transaction(function () use ($order, $request) {
-                $this->processAcc($order, $request);
+                // Gudang menginput jumlah yang akan dikeluarkan untuk setiap item
+                $itemsAcc = $request->input('items_acc', []);
+                $hargaTotalInput = $request->input('harga_total', []);
+
+                foreach ($order->details as $detail) {
+                    $qtyAcc = isset($itemsAcc[$detail->id]) ? (float) $itemsAcc[$detail->id] : (float) $detail->jumlah_input;
+                    if ($qtyAcc < 0) {
+                        throw new \Exception("Jumlah acc untuk barang {$detail->nama_barang} tidak boleh negatif.");
+                    }
+
+                    $faktorKonversi = BarangSatuanKonversi::where('barang_id', $detail->barang_id)
+                        ->where('satuan_id', $detail->satuan_id)
+                        ->value('konversi_ke_base') ?? 1.0;
+
+                    $jumlahAccBase = round($qtyAcc * (float) $faktorKonversi, 3);
+                    $updateData = [
+                        'jumlah_acc' => $qtyAcc,
+                        'jumlah_acc_base' => $jumlahAccBase,
+                    ];
+
+                    // Simpan harga total snapshot dari input gudang untuk order direct
+                    if ($order->jenis_order === 'direct' && isset($hargaTotalInput[$detail->id]) && $hargaTotalInput[$detail->id] !== '') {
+                        $ht = (float) $hargaTotalInput[$detail->id];
+                        $updateData['harga_total_snapshot'] = $ht;
+                        $updateData['harga_satuan_snapshot'] = $jumlahAccBase > 0 ? round($ht / $jumlahAccBase, 2) : 0;
+                    }
+
+                    $detail->update($updateData);
+                }
+
+                $order->update([
+                    'status_order' => 'menunggu_spv',
+                    'gudang_by' => Auth::id(),
+                    'tanggal_gudang' => now(),
+                    'catatan_gudang' => $request->input('catatan_gudang'),
+                ]);
             });
 
-            // Kirim notifikasi WA setelah transaksi berhasil commit
-            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            // Kirim notifikasi WA bahwa gudang sudah memproses dan siap di-ACC SPV
+            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Staff Gudang';
+            $unit = $order->pembangunanUnit?->unit;
+            $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
+            $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
+            $namaUnit = $unit?->nama_unit ?? '-';
+
+            $targetGroup = env('FONNTE_ID_GROUP_GUDANG_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM'))));
+            if (!empty($targetGroup)) {
+                $message = view('notifications.whatsapp.pembangunan_unit.gudang_order_barang', [
+                    'order' => $order->fresh(['details']),
+                    'namaPerumahan' => $namaPerumahan,
+                    'namaTahap' => $namaTahap,
+                    'namaUnit' => $namaUnit,
+                    'adminGudang' => $adminName,
+                    'tanggalGudang' => now()->format('d/m/Y H:i') . ' WIB',
+                ])->render();
+                $this->notification->sendWhatsApp($targetGroup, $message);
+            }
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memproses pengeluaran barang gudang: ' . $e->getMessage());
+        }
+
+        return redirect()
+            ->route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => 'pembangunan_unit'])
+            ->with('success', 'Barang keluar berhasil disiapkan dan diteruskan ke SPV Logistik untuk ACC.');
+    }
+
+    public function spvAccBarangOrder(Request $request, $id)
+    {
+        $order = PembangunanUnitBarangOrder::with([
+            'details.barang.baseUnit',
+            'details.rapBahan',
+            'user',
+            'qc',
+            'pembangunanUnit.unit.blok',
+            'pembangunanUnit.unit.type',
+            'pembangunanUnit.tahap.perumahaan',
+            'pembangunanUnit.pengawas',
+        ])->findOrFail($id);
+
+        if (!in_array($order->status_order, ['menunggu_spv', 'diproses'])) {
+            return back()->with('error', 'Permintaan barang unit ini sudah tidak dalam status menunggu persetujuan.');
+        }
+
+        try {
+            DB::transaction(function () use ($order, $request) {
+                // Generate nomor NBK resmi jika belum ada
+                if (!$order->nomor_nbk) {
+                    $datePrefix = 'NBK-' . now()->format('Ymd') . '-';
+                    $lastNbk = PembangunanUnitBarangOrder::where('nomor_nbk', 'like', $datePrefix . '%')
+                        ->orderBy('nomor_nbk', 'desc')
+                        ->lockForUpdate()
+                        ->first();
+                    $nextSeq = 1;
+                    if ($lastNbk) {
+                        $lastSeq = (int) substr($lastNbk->nomor_nbk, strlen($datePrefix));
+                        $nextSeq = $lastSeq + 1;
+                    }
+                    $order->nomor_nbk = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+                }
+
+                $this->processAcc($order, $request);
+
+                $order->update([
+                    'status_order' => 'selesai',
+                    'tanggal_selesai' => now(),
+                    'acc_by' => Auth::id(),
+                    'spv_by' => Auth::id(),
+                    'tanggal_spv' => now(),
+                    'nomor_nbk' => $order->nomor_nbk,
+                ]);
+            });
+
+            // Kirim notifikasi WA setelah SPV berhasil ACC
+            $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Logistik';
             $unit = $order->pembangunanUnit?->unit;
             $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
             $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
@@ -69,25 +180,45 @@ class PermintaanBarangPembangunanUnitController extends Controller
 
             $targetGroup = env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_UNIT', env('FONNTE_ID_GROUP_ORDER_BARANG_UNIT', env('FONNTE_ID_ORDER_BARANG_ABM')));
             if (!empty($targetGroup)) {
-                $message = view('notifications.whatsapp.pembangunan_unit.acc_order_barang', [
-                    'order' => $order,
+                $message = view('notifications.whatsapp.pembangunan_unit.spv_acc_order_barang', [
+                    'order' => $order->fresh(['details']),
                     'namaPerumahan' => $namaPerumahan,
                     'namaTahap' => $namaTahap,
                     'namaUnit' => $namaUnit,
-                    'adminGudang' => $adminName,
-                    'tanggalAcc' => now()->format('d/m/Y H:i') . ' WIB',
+                    'spvName' => $spvName,
+                    'tanggalSpv' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
                 $this->notification->sendWhatsApp($targetGroup, $message);
             }
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Gagal ACC permintaan barang unit: ' . $e->getMessage());
+                ->with('error', 'Gagal ACC SPV Logistik: ' . $e->getMessage());
         }
 
         return redirect()
             ->route('gudang.permintaanBarang.history', ['jenis_order' => 'pembangunan_unit'])
-            ->with('success', 'Permintaan barang unit berhasil di-ACC.');
+            ->with('success', 'Order barang berhasil di-ACC resmi oleh SPV Logistik. Stok telah dipotong dan dicatat ke data real.');
+    }
+
+    public function notaPdf($id)
+    {
+        $order = PembangunanUnitBarangOrder::with([
+            'details.barang.baseUnit',
+            'user',
+            'qc',
+            'pembangunanUnit.unit.blok',
+            'pembangunanUnit.unit.type',
+            'pembangunanUnit.tahap.perumahaan',
+            'pembangunanUnit.pengawas',
+            'gudangBy',
+            'spvBy',
+        ])->findOrFail($id);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gudang.permintaan-barang.nota-keluar-pdf', compact('order'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('NBK-' . ($order->nomor_nbk ?? $order->nomor_order) . '.pdf');
     }
 
     public function tolakBarangOrder(Request $request, $id)
@@ -102,7 +233,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
             'pembangunanUnit.unit.tahap.perumahaan'
         ])->findOrFail($id);
 
-        if ($order->status_order !== 'diproses') {
+        if (!in_array($order->status_order, ['diproses', 'menunggu_spv'])) {
             return back()->with('error', 'Permintaan barang ini sudah tidak dalam status menunggu.');
         }
 
@@ -200,52 +331,58 @@ class PermintaanBarangPembangunanUnitController extends Controller
             $hargaTotal = 0.0;
             $hargaSatuanBase = 0.0;
 
-            if ($detail->barang?->is_stock) {
-                $stock = StockGudang::where('barang_id', $detail->barang_id)
-                    ->where('stock_type', 'UBS')
-                    ->where('ubs_id', $ubsId)
-                    ->lockForUpdate()
-                    ->first();
+            if ($jumlahBase > 0) {
+                if ($detail->barang?->is_stock) {
+                    $stock = StockGudang::where('barang_id', $detail->barang_id)
+                        ->where('stock_type', 'UBS')
+                        ->where('ubs_id', $ubsId)
+                        ->lockForUpdate()
+                        ->first();
 
-                if (!$stock || (float) $stock->jumlah_stock < $jumlahBase) {
-                    $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
-                    throw new \Exception("Stok UBS untuk {$namaBarang} tidak mencukupi.");
-                }
+                    if (!$stock || (float) $stock->jumlah_stock < $jumlahBase) {
+                        $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
+                        throw new \Exception("Stok UBS untuk {$namaBarang} tidak mencukupi.");
+                    }
 
-                $fifoResult = $this->consumeNotaFifo($detail->barang_id, $jumlahBase);
-                $hargaTotal = $fifoResult['harga_total'];
-                $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
+                    $fifoResult = $this->consumeNotaFifo($detail->barang_id, $jumlahBase);
+                    $hargaTotal = $fifoResult['harga_total'];
+                    $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
 
-                // Simpan setiap layer FIFO yang dipakai ke tabel fifo_usage
-                foreach ($fifoResult['layers'] as $layer) {
-                    PembangunanUnitBarangFifoUsage::create([
-                        'order_detail_id' => $detail->id,
-                        'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
-                        'jumlah_base' => $layer['jumlah_base'],
-                        'jumlah_return_base' => 0,
-                        'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
-                        'harga_total_snapshot' => $layer['harga_total_snapshot'],
+                    // Simpan setiap layer FIFO yang dipakai ke tabel fifo_usage
+                    foreach ($fifoResult['layers'] as $layer) {
+                        PembangunanUnitBarangFifoUsage::create([
+                            'order_detail_id' => $detail->id,
+                            'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
+                            'jumlah_base' => $layer['jumlah_base'],
+                            'jumlah_return_base' => 0,
+                            'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
+                            'harga_total_snapshot' => $layer['harga_total_snapshot'],
+                        ]);
+                    }
+
+                    $stock->decrement('jumlah_stock', $jumlahBase);
+
+                    StockLedger::create([
+                        'tanggal' => now(),
+                        'barang_id' => $detail->barang_id,
+                        'stock_type' => 'UBS',
+                        'ubs_id' => $ubsId,
+                        'tipe' => 'keluar',
+                        'ref_type' => 'PembangunanUnitBarangOrder',
+                        'ref_id' => $order->id,
+                        'qty_masuk' => 0,
+                        'qty_keluar' => $jumlahBase,
+                        'harga_satuan' => $hargaSatuanBase,
+                        'created_by' => Auth::id(),
                     ]);
+                } else {
+                    $hargaTotal = $this->resolveDirectHargaTotal($request, $detail);
+                    $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
                 }
-
-                $stock->decrement('jumlah_stock', $jumlahBase);
-
-                StockLedger::create([
-                    'tanggal' => now(),
-                    'barang_id' => $detail->barang_id,
-                    'stock_type' => 'UBS',
-                    'ubs_id' => $ubsId,
-                    'tipe' => 'keluar',
-                    'ref_type' => 'PembangunanUnitBarangOrder',
-                    'ref_id' => $order->id,
-                    'qty_masuk' => 0,
-                    'qty_keluar' => $jumlahBase,
-                    'harga_satuan' => $hargaSatuanBase,
-                    'created_by' => Auth::id(),
-                ]);
             } else {
-                $hargaTotal = $this->resolveDirectHargaTotal($request, $detail);
-                $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
+                // Qty rilis adalah 0 (misal stok gudang habis)
+                $hargaTotal = 0.0;
+                $hargaSatuanBase = 0.0;
             }
 
             $detail->update([
@@ -255,7 +392,9 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 'harga_total_snapshot' => $hargaTotal,
             ]);
 
-            $this->upsertPembangunanUnitBahan($order, $detail, $hargaTotal);
+            if ($jumlahBase > 0) {
+                $this->upsertPembangunanUnitBahan($order, $detail, $hargaTotal);
+            }
         }
 
         $order->update([
@@ -328,15 +467,17 @@ class PermintaanBarangPembangunanUnitController extends Controller
     // Resolve jumlah base from detail, considering konversi if applicable
     private function resolveJumlahBase($detail): float
     {
+        $qty = !is_null($detail->jumlah_acc) ? (float) $detail->jumlah_acc : (float) $detail->jumlah_input;
+
         $faktorKonversi = BarangSatuanKonversi::where('barang_id', $detail->barang_id)
             ->where('satuan_id', $detail->satuan_id)
             ->value('konversi_ke_base');
 
         if ($faktorKonversi === null) {
-            return (float) $detail->jumlah_base;
+            return (float) ($detail->jumlah_acc_base ?? $detail->jumlah_base);
         }
 
-        return round((float) $detail->jumlah_input * (float) $faktorKonversi, 3);
+        return round($qty * (float) $faktorKonversi, 3);
     }
 
     // Resolve harga total for direct order type
@@ -345,6 +486,9 @@ class PermintaanBarangPembangunanUnitController extends Controller
         $hargaTotal = $request->input("harga_total.{$detail->id}");
 
         if ($hargaTotal === null || $hargaTotal === '') {
+            if (!is_null($detail->harga_total_snapshot)) {
+                return (float) $detail->harga_total_snapshot;
+            }
             $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
             throw new \Exception("Harga total untuk {$namaBarang} wajib diisi.");
         }

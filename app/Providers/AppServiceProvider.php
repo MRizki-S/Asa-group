@@ -25,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Superadmin bypass all gates
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+            return $user->hasRole('Superadmin') ? true : null;
+        });
+
         // Kirim semua perumahaan ke header
         View::composer('layouts.app', function ($view) {
             $view->with('perumahaan', Perumahaan::all());

@@ -14,6 +14,8 @@ class PembangunanProyekBarangOrder extends Model
     
     protected $casts = [
         'tanggal_diajukan' => 'datetime',
+        'tanggal_gudang' => 'datetime',
+        'tanggal_spv' => 'datetime',
         'tanggal_selesai' => 'datetime',
     ];
 
@@ -22,9 +24,34 @@ class PembangunanProyekBarangOrder extends Model
         return $this->belongsTo(PembangunanProyek::class, 'pembangunan_proyek_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function pembuat()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function gudangBy()
+    {
+        return $this->belongsTo(User::class, 'gudang_by');
+    }
+
+    public function spvBy()
+    {
+        return $this->belongsTo(User::class, 'spv_by');
+    }
+
+    public function accBy()
+    {
+        return $this->belongsTo(User::class, 'acc_by');
+    }
+
+    public function accUser()
+    {
+        return $this->belongsTo(User::class, 'acc_by');
     }
 
     public function details()

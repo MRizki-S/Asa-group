@@ -57,6 +57,9 @@ class PermintaanBarangController extends Controller
                     'details.barang.baseUnit',
                     'pembuat',
                     'kawasan.perumahan',
+                    'kawasan.pengawas',
+                    'gudangBy',
+                    'spvBy',
                 ],
                 'title' => 'Permintaan Barang Kawasan',
                 'bahanModel' => PembangunanKawasanBahan::class,
@@ -92,12 +95,13 @@ class PermintaanBarangController extends Controller
     private function statusOptions(bool $includeMenunggu = true): array
     {
         $options = [
+            'menunggu_spv' => 'Menunggu ACC SPV',
             'selesai' => 'Selesai',
             'ditolak' => 'Ditolak',
         ];
 
         return $includeMenunggu
-            ? ['diproses' => 'Menunggu'] + $options
+            ? ['diproses' => 'Menunggu Gudang'] + $options
             : $options;
     }
 
@@ -122,7 +126,10 @@ class PermintaanBarangController extends Controller
         $config = $this->getOrderConfig($category);
         $query = $this->orderQuery($category);
 
-        if ($status !== 'all') {
+        if ($status === 'diproses') {
+            // Untuk tab permintaan berjalan, tampilkan baik yang diproses maupun menunggu_spv jika filter default
+            $query->whereIn('status_order', ['diproses', 'menunggu_spv']);
+        } elseif ($status !== 'all') {
             $query->where('status_order', $status);
         }
 
@@ -174,7 +181,7 @@ class PermintaanBarangController extends Controller
         $query = $this->orderQuery($category);
 
         if ($status === 'all') {
-            $query->where('status_order', '!=', 'diproses');
+            $query->whereNotIn('status_order', ['diproses', 'menunggu_spv']);
         } else {
             $query->where('status_order', $status);
         }
@@ -449,63 +456,69 @@ class PermintaanBarangController extends Controller
             $hargaTotal = 0.0;
             $hargaSatuanBase = 0.0;
 
-            if ($detail->barang?->is_stock) {
-                $stock = StockGudang::where('barang_id', $detail->barang_id)
-                    ->where('stock_type', 'UBS')
-                    ->where('ubs_id', $ubsId)
-                    ->lockForUpdate()
-                    ->first();
+            if ($jumlahBase > 0) {
+                if ($detail->barang?->is_stock) {
+                    $stock = StockGudang::where('barang_id', $detail->barang_id)
+                        ->where('stock_type', 'UBS')
+                        ->where('ubs_id', $ubsId)
+                        ->lockForUpdate()
+                        ->first();
 
-                if (!$stock || (float) $stock->jumlah_stock < $jumlahBase) {
-                    $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
-                    throw new \Exception("Stok UBS untuk {$namaBarang} tidak mencukupi.");
-                }
-
-                $fifoResult = $this->consumeNotaFifo($detail->barang_id, $jumlahBase);
-                $hargaTotal = $fifoResult['harga_total'];
-                $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
-
-                // Simpan setiap layer FIFO yang dipakai ke tabel fifo_usage
-                foreach ($fifoResult['layers'] as $layer) {
-                    if ($category === 'pembangunan_kawasan') {
-                        PembangunanKawasanBarangFifoUsage::create([
-                            'order_detail_id' => $detail->id,
-                            'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
-                            'jumlah_base' => $layer['jumlah_base'],
-                            'jumlah_return_base' => 0,
-                            'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
-                            'harga_total_snapshot' => $layer['harga_total_snapshot'],
-                        ]);
-                    } else {
-                        PembangunanProyekBarangFifoUsage::create([
-                            'order_detail_id' => $detail->id,
-                            'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
-                            'jumlah_base' => $layer['jumlah_base'],
-                            'jumlah_return_base' => 0,
-                            'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
-                            'harga_total_snapshot' => $layer['harga_total_snapshot'],
-                        ]);
+                    if (!$stock || (float) $stock->jumlah_stock < $jumlahBase) {
+                        $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
+                        throw new \Exception("Stok UBS untuk {$namaBarang} tidak mencukupi.");
                     }
+
+                    $fifoResult = $this->consumeNotaFifo($detail->barang_id, $jumlahBase);
+                    $hargaTotal = $fifoResult['harga_total'];
+                    $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
+
+                    // Simpan setiap layer FIFO yang dipakai ke tabel fifo_usage
+                    foreach ($fifoResult['layers'] as $layer) {
+                        if ($category === 'pembangunan_kawasan') {
+                            PembangunanKawasanBarangFifoUsage::create([
+                                'order_detail_id' => $detail->id,
+                                'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
+                                'jumlah_base' => $layer['jumlah_base'],
+                                'jumlah_return_base' => 0,
+                                'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
+                                'harga_total_snapshot' => $layer['harga_total_snapshot'],
+                            ]);
+                        } else {
+                            PembangunanProyekBarangFifoUsage::create([
+                                'order_detail_id' => $detail->id,
+                                'nota_barang_masuk_detail_id' => $layer['nota_barang_masuk_detail_id'],
+                                'jumlah_base' => $layer['jumlah_base'],
+                                'jumlah_return_base' => 0,
+                                'harga_satuan_snapshot' => $layer['harga_satuan_snapshot'],
+                                'harga_total_snapshot' => $layer['harga_total_snapshot'],
+                            ]);
+                        }
+                    }
+
+                    $stock->decrement('jumlah_stock', $jumlahBase);
+
+                    StockLedger::create([
+                        'tanggal' => now(),
+                        'barang_id' => $detail->barang_id,
+                        'stock_type' => 'UBS',
+                        'ubs_id' => $ubsId,
+                        'tipe' => 'keluar',
+                        'ref_type' => get_class($order),
+                        'ref_id' => $order->id,
+                        'qty_masuk' => 0,
+                        'qty_keluar' => $jumlahBase,
+                        'harga_satuan' => $hargaSatuanBase,
+                        'created_by' => Auth::id(),
+                    ]);
+                } else {
+                    $hargaTotal = $this->resolveDirectHargaTotal($request, $detail);
+                    $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
                 }
-
-                $stock->decrement('jumlah_stock', $jumlahBase);
-
-                StockLedger::create([
-                    'tanggal' => now(),
-                    'barang_id' => $detail->barang_id,
-                    'stock_type' => 'UBS',
-                    'ubs_id' => $ubsId,
-                    'tipe' => 'keluar',
-                    'ref_type' => get_class($order),
-                    'ref_id' => $order->id,
-                    'qty_masuk' => 0,
-                    'qty_keluar' => $jumlahBase,
-                    'harga_satuan' => $hargaSatuanBase,
-                    'created_by' => Auth::id(),
-                ]);
             } else {
-                $hargaTotal = $this->resolveDirectHargaTotal($request, $detail);
-                $hargaSatuanBase = $jumlahBase > 0 ? $hargaTotal / $jumlahBase : 0;
+                // Qty rilis adalah 0 (misal stok gudang habis)
+                $hargaTotal = 0.0;
+                $hargaSatuanBase = 0.0;
             }
 
             $detail->update([
@@ -515,7 +528,9 @@ class PermintaanBarangController extends Controller
                 'harga_total_snapshot' => $hargaTotal,
             ]);
 
-            $this->upsertBahan($order, $detail, $hargaTotal, $category);
+            if ($jumlahBase > 0) {
+                $this->upsertBahan($order, $detail, $hargaTotal, $category);
+            }
         }
 
         $order->update([
@@ -731,4 +746,55 @@ class PermintaanBarangController extends Controller
 
         return back()->with('success', 'Tanggal permintaan barang berhasil diperbarui.');
     }
+
+    public function cetakBulkNbk(Request $request)
+    {
+        $category = $request->input('category', 'pembangunan_unit');
+        $rawOrderIds = $request->input('order_ids', []);
+
+        // Parse order_ids if passed as comma separated string or array
+        if (is_string($rawOrderIds)) {
+            $orderIds = array_filter(explode(',', $rawOrderIds));
+        } elseif (is_array($rawOrderIds)) {
+            $orderIds = array_filter($rawOrderIds);
+        } else {
+            $orderIds = [];
+        }
+
+        if (empty($orderIds)) {
+            return back()->with('error', 'Pilih minimal satu permintaan barang untuk dicetak.');
+        }
+
+        if (count($orderIds) > 50) {
+            return back()->with('error', 'Maksimal 50 nota per sekali cetak untuk menjaga performa sistem.');
+        }
+
+        $config = $this->getOrderConfig($category);
+        $orders = $config['model']::with($config['with'])
+            ->whereIn('id', $orderIds)
+            ->where('status_order', 'selesai')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return back()->with('error', 'Tidak ada nota yang berstatus selesai dari data yang dipilih.');
+        }
+
+        $viewMap = [
+            'pembangunan_unit' => 'gudang.permintaan-barang.nota-keluar-bulk-pdf',
+            'pembangunan_kawasan' => 'gudang.permintaan-barang.nota-keluar-bulk-pdf',
+            'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.nota-keluar-bulk-pdf',
+        ];
+
+        $viewName = $viewMap[$category] ?? 'gudang.permintaan-barang.nota-keluar-bulk-pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, [
+            'orders' => $orders,
+            'category' => $category,
+        ])->setPaper('a4', 'portrait');
+
+        $timestamp = now()->format('YmdHis');
+        return $pdf->stream("Bulk-NBK-{$category}-{$timestamp}.pdf");
+    }
 }
+

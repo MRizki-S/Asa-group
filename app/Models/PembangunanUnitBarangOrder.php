@@ -12,6 +12,7 @@ class PembangunanUnitBarangOrder extends Model
 
     protected $fillable = [
         'nomor_order',
+        'nomor_nbk',
         'pembangunan_unit_id',
         'pembangunan_unit_qc_id',
         'jenis_order',
@@ -22,11 +23,18 @@ class PembangunanUnitBarangOrder extends Model
         'tanggal_selesai',
         'created_by',
         'acc_by',
+        'gudang_by',
+        'tanggal_gudang',
+        'catatan_gudang',
+        'spv_by',
+        'tanggal_spv',
     ];
 
     protected $casts = [
         'tanggal_diajukan' => 'datetime',
         'tanggal_selesai' => 'datetime',
+        'tanggal_gudang' => 'datetime',
+        'tanggal_spv' => 'datetime',
     ];
 
     public function details(): HasMany
@@ -42,6 +50,16 @@ class PembangunanUnitBarangOrder extends Model
     public function accBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'acc_by');
+    }
+
+    public function gudangBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'gudang_by');
+    }
+
+    public function spvBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'spv_by');
     }
 
     public function pembangunanUnit(): BelongsTo

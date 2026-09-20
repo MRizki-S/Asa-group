@@ -264,6 +264,12 @@
 
             {{-- Kanan: Aksi --}}
             <div class="flex flex-row lg:flex-col items-center lg:items-end gap-2 shrink-0">
+                @can('produksi.kawasan.order-barang.create')
+                <a href="{{ route('produksi.pembangunanKawasan.orderCreate', ['pembangunan_kawasan_id' => $data->id]) }}"
+                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
+                    <i class="fa-solid fa-cart-plus"></i> Order Barang
+                </a>
+                @endcan
                 @can('produksi.kawasan.pembangunan-kawasan.termin')
                 <a href="{{ route('produksi.pembangunanKawasan.laporanTermin.export', $data->id) }}"
                     class="inline-flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all">
@@ -447,21 +453,39 @@
                                     <div class="flex flex-wrap items-center gap-2">
                                         @php
                                             $statusMap = [
-                                                'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100',
-                                                'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                                'ditolak'      => 'bg-red-50 text-red-600 border-red-100',
-                                                'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100',
-                                                'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100',
+                                                'diproses'     => 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+                                                'menunggu_spv' => 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800',
+                                                'selesai'      => 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+                                                'ditolak'      => 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+                                                'return_pending'=> 'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
+                                                'pengembalian' => 'bg-orange-50 text-orange-600 border-orange-100 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
                                             ];
-                                            $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
+                                            $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
                                         @endphp
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                            {{ str_replace('_', ' ', $order->status_order) }}
+                                            {{ $order->status_order === 'menunggu_spv' ? 'Menunggu SPV' : str_replace('_', ' ', $order->status_order) }}
+                                        </span>
+                                        @if($order->nomor_nbk)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800">
+                                                <i class="fa-solid fa-file-invoice text-[8px]"></i> {{ $order->nomor_nbk }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        @if($order->status_order === 'selesai')
+                                            @can('gudang.permintaan-barang.cetak-nbk')
+                                                <a href="{{ route('gudang.permintaanBarang.pembangunanKawasan.notaPdf', $order->id) }}" target="_blank"
+                                                    @click.stop
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-sm transition-all"
+                                                    title="Cetak Nota Keluar PDF">
+                                                    <i class="fa-solid fa-file-pdf text-red-500 text-xs"></i> NBK
+                                                </a>
+                                            @endcan
+                                        @endif
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border shrink-0 {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
+                                            {{ $order->jenis_order }}
                                         </span>
                                     </div>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border shrink-0 {{ $order->jenis_order === 'stock' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100' }}">
-                                        {{ $order->jenis_order }}
-                                    </span>
                                 </div>
                             </div>
                             
@@ -515,10 +539,24 @@
                                         <span class="font-bold text-gray-700 dark:text-gray-300">Diajukan oleh:</span>
                                         {{ $order->pembuat->nama_lengkap ?? $order->pembuat->name ?? $order->pembuat->email ?? '-' }}
                                     </div>
+                                    @if($order->gudangBy)
                                     <div>
-                                        <span class="font-bold text-gray-700 dark:text-gray-300">Dikonfirmasi oleh:</span>
-                                        {{ $order->accUser->nama_lengkap ?? $order->accUser->name ?? $order->accUser->email ?? '-' }}
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">Diproses Gudang:</span>
+                                        {{ $order->gudangBy->nama_lengkap ?? $order->gudangBy->name ?? '-' }}
+                                        @if($order->tanggal_gudang)
+                                            <span class="text-[9px] text-gray-400">({{ \Carbon\Carbon::parse($order->tanggal_gudang)->format('d/m/Y H:i') }})</span>
+                                        @endif
                                     </div>
+                                    @endif
+                                    @if($order->spvBy || $order->accUser)
+                                    <div>
+                                        <span class="font-bold text-gray-700 dark:text-gray-300">ACC SPV Logistik:</span>
+                                        {{ $order->spvBy->nama_lengkap ?? $order->spvBy->name ?? $order->accUser->nama_lengkap ?? $order->accUser->name ?? '-' }}
+                                        @if($order->tanggal_spv)
+                                            <span class="text-[9px] text-gray-400">({{ \Carbon\Carbon::parse($order->tanggal_spv)->format('d/m/Y H:i') }})</span>
+                                        @endif
+                                    </div>
+                                    @endif
                                 </div>
 
 

@@ -1,7 +1,7 @@
 {{-- Header Info Unit --}}
 <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
     <div class="flex flex-col lg:flex-row justify-between gap-6 lg:items-stretch">
-
+        
         {{-- Sisi Kiri: Identitas & Status Utama --}}
         <div class="flex-1 flex flex-col justify-between gap-4">
             <div>

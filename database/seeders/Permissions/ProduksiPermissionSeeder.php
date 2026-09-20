@@ -34,6 +34,9 @@ class ProduksiPermissionSeeder extends Seeder
             'produksi.properti.pembangunan-unit.akumulasi-upah',
             'produksi.properti.pembangunan-unit.read-servis',
             'produksi.properti.pembangunan-unit.create-servis',
+            'produksi.properti.pembangunan-unit.order-barang.read',
+            'produksi.properti.pembangunan-unit.order-barang.create',
+            'produksi.properti.pembangunan-unit.order-barang.delete',
 
             // -- Kawasan: Buat Pembangunan --
             'produksi.kawasan.buat-pembangunan.read',
@@ -47,6 +50,9 @@ class ProduksiPermissionSeeder extends Seeder
             'produksi.kawasan.pembangunan-kawasan.detail',
             'produksi.kawasan.pembangunan-kawasan.edit-status',
             'produksi.kawasan.pembangunan-kawasan.termin',
+            'produksi.kawasan.order-barang.read',
+            'produksi.kawasan.order-barang.create',
+            'produksi.kawasan.order-barang.delete',
 
             // -- Kontraktor: Proyek Baru --
             'produksi.kontraktor.proyek-baru.read',

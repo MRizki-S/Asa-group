@@ -1,19 +1,12 @@
-❌ *PERMINTAAN BAHAN KAWASAN DITOLAK*
+❌ *PENOLAKAN PERMINTAAN BARANG KAWASAN*
 
-Permintaan bahan material kawasan telah *DITOLAK* oleh Gudang:
+Permintaan order barang kawasan berikut telah ditolak:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Ditolak Oleh:* {{ $adminGudang }}
 • *Tanggal:* {{ $tanggal }}
-@if(!empty($alasanTolak))
-• *Alasan Penolakan:* {{ $alasanTolak }}
-@endif
+• *Alasan Penolakan:* {{ $alasanTolak ?? '-' }}
 
-*Daftar Barang yang Ditolak:*
-@foreach($order->details as $idx => $item)
-{{ $idx + 1 }}. *{{ $item->nama_barang }}* ({{ (float)$item->jumlah_input }} {{ $item->satuan }})
-@endforeach
-
-Silakan lakukan perbaikan dan ajukan ulang permintaan.
+_Silakan lakukan penyesuaian atau ajukan ulang jika diperlukan._

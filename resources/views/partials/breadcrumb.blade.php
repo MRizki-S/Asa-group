@@ -1,8 +1,13 @@
+@php
+    $breadcrumbs = $breadcrumbs ?? [];
+@endphp
+
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-        {{ last($breadcrumbs)['label'] ?? '' }}
+        {{ !empty($breadcrumbs) ? (last($breadcrumbs)['label'] ?? '') : ($pageName ?? '') }}
     </h2>
 
+    @if (!empty($breadcrumbs))
     <nav>
         <ol class="flex items-center gap-1.5">
             @foreach ($breadcrumbs as $i => $crumb)
@@ -26,4 +31,5 @@
             @endforeach
         </ol>
     </nav>
+    @endif
 </div>
