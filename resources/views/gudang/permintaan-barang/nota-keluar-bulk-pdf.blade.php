@@ -104,7 +104,7 @@
                 'order' => $order,
                 'part' => $cIdx + 1,
                 'totalParts' => $totalChunks,
-                'items' => $chunkItems,
+                'items' => $chunkItems->values(),
                 'startIndex' => ($cIdx * 8) + 1,
             ];
         }

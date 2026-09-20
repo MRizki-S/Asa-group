@@ -117,31 +117,14 @@
     $totalParts = $itemChunks->count();
 
     $slots = [];
-    if ($totalParts === 1) {
+    foreach ($itemChunks as $pIdx => $chunk) {
         $slots[] = [
-            'part' => 1,
-            'totalParts' => 1,
+            'part' => $pIdx + 1,
+            'totalParts' => $totalParts,
             'isCopy' => false,
-            'items' => $itemChunks[0],
-            'startIndex' => 1,
+            'items' => $chunk->values(),
+            'startIndex' => ($pIdx * 8) + 1,
         ];
-        $slots[] = [
-            'part' => 1,
-            'totalParts' => 1,
-            'isCopy' => true,
-            'items' => $itemChunks[0],
-            'startIndex' => 1,
-        ];
-    } else {
-        foreach ($itemChunks as $pIdx => $chunk) {
-            $slots[] = [
-                'part' => $pIdx + 1,
-                'totalParts' => $totalParts,
-                'isCopy' => false,
-                'items' => $chunk,
-                'startIndex' => ($pIdx * 8) + 1,
-            ];
-        }
     }
 
     $sheets = array_chunk($slots, 2);
