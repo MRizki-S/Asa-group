@@ -27,11 +27,13 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Riwayat dan daftar pengajuan order barang proyek oleh pengawas kontraktor</p>
             </div>
             <div>
+                @can('produksi.kontraktor.order-barang.create')
                 <a href="{{ route('produksi.pembangunanProyek.orderCreate') }}"
                     class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition active:scale-95">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Buat Order Barang Baru
                 </a>
+                @endcan
             </div>
         </div>
 
@@ -137,15 +139,16 @@
                                         </a>
                                     @endif
                                     @if ($order->status_order === 'diproses')
-                                        <form method="POST" action="{{ route('produksi.pembangunanProyek.orderDestroy', $order->id) }}"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin membatalkan order ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300">
-                                                Batal
-                                            </button>
+                                        @can('produksi.kontraktor.order-barang.delete')
+                                        <form method="POST" action="{{ route('produksi.pembangunanProyek.orderDestroy', $order->id) }}" class="form-batal-order">
+                                             @csrf
+                                             @method('DELETE')
+                                             <button type="button"
+                                                 class="btn-batal inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300">
+                                                 Batal
+                                             </button>
                                         </form>
+                                        @endcan
                                     @endif
                                 </div>
                             </td>
@@ -166,4 +169,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-batal');
+        if (btn) {
+            e.preventDefault();
+            const form = btn.closest('.form-batal-order');
+            Swal.fire({
+                title: 'Batalkan Order Barang?',
+                text: 'Apakah Anda yakin ingin membatalkan order ini? Aksi ini tidak dapat dikembalikan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Batalkan!',
+                cancelButtonText: 'Kembali',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    });
+</script>
 @endsection

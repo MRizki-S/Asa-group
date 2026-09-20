@@ -87,14 +87,18 @@ class RoleHakAksesController extends Controller
 
             $category = $parts[0] ?? 'Other';
 
-            if ($count >= 4) {
+            if ($count >= 5) {
+                // Contoh: produksi.properti.pembangunan-unit.order-barang.create
+                // Module: properti, SubModule: pembangunan-unit -> order-barang
+                $module = $parts[1];
+                $subModule = $parts[2] . ' - ' . $parts[3];
+            } elseif ($count == 4) {
                 // Contoh: etalase.perubahaan-harga.type-unit.read
-                // Atau: produksi.properti.master-qc-rap.read
+                // Atau: produksi.properti.pembangunan-unit.read
                 $module = $parts[1];
                 $subModule = $parts[2];
             } elseif ($count == 3) {
                 // Contoh: etalase.unit.read
-                // Atau: produksi.properti.pembangunan-unit (jika ada 3 bagian)
                 $module = $parts[1];
                 $subModule = 'default';
             } else {

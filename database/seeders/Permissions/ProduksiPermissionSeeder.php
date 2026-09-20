@@ -66,6 +66,9 @@ class ProduksiPermissionSeeder extends Seeder
             'produksi.kontraktor.pembangunan-proyek.detail',
             'produksi.kontraktor.pembangunan-proyek.edit-status',
             'produksi.kontraktor.pembangunan-proyek.termin',
+            'produksi.kontraktor.order-barang.read',
+            'produksi.kontraktor.order-barang.create',
+            'produksi.kontraktor.order-barang.delete',
 
             // -- Manajemen Upah: Penamaan Upah --
             'produksi.manajemen-upah.penamaan-upah.read',

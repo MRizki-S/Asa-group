@@ -531,13 +531,13 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA
+            // Kirim notifikasi WA konfirmasi staff gudang ke nomor pribadi SPV Logistik & Pengadaan
             $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Staff Gudang';
             $namaPerumahan = $order->kawasan?->perumahan?->nama_perumahaan ?? '-';
             $namaKawasan = $order->kawasan?->nama ?? '-';
 
-            $targetGroup = env('FONNTE_ID_GROUP_GUDANG_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM'))));
-            if (!empty($targetGroup)) {
+            $targetHpSpv = env('FONNTE_NO_SPV_LOGISTIK');
+            if (!empty($targetHpSpv)) {
                 $message = view('notifications.whatsapp.pembangunan_kawasan.gudang_order_barang', [
                     'order' => $order->fresh(['details']),
                     'namaPerumahan' => $namaPerumahan,
@@ -545,7 +545,7 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                     'adminGudang' => $adminName,
                     'tanggalGudang' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
-                $this->notification->sendWhatsApp($targetGroup, $message);
+                $this->notification->sendWhatsApp($targetHpSpv, $message);
             }
         } catch (\Exception $e) {
             return back()
@@ -601,15 +601,15 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA
+            // Kirim notifikasi WA setelah SPV berhasil ACC ke grup FONNTE_ID_ORDER_BARANG_ABM
             $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Logistik';
             $namaPerumahan = $order->kawasan?->perumahan?->nama_perumahaan ?? '-';
             $namaKawasan = $order->kawasan?->nama ?? '-';
 
-            $targetGroup = env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN')));
             if (!empty($targetGroup)) {
-                $message = view('notifications.whatsapp.pembangunan_kawasan.spv_acc_order_barang', [
-                    'order' => $order->fresh(['details']),
+                $message = view('notifications.whatsapp.pembangunan_kawasan.acc_order_barang', [
+                    'order' => $order->fresh(['details.barang.baseUnit']),
                     'namaPerumahan' => $namaPerumahan,
                     'namaKawasan' => $namaKawasan,
                     'spvName' => $spvName,

@@ -516,19 +516,19 @@ class PermintaanBarangPembangunanProyekController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA
+            // Kirim notifikasi WA konfirmasi staff gudang ke nomor pribadi SPV Logistik & Pengadaan
             $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Staff Gudang';
             $namaProyek = $order->proyek?->nama_project ?? $order->proyek?->nama ?? '-';
 
-            $targetGroup = env('FONNTE_ID_GROUP_GUDANG_ORDER_BARANG_PROYEK', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM'))));
-            if (!empty($targetGroup)) {
+            $targetHpSpv = env('FONNTE_NO_SPV_LOGISTIK');
+            if (!empty($targetHpSpv)) {
                 $message = view('notifications.whatsapp.pembangunan_proyek.gudang_order_barang', [
                     'order' => $order->fresh(['details']),
                     'namaProyek' => $namaProyek,
                     'adminGudang' => $adminName,
                     'tanggalGudang' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
-                $this->notification->sendWhatsApp($targetGroup, $message);
+                $this->notification->sendWhatsApp($targetHpSpv, $message);
             }
         } catch (\Exception $e) {
             return back()
@@ -582,14 +582,14 @@ class PermintaanBarangPembangunanProyekController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA
+            // Kirim notifikasi WA setelah SPV berhasil ACC ke grup FONNTE_ID_ORDER_BARANG_ABM
             $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Logistik';
             $namaProyek = $order->proyek?->nama_project ?? $order->proyek?->nama ?? '-';
 
-            $targetGroup = env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
+            $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_PROYEK')));
             if (!empty($targetGroup)) {
-                $message = view('notifications.whatsapp.pembangunan_proyek.spv_acc_order_barang', [
-                    'order' => $order->fresh(['details']),
+                $message = view('notifications.whatsapp.pembangunan_proyek.acc_order_barang', [
+                    'order' => $order->fresh(['details.barang.baseUnit']),
                     'namaProyek' => $namaProyek,
                     'spvName' => $spvName,
                     'tanggalSpv' => now()->format('d/m/Y H:i') . ' WIB',
