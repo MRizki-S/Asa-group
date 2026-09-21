@@ -818,19 +818,6 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
         Route::post('pembangunan-unit/update-task-note/{id}', [PembangunanUnitController::class, 'updateTaskNote'])
             ->name('produksi.pembangunanUnit.updateTaskNote');
 
-        Route::get('pembangunan-unit-order-barang', [PembangunanUnitOrderBarangController::class, 'index'])
-            ->name('produksi.pembangunanUnit.orderIndex');
-        Route::get('pembangunan-unit-order-barang/create', [PembangunanUnitOrderBarangController::class, 'create'])
-            ->name('produksi.pembangunanUnit.orderCreate');
-
-        Route::middleware('check.freeze')->group(function () {
-            Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
-                ->name('produksi.pembangunanUnit.orderStore');
-            Route::delete('pembangunan-unit/order-barang/{id}', [PembangunanUnitOrderBarangController::class, 'destroy'])
-                ->name('produksi.pembangunanUnit.orderDestroy');
-            Route::post('pembangunan-unit/return-barang', [PembangunanUnitBarangReturnController::class, 'store'])
-                ->name('produksi.pembangunanUnit.returnStore');
-        });
         // Return barang per-QC (baru)
         Route::get('pembangunan-unit/return-barang/{qcId}/summary', [PembangunanUnitBarangReturnController::class, 'summary'])
             ->name('produksi.pembangunanUnit.returnSummary');
@@ -842,6 +829,21 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
         Route::post('pembangunan-unit/{id}/create-servis', [PembangunanUnitController::class, 'createServis'])
             ->name('produksi.pembangunanUnit.createServis');
+    });
+
+    // Pembangunan Unit Order Barang (Bisa diakses oleh Produksi & Gudang)
+    Route::get('pembangunan-unit-order-barang', [PembangunanUnitOrderBarangController::class, 'index'])
+        ->name('produksi.pembangunanUnit.orderIndex');
+    Route::get('pembangunan-unit-order-barang/create', [PembangunanUnitOrderBarangController::class, 'create'])
+        ->name('produksi.pembangunanUnit.orderCreate');
+
+    Route::middleware('check.freeze')->group(function () {
+        Route::post('pembangunan-unit/order-barang', [PembangunanUnitOrderBarangController::class, 'store'])
+            ->name('produksi.pembangunanUnit.orderStore');
+        Route::delete('pembangunan-unit/order-barang/{id}', [PembangunanUnitOrderBarangController::class, 'destroy'])
+            ->name('produksi.pembangunanUnit.orderDestroy');
+        Route::post('pembangunan-unit/return-barang', [PembangunanUnitBarangReturnController::class, 'store'])
+            ->name('produksi.pembangunanUnit.returnStore');
     });
 
     // Persetujuan Upah (Shared across properti/kontraktor/kawasan approvals)
@@ -874,24 +876,22 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::middleware('can:produksi.kontraktor.pembangunan-proyek.read')->group(function () {
         Route::resource('pembangunan-proyek', PembangunanProyekController::class)->names('produksi.pembangunanProyek');
-        Route::get('pembangunan-proyek-order-barang', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'index'])
-            ->middleware('can:produksi.kontraktor.order-barang.read')
-            ->name('produksi.pembangunanProyek.orderIndex');
-        Route::get('pembangunan-proyek-order-barang/create', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'create'])
-            ->middleware('can:produksi.kontraktor.order-barang.create')
-            ->name('produksi.pembangunanProyek.orderCreate');
-
-        Route::middleware('check.freeze')->group(function () {
-            Route::post('pembangunan-proyek/order-barang', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'store'])
-                ->middleware('can:produksi.kontraktor.order-barang.create')
-                ->name('produksi.pembangunanProyek.orderStore');
-            Route::delete('pembangunan-proyek/order-barang/{id}', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'destroy'])
-                ->middleware('can:produksi.kontraktor.order-barang.delete')
-                ->name('produksi.pembangunanProyek.orderDestroy');
-            Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
-        });
         Route::post('pembangunan-proyek/upah-pengajuan', [PembangunanProyekController::class, 'upahStore'])->name('produksi.pembangunanProyek.upahStore');
         Route::delete('pembangunan-proyek/upah-pengajuan/{id}', [PembangunanProyekController::class, 'upahDestroy'])->name('produksi.pembangunanProyek.upahDestroy');
+    });
+
+    // Pembangunan Proyek Order Barang (Bisa diakses oleh Produksi & Gudang)
+    Route::get('pembangunan-proyek-order-barang', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'index'])
+        ->name('produksi.pembangunanProyek.orderIndex');
+    Route::get('pembangunan-proyek-order-barang/create', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'create'])
+        ->name('produksi.pembangunanProyek.orderCreate');
+
+    Route::middleware('check.freeze')->group(function () {
+        Route::post('pembangunan-proyek/order-barang', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'store'])
+            ->name('produksi.pembangunanProyek.orderStore');
+        Route::delete('pembangunan-proyek/order-barang/{id}', [\App\Http\Controllers\Produksi\PembangunanProyek\PembangunanProyekOrderBarangController::class, 'destroy'])
+            ->name('produksi.pembangunanProyek.orderDestroy');
+        Route::post('pembangunan-proyek/return-barang', [PembangunanProyekController::class, 'returnStore'])->name('produksi.pembangunanProyek.returnStore');
     });
 
     // Kawasan (Pembangunan Kawasan)
@@ -902,18 +902,20 @@ Route::middleware('auth')->prefix('produksi')->group(function () {
 
     Route::middleware('can:produksi.kawasan.pembangunan-kawasan.read')->group(function () {
         Route::resource('pembangunan-kawasan', PembangunanKawasanController::class)->names('produksi.pembangunanKawasan');
-        Route::get('pembangunan-kawasan-order-barang', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'index'])
-            ->name('produksi.pembangunanKawasan.orderIndex');
-        Route::get('pembangunan-kawasan-order-barang/create', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'create'])
-            ->name('produksi.pembangunanKawasan.orderCreate');
-
-        Route::middleware('check.freeze')->group(function () {
-            Route::post('pembangunan-kawasan/order-barang', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'store'])->name('produksi.pembangunanKawasan.orderStore');
-            Route::delete('pembangunan-kawasan/order-barang/{id}', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'destroy'])->name('produksi.pembangunanKawasan.orderDestroy');
-            Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
-        });
         Route::post('pembangunan-kawasan/upah-pengajuan', [PembangunanKawasanController::class, 'upahStore'])->name('produksi.pembangunanKawasan.upahStore');
         Route::delete('pembangunan-kawasan/upah-pengajuan/{id}', [PembangunanKawasanController::class, 'upahDestroy'])->name('produksi.pembangunanKawasan.upahDestroy');
+    });
+
+    // Pembangunan Kawasan Order Barang (Bisa diakses oleh Produksi & Gudang)
+    Route::get('pembangunan-kawasan-order-barang', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'index'])
+        ->name('produksi.pembangunanKawasan.orderIndex');
+    Route::get('pembangunan-kawasan-order-barang/create', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'create'])
+        ->name('produksi.pembangunanKawasan.orderCreate');
+
+    Route::middleware('check.freeze')->group(function () {
+        Route::post('pembangunan-kawasan/order-barang', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'store'])->name('produksi.pembangunanKawasan.orderStore');
+        Route::delete('pembangunan-kawasan/order-barang/{id}', [\App\Http\Controllers\Produksi\PembangunanKawasan\PembangunanKawasanOrderBarangController::class, 'destroy'])->name('produksi.pembangunanKawasan.orderDestroy');
+        Route::post('pembangunan-kawasan/return-barang', [PembangunanKawasanController::class, 'returnStore'])->name('produksi.pembangunanKawasan.returnStore');
     });
 
     // Persetujuan Upah Spesifik

@@ -15,6 +15,12 @@
         background-color: #f9fafb !important;
         font-size: 0.875rem !important;
     }
+    @media screen and (max-width: 768px) {
+        .select2-container--bootstrap4 .select2-selection--single,
+        .select2-search__field {
+            font-size: 16px !important;
+        }
+    }
     .dark .select2-container--bootstrap4 .select2-selection--single {
         background-color: #1f2937 !important;
         border-color: #374151 !important;
@@ -180,7 +186,7 @@
                     </svg>
                 </div>
                 <input type="text" x-model="searchQuery" placeholder="Cari nama atau kode barang di katalog..."
-                    class="w-full text-xs pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-all">
+                    class="w-full text-base sm:text-xs pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-all">
             </div>
 
             <!-- List Barang Scrollable Container -->
@@ -237,7 +243,7 @@
                     </svg>
                 </div>
                 <input type="text" x-model="cartSearchQuery" placeholder="Cari barang di keranjang..."
-                    class="w-full text-xs pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-all">
+                    class="w-full text-base sm:text-xs pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-all">
             </div>
 
             <!-- Cart Items Container -->
@@ -423,7 +429,7 @@
                         </svg>
                     </div>
                     <input type="text" x-model="cartSearchQuery" placeholder="Cari barang di keranjang..."
-                        class="w-full text-xs pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-all">
+                        class="w-full text-base sm:text-xs pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-all">
                 </div>
             </div>
 

@@ -3,12 +3,31 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     {{-- csrf token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ?? 'ABM Group' }}</title>
     @vite(['resources/css/app.css', 'resources/css/custom.css', 'resources/js/app.js'])
+
+    <style>
+        /* Prevent iOS Safari auto-zoom on input focus (< 16px font-size causes zoom) */
+        @media screen and (max-width: 768px) {
+            input[type="text"],
+            input[type="number"],
+            input[type="search"],
+            input[type="email"],
+            input[type="password"],
+            input[type="date"],
+            select,
+            textarea,
+            .select2-container--bootstrap4 .select2-selection--single,
+            .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+            .select2-search__field {
+                font-size: 16px !important;
+            }
+        }
+    </style>
 
 
     <link rel="icon" href="{{ asset('images/logo/logo-abm.png') }}" type="image/png">

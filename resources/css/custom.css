@@ -749,3 +749,21 @@ span.flatpickr-weekday,
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
 }
+
+/* Prevent iOS Safari auto-zoom on input focus (< 16px font-size triggers zoom) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  select,
+  textarea,
+  .select2-container--bootstrap4 .select2-selection--single,
+  .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+  .select2-search__field {
+    font-size: 16px !important;
+  }
+}
+
