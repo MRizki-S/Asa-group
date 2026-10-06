@@ -302,7 +302,8 @@
                             <div class="flex items-center justify-between gap-1.5">
                                 <div class="flex items-center gap-1.5 min-w-0">
                                     <span x-show="item.is_rap" class="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[8px] font-black uppercase rounded">RAP</span>
-                                    <span x-show="!item.is_rap" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded">Luar RAP</span>
+                                    <span x-show="!item.is_rap && jenisPembangunan !== 'servis'" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded">Luar RAP</span>
+                                    <span x-show="jenisPembangunan === 'servis'" class="px-1.5 py-0.5 bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300 text-[8px] font-black uppercase rounded">Servis</span>
                                     <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="item.nama_barang"></h5>
                                 </div>
                             </div>
@@ -492,7 +493,8 @@
                         <div class="pr-7">
                             <div class="flex items-center gap-1.5 min-w-0">
                                 <span x-show="item.is_rap" class="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[8px] font-black uppercase rounded shrink-0">RAP</span>
-                                <span x-show="!item.is_rap" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded shrink-0">Luar RAP</span>
+                                <span x-show="!item.is_rap && jenisPembangunan !== 'servis'" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded shrink-0">Luar RAP</span>
+                                <span x-show="jenisPembangunan === 'servis'" class="px-1.5 py-0.5 bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300 text-[8px] font-black uppercase rounded shrink-0">Servis</span>
                                 <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="item.nama_barang"></h5>
                             </div>
                             <div class="flex flex-wrap items-center justify-between text-[10px] text-gray-400 mt-1 gap-1">
@@ -630,13 +632,16 @@
                                             <span x-text="formatNumber(c.qty) + ' ' + (c.satuans.find(s=>s.id == c.satuan_id)?.nama_satuan || c.satuan_nama)"></span>
                                         </td>
                                         <td class="p-3 text-center">
-                                            <span x-show="c.is_rap && !isExceedingRap(c)" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+                                            <span x-show="jenisPembangunan === 'servis'" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-900/60 dark:text-cyan-300">
+                                                Servis
+                                            </span>
+                                            <span x-show="jenisPembangunan !== 'servis' && c.is_rap && !isExceedingRap(c)" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
                                                 Sesuai RAP
                                             </span>
-                                            <span x-show="c.is_rap && isExceedingRap(c)" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300">
+                                            <span x-show="jenisPembangunan !== 'servis' && c.is_rap && isExceedingRap(c)" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300">
                                                 Melebihi RAP
                                             </span>
-                                            <span x-show="!c.is_rap" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+                                            <span x-show="jenisPembangunan !== 'servis' && !c.is_rap" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
                                                 Diluar RAP
                                             </span>
                                         </td>

@@ -295,7 +295,7 @@
                                     ];
                                     $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100';
                                     $statusLabels = [
-                                        'diproses' => 'Menunggu',
+                                        'diproses' => 'Diajukan',
                                         'menunggu_spv' => 'Menunggu SPV',
                                         'selesai' => 'Selesai',
                                         'ditolak' => 'Ditolak',

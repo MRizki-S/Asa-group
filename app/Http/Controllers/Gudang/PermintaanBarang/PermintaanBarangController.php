@@ -101,7 +101,7 @@ class PermintaanBarangController extends Controller
         ];
 
         return $includeMenunggu
-            ? ['diproses' => 'Menunggu Gudang'] + $options
+            ? ['diproses' => 'Diajukan'] + $options
             : $options;
     }
 

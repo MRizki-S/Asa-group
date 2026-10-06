@@ -1,6 +1,6 @@
-❌ *PENOLAKAN PERMINTAAN BARANG PROYEK*
+❌ *PENOLAKAN PERMINTAAN BARANG KELUAR KE KONTRAKTOR*
 
-Permintaan order barang proyek berikut telah ditolak:
+Permintaan barang keluar ke kontraktor berikut telah ditolak:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}

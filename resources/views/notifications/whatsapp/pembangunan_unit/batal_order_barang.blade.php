@@ -1,6 +1,6 @@
-❌ *PEMBATALAN PERMINTAAN BAHAN UNIT*
+❌ *PEMBATALAN PERMINTAAN BARANG KELUAR KE UNIT*
 
-Permintaan bahan material unit berikut telah dibatalkan:
+Permintaan barang keluar ke unit berikut telah dibatalkan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

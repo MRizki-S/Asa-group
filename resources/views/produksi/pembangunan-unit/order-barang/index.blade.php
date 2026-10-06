@@ -48,7 +48,7 @@
             </a>
             <a href="{{ route('produksi.pembangunanUnit.orderIndex', ['status' => 'diproses']) }}"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {{ $currStatus === 'diproses' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
-                Menunggu
+                Diajukan
             </a>
             <a href="{{ route('produksi.pembangunanUnit.orderIndex', ['status' => 'menunggu_spv']) }}"
                 class="px-3 py-1.5 rounded-lg text-xs font-semibold transition {{ $currStatus === 'menunggu_spv' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
@@ -86,7 +86,7 @@
                             $perumahan = $pu?->unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
                             $unit = $pu?->unit?->nama_unit ?? '-';
                             $statusMap = [
-                                'diproses' => ['label' => 'Menunggu', 'class' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'],
+                                'diproses' => ['label' => 'Diajukan', 'class' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'],
                                 'menunggu_spv' => ['label' => 'Menunggu SPV', 'class' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'],
                                 'selesai' => ['label' => 'Selesai', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'],
                                 'ditolak' => ['label' => 'Ditolak', 'class' => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'],

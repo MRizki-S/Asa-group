@@ -1,6 +1,6 @@
-📦 *PENGAJUAN PERMINTAAN BAHAN PROYEK*
+📦 *PERMINTAAN BARANG KELUAR KE KONTRAKTOR*
 
-Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
+Terdapat permintaan barang keluar ke kontraktor dengan rincian berikut:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}

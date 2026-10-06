@@ -1,6 +1,6 @@
-🔄 *PENGAJUAN ULANG PERMINTAAN BAHAN PROYEK*
+🔄 *PENGAJUAN ULANG PERMINTAAN BARANG KELUAR KE KONTRAKTOR*
 
-Permintaan bahan material proyek telah *DIAJUKAN KEMBALI*:
+Permintaan barang keluar ke kontraktor telah *DIAJUKAN KEMBALI*:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}

@@ -1,6 +1,6 @@
-🔄 *PENGAJUAN ULANG PERMINTAAN BAHAN KAWASAN*
+🔄 *PENGAJUAN ULANG PERMINTAAN BARANG KELUAR KE KAWASAN*
 
-Permintaan bahan material kawasan telah *DIAJUKAN KEMBALI*:
+Permintaan barang keluar ke kawasan telah *DIAJUKAN KEMBALI*:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

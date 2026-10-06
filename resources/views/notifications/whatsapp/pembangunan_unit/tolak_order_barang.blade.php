@@ -1,6 +1,6 @@
-❌ *PERMINTAAN BAHAN UNIT DITOLAK*
+❌ *PENOLAKAN PERMINTAAN BARANG KELUAR KE UNIT*
 
-Permintaan bahan material unit telah *DITOLAK* oleh Gudang:
+Permintaan barang keluar ke unit telah *DITOLAK* oleh Gudang:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

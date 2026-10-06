@@ -101,6 +101,7 @@
     $jamOrder = $order->tanggal_diajukan
         ? \Carbon\Carbon::parse($order->tanggal_diajukan)->format('H:i')
         : date('H:i');
+    $isServis = (bool)($order->qc?->is_servis ?? false);
 
     $formatQty = function ($value) {
         $number = round((float) $value, 3);
@@ -208,7 +209,7 @@
                                     <td>{{ $item->barang?->kode_barang ?? '-' }}</td>
                                     <td>
                                         <span class="font-bold">{{ $item->nama_barang }}</span>
-                                        @if(empty($item->rap_bahan_id))
+                                        @if(!$isServis && empty($item->rap_bahan_id))
                                             <span style="font-size:6.5pt; color:#888;"> [Luar RAP]</span>
                                         @endif
                                     </td>
@@ -330,7 +331,7 @@
                                         <td>{{ $item->barang?->kode_barang ?? '-' }}</td>
                                         <td>
                                             <span class="font-bold">{{ $item->nama_barang }}</span>
-                                            @if(empty($item->rap_bahan_id))
+                                            @if(!$isServis && empty($item->rap_bahan_id))
                                                 <span style="font-size:6.5pt; color:#888;"> [Luar RAP]</span>
                                             @endif
                                         </td>

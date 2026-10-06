@@ -52,94 +52,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
         ])->findOrFail($id);
 
         if ($order->status_order !== 'diproses') {
-            return back()->with('error', 'Permintaan barang unit ini sudah tidak dalam status menunggu proses gudang.');
-        }
-
-        try {
-            DB::transaction(function () use ($order, $request) {
-                // Gudang menginput jumlah yang akan dikeluarkan untuk setiap item
-                $itemsAcc = $request->input('items_acc', []);
-                $hargaTotalInput = $request->input('harga_total', []);
-
-                foreach ($order->details as $detail) {
-                    $qtyAcc = isset($itemsAcc[$detail->id]) ? (float) $itemsAcc[$detail->id] : (float) $detail->jumlah_input;
-                    if ($qtyAcc < 0) {
-                        throw new \Exception("Jumlah acc untuk barang {$detail->nama_barang} tidak boleh negatif.");
-                    }
-
-                    $faktorKonversi = BarangSatuanKonversi::where('barang_id', $detail->barang_id)
-                        ->where('satuan_id', $detail->satuan_id)
-                        ->value('konversi_ke_base') ?? 1.0;
-
-                    $jumlahAccBase = round($qtyAcc * (float) $faktorKonversi, 3);
-                    $updateData = [
-                        'jumlah_acc' => $qtyAcc,
-                        'jumlah_acc_base' => $jumlahAccBase,
-                    ];
-
-                    // Simpan harga total snapshot dari input gudang untuk order direct
-                    if ($order->jenis_order === 'direct' && isset($hargaTotalInput[$detail->id]) && $hargaTotalInput[$detail->id] !== '') {
-                        $ht = (float) $hargaTotalInput[$detail->id];
-                        $updateData['harga_total_snapshot'] = $ht;
-                        $updateData['harga_satuan_snapshot'] = $jumlahAccBase > 0 ? round($ht / $jumlahAccBase, 2) : 0;
-                    }
-
-                    $detail->update($updateData);
-                }
-
-                $order->update([
-                    'status_order' => 'menunggu_spv',
-                    'gudang_by' => Auth::id(),
-                    'tanggal_gudang' => now(),
-                    'catatan_gudang' => $request->input('catatan_gudang'),
-                ]);
-            });
-
-            // Kirim notifikasi WA konfirmasi staff gudang ke nomor pribadi SPV Logistik & Pengadaan
-            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Staff Gudang';
-            $unit = $order->pembangunanUnit?->unit;
-            $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
-            $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
-            $namaUnit = $unit?->nama_unit ?? '-';
-
-            $targetHpSpv = env('FONNTE_NO_SPV_LOGISTIK');
-            if (!empty($targetHpSpv)) {
-                $message = view('notifications.whatsapp.pembangunan_unit.gudang_order_barang', [
-                    'order' => $order->fresh(['details']),
-                    'namaPerumahan' => $namaPerumahan,
-                    'namaTahap' => $namaTahap,
-                    'namaUnit' => $namaUnit,
-                    'adminGudang' => $adminName,
-                    'tanggalGudang' => now()->format('d/m/Y H:i') . ' WIB',
-                ])->render();
-                $this->notification->sendWhatsApp($targetHpSpv, $message);
-            }
-        } catch (\Exception $e) {
-            return back()
-                ->withInput()
-                ->with('error', 'Gagal memproses pengeluaran barang gudang: ' . $e->getMessage());
-        }
-
-        return redirect()
-            ->route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => 'pembangunan_unit'])
-            ->with('success', 'Barang keluar berhasil disiapkan dan diteruskan ke SPV Logistik untuk ACC.');
-    }
-
-    public function spvAccBarangOrder(Request $request, $id)
-    {
-        $order = PembangunanUnitBarangOrder::with([
-            'details.barang.baseUnit',
-            'details.rapBahan',
-            'user',
-            'qc',
-            'pembangunanUnit.unit.blok',
-            'pembangunanUnit.unit.type',
-            'pembangunanUnit.tahap.perumahaan',
-            'pembangunanUnit.pengawas',
-        ])->findOrFail($id);
-
-        if (!in_array($order->status_order, ['menunggu_spv', 'diproses'])) {
-            return back()->with('error', 'Permintaan barang unit ini sudah tidak dalam status menunggu persetujuan.');
+            return back()->with('error', 'Permintaan barang unit ini sudah tidak dalam status menunggu proses.');
         }
 
         try {
@@ -159,6 +72,14 @@ class PermintaanBarangPembangunanUnitController extends Controller
                     $order->nomor_nbk = $datePrefix . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
                 }
 
+                // Defaultkan jumlah_acc dan jumlah_acc_base langsung dari jumlah_input dan jumlah_base
+                foreach ($order->details as $detail) {
+                    $detail->update([
+                        'jumlah_acc' => $detail->jumlah_input,
+                        'jumlah_acc_base' => $detail->jumlah_base,
+                    ]);
+                }
+
                 $this->processAcc($order, $request);
 
                 $order->update([
@@ -171,8 +92,8 @@ class PermintaanBarangPembangunanUnitController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA setelah SPV berhasil ACC ke grup FONNTE_ID_ORDER_BARANG_ABM
-            $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Logistik';
+            // Kirim notifikasi WA setelah SPV Layanan & Dukungan berhasil ACC
+            $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Layanan & Dukungan';
             $unit = $order->pembangunanUnit?->unit;
             $namaPerumahan = $unit?->tahap?->perumahaan?->nama_perumahaan ?? '-';
             $namaTahap = $unit?->tahap?->nama_tahap ?? '-';
@@ -193,12 +114,17 @@ class PermintaanBarangPembangunanUnitController extends Controller
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Gagal ACC SPV Logistik: ' . $e->getMessage());
+                ->with('error', 'Gagal memproses ACC pengeluaran barang: ' . $e->getMessage());
         }
 
         return redirect()
-            ->route('gudang.permintaanBarang.history', ['jenis_order' => 'pembangunan_unit'])
-            ->with('success', 'Order barang berhasil di-ACC resmi oleh SPV Logistik. Stok telah dipotong dan dicatat ke data real.');
+            ->route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => 'pembangunan_unit'])
+            ->with('success', 'Permintaan barang berhasil di-ACC resmi oleh SPV Layanan & Dukungan. Stok telah dipotong dan dicatat ke data real.');
+    }
+
+    public function spvAccBarangOrder(Request $request, $id)
+    {
+        return $this->accBarangOrder($request, $id);
     }
 
     public function notaPdf($id)

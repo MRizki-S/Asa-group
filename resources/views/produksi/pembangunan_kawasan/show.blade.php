@@ -463,7 +463,7 @@
                                             $style = $statusMap[$order->status_order] ?? 'bg-gray-50 text-gray-500 border-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
                                         @endphp
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $style }}">
-                                            {{ $order->status_order === 'menunggu_spv' ? 'Menunggu SPV' : str_replace('_', ' ', $order->status_order) }}
+                                            {{ $order->status_order === 'menunggu_spv' ? 'Menunggu SPV' : ($order->status_order === 'diproses' ? 'Diajukan' : str_replace('_', ' ', $order->status_order)) }}
                                         </span>
                                         @if($order->nomor_nbk)
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800">

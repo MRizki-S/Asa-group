@@ -248,10 +248,8 @@
                                 </th>
                             @endcan
                         @endif
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">No Order</th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal</th>
+                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Tanggal &amp; No Order</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Lokasi / Proyek</th>
-                        <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400">Keterangan</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Jenis</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Item</th>
                         <th class="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-400 text-center">Status</th>
@@ -263,22 +261,18 @@
                         @php
                             $locationLabel = '-';
                             $subLocationLabel = '-';
-                            $qcLabel = '-';
 
                             if ($category === 'pembangunan_unit') {
                                 $pembangunan = $order->pembangunanUnit;
                                 $unit = $pembangunan?->unit;
                                 $locationLabel = $unit->nama_unit ?? '-';
                                 $subLocationLabel = ($pembangunan?->tahap?->perumahaan?->nama_perumahaan ?? '-') . ($pembangunan?->tahap?->nama_tahap ? ' / ' . $pembangunan->tahap->nama_tahap : '');
-                                $qcLabel = $order->qc->nama_qc ?? '-';
                             } elseif ($category === 'pembangunan_kawasan') {
                                 $locationLabel = $order->kawasan?->nama ?? $order->kawasan?->nama_pembangunan ?? 'Kawasan';
                                 $subLocationLabel = $order->kawasan?->perumahan?->nama_perumahaan ?? '-';
-                                $qcLabel = '-';
                             } elseif ($category === 'pembangunan_proyek_mangoon') {
                                 $locationLabel = $order->proyek?->nama_project ?? $order->proyek?->nama ?? 'Proyek';
                                 $subLocationLabel = 'Proyek Mangoon';
-                                $qcLabel = '-';
                             }
 
                             $statusMap = [
@@ -288,7 +282,7 @@
                                 'ditolak' => 'bg-red-100 text-red-700',
                             ];
                             $statusLabels = [
-                                'diproses' => 'Menunggu Gudang',
+                                'diproses' => 'Diajukan',
                                 'menunggu_spv' => 'Menunggu ACC SPV',
                                 'selesai' => 'Selesai',
                                 'ditolak' => 'Ditolak',
@@ -320,18 +314,20 @@
                                     </td>
                                 @endcan
                             @endif
-                            <td class="font-medium text-gray-900 dark:text-white">
-                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
-                            </td>
                             <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ $order->tanggal_diajukan?->format('d-M-Y H:i') ?? '-' }}
+                                <div>{{ $order->tanggal_diajukan?->format('d-M-Y H:i') ?? '-' }}</div>
+                                <div class="text-xs text-gray-500 font-mono mt-0.5">
+                                    {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                                </div>
+                                @if(!empty($order->nomor_nbk))
+                                    <div class="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
+                                        NBK: {{ $order->nomor_nbk }}
+                                    </div>
+                                @endif
                             </td>
                             <td class="font-medium text-gray-900 dark:text-white">
                                 <div>{{ $locationLabel }}</div>
                                 <div class="text-xs text-gray-500">{{ $subLocationLabel }}</div>
-                            </td>
-                            <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ $qcLabel }}
                             </td>
                             <td class="text-center">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $order->jenis_order === 'stock' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700' }}">

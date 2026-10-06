@@ -1,6 +1,6 @@
-❌ *PEMBATALAN PERMINTAAN BAHAN PROYEK*
+❌ *PEMBATALAN PERMINTAAN BARANG KELUAR KE KONTRAKTOR*
 
-Permintaan bahan material proyek berikut telah dibatalkan:
+Permintaan barang keluar ke kontraktor berikut telah dibatalkan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}

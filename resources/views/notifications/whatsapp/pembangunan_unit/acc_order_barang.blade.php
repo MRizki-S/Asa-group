@@ -1,6 +1,6 @@
-✅ *PERSETUJUAN (ACC) ORDER BARANG UNIT*
+✅ *PERSETUJUAN (ACC) BARANG KELUAR KE UNIT*
 
-Permintaan bahan material unit telah disetujui (ACC) oleh SPV Logistik & Pengadaan:
+Permintaan barang keluar ke unit telah disetujui (ACC) oleh SPV Layanan & Dukungan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 @if(!empty($order->nomor_nbk))
@@ -9,16 +9,16 @@ Permintaan bahan material unit telah disetujui (ACC) oleh SPV Logistik & Pengada
 • *Perumahan:* {{ $namaPerumahan }}
 • *Tahap:* {{ $namaTahap }}
 • *Unit:* {{ $namaUnit }}
-• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? 'SPV Logistik' }}
+• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? 'SPV Layanan & Dukungan' }}
 • *Tanggal Disetujui:* {{ $tanggalSpv ?? $tanggalAcc ?? now()->format('d/m/Y H:i') . ' WIB' }}
 
 *Daftar Barang yang Disetujui:*
 @foreach($order->details as $idx => $item)
 @php
-    $isLuar = empty($item->rap_bahan_id);
-    $isMelebihi = !empty($item->rap_bahan_id) && !empty($item->alasan_permintaan_tidak_sesuai_rap);
-    $qtyMinta = (float) $item->jumlah_input;
-    $qtyDiserahkan = !is_null($item->jumlah_acc) ? (float) $item->jumlah_acc : $qtyMinta;
+    $isServis = (bool)($order->qc->is_servis ?? false);
+    $isLuar = !$isServis && empty($item->rap_bahan_id);
+    $isMelebihi = !$isServis && !empty($item->rap_bahan_id) && !empty($item->alasan_permintaan_tidak_sesuai_rap);
+    $qtyDiserahkan = !is_null($item->jumlah_acc) ? (float) $item->jumlah_acc : (float) $item->jumlah_input;
 @endphp
 @if($isLuar)
 {{ $idx + 1 }}. ⚠️ *{{ $item->nama_barang }}* - *[LUAR RAP]*
@@ -27,6 +27,5 @@ Permintaan bahan material unit telah disetujui (ACC) oleh SPV Logistik & Pengada
 @else
 {{ $idx + 1 }}. *{{ $item->nama_barang }}*
 @endif
-   • Diminta: {{ $qtyMinta }} {{ $item->satuan }}
-   • Diserahkan: *{{ $qtyDiserahkan }} {{ $item->satuan }}*
+   • Jumlah Diserahkan: *{{ $qtyDiserahkan }} {{ $item->satuan }}*
 @endforeach

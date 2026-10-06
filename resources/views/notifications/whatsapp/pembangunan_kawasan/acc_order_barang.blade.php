@@ -1,6 +1,6 @@
-✅ *PERSETUJUAN (ACC) ORDER BARANG KAWASAN*
+✅ *PERSETUJUAN (ACC) BARANG KELUAR KE KAWASAN*
 
-Permintaan bahan material kawasan telah disetujui (ACC) oleh SPV Logistik & Pengadaan:
+Permintaan barang keluar ke kawasan telah disetujui (ACC) oleh SPV Layanan & Dukungan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 @if(!empty($order->nomor_nbk))
@@ -8,23 +8,21 @@ Permintaan bahan material kawasan telah disetujui (ACC) oleh SPV Logistik & Peng
 @endif
 • *Perumahan:* {{ $namaPerumahan }}
 • *Kawasan:* {{ $namaKawasan }}
-• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? 'SPV Logistik' }}
+• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? 'SPV Layanan & Dukungan' }}
 • *Tanggal Disetujui:* {{ $tanggalSpv ?? $tanggalAcc ?? now()->format('d/m/Y H:i') . ' WIB' }}
 
 *Daftar Barang yang Disetujui:*
 @foreach($order->details as $idx => $item)
 @php
     $isMelebihi = !empty($item->alasan_permintaan_tidak_sesuai_rap);
-    $qtyMinta = (float) $item->jumlah_input;
-    $qtyDiserahkan = !is_null($item->jumlah_acc) ? (float) $item->jumlah_acc : $qtyMinta;
+    $qtyDiserahkan = !is_null($item->jumlah_acc) ? (float) $item->jumlah_acc : (float) $item->jumlah_input;
 @endphp
 @if($isMelebihi)
 {{ $idx + 1 }}. ⚠️ *{{ $item->nama_barang }}* - *[MELEBIHI RAP]*
 @else
 {{ $idx + 1 }}. *{{ $item->nama_barang }}*
 @endif
-   • Diminta: {{ $qtyMinta }} {{ $item->satuan }}
-   • Diserahkan: *{{ $qtyDiserahkan }} {{ $item->satuan }}*
+   • Jumlah Diserahkan: *{{ $qtyDiserahkan }} {{ $item->satuan }}*
 @endforeach
 
 @if(!empty($order->catatan))

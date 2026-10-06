@@ -1,6 +1,6 @@
-❌ *PEMBATALAN PERMINTAAN BAHAN KAWASAN*
+❌ *PEMBATALAN PERMINTAAN BARANG KELUAR KE KAWASAN*
 
-Permintaan bahan material kawasan berikut telah dibatalkan:
+Permintaan barang keluar ke kawasan berikut telah dibatalkan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

@@ -1,6 +1,6 @@
-🔄 *PENGAJUAN ULANG PERMINTAAN BAHAN UNIT*
+🔄 *PENGAJUAN ULANG PERMINTAAN BARANG KELUAR KE UNIT*
 
-Permintaan bahan material unit telah *DIAJUKAN KEMBALI*:
+Permintaan barang keluar ke unit telah *DIAJUKAN KEMBALI*:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

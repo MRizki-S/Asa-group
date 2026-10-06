@@ -50,7 +50,7 @@
         'pengembalian' => 'bg-orange-50 border-orange-300 text-orange-800 dark:bg-orange-900/30 dark:border-orange-600 dark:text-orange-300',
     ];
     $statusLabels = [
-        'diproses'     => 'Menunggu Gudang',
+        'diproses'     => 'Diajukan',
         'menunggu_spv' => 'Menunggu ACC SPV',
         'selesai'      => 'Selesai',
         'ditolak'      => 'Ditolak',
@@ -299,24 +299,13 @@
                 </div>
             @endif
 
-            @if ($is3Step && ($order->catatan_gudang || $order->gudang_by || $order->spv_by || $order->nomor_nbk))
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
-                    @if ($order->gudang_by)
-                        <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-3 dark:bg-blue-900/20 dark:border-blue-800">
-                            <span class="text-xs font-semibold text-blue-700 dark:text-blue-300">Diproses Gudang:</span>
-                            <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ $order->gudangBy?->nama_lengkap ?? $order->gudangBy?->name ?? 'Staff Gudang' }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $order->tanggal_gudang?->format('d/m/Y H:i') ?? '-' }}</p>
-                            @if ($order->catatan_gudang)
-                                <p class="text-xs text-gray-600 dark:text-gray-300 italic mt-1 bg-white dark:bg-gray-800 p-1.5 rounded border border-blue-200 dark:border-blue-700">"{{ $order->catatan_gudang }}"</p>
-                            @endif
-                        </div>
-                    @endif
-
-                    @if ($order->spv_by)
+            @if ($order->catatan_gudang || $order->gudang_by || $order->spv_by || $order->acc_by || $order->nomor_nbk)
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+                    @if ($order->spv_by || $order->acc_by)
                         <div class="rounded-xl border border-green-100 bg-green-50/50 p-3 dark:bg-green-900/20 dark:border-green-800">
-                            <span class="text-xs font-semibold text-green-700 dark:text-green-300">ACC SPV Logistik:</span>
-                            <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ $order->spvBy?->nama_lengkap ?? $order->spvBy?->name ?? 'SPV Logistik' }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $order->tanggal_spv?->format('d/m/Y H:i') ?? '-' }}</p>
+                            <span class="text-xs font-semibold text-green-700 dark:text-green-300">Disetujui Oleh (SPV Layanan & Dukungan):</span>
+                            <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ $order->spvBy?->nama_lengkap ?? $order->spvBy?->name ?? $order->accBy?->nama_lengkap ?? 'SPV Layanan & Dukungan' }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $order->tanggal_spv?->format('d/m/Y H:i') ?? $order->tanggal_selesai?->format('d/m/Y H:i') ?? '-' }}</p>
                         </div>
                     @endif
 
@@ -361,11 +350,6 @@
                         <tr>
                             <th class="border border-gray-300 px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-200 min-w-[250px]">Barang</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah Permintaan</th>
-                            @if ($is3Step)
-                                <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap bg-amber-50/70 dark:bg-amber-950/30">
-                                    Qty Gudang (Rilis)
-                                </th>
-                            @endif
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah Base</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Konfirmasi</th>
                             @if ($order->jenis_order !== 'direct')
@@ -406,7 +390,12 @@
                                     <div class="text-xs text-gray-500 flex flex-wrap items-center gap-1.5 mt-0.5">
                                         <span>{{ $detail->barang?->kode_barang ?? '-' }}</span>
                                         @if ($category === 'pembangunan_unit')
-                                            @if ($isLuarRap)
+                                            @php
+                                                $isServisOrder = (bool) ($order->qc?->is_servis ?? false);
+                                            @endphp
+                                            @if ($isServisOrder)
+                                                <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-semibold text-[10px]">Servis</span>
+                                            @elseif ($isLuarRap)
                                                 <span class="px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-semibold text-[10px]">Luar RAP</span>
                                             @elseif ($isOver)
                                                 <span class="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-semibold text-[10px]">Melebihi RAP</span>
@@ -422,28 +411,6 @@
                                 <td class="border border-gray-300 px-3 py-2 text-center text-sm font-bold text-gray-900 dark:text-white">
                                     {{ $formatQty($detail->jumlah_input) }} {{ $detail->satuan }}
                                 </td>
-                                @if ($is3Step)
-                                    <td class="border border-gray-300 px-3 py-2 text-center text-sm bg-amber-50/30 dark:bg-amber-950/20">
-                                        @if ($order->status_order === 'diproses')
-                                            <div class="flex items-center justify-center gap-1">
-                                                <input type="number" step="0.001" min="0" required
-                                                    name="items_acc[{{ $detail->id }}]"
-                                                    form="acc-form"
-                                                    value="{{ is_numeric($qtyVal = old('items_acc.' . $detail->id, $detail->jumlah_acc ?? $detail->jumlah_input)) ? (float)$qtyVal : $qtyVal }}"
-                                                    class="w-24 rounded-lg border border-amber-300 bg-white px-2 py-1 text-center text-sm font-bold text-gray-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-gray-800 dark:text-white">
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $detail->satuan }}</span>
-                                            </div>
-                                        @else
-                                            <span class="font-bold {{ !is_null($detail->jumlah_acc) && $detail->jumlah_acc != $detail->jumlah_input ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white' }}">
-                                                {{ $formatQty($detail->jumlah_acc ?? $detail->jumlah_input) }}
-                                            </span>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $detail->satuan }}</span>
-                                            @if (!is_null($detail->jumlah_acc) && $detail->jumlah_acc != $detail->jumlah_input)
-                                                <span class="block text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(disesuaikan)</span>
-                                            @endif
-                                        @endif
-                                    </td>
-                                @endif
                                 <td class="border border-gray-300 px-3 py-2 text-center text-sm text-gray-800 dark:text-white">
                                     {{ $formatQty(!is_null($detail->jumlah_acc_base) ? $detail->jumlah_acc_base : $detail->jumlah_base) }} {{ $detail->barang?->baseUnit?->nama ?? '' }}
                                 </td>
@@ -551,50 +518,18 @@
                         Tolak
                     </button>
 
-                    {{-- Tombol Gudang Rilis / Kirim ke SPV --}}
+                    {{-- Tombol ACC SPV Layanan & Dukungan --}}
                     <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
                         @submit="accSubmitting = true">
                         @csrf
                         @method('PATCH')
                         <button type="button" @click="openAccModal = true"
-                            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95">
+                            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all focus:outline-none focus:ring-4 focus:ring-green-300 active:scale-95 shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            {{ $is3Step ? 'Kirim ke SPV' : 'ACC' }}
+                            ACC Permintaan
                         </button>
                     </form>
                 @endcan
-            </div>
-        @endif
-
-        @if ($order->status_order === 'menunggu_spv' && $is3Step)
-            <div class="flex items-center gap-2">
-                @php
-                    $spvAccPermission = $category === 'pembangunan_kawasan'
-                        ? 'gudang.permintaan-barang.pemb-kawasan.spv-acc'
-                        : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
-                            ? 'gudang.permintaan-barang.pemb-proyek.spv-acc'
-                            : 'gudang.permintaan-barang.spv-acc');
-                @endphp
-                @canany([$spvAccPermission, 'gudang.permintaan-barang.spv-acc'])
-                    {{-- Tombol Tolak SPV --}}
-                    <button type="button" @click="openTolakModal = true"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        Tolak
-                    </button>
-
-                    {{-- Tombol ACC SPV Logistik --}}
-                    <button type="button" @click="openSpvAccModal = true"
-                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all focus:outline-none focus:ring-4 focus:ring-indigo-300 active:scale-95 shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        ACC SPV Logistik
-                    </button>
-                @else
-                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm font-semibold dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-300">
-                        <svg class="w-4 h-4 text-amber-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Menunggu Persetujuan SPV Logistik
-                    </span>
-                @endcanany
             </div>
         @endif
 
@@ -640,7 +575,7 @@
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                                {{ $category === 'pembangunan_unit' ? 'Konfirmasi Rilis Barang (Kirim ke SPV)' : 'Konfirmasi ACC Permintaan' }}
+                                Konfirmasi ACC Permintaan Barang
                             </h3>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
                                 {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
@@ -653,21 +588,13 @@
                 </div>
                 <div class="p-5 space-y-4">
                     <div class="rounded-xl border border-green-100 bg-green-50 p-4 dark:bg-green-900/20 dark:border-green-800">
-                        @if ($is3Step)
-                            <p class="text-sm font-semibold text-green-800 dark:text-green-300">
-                                Barang yang dikeluarkan akan disesuaikan dengan input Qty Gudang (Rilis) dan diteruskan ke SPV Logistik untuk disetujui.
-                            </p>
-                            <p class="mt-1 text-xs text-green-700/80 dark:text-green-300/80">Stok riil dan data termin baru akan terpotong setelah disetujui SPV Logistik.</p>
-                        @else
-                            <p class="text-sm font-semibold text-green-800 dark:text-green-300">
-                                @if ($order->jenis_order === 'direct')
-                                    ACC akan memakai harga total manual yang diinput pada tabel detail.
-                                @else
-                                    ACC akan mengurangi stock UBS dan sisa nota barang masuk secara FIFO.
-                                @endif
-                            </p>
-                            <p class="mt-1 text-xs text-green-700/80 dark:text-green-300/80">Data realisasi bahan proyek akan langsung ditambahkan setelah proses berhasil.</p>
-                        @endif
+                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">
+                            @if ($order->jenis_order === 'direct')
+                                ACC akan memproses pengeluaran barang direct dan mencatat biaya bahan proyek.
+                            @else
+                                ACC akan mengurangi stock UBS dan sisa nota barang masuk secara FIFO, mencatat realisasi termin, serta menerbitkan Nota Barang Keluar (NBK) resmi.
+                            @endif
+                        </p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
@@ -683,45 +610,6 @@
                         <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Unit / Lokasi</p>
                         <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $perumahaanLabel }} / {{ $tahapLabel }} / {{ $unitLabel }}</p>
                     </div>
-
-                    @if ($is3Step)
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1.5">Catatan Gudang (Opsional)</label>
-                            <textarea name="catatan_gudang" form="acc-form" rows="2" placeholder="Catatan jumlah stok fisik / catatan untuk SPV..." class="w-full rounded-xl border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"></textarea>
-                        </div>
-
-                        @if ($category === 'pembangunan_unit')
-                            @php
-                                $itemsOverOrLuar = $order->details->filter(function($detail) use ($order) {
-                                    $isLuar = empty($detail->rap_bahan_id);
-                                    if ($isLuar) return true;
-                                    if ($detail->rapBahan) {
-                                        $standarRap = (float) ($detail->rapBahan->jumlah_standar ?? 0);
-                                        $faktorRap = (float) ($detail->rapBahan->faktor_konversi ?? 1);
-                                        $baseRap = $standarRap * $faktorRap;
-                                        $totalOrderedUpToThis = (float) \App\Models\PembangunanUnitBarangOrderDetail::query()
-                                            ->where('rap_bahan_id', $detail->rap_bahan_id)
-                                            ->whereHas('order', function ($q) use ($order) {
-                                                $q->where('status_order', '!=', 'ditolak')
-                                                  ->where('id', '<=', $order->id);
-                                            })
-                                            ->sum('jumlah_base');
-                                        return ($totalOrderedUpToThis - $baseRap) > 0.001;
-                                    }
-                                    return false;
-                                });
-                            @endphp
-
-                            @if ($itemsOverOrLuar->count() > 0)
-                                <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:bg-amber-900/20 dark:border-amber-700">
-                                    <p class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                        Perhatian: Terdapat {{ $itemsOverOrLuar->count() }} barang tidak sesuai RAP
-                                    </p>
-                                </div>
-                            @endif
-                        @endif
-                    @endif
                 </div>
                 <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
                     <button type="button" @click="openAccModal = false"
@@ -729,89 +617,9 @@
                     <button type="button" :disabled="accSubmitting"
                         @click="if ($refs.accForm.reportValidity()) { accSubmitting = true; $refs.accForm.requestSubmit() }"
                         class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition disabled:opacity-60">
-                        <span x-text="accSubmitting ? 'Memproses...' : '{{ $is3Step ? 'Ya, Kirim ke SPV' : 'Ya, ACC' }}'"></span>
+                        <span x-text="accSubmitting ? 'Memproses...' : 'Ya, Setujui & Potong Stok'"></span>
                     </button>
                 </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- Modal ACC SPV Logistik (Hanya Pembangunan Unit & Pembangunan Kawasan & Status menunggu_spv) --}}
-    @if ($is3Step && $order->status_order === 'menunggu_spv' && $spvAccRoute)
-        <div x-show="openSpvAccModal" x-cloak x-transition
-            class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
-            <div @click.away="openSpvAccModal = false"
-                class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white">Persetujuan SPV Logistik</h3>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 font-semibold">
-                                {{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
-                            </p>
-                        </div>
-                        <button type="button" @click="openSpvAccModal = false" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
-                        </button>
-                    </div>
-                </div>
-                <form id="spv-acc-form" method="POST" action="{{ $spvAccRoute }}" @submit="spvSubmitting = true">
-                    @csrf
-                    @method('PATCH')
-                    <div class="p-5 space-y-4">
-                        <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:bg-indigo-900/20 dark:border-indigo-800">
-                            <p class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
-                                ACC Resmi SPV Logistik akan memotong stok gudang (FIFO), mencatat data real bahan proyek/kawasan, dan menerbitkan Nomor Nota Barang Keluar (NBK).
-                            </p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Total Item</p>
-                                <p class="mt-1 text-lg font-bold text-gray-900 dark:text-white">{{ $order->details->count() }}</p>
-                            </div>
-                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Staff Gudang</p>
-                                <p class="mt-1 text-sm font-bold text-gray-900 dark:text-white">{{ $order->gudangBy?->nama_lengkap ?? $order->gudangBy?->name ?? '-' }}</p>
-                            </div>
-                        </div>
-                        @if ($order->catatan_gudang)
-                            <div class="rounded-lg bg-gray-50 border border-gray-200 p-3 dark:bg-gray-700/50 dark:border-gray-600">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Catatan Gudang</p>
-                                <p class="mt-1 text-xs text-gray-700 dark:text-gray-300 font-medium">"{{ $order->catatan_gudang }}"</p>
-                            </div>
-                        @endif
-
-                        @if ($order->jenis_order === 'direct')
-                            <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3.5 dark:bg-indigo-900/20 dark:border-indigo-800 space-y-2">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-indigo-900 dark:text-indigo-300">Rincian Nominal Barang Direct (Gudang):</p>
-                                <div class="divide-y divide-indigo-100 dark:divide-indigo-800 text-xs">
-                                    @php $grandTotalDirect = 0; @endphp
-                                    @foreach($order->details as $d)
-                                        @php $grandTotalDirect += (float) ($d->harga_total_snapshot ?? 0); @endphp
-                                        <div class="py-1.5 flex items-center justify-between">
-                                            <span class="text-gray-700 dark:text-gray-300">{{ $d->nama_barang }} ({{ (float)($d->jumlah_acc ?? $d->jumlah_input) }} {{ $d->satuan }})</span>
-                                            <span class="font-bold text-gray-900 dark:text-white">
-                                                {{ !is_null($d->harga_total_snapshot) ? 'Rp ' . number_format((float)$d->harga_total_snapshot, 0, ',', '.') : '-' }}
-                                            </span>
-                                        </div>
-                                    @endforeach
-                                    <div class="pt-2 flex items-center justify-between font-bold text-sm text-indigo-950 dark:text-indigo-200">
-                                        <span>Total Biaya Direct:</span>
-                                        <span>Rp {{ number_format($grandTotalDirect, 0, ',', '.') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
-                        <button type="button" @click="openSpvAccModal = false"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600">Batal</button>
-                        <button type="submit" :disabled="spvSubmitting"
-                            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition disabled:opacity-60">
-                            <span x-text="spvSubmitting ? 'Memproses...' : 'Ya, Setujui & Potong Stok'"></span>
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     @endif

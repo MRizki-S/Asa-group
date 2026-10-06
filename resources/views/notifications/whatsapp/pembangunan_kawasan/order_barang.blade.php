@@ -1,6 +1,6 @@
-📦 *PENGAJUAN PERMINTAAN BAHAN KAWASAN*
+📦 *PERMINTAAN BARANG KELUAR KE KAWASAN*
 
-Terdapat pengajuan permintaan bahan material baru dengan rincian berikut:
+Terdapat permintaan barang keluar ke kawasan dengan rincian berikut:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

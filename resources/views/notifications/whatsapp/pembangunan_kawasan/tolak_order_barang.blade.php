@@ -1,6 +1,6 @@
-❌ *PENOLAKAN PERMINTAAN BARANG KAWASAN*
+❌ *PENOLAKAN PERMINTAAN BARANG KELUAR KE KAWASAN*
 
-Permintaan order barang kawasan berikut telah ditolak:
+Permintaan barang keluar ke kawasan berikut telah ditolak:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}
