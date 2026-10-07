@@ -396,7 +396,7 @@ class KpiUserController extends Controller
 
             try {
                 // 089685813512
-                $this->notificationPribadi->sendWhatsApp("085238617670", $message);
+                $this->notificationPribadi->sendWhatsApp("089685813512", $message);
             } catch (\Throwable $e) {
                 \Log::error('Error kirim notif WA KPI Review: ' . $e->getMessage());
             }
