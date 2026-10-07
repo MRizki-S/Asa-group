@@ -123,9 +123,7 @@
                     <table id="table-user-kpi" class="min-w-full" style="min-width: 900px;">
                         <thead>
                             <tr class="text-left border-b border-gray-200 dark:border-gray-800">
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Nama Lengkap</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">No HP</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Role ID</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Karyawan</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Jabatan (Role)</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Devisi</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Total Nilai</th>
@@ -139,16 +137,13 @@
                         <tbody>
                             @foreach ($allKpiUser as $item)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] border-b dark:border-gray-800">
-                                    <td class="py-4 px-4 text-sm font-medium text-gray-800 dark:text-white">
-                                        {{ $item->karyawan->nama }}
-                                    </td>
-                                    <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">
-                                        {{ $item->karyawan->no_hp ?? '-' }}
-                                    </td>
-                                    <td class="py-4 px-4 text-sm text-center">
-                                        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400 rounded text-xs font-semibold">
-                                            {{ $item->karyawan->role?->id ?? '-' }}
-                                        </span>
+                                    <td class="py-4 px-4 text-sm">
+                                        <div class="font-medium text-gray-800 dark:text-white">
+                                            {{ $item->karyawan->nama }}
+                                        </div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                                            {{ $item->karyawan->no_hp ?? '-' }}
+                                        </div>
                                     </td>
                                     <td class="py-4 px-4 text-sm">
                                         <span

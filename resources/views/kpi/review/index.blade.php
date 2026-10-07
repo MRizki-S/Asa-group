@@ -31,10 +31,8 @@
                 {{-- Header --}}
                 <div class="mb-6 flex items-center justify-between">
                     <div>
-                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Daftar Review Kepatuhan (<
-                                90%)</h3>
-                                <p class="text-xs text-gray-500 mt-1 italic">* Menajer dapat melakukan penyesuaian skor
-                                    untuk komponen yang tidak tercapai.</p>
+                        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Daftar Review Penilaian KPI</h3>
+                        <p class="text-xs text-gray-500 mt-1 italic">* Manajer dapat melakukan penyesuaian skor untuk komponen yang memerlukan review.</p>
                     </div>
                 </div>
 
@@ -52,8 +50,7 @@
                             <tr class="text-left border-b border-gray-200 dark:border-gray-800">
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Karyawan &
                                     Periode</th>
-                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Komponen
-                                    Bermasalah</th>
+                                <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400">Komponen yang Direview</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">
                                     Status Request</th>
                                 @can('kpi.kpi-riview.riview-skor')
@@ -73,15 +70,28 @@
                                             {{ date('F Y', mktime(0, 0, 0, $kpi->bulan, 1, $kpi->tahun)) }}
                                         </div>
                                     </td>
-                                    <td class="py-4 px-4 text-sm">
-                                        <ul class="space-y-1">
-                                            @foreach ($kpi->details->where('skor', 0) as $det)
+                                    <td class="py-4 px-4 text-sm align-top">
+                                        @php
+                                            $komponenBermasalah = $kpi->details->filter(function($d) {
+                                                return ($d->skor == 0 && !$d->nilai_tetap) || $d->is_review_khusus;
+                                            });
+                                        @endphp
+                                        <ul class="space-y-1.5">
+                                            @forelse ($komponenBermasalah as $det)
                                                 <li class="flex items-center gap-2">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                                    <span
-                                                        class="text-gray-600 dark:text-gray-400 text-xs">{{ $det->nama_komponen }}</span>
+                                                    @if ($det->is_review_khusus)
+                                                        <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                                        <span class="text-gray-800 dark:text-gray-200 text-xs font-semibold">{{ $det->nama_komponen }}</span>
+                                                        <span class="text-[9px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 px-1.5 py-0.2 rounded">Khusus</span>
+                                                    @else
+                                                        <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
+                                                        <span class="text-gray-700 dark:text-gray-300 text-xs">{{ $det->nama_komponen }}</span>
+                                                        <span class="text-[9px] font-bold text-red-700 bg-red-100 dark:bg-red-900/40 dark:text-red-300 border border-red-300 px-1.5 py-0.2 rounded">&lt;90%</span>
+                                                    @endif
                                                 </li>
-                                            @endforeach
+                                            @empty
+                                                <li class="text-xs text-gray-400 italic">Tidak ada rincian komponen</li>
+                                            @endforelse
                                         </ul>
                                     </td>
                                     <td class="py-4 px-4 text-center align-middle">

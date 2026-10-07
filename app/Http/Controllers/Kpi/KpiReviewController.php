@@ -8,34 +8,19 @@ use App\Models\KpiReviewRequest;
 use App\Models\KpiUser;
 use App\Models\KpiUserKomponen;
 use App\Models\User;
-use App\Services\NotificationPribadiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class KpiReviewController extends Controller
 {
-
-    protected NotificationPribadiService $notificationPribadi;
-
-    public function __construct(NotificationPribadiService $notificationPribadi)
-    {
-        $this->notificationPribadi = $notificationPribadi;
-    }
-
     public function index(Request $request)
     {
-        $reviews = KpiUser::whereHas('details', function ($query) {
-            $query->where('skor', 0);
-        })
+        $reviews = KpiUser::where('status', '!=', 'final')
             ->whereHas('reviewRequests', function ($query) {
-                $query->whereIn('id', function ($sub) {
-                    $sub->selectRaw('max(id)')
-                        ->from('kpi_review_requests')
-                        ->groupBy('kpi_user_id');
-                })->whereNull('direspon_pada');
+                $query->whereNull('direspon_pada');
             })
             ->with(['karyawan', 'details.tasks', 'reviewRequests' => function ($q) {
-                $q->latest();
+                $q->whereNull('direspon_pada')->latest();
             }])
             ->latest()
             ->get();
@@ -44,7 +29,7 @@ class KpiReviewController extends Controller
             'reviews' => $reviews,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Review Materialitas', 'url' => '#']
+                ['label' => 'Review Penilaian KPI', 'url' => '#']
             ],
         ]);
     }
@@ -92,6 +77,7 @@ class KpiReviewController extends Controller
                     'skor' => $skor,
                     'nilai_akhir' => ($detail->bobot / 100) * $skor,
                     'nilai_tetap' => true,
+                    'is_review_khusus' => false,
                 ]);
             }
 
@@ -101,42 +87,5 @@ class KpiReviewController extends Controller
         });
 
         return redirect()->route('kpi.review.index')->with('success', 'Review materialitas dan status KPI berhasil diperbarui.');
-    }
-
-    public function sendNotif($id)
-    {
-        $kpiUser = KpiUser::with(['karyawan', 'details'])->findOrFail($id);
-
-        $buatRequest = KpiReviewRequest::create([
-            'kpi_user_id' => $id
-        ]);
-
-        // $manager = User::role('MANAJER STRATEGI & KEPATUHAN')->first();
-
-        // if (!$manager || !$manager->no_hp) {
-        //     return;
-        // }
-
-        $namaKaryawan = $kpiUser->karyawan->nama;
-        $periode = date('F Y', mktime(0, 0, 0, $kpiUser->bulan, 1, $kpiUser->tahun));
-
-        $komponenNol = $kpiUser->details->where('skor', 0)->pluck('nama_komponen')->implode(', ');
-
-        $message = "⚠️ *REQUEST REVIEW KPI*\n\n" .
-            "Halo Manajer Strategi & Kepatuhan, terdapat penilaian KPI karyawan yang membutuhkan review (Skor 0).\n\n" .
-            "```\n" .
-            "👤 Karyawan  : {$namaKaryawan}\n" .
-            "📅 Periode   : {$periode}\n" .
-            "📊 Komponen  : {$komponenNol}\n" .
-            "```\n\n" .
-            "Mohon segera melakukan pengecekan dan penyesuaian skor melalui dashboard sistem KPI. Terima kasih. 🙏";
-
-
-        try {
-            // $this->notificationPribadi->sendWhatsApp($manager->no_hp, $message);
-            $this->notificationPribadi->sendWhatsApp("089685813512", $message);
-            return back()->with('success', 'Permintaan dikirim');
-        } catch (\Exception $e) {
-        }
     }
 }

@@ -13,13 +13,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Role;
-
-
+use App\Models\KpiReviewRequest;
+use App\Models\KpiUserKomponen;
+use App\Services\NotificationPribadiService;
 
 use function Symfony\Component\Clock\now;
 
 class KpiUserController extends Controller
 {
+    protected NotificationPribadiService $notificationPribadi;
+
+    public function __construct(NotificationPribadiService $notificationPribadi)
+    {
+        $this->notificationPribadi = $notificationPribadi;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -220,10 +227,6 @@ class KpiUserController extends Controller
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
         $bolehRequest = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() === 0
-            && $kpiUser->details->whereNotNull('kepatuhan_percent')
-            ->where('kepatuhan_percent', '<', 90)
-            ->where('nilai_tetap', false)
-            ->count() > 0
             && $kpiUser->details->count() > 0;
 
         $prosesReview = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() > 0;
@@ -251,10 +254,6 @@ class KpiUserController extends Controller
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
         $bolehRequest = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() === 0
-            && $kpiUser->details->whereNotNull('kepatuhan_percent')
-            ->where('kepatuhan_percent', '<', 90)
-            ->where('nilai_tetap', false)
-            ->count() > 0
             && $kpiUser->details->count() > 0;
 
         $prosesReview = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() > 0;
@@ -280,7 +279,10 @@ class KpiUserController extends Controller
         $request->validate([
             'task' => 'required|array',
             'catatan' => 'nullable|array',
-            'status' => 'required|in:draft,final'
+            'is_review_khusus' => 'nullable|array',
+            'alasan_review_khusus' => 'nullable|array',
+            'status' => 'required|in:draft,final',
+            'action_type' => 'nullable|string'
         ]);
 
         $indicators = KpiIndicator::all();
@@ -350,6 +352,9 @@ class KpiUserController extends Controller
                     $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
                 }
 
+                $isKhusus = isset($request->is_review_khusus[$komponenId]) && $request->is_review_khusus[$komponenId] == '1';
+                $alasanKhusus = $isKhusus ? ($request->alasan_review_khusus[$komponenId] ?? null) : null;
+
                 $userKomponen->update([
                     'total_target' => $totalTargetKomponen,
                     'total_tercapai' => $totalTercapaiKomponen,
@@ -357,11 +362,47 @@ class KpiUserController extends Controller
                     'skor' => $skor,
                     'nilai_akhir' => ($userKomponen->bobot / 100) * $skor,
                     'catatan_tambahan' => $request->catatan[$komponenId] ?? null,
+                    'is_review_khusus' => $isKhusus,
+                    'alasan_review_khusus' => $alasanKhusus,
                 ]);
             }
 
             $kpiUser->update(['status' => $request->status]);
         });
+
+        if ($request->input('action_type') === 'request_review') {
+            $kpiUser = KpiUser::with(['karyawan', 'details'])->findOrFail($id);
+
+            KpiReviewRequest::create([
+                'kpi_user_id' => $id
+            ]);
+
+            $namaKaryawan = $kpiUser->karyawan->nama;
+            $periode = date('F Y', mktime(0, 0, 0, $kpiUser->bulan, 1, $kpiUser->tahun));
+
+            $komponenNol = $kpiUser->details->where('skor', 0)->pluck('nama_komponen')->toArray();
+            $komponenKhusus = $kpiUser->details->where('is_review_khusus', true)->pluck('nama_komponen')->toArray();
+            $semuaKomponen = array_unique(array_merge($komponenNol, $komponenKhusus));
+            $komponenText = !empty($semuaKomponen) ? implode(', ', $semuaKomponen) : '-';
+
+            $message = "⚠️ *REQUEST REVIEW KPI*\n\n" .
+                "Halo Manajer Strategi & Kepatuhan, terdapat penilaian KPI karyawan yang membutuhkan review:\n\n" .
+                "```\n" .
+                "👤 Karyawan  : {$namaKaryawan}\n" .
+                "📅 Periode   : {$periode}\n" .
+                "📊 Komponen  : {$komponenText}\n" .
+                "```\n\n" .
+                "Mohon segera melakukan pengecekan dan penyesuaian skor melalui dashboard sistem KPI. Terima kasih. 🙏";
+
+            try {
+                // 089685813512
+                $this->notificationPribadi->sendWhatsApp("085238617670", $message);
+            } catch (\Throwable $e) {
+                \Log::error('Error kirim notif WA KPI Review: ' . $e->getMessage());
+            }
+
+            return redirect()->route('kpi.user.index')->with('success', 'Data KPI berhasil disimpan & permintaan review berhasil dikirim ke Manajer Strategi & Kepatuhan.');
+        }
 
         return redirect()->back()->with('success', 'Data KPI berhasil diperbarui.');
     }

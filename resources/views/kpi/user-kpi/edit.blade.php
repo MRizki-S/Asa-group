@@ -37,6 +37,7 @@
 
         <form action="{{ route('kpi.user.update', $kpiUser->id) }}" method="POST" x-data="{ submitting: false }" @submit="if(submitting) { $event.preventDefault(); return; }; submitting = true">
             @csrf @method('PUT')
+            <input type="hidden" name="action_type" id="form_action_type" value="save">
 
             <div class="space-y-6">
                 @foreach ($kpiUser->details as $komponen)
@@ -82,6 +83,38 @@
                                 </div>
                             </div>
                         </div>
+
+                        @if ($kpiUser->status != 'final' && !$komponen->nilai_tetap)
+                            <div class="px-4 sm:px-6 py-3 bg-amber-50/40 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/30">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                        <input type="checkbox"
+                                            name="is_review_khusus[{{ $komponen->id }}]"
+                                            value="1"
+                                            x-model="reviewKhusus[{{ $komponen->id }}]"
+                                            class="rounded border-amber-300 text-amber-600 focus:ring-amber-500 w-4 h-4">
+                                        <span class="text-xs font-bold text-amber-900 dark:text-amber-300">Ajukan Review Khusus untuk Komponen Ini</span>
+                                    </label>
+                                    <span class="text-[11px] text-amber-700/70 dark:text-amber-400/70 italic" x-show="reviewKhusus[{{ $komponen->id }}]">
+                                        Nilai & task akan ditinjau langsung oleh Manajer Strategi & Kepatuhan
+                                    </span>
+                                </div>
+                                <div x-show="reviewKhusus[{{ $komponen->id }}]" class="mt-2.5">
+                                    <label class="block text-[10px] font-bold uppercase text-amber-800 dark:text-amber-300 mb-1">
+                                        Alasan Pengajuan Review Khusus:
+                                    </label>
+                                    <textarea name="alasan_review_khusus[{{ $komponen->id }}]"
+                                        rows="2"
+                                        class="w-full rounded-xl border-amber-200 dark:border-amber-800/80 bg-white dark:bg-gray-900 text-gray-700 dark:text-white text-xs focus:border-amber-500 focus:ring-amber-500 transition-all placeholder:text-gray-400"
+                                        placeholder="Tuliskan pertimbangan atau alasan detail mengapa komponen ini memerlukan review khusus manajer...">{{ $komponen->alasan_review_khusus }}</textarea>
+                                </div>
+                            </div>
+                        @elseif ($komponen->is_review_khusus && $komponen->alasan_review_khusus)
+                            <div class="px-4 sm:px-6 py-3 bg-amber-50/60 dark:bg-amber-950/30 border-b border-amber-100 dark:border-amber-900/30 text-xs text-amber-900 dark:text-amber-200">
+                                <span class="font-bold text-[10px] uppercase text-amber-700 dark:text-amber-400 block mb-0.5">Alasan Pengajuan Review Khusus:</span>
+                                <p class="italic leading-relaxed">{{ $komponen->alasan_review_khusus }}</p>
+                            </div>
+                        @endif
 
                         <div class="max-w-full overflow-x-auto custom-scrollbar">
                             <table class="w-full border-collapse" style="min-width: 850px;">
@@ -262,18 +295,23 @@
                         class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition">Kembali</a>
                     @if ($kpiUser->status != 'final')
                         @can('kpi.kpi-user.minta-riview')
-                            <a href="{{ route('kpi.request.review', $kpiUser->id) }}" x-show="hasProblem()"
-                                @if (!$bolehRequest) onclick="return false;" @endif
-                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium rounded-lg transition
+                            <button type="submit" name="action_type" value="request_review"
+                                @click="document.getElementById('form_action_type').value = 'request_review'"
+                                x-show="hasProblem()"
+                                @if (!$bolehRequest) disabled @endif
+                                :disabled="submitting || {{ !$bolehRequest ? 'true' : 'false' }}"
+                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-bold rounded-lg transition shadow-sm
                 {{ $bolehRequest
                     ? 'text-white bg-orange-500 hover:bg-orange-600 cursor-pointer'
                     : 'text-gray-400 bg-gray-100 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700' }}">
-                                Minta Review
-                            </a>
+                                <span x-text="submitting ? 'Memproses...' : 'Minta Review'"></span>
+                            </button>
                         @endcan
                         @can('kpi.kpi-user.update-simpan-nilai')
-                            <button type="submit" :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
-                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                            <button type="submit" name="action_type" value="save"
+                                @click="document.getElementById('form_action_type').value = 'save'"
+                                :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
+                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm">
                                 <span x-text="submitting ? 'Memproses...' : 'Simpan Nilai'"></span>
                             </button>
                         @endcan
@@ -302,6 +340,12 @@
                                 nilai: "{{ $task->nilai ?? 0 }}",
                             },
                         @endforeach
+                    @endforeach
+                },
+
+                reviewKhusus: {
+                    @foreach ($kpiUser->details as $komponen)
+                        {{ $komponen->id }}: {{ $komponen->is_review_khusus ? 'true' : 'false' }},
                     @endforeach
                 },
 
@@ -435,8 +479,9 @@
 
                 hasProblem() {
                     return this.komponenData.some(k => {
-                        if (k.tipe !== 'KEPATUHAN' && k.tipe !== 'AKKUMULASI_NILAI') return false;
                         if (k.isFixed) return false;
+                        if (this.reviewKhusus[k.id]) return true;
+                        if (k.tipe !== 'KEPATUHAN' && k.tipe !== 'AKKUMULASI_NILAI') return false;
                         const hasil = this.results[k.id];
                         return hasil && hasil.persen !== null && hasil.persen < 90;
                     });

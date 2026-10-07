@@ -942,7 +942,6 @@ Route::middleware('auth')->prefix('kpi')->group(function () {
     Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');
     Route::resource('user', KpiUserController::class)->names('kpi.user');
     Route::get('/kpi-review', [KpiReviewController::class, 'index'])->name('kpi.review.index');
-    Route::get('/request-review/{id}', [KpiReviewController::class, 'sendNotif'])->name('kpi.request.review');
     Route::put('/kpi-review/{id}', [KpiReviewController::class, 'update'])->name('kpi.review.update');
     Route::get('/kpi-review/{id}/edit', [KpiReviewController::class, 'edit'])->name('kpi.review.edit');
     Route::get('/dashboard', [KpiDashboardController::class, 'index'])->name('kpi.dashboard.index');

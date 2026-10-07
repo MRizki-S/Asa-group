@@ -19,7 +19,14 @@ class KpiUserKomponen extends Model
         'skor',
         'nilai_akhir',
         'nilai_tetap',
+        'is_review_khusus',
+        'alasan_review_khusus',
         'catatan_tambahan'
+    ];
+
+    protected $casts = [
+        'is_review_khusus' => 'boolean',
+        'nilai_tetap' => 'boolean',
     ];
 
     public function kpiUser()

@@ -3,7 +3,7 @@
 @section('pageActive', 'Review-KPI')
 
 @section('content')
-<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
+<div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="kpiReviewCalculator()">
     <div x-data="{ pageName: 'Review Materialitas KPI: {{ $kpiUser->karyawan->nama }}' }">
         @include('partials.breadcrumb')
     </div>
@@ -22,7 +22,7 @@
         </div>
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Total Nilai Saat Ini</p>
-            <p class="text-sm font-bold text-gray-800 dark:text-white">
+            <p class="text-sm font-bold text-gray-800 dark:text-white" x-text="totalNilai">
                 {{ round((float) $kpiUser->total_nilai) }}
             </p>
         </div>
@@ -41,29 +41,47 @@
         <div class="space-y-6">
             @foreach ($kpiUser->details as $komponen)
             @php
-            $tipeCek = ['KEPATUHAN', 'AKKUMULASI_NILAI'];
-            $isBermasalah =
-            $komponen->kepatuhan_percent < 90 &&
-                in_array($komponen->komponen->tipe_perhitungan, $tipeCek) &&
-                !$komponen->nilai_tetap;
-                @endphp
+                $tipeCek = ['KEPATUHAN', 'AKKUMULASI_NILAI'];
+                $isUnder90 = $komponen->kepatuhan_percent < 90 &&
+                    in_array($komponen->komponen->tipe_perhitungan, $tipeCek) &&
+                    !$komponen->nilai_tetap;
+                $isReviewKhusus = (bool) $komponen->is_review_khusus && !$komponen->nilai_tetap;
+                $isBermasalah = $isUnder90 || $isReviewKhusus;
+            @endphp
 
                 <div
-                    class="rounded-2xl border {{ $isBermasalah ? 'border-red-500 shadow-md shadow-red-50/50' : 'border-gray-200 shadow-sm' }} bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+                    class="rounded-2xl border {{ $isReviewKhusus ? 'border-amber-500 shadow-md shadow-amber-50/50' : ($isUnder90 ? 'border-red-500 shadow-md shadow-red-50/50' : 'border-gray-200 shadow-sm') }} bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
 
                     <div
                         class="bg-gray-50 dark:bg-gray-900/50 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                         <div>
-                            <h3 class="font-bold text-gray-800 dark:text-white">{{ $komponen->nama_komponen }}</h3>
-                            <p class="text-[10px] text-gray-500 font-medium italic">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="font-bold text-gray-800 dark:text-white">{{ $komponen->nama_komponen }}</h3>
+                                @if($isReviewKhusus)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300">
+                                        REVIEW KHUSUS
+                                    </span>
+                                @elseif($isUnder90)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 border border-red-300">
+                                        &lt; 90%
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">
                                 Bobot: {{ $komponen->bobot }}% | Tipe: {{ $komponen->komponen->tipe_perhitungan }}
                             </p>
+                            @if($isReviewKhusus && !empty($komponen->alasan_review_khusus))
+                                <div class="mt-2.5 p-2.5 bg-amber-50/80 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200">
+                                    <span class="font-bold block text-[10px] uppercase text-amber-700 dark:text-amber-400 mb-0.5">Alasan Review Khusus (Penilai):</span>
+                                    {{ $komponen->alasan_review_khusus }}
+                                </div>
+                            @endif
                         </div>
                         <div class="flex gap-4 sm:gap-6">
                             <div class="text-right">
                                 <span class="text-[10px] text-gray-400 uppercase font-bold block">Kepatuhan</span>
                                 <span
-                                    class="text-base font-black {{ $isBermasalah ? 'text-red-600' : 'text-blue-600' }}">
+                                    class="text-base font-black {{ $isUnder90 ? 'text-red-600' : ($isReviewKhusus ? 'text-amber-600' : 'text-blue-600') }}">
                                     {{ number_format($komponen->kepatuhan_percent, 1) }}%
                                 </span>
                             </div>
@@ -72,16 +90,24 @@
                                 @if ($isBermasalah)
                                 @can('kpi.kpi-riview.simpan-hasil-riview')
                                 <select name="skor_custom[{{ $komponen->id }}]"
-                                    class="mt-1 block w-24 rounded-lg border-red-300 text-sm font-black text-red-600 focus:ring-red-500 focus:border-red-500 py-1">
-                                    <option value="0" {{ $komponen->skor == 0 ? 'selected' : '' }}>0</option>
-                                    <option value="70" {{ $komponen->skor == 70 ? 'selected' : '' }}>70</option>
-                                    <option value="100" {{ $komponen->skor == 100 ? 'selected' : '' }}>100</option>
+                                    x-model="skorCustom[{{ $komponen->id }}]"
+                                    class="mt-1 block w-24 rounded-lg {{ $isReviewKhusus ? 'border-amber-300 text-amber-700 focus:ring-amber-500 focus:border-amber-500' : 'border-red-300 text-red-600 focus:ring-red-500 focus:border-red-500' }} text-sm font-black py-1">
+                                    <option value="0">0</option>
+                                    <option value="70">70</option>
+                                    <option value="100">100</option>
                                 </select>
                                 @endcan
                                 @else
                                 <span
                                     class="text-base font-black text-green-600">{{ (float) $komponen->skor }}</span>
                                 @endif
+                            </div>
+                            <div class="text-right border-l pl-4 sm:pl-6 border-gray-200 dark:border-gray-700">
+                                <span class="text-[10px] text-orange-500 uppercase font-bold block">Nilai</span>
+                                <span class="text-base font-black text-orange-600"
+                                    x-text="getNilaiAkhir({{ $komponen->id }}, {{ $komponen->bobot }})">
+                                    {{ round((float) $komponen->nilai_akhir) }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -195,4 +221,36 @@
         </div>
     </form>
 </div>
+
+<script>
+    function kpiReviewCalculator() {
+        return {
+            skorCustom: {
+                @foreach ($kpiUser->details as $komponen)
+                    {{ $komponen->id }}: "{{ (int) $komponen->skor }}",
+                @endforeach
+            },
+            komponen: [
+                @foreach ($kpiUser->details as $komponen)
+                    {
+                        id: {{ $komponen->id }},
+                        bobot: {{ $komponen->bobot }},
+                    },
+                @endforeach
+            ],
+            get totalNilai() {
+                let sum = 0;
+                for (const k of this.komponen) {
+                    const skor = parseFloat(this.skorCustom[k.id]) || 0;
+                    sum += (k.bobot / 100) * skor;
+                }
+                return Math.round(sum);
+            },
+            getNilaiAkhir(id, bobot) {
+                const skor = parseFloat(this.skorCustom[id]) || 0;
+                return Math.round((bobot / 100) * skor);
+            }
+        }
+    }
+</script>
 @endsection
