@@ -204,17 +204,17 @@
 
 
 
-            <div class="w-full max-h-[600px] overflow-auto border border-gray-300 rounded-lg shadow-sm">
-                <table class="min-w-max w-full border-collapse text-sm">
+            <div class="w-full max-h-[600px] overflow-auto border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm">
+                <table class="w-full min-w-full border-collapse text-sm">
 
                     <thead class="bg-gray-800 text-white sticky top-0 z-10">
                         <tr>
-                            <th class="border px-3 py-2 text-left whitespace-nowrap w-[20%]">Kode Barang</th>
-                            <th class="border px-3 py-2 text-left whitespace-nowrap w-[40%]">Nama Barang</th>
-                            <th class="border px-3 py-2 text-center whitespace-nowrap w-[15%]">Satuan</th>
-                            <th class="border px-3 py-2 text-center whitespace-nowrap w-[15%]">Total Stock</th>
+                            <th class="border px-3 py-2.5 text-left whitespace-nowrap w-44 md:w-48">Kode Barang</th>
+                            <th class="border px-3 py-2.5 text-left min-w-[200px]">Nama Barang</th>
+                            <th class="border px-3 py-2.5 text-center whitespace-nowrap w-24 md:w-28">Satuan</th>
+                            <th class="border px-3 py-2.5 text-center whitespace-nowrap w-28 md:w-36">Total Stock</th>
                             @if($selectedUbs != 'all')
-                            <th class="border px-3 py-2 text-center whitespace-nowrap w-[10%]">Minimal Stock</th>
+                            <th class="border px-3 py-2.5 text-center whitespace-nowrap w-28 md:w-36">Minimal Stock</th>
                             @endif
                         </tr>
                     </thead>
@@ -277,37 +277,37 @@
                         {{-- ROW UTAMA --}}
                         <tr @click="open = !open"
                             class="font-bold text-gray-900 border-t-2 cursor-pointer transition-colors {{ $rowBg }}">
-                            <td class="border px-3 py-2 text-center {{ $textColor }}">
-                                <div class="flex items-center gap-2">
+                            <td class="border px-3 py-2 text-left {{ $textColor }} w-44 md:w-48">
+                                <div class="flex items-center gap-1.5 flex-wrap">
                                     @if($selectedUbs == 'all')
-                                    <svg class="w-4 h-4 transition-transform duration-200"
+                                    <svg class="w-4 h-4 transition-transform duration-200 shrink-0"
                                         :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                     @endif
-                                    {{ $barang->kode_barang }}
+                                    <span class="font-mono text-xs sm:text-sm">{{ $barang->kode_barang }}</span>
                                     @if($isBelowMin)
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-600 border border-red-300 px-1.5 py-0.5 rounded">
-                                            ⚠ Stok Rendah
+                                        <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider bg-red-100 text-red-600 border border-red-300 px-1 py-0.2 rounded">
+                                            ⚠ Rendah
                                         </span>
                                     @endif
                                 </div>
                             </td>
                             <td class="border px-3 py-2 {{ $textColor }}">
-                                <div class="flex items-center gap-2">
+                                <div class="font-medium text-xs sm:text-sm leading-snug">
                                     {{ $barang->nama_barang }}
                                 </div>
                             </td>
-                            <td class="border px-3 py-2 text-center text-gray-700">
+                            <td class="border px-3 py-2 text-center text-gray-700 dark:text-gray-300 text-xs sm:text-sm w-24 md:w-28 whitespace-nowrap">
                                 {{ $satuanNama }}
                             </td>
-                            <td class="border px-3 py-2 text-center font-bold {{ $isBelowMin ? 'text-red-600' : '' }}">
+                            <td class="border px-3 py-2 text-center font-bold text-xs sm:text-sm w-28 md:w-36 whitespace-nowrap {{ $isBelowMin ? 'text-red-600' : '' }}">
                                 {{ formatStock($stockDisplay) }}
                             </td>
                             @if($selectedUbs != 'all')
-                            <td class="border px-3 py-2 text-center italic {{ $isBelowMin ? 'text-red-500 font-semibold' : 'text-gray-500' }}">
+                            <td class="border px-3 py-2 text-center italic text-xs sm:text-sm w-28 md:w-36 whitespace-nowrap {{ $isBelowMin ? 'text-red-500 font-semibold' : 'text-gray-500' }}">
                                 {{ formatStock($minStockDisplay) }}
                             </td>
                             @endif
@@ -318,9 +318,9 @@
                         <tr x-show="open" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                             style="display: none;">
-                            <td colspan="4" class="border p-0 bg-gray-50">
-                                <div class="p-4 bg-white border-l-4 border-blue-500 m-2 shadow-inner">
-                                    <table class="w-full text-xs border">
+                            <td colspan="{{ $selectedUbs != 'all' ? 5 : 4 }}" class="border p-0 bg-gray-50">
+                                <div class="p-3 sm:p-4 bg-white border-l-4 border-blue-500 m-2 shadow-inner overflow-x-auto">
+                                    <table class="w-full min-w-[700px] text-xs border">
                                         <thead class="bg-gray-100 text-gray-600">
                                             <tr>
                                                 <th class="border px-3 py-1 text-left">No. Nota</th>
@@ -337,11 +337,11 @@
                                         <tbody>
                                             @forelse($barang->notaDetails as $detail)
                                             @php
-                                            $dMasuk = ($detail->jumlah_base ?? 0) / $konversiRate;
-                                            $dSisa = ($detail->jumlah_sisa ?? 0) / $konversiRate;
-                                            $dHargaUnit = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * $konversiRate;
-                                            $dHargaTotalNota = $detail->harga_total ?? 0;
-                                            $dNilaiSisa = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
+                                             $dMasuk = ($detail->jumlah_base ?? 0) / $konversiRate;
+                                             $dSisa = ($detail->jumlah_sisa ?? 0) / $konversiRate;
+                                             $dHargaUnit = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * $konversiRate;
+                                             $dHargaTotalNota = $detail->harga_total ?? 0;
+                                             $dNilaiSisa = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
                                             @endphp
                                             <tr class="hover:bg-yellow-50 border-b border-gray-100">
                                                 <td class="px-3 py-1 font-medium">{{ $detail->nota->nomor_nota ?? '-' }}</td>
