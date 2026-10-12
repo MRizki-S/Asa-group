@@ -38,50 +38,81 @@ class PembangunanUnitController extends Controller
         $perumahaanId = $this->currentPerumahaanId();
         $isStaffMutu = $user->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']);
 
+        // Menentukan tab aktif (default 'servis' untuk Staf Mutu, 'proses' untuk role lainnya)
+        $activeTab = $request->query('tab');
+        if (!in_array($activeTab, ['proses', 'servis'])) {
+            $activeTab = $isStaffMutu ? 'servis' : 'proses';
+        }
+
         if ($user->hasRole('PENGAWAS PROYEK (UNIT)')) {
-            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
-                ->where('perumahaan_id', $perumahaanId)
+            $baseQuery = PembangunanUnit::where('perumahaan_id', $perumahaanId)
                 ->where('pengawas_id', $user->id)
-                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
-                ->latest('created_at');
+                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
         } elseif ($user->hasRole('SPV TEKNIS & ESTIMASI')) {
-            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
-                ->where('perumahaan_id', $perumahaanId)
+            $baseQuery = PembangunanUnit::where('perumahaan_id', $perumahaanId)
                 ->where('spv_id', $user->id)
-                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
-                ->latest('created_at');
+                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
         } elseif ($isStaffMutu) {
-            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
-                ->where('perumahaan_id', $perumahaanId)
+            $baseQuery = PembangunanUnit::where('perumahaan_id', $perumahaanId)
                 ->whereIn('status_pembangunan', ['selesai', 'selesai dengan catatan'])
-                ->where('status_serah_terima', 'siap_serah_terima')
-                ->latest('created_at');
+                ->where('status_serah_terima', 'siap_serah_terima');
         } else {
-            $query = PembangunanUnit::with(['perumahaan:id,nama_perumahaan,slug', 'tahap:id,perumahaan_id,nama_tahap,slug', 'unit:id,blok_id,nama_unit', 'pengawas:id,nama_lengkap', 'spv:id,nama_lengkap', 'qcContainer', 'pengajuan'])
-                ->where('perumahaan_id', $perumahaanId)
-                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan'])
-                ->latest('created_at');
+            $baseQuery = PembangunanUnit::where('perumahaan_id', $perumahaanId)
+                ->whereIn('status_pembangunan', ['proses', 'selesai', 'selesai dengan catatan']);
         }
 
         if ($request->filled('tahapFil')) {
             $slugTahap = $request->input('tahapFil');
-            $query->whereHas('tahap', function ($q) use ($slugTahap) {
+            $baseQuery->whereHas('tahap', function ($q) use ($slugTahap) {
                 $q->where('slug', $slugTahap);
             });
         }
 
-        if (!$isStaffMutu && $request->filled('statusFil')) {
-            $statusFil = $request->input('statusFil');
-            if ($statusFil !== 'all') {
-                $query->where('status_pembangunan', $statusFil);
+        // Hitung total unit untuk badge masing-masing tab
+        $countProses = (clone $baseQuery)->whereDoesntHave('pembangunanUnitQc', function ($q) {
+            $q->where('is_servis', true);
+        })->count();
+
+        $countServis = (clone $baseQuery)->whereHas('pembangunanUnitQc', function ($q) {
+            $q->where('is_servis', true);
+        })->count();
+
+        // Query utama sesuai tab aktif
+        $query = clone $baseQuery;
+        $query->with([
+            'perumahaan:id,nama_perumahaan,slug',
+            'tahap:id,perumahaan_id,nama_tahap,slug',
+            'unit:id,blok_id,nama_unit',
+            'pengawas:id,nama_lengkap',
+            'spv:id,nama_lengkap',
+            'qcContainer',
+            'pengajuan',
+            'pembangunanUnitQc.pembangunanUnitQcTask'
+        ])->latest('created_at');
+
+        if ($activeTab === 'servis') {
+            $query->whereHas('pembangunanUnitQc', function ($q) {
+                $q->where('is_servis', true);
+            });
+        } else {
+            $query->whereDoesntHave('pembangunanUnitQc', function ($q) {
+                $q->where('is_servis', true);
+            });
+
+            if (!$isStaffMutu && $request->filled('statusFil')) {
+                $statusFil = $request->input('statusFil');
+                if ($statusFil !== 'all') {
+                    $query->where('status_pembangunan', $statusFil);
+                }
             }
         }
 
         $allPembangunanUnit = $query->get()->map(function ($unit) {
-            $totalQc = $unit->pembangunanUnitQc->count();
+            $regularQcs = $unit->pembangunanUnitQc->where('is_servis', false);
+            $totalQc = $regularQcs->count();
             $sumProgressQc = 0;
 
-            foreach ($unit->pembangunanUnitQc as $qc) {
+            foreach ($regularQcs as $qc) {
                 $qcProgress = $qc->total_task > 0 ? ($qc->task_selesai_count / $qc->total_task) * 100 : 0;
 
                 $qc->persentase_qc = round($qcProgress, 2);
@@ -106,9 +137,12 @@ class PembangunanUnitController extends Controller
 
         return view('produksi.pembangunan-unit.index', [
             'allPembangunanUnit' => $allPembangunanUnit,
-            'perumahaanSlug' => $perumahaan->slug,
+            'perumahaanSlug' => $perumahaan->slug ?? null,
             'tahapSlug' => $tahapSlug,
             'statusFil' => $statusFil,
+            'activeTab' => $activeTab,
+            'countProses' => $countProses,
+            'countServis' => $countServis,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')]],
         ]);
     }

@@ -154,7 +154,7 @@
                     @can('produksi.properti.pembangunan-unit.read-servis')
                     <button type="button" @click="goToServis({{ $servisIdx }})"
                         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm whitespace-nowrap">
-                        <i class="fa-solid fa-wrench text-amber-500"></i>
+                        <i class="fa-solid fa-wrench text-emerald-500"></i>
                         <span>Lihat Servis</span>
                     </button>
                     @endcan

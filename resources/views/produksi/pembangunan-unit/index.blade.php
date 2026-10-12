@@ -47,6 +47,26 @@
                     </h3>
                 </div>
 
+                {{-- Tab Navigation (Proses / Servis) --}}
+                <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit mb-5">
+                    <a href="{{ route('produksi.pembangunanUnit.index', array_merge(request()->query(), ['tab' => 'proses'])) }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 {{ $activeTab === 'proses' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                        <i class="fa-solid fa-person-digging text-xs"></i>
+                        <span>Proses</span>
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $activeTab === 'proses' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                            {{ $countProses }}
+                        </span>
+                    </a>
+                    <a href="{{ route('produksi.pembangunanUnit.index', array_merge(request()->query(), ['tab' => 'servis'])) }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 {{ $activeTab === 'servis' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                        <i class="fa-solid fa-wrench text-xs"></i>
+                        <span>Servis</span>
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $activeTab === 'servis' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                            {{ $countServis }}
+                        </span>
+                    </a>
+                </div>
+
                 {{-- Filter --}}
                 <form method="GET" action="{{ route('produksi.pembangunanUnit.index') }}"
                     class="mb-4"
@@ -58,6 +78,7 @@
                             this.tahap = await res.json();
                         }
                     }" x-init="fetchTahap()">
+                    <input type="hidden" name="tab" value="{{ $activeTab }}">
 
                     {{-- Mobile: compact grid layout --}}
                     <div class="block sm:hidden">
@@ -69,7 +90,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <!-- Select Tahap -->
-                            <div>
+                            <div class="{{ $activeTab === 'proses' && !auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']) ? '' : 'col-span-2' }}">
                                 <select name="tahapFil" id="selectTahapMobile"
                                     class="w-full bg-gray-50 border text-gray-900 text-xs rounded-lg p-2
                                     dark:bg-gray-600 dark:text-white">
@@ -81,6 +102,7 @@
                                     </template>
                                 </select>
                             </div>
+                            @if($activeTab === 'proses')
                             @unless(auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']))
                             <!-- Select Status -->
                             <div>
@@ -92,13 +114,14 @@
                                 </select>
                             </div>
                             @endunless
+                            @endif
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <button type="submit"
                                 class="px-3 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-center transition-colors">
                                 Terapkan
                             </button>
-                            <a href="{{ route('produksi.pembangunanUnit.index') }}"
+                            <a href="{{ route('produksi.pembangunanUnit.index', ['tab' => $activeTab]) }}"
                                 class="px-3 py-2 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 text-center transition-colors">
                                 Reset
                             </a>
@@ -133,6 +156,7 @@
                             </script>
                         </div>
 
+                        @if($activeTab === 'proses')
                         @unless(auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']))
                             <!-- Select Status Pembangunan -->
                             <div class="w-64">
@@ -154,13 +178,14 @@
                                 </script>
                             </div>
                         @endunless
+                        @endif
 
                         <div class="flex gap-2">
                             <button type="submit"
                                 class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 text-center">
                                 Terapkan
                             </button>
-                            <a href="{{ route('produksi.pembangunanUnit.index') }}"
+                            <a href="{{ route('produksi.pembangunanUnit.index', ['tab' => $activeTab]) }}"
                                 class="px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300 text-center">
                                 Reset
                             </a>
@@ -201,41 +226,64 @@
                                         {{ $item->qcContainer->nama_container }}
                                     </td>
                                     <td class="p-0 text-center" style="padding: 0 !important;">
-                                        @php
-                                            $bgClass = 'bg-blue-500 hover:bg-blue-600';
-                                            $textClass = 'text-white';
-                                            $statusIcon = '';
-
-                                            if ($item->status_pembangunan === 'selesai') {
-                                                $bgClass = 'bg-green-500 hover:bg-green-600';
-                                                $statusIcon = '<i class="fa-solid fa-circle-check mr-1"></i>';
-                                            } elseif ($item->status_pembangunan === 'selesai dengan catatan') {
-                                                $bgClass = 'bg-yellow-500 hover:bg-yellow-600';
-                                                $textClass = 'text-yellow-950';
-                                                $statusIcon =
-                                                    '<i class="fa-solid fa-circle-exclamation mr-1"></i>';
-                                            }
-                                        @endphp
-
-                                        @can('produksi.properti.pembangunan-unit.detail')
-                                        <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
-                                            class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} {{ $textClass }} transition-all group">
-                                            <span class="text-sm font-black">{!! $statusIcon !!}
-                                                {{ $item->total_progres }}%</span>
-                                            <span
-                                                class="text-[9px] uppercase font-bold opacity-80 group-hover:opacity-100">
-                                                {{ $item->status_pembangunan }}
-                                            </span>
-                                        </a>
+                                        @if($activeTab === 'servis')
+                                            @php
+                                                $servisBg = 'bg-emerald-600 hover:bg-emerald-700';
+                                                $servisText = 'text-white';
+                                            @endphp
+                                            @can('produksi.properti.pembangunan-unit.detail')
+                                            <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
+                                                class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $servisBg }} {{ $servisText }} transition-all group">
+                                                <span class="text-xs font-black"><i class="fa-solid fa-wrench mr-1"></i> Masa Servis</span>
+                                                <span class="text-[9px] uppercase font-bold opacity-90 group-hover:opacity-100">
+                                                    {{ $item->status_pembangunan }} ({{ $item->total_progres }}%)
+                                                </span>
+                                            </a>
+                                            @else
+                                            <div class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $servisBg }} {{ $servisText }}">
+                                                <span class="text-xs font-black"><i class="fa-solid fa-wrench mr-1"></i> Masa Servis</span>
+                                                <span class="text-[9px] uppercase font-bold opacity-90">
+                                                    {{ $item->status_pembangunan }} ({{ $item->total_progres }}%)
+                                                </span>
+                                            </div>
+                                            @endcan
                                         @else
-                                        <div class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} {{ $textClass }}">
-                                            <span class="text-sm font-black">{!! $statusIcon !!}
-                                                {{ $item->total_progres }}%</span>
-                                            <span class="text-[9px] uppercase font-bold opacity-80">
-                                                {{ $item->status_pembangunan }}
-                                            </span>
-                                        </div>
-                                        @endcan
+                                            @php
+                                                $bgClass = 'bg-blue-500 hover:bg-blue-600';
+                                                $textClass = 'text-white';
+                                                $statusIcon = '';
+
+                                                if ($item->status_pembangunan === 'selesai') {
+                                                    $bgClass = 'bg-green-500 hover:bg-green-600';
+                                                    $statusIcon = '<i class="fa-solid fa-circle-check mr-1"></i>';
+                                                } elseif ($item->status_pembangunan === 'selesai dengan catatan') {
+                                                    $bgClass = 'bg-yellow-500 hover:bg-yellow-600';
+                                                    $textClass = 'text-yellow-950';
+                                                    $statusIcon =
+                                                        '<i class="fa-solid fa-circle-exclamation mr-1"></i>';
+                                                }
+                                            @endphp
+
+                                            @can('produksi.properti.pembangunan-unit.detail')
+                                            <a href="{{ route('produksi.pembangunanUnit.show', $item->id) }}"
+                                                class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} {{ $textClass }} transition-all group">
+                                                <span class="text-sm font-black">{!! $statusIcon !!}
+                                                    {{ $item->total_progres }}%</span>
+                                                <span
+                                                    class="text-[9px] uppercase font-bold opacity-80 group-hover:opacity-100">
+                                                    {{ $item->status_pembangunan }}
+                                                </span>
+                                            </a>
+                                            @else
+                                            <div class="flex flex-col items-center justify-center w-full h-full min-h-[50px] {{ $bgClass }} {{ $textClass }}">
+                                                <span class="text-sm font-black">{!! $statusIcon !!}
+                                                    {{ $item->total_progres }}%</span>
+                                                <span class="text-[9px] uppercase font-bold opacity-80">
+                                                    {{ $item->status_pembangunan }}
+                                                </span>
+                                            </div>
+                                            @endcan
+                                        @endif
                                     </td>
 
                                     <td class="font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
@@ -375,15 +423,21 @@
                                         <h4 class="text-sm font-bold text-gray-800 dark:text-white truncate leading-tight">
                                             {{ $item->unit->nama_unit }}
                                         </h4>
-                                        <span class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full {{ $bgClass }} {{ $textClass }}">
-                                            {!! $statusIcon !!}{{ $progres }}%
-                                        </span>
+                                        @if($activeTab === 'servis')
+                                            <span class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-600 text-white">
+                                                <i class="fa-solid fa-wrench mr-0.5"></i> Servis
+                                            </span>
+                                        @else
+                                            <span class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full {{ $bgClass }} {{ $textClass }}">
+                                                {!! $statusIcon !!}{{ $progres }}%
+                                            </span>
+                                        @endif
                                     </div>
 
                                     {{-- Visual Progress Bar --}}
                                     <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
-                                        <div class="h-full rounded-full transition-all duration-500 {{ $barColor }}"
-                                            style="width: {{ $progres }}%"></div>
+                                        <div class="h-full rounded-full transition-all duration-500 {{ $activeTab === 'servis' ? 'bg-emerald-500' : $barColor }}"
+                                            style="width: {{ $activeTab === 'servis' ? '100' : $progres }}%"></div>
                                     </div>
 
                                     {{-- Key info: Tahap + QC inline --}}
@@ -448,7 +502,7 @@
                             </div>
                         @empty
                             <div class="col-span-full py-8 text-center text-gray-400 text-sm">
-                                Tidak ada data Pembangunan Unit.
+                                {{ $activeTab === 'servis' ? 'Tidak ada data unit dalam masa servis.' : 'Tidak ada data unit dalam proses pembangunan.' }}
                             </div>
                         @endforelse
                     </div>
