@@ -347,6 +347,9 @@ class KpiUserController extends Controller
                     $persenKepatuhan = $totalTargetKomponen > 0 ? ($selisihMurni / $totalTargetKomponen) * 100 : 0;
 
                     $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
+                } elseif ($tipePerhitungan === 'PROPORSIONAL') {
+                    $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
+                    $skor = min(100, $persenKepatuhan);
                 } else {
                     $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
                     $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
@@ -359,8 +362,8 @@ class KpiUserController extends Controller
                     'total_target' => $totalTargetKomponen,
                     'total_tercapai' => $totalTercapaiKomponen,
                     'kepatuhan_percent' => round($persenKepatuhan, 2),
-                    'skor' => $skor,
-                    'nilai_akhir' => ($userKomponen->bobot / 100) * $skor,
+                    'skor' => round($skor, 2),
+                    'nilai_akhir' => round(($userKomponen->bobot / 100) * $skor, 2),
                     'catatan_tambahan' => $request->catatan[$komponenId] ?? null,
                     'is_review_khusus' => $isKhusus,
                     'alasan_review_khusus' => $alasanKhusus,

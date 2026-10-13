@@ -43,7 +43,7 @@ class KpiKomponenController extends Controller
     public function create()
     {
         $allRoles = Role::orderBy('name', 'asc')->get();
-        $tipePerhitungan = ['KEPATUHAN', 'DEVIASI_BUDGET', 'SELISIH_STOK', 'KONDISI_LANGSUNG', 'AKKUMULASI_NILAI'];
+        $tipePerhitungan = ['KEPATUHAN', 'DEVIASI_BUDGET', 'SELISIH_STOK', 'KONDISI_LANGSUNG', 'AKKUMULASI_NILAI', 'PROPORSIONAL'];
 
         return view('kpi.master-kpi.create', [
             'allRoles' => $allRoles,
@@ -60,7 +60,7 @@ class KpiKomponenController extends Controller
         $request->validate([
             'role_id' => 'required|exists:roles,id',
             'nama_komponen' => 'required|string|max:255',
-            'tipe_perhitungan' => 'required|in:KEPATUHAN,DEVIASI_BUDGET,SELISIH_STOK,KONDISI_LANGSUNG,AKKUMULASI_NILAI',
+            'tipe_perhitungan' => 'required|in:KEPATUHAN,DEVIASI_BUDGET,SELISIH_STOK,KONDISI_LANGSUNG,AKKUMULASI_NILAI,PROPORSIONAL',
             'label_total' => 'required|string',
             'label_tercapai' => 'required|string',
             'label_tidak_tercapai' => 'required|string',
@@ -112,7 +112,7 @@ class KpiKomponenController extends Controller
         $komponen = KpiKomponen::with('tasks')->findOrFail($id);
 
         $allRoles = Role::orderBy('name', 'asc')->get();
-        $tipePerhitungan = ['KEPATUHAN', 'DEVIASI_BUDGET', 'SELISIH_STOK', 'KONDISI_LANGSUNG', 'AKKUMULASI_NILAI'];
+        $tipePerhitungan = ['KEPATUHAN', 'DEVIASI_BUDGET', 'SELISIH_STOK', 'KONDISI_LANGSUNG', 'AKKUMULASI_NILAI', 'PROPORSIONAL'];
 
         return view('kpi.master-kpi.edit', [
             'komponen' => $komponen,

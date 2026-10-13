@@ -45,6 +45,9 @@ class KpiIndicatorSeeder extends Seeder
             ['tipe_perhitungan' => 'AKKUMULASI_NILAI', 'tipe_indikator' => 'select', 'skor' => null,  'batas_bawah' => null, 'batas_atas' => null, 'option' => 'Ada sedikit keterlambatan', 'nilai' => 80],
             ['tipe_perhitungan' => 'AKKUMULASI_NILAI', 'tipe_indikator' => 'select', 'skor' => null,  'batas_bawah' => null, 'batas_atas' => null, 'option' => 'Sering terlambat', 'nilai' => 70],
             ['tipe_perhitungan' => 'AKKUMULASI_NILAI', 'tipe_indikator' => 'select', 'skor' => null,  'batas_bawah' => null, 'batas_atas' => null, 'option' => 'Banyak data hilang', 'nilai' => 50],
+
+            // 6. PROPORSIONAL (PRORATA TARGET)
+            ['tipe_perhitungan' => 'PROPORSIONAL', 'tipe_indikator' => 'range', 'skor' => null, 'batas_bawah' => null, 'batas_atas' => null, 'option' => 'Proporsional (Prorata Target)', 'nilai' => null],
         ];
 
         foreach ($indicators as $data) {

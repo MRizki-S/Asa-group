@@ -421,6 +421,10 @@
                             persen = totalTarget > 0 ? (selisih / totalTarget) * 100 : 0;
                             skor = this.lookupSkor(k.tipe, persen);
 
+                        } else if (k.tipe === 'PROPORSIONAL') {
+                            persen = totalTarget > 0 ? (totalTercapai / totalTarget) * 100 : 0;
+                            skor = Math.min(100, persen);
+
                         } else {
                             // KEPATUHAN, DEVIASI_BUDGET, range default
                             persen = totalTarget > 0 ? (totalTercapai / totalTarget) * 100 : 0;
