@@ -158,6 +158,7 @@ class ManagePemesananAgentController extends Controller
             'kpr.bank',
             'caraBayar',
             'cicilan',
+            'biayaTambahan',
             'promo',
             'keterlambatan',
             'pembatalan',

@@ -13,7 +13,7 @@ class PemesananUnitKpr extends Model
     protected $fillable = [
         'pemesanan_unit_id', 'dp_rumah_induk', 'dp_dibayarkan_pembeli',
         'sbum_dari_pemerintah', 'luas_kelebihan', 'nominal_kelebihan',
-        'total_dp', 'harga_kpr', 'harga_total', 'status_kpr', 'bank_id',
+        'total_dp', 'harga_kpr', 'harga_total', 'total_biaya_administrasi', 'catatan_biaya_administrasi', 'status_kpr', 'bank_id',
         'tanggal_masuk_berkas', 'tanggal_acc', 'tanggal_realisasi',
     ];
 

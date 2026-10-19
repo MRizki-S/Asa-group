@@ -88,7 +88,9 @@ class PengajuanPemesananController extends Controller
             'kpr',
             'caraBayar',
             'cicilan',
+            'biayaTambahan',
             'promo',         // ambil semua promo
+            'promoAdmin',    // ambil promo biaya administrasi
             'keterlambatan', // snapshot keterlambatan
             'pembatalan',    // snapshot pembatalan
             'bonusCash',

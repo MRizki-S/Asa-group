@@ -41,9 +41,10 @@
                 </div>
 
                 <!-- Input tampilan -->
-                <input type="text" x-model="tampil" x-init="flatpickr($el, {
+                <input type="text" x-model="tampil" readonly x-init="if ($el._flatpickr) { $el._flatpickr.destroy(); } flatpickr($el, {
                     dateFormat: 'd-m-Y',
                     defaultDate: tampil,
+                    disableMobile: true,
                     onChange: (dates, dateStr) => {
                         tampil = dateStr;
                         // ubah ke format Y-m-d untuk dikirim
@@ -52,9 +53,8 @@
                             ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
                             ('0' + d.getDate()).slice(-2);
                     }
-                })" placeholder="Pilih tanggal"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-               focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5
+                })" placeholder="Pilih tanggal" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+               focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 cursor-pointer
                dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
                dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
 
@@ -66,15 +66,27 @@
 
     </div>
 
-    {{-- blok perumahaan, tahap, unit --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+    {{-- Hidden inputs booking info --}}
+    <input type="hidden" name="perumahaan_id" :value="selectedCustomer?.booking?.perumahaan_id ?? ''">
+    <input type="hidden" name="tahap_id" :value="selectedCustomer?.booking?.tahap_id ?? ''">
+    <input type="hidden" name="unit_id" :value="selectedCustomer?.booking?.unit_id ?? ''">
+
+    {{-- 📱 TAMPILAN KHUSUS MOBILE (HP): Gabung jadi 1 kolom berlabel "Unit" --}}
+    <div class="block md:hidden mt-4">
+        <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Unit</label>
+        <input type="text" readonly placeholder="otomatis dari akun user yang dipilih"
+            class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 font-medium"
+            :value="selectedCustomer?.booking ? ((selectedCustomer.booking.nama_perumahaan ?? '-') + ' - ' + (selectedCustomer.booking.nama_unit ?? '-')) : ''">
+    </div>
+
+    {{-- 💻 TAMPILAN DESKTOP (MD KE ATAS): Tetap 3 kolom (Perumahan, Tahap, Unit) --}}
+    <div class="hidden md:grid md:grid-cols-3 gap-6 mt-4">
         {{-- Perumahaan --}}
         <div>
             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Perumahaan</label>
             <input type="text" readonly placeholder="otomatis dari akun user yang dipilih"
                 class="w-full bg-gray-50 border border-gray-200 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
                 :value="selectedCustomer?.booking?.nama_perumahaan ?? ''">
-            <input type="hidden" name="perumahaan_id" :value="selectedCustomer?.booking?.perumahaan_id ?? ''">
         </div>
 
         {{-- Tahap --}}
@@ -83,16 +95,14 @@
             <input type="text" readonly placeholder="otomatis dari akun user yang dipilih"
                 class="w-full bg-gray-50 border border-gray-200 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
                 :value="selectedCustomer?.booking?.nama_tahap ?? ''">
-            <input type="hidden" name="tahap_id" :value="selectedCustomer?.booking?.tahap_id ?? ''">
         </div>
 
         {{-- Unit --}}
         <div>
             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Unit</label>
             <input type="text" readonly placeholder="otomatis dari akun user yang dipilih"
-                class="w-full bg-gray-50 border border-gray-200 text-gray-500  text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
+                class="w-full bg-gray-50 border border-gray-200 text-gray-500 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
                 :value="selectedCustomer?.booking?.nama_unit ?? ''">
-            <input type="hidden" name="unit_id" :value="selectedCustomer?.booking?.unit_id ?? ''">
         </div>
     </div>
 

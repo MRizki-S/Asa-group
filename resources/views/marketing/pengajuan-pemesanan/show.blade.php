@@ -35,12 +35,12 @@
         @endif
 
         <!-- Informasi Promo & Ketentuan -->
-        <div x-data="{ openInfo: false, openPromo: false }" class="mt-6 mb-6 rounded-xl border border-gray-200 dark:border-gray-700
-                bg-white dark:bg-gray-800/50 shadow-sm text-gray-800 dark:text-gray-100 overflow-hidden">
+        <div x-data="{ openInfo: false }" class="mt-6 mb-6 rounded-xl border border-gray-200 dark:border-gray-700
+                    bg-white dark:bg-gray-800/50 shadow-sm text-gray-800 dark:text-gray-100 overflow-hidden">
 
             <!-- Header -->
             <button @click="openInfo = !openInfo" class="w-full flex justify-between items-center px-5 py-3 bg-gray-50 dark:bg-gray-800/70
-                       hover:bg-gray-100 dark:hover:bg-gray-700 transition font-semibold text-sm">
+                           hover:bg-gray-100 dark:hover:bg-gray-700 transition font-semibold text-sm">
                 <span>📄 Informasi Terkait PPJB</span>
                 <svg :class="{ 'rotate-180': openInfo }" xmlns="http://www.w3.org/2000/svg"
                     class="w-5 h-5 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24"
@@ -52,7 +52,7 @@
             <div x-show="openInfo" x-transition x-cloak class="px-5 py-5">
 
                 <!-- Ketentuan Keterlambatan & Pembatalan -->
-                <div class="space-y-2 text-sm leading-snug mb-4">
+                <div class="space-y-2 text-sm leading-snug">
                     @if ($keterlambatan)
                         <div class="flex items-start gap-2">
                             <span class="text-gray-500 text-lg">⚠️</span>
@@ -81,34 +81,6 @@
                         </div>
                     @endif
                 </div>
-
-                <!-- Promo berdasarkan cara bayar -->
-                @php
-                    $caraBayar = $pengajuan->cara_bayar;
-                @endphp
-
-                @if ($pengajuan->promo->count())
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                        <button @click="openPromo = !openPromo" class="w-full flex justify-between items-center px-4 py-2.5
-                                       bg-gray-50 dark:bg-gray-700/40 text-sm font-medium
-                                       hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                            <span><b>Promo — {{ ucfirst($caraBayar) }}</b></span>
-                            <svg :class="{ 'rotate-180': openPromo }" xmlns="http://www.w3.org/2000/svg"
-                                class="w-4 h-4 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        <div x-show="openPromo" x-transition x-cloak class="p-4 bg-white dark:bg-gray-800 text-sm leading-snug">
-                            <ul class="list-disc ml-5 space-y-1">
-                                @foreach ($pengajuan->promo as $item)
-                                    <li>{{ $item->nama_promo }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                @endif
             </div>
         </div>
 
@@ -145,8 +117,16 @@
                     </div>
                 </div>
 
-                {{-- Blok perumahaan, tahap, unit --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                {{-- 📱 TAMPILAN KHUSUS MOBILE (HP): Gabung jadi 1 kolom berlabel "Unit" --}}
+                <div class="block md:hidden mt-4">
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Unit</label>
+                    <input type="text" readonly
+                        value="{{ ($pengajuan->perumahaan->nama_perumahaan ?? '-') . ' - ' . ($pengajuan->unit->nama_unit ?? '-') }}"
+                        class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 font-medium">
+                </div>
+
+                {{-- 💻 TAMPILAN DESKTOP (MD KE ATAS): Tetap 3 kolom (Perumahan, Tahap, Unit) --}}
+                <div class="hidden md:grid md:grid-cols-3 gap-6 mt-4">
                     {{-- Perumahaan --}}
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Perumahaan</label>
@@ -313,8 +293,8 @@
 
             {{-- sistem pembayaran --}}
             <div x-data="{
-                    caraBayar: '{{ $pengajuan->cara_bayar }}',
-                }" class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
+                        caraBayar: '{{ $pengajuan->cara_bayar }}',
+                    }" class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
 
                 <!-- 🔘 Pilihan Cara Bayar -->
                 <div class="px-5 py-4 sm:px-6 sm:py-5">
@@ -331,7 +311,7 @@
                                 Pilih Cara Bayar
                             </label>
                             <select disabled name="cara_bayar" x-model="caraBayar" class="w-full bg-gray-100 border text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-700 dark:text-gray-400 border-gray-300">
+                                dark:bg-gray-700 dark:text-gray-400 border-gray-300">
                                 <option value="">Pilih Cara Bayar</option>
                                 <option value="cash">CASH</option>
                                 <option value="kpr">KPR</option>
@@ -341,178 +321,200 @@
                 </div>
 
                 <!-- 💵 FORM CASH -->
-                <div x-show="caraBayar === 'cash'" x-transition
-                    class="px-5 py-4 sm:px-6 sm:py-5 border-t border-gray-100 dark:border-gray-800">
+                @if ($pengajuan->cara_bayar === 'cash')
+                    <div class="px-5 py-4 sm:px-6 sm:py-5 border-t border-gray-100 dark:border-gray-800">
 
-                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
-                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Sistem Pembayaran</h3>
-                        <span
-                            class="inline-flex items-center px-3 py-1 text-sm font-semibold text-yellow-800 bg-yellow-100 rounded-full border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300">
-                            CASH
-                        </span>
-                    </div>
-
-                    <div x-data="{
-                            hargaRumah: '{{ number_format($pengajuan->cash->harga_rumah ?? 0, 0, ',', '.') }}',
-                            nominalKelebihan: {{ $pengajuan->cash->nominal_kelebihan ?? 0 }},
-                            get hargaJadi() {
-                                const rumah = parseInt(this.hargaRumah.replace(/\D/g, '')) || 0;
-                                return formatRupiah((rumah + this.nominalKelebihan).toString());
-                            },
-                        }" class="space-y-4">
-
-                        <!-- Harga Rumah -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Harga Rumah
-                            </label>
-                            <input type="text" x-model="hargaRumah" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
+                        <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                            <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Sistem Pembayaran</h3>
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-sm font-semibold text-yellow-800 bg-yellow-100 rounded-full border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                CASH
+                            </span>
                         </div>
 
-                        <!-- Kelebihan Tanah -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Kelebihan Tanah
-                            </label>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="text" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                                dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
-                                    value="{{ $pengajuan->cash->luas_kelebihan ?? '-' }}">
+                        <div class="space-y-4">
+                            <!-- Harga Rumah & Kelebihan Tanah -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Harga Pokok Rumah
+                                    </label>
+                                    <input type="text" readonly
+                                        value="Rp {{ number_format($pengajuan->cash?->harga_rumah ?? 0, 0, ',', '.') }}"
+                                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:text-white dark:border-gray-600 font-medium">
+                                </div>
 
-                                <input type="text" readonly class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                                dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600"
-                                    :value="formatRupiah(nominalKelebihan.toString())">
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Kelebihan Tanah ({{ $pengajuan->cash?->luas_kelebihan ?? 0 }} m²)
+                                    </label>
+                                    <input type="text" readonly
+                                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:text-white dark:border-gray-600 font-medium"
+                                        value="Rp {{ number_format($pengajuan->cash?->nominal_kelebihan ?? 0, 0, ',', '.') }}">
+                                </div>
+                            </div>
+
+                            <!-- Biaya Tambahan (Spesifikasi Cash) -->
+                            @if ($pengajuan->spesifikasiCash && $pengajuan->spesifikasiCash->count() > 0)
+                                <div
+                                    class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gray-50/50 dark:bg-gray-800/30 space-y-2">
+                                    <h4 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Biaya Tambahan</h4>
+                                    <div class="space-y-2">
+                                        @foreach ($pengajuan->spesifikasiCash as $item)
+                                            <div
+                                                class="flex items-center justify-between text-sm py-1 border-b border-gray-100 dark:border-gray-700/50">
+                                                <span class="text-gray-800 dark:text-gray-200">{{ $item->keterangan }}</span>
+                                                <span class="font-semibold text-gray-900 dark:text-white">Rp
+                                                    {{ number_format($item->nominal, 0, ',', '.') }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Harga Jadi Cash -->
+                            <div
+                                class="p-4 rounded-xl bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 flex items-center justify-between">
+                                <div>
+                                    <span
+                                        class="text-xs uppercase font-semibold text-blue-700 dark:text-blue-300 tracking-wider">Total
+                                        / Harga Jadi Cash</span>
+                                    <p class="text-xs text-blue-600 dark:text-blue-400">Harga Rumah + Kelebihan Tanah + Biaya
+                                        Tambahan</p>
+                                </div>
+                                <span class="text-xl font-bold text-blue-800 dark:text-blue-200">
+                                    Rp
+                                    {{ number_format($pengajuan->cash?->harga_jadi ?? (($pengajuan->cash?->harga_rumah ?? 0) + ($pengajuan->cash?->nominal_kelebihan ?? 0) + ($pengajuan->cash?->total_tambahan ?? 0)), 0, ',', '.') }}
+                                </span>
                             </div>
                         </div>
-
-                        <!-- Harga Jadi -->
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Harga Jadi
-                            </label>
-                            <input type="text" readonly :value="hargaJadi" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
-                        </div>
                     </div>
-                </div>
+                @endif
 
                 <!-- 🏦 FORM KPR -->
-                <div x-show="caraBayar === 'kpr'" x-transition class="px-5 py-4 sm:px-6 sm:py-5">
-                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
-                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Sistem Pembayaran</h3>
-                        <span
-                            class="inline-flex items-center px-3 py-1 text-sm font-semibold text-blue-800 bg-blue-100 rounded-full border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300">
-                            KPR
-                        </span>
-                    </div>
+                @if ($pengajuan->cara_bayar === 'kpr')
+                    <div class="px-5 py-4 sm:px-6 sm:py-5 border-t border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                            <h3 class="text-base font-medium text-gray-800 dark:text-white/90">Rincian Pembayaran KPR</h3>
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-sm font-semibold text-blue-800 bg-blue-100 rounded-full border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300">
+                                KPR
+                            </span>
+                        </div>
 
-                    <div x-data="{
-                            sbumPemerintah: 4000000,
-                            dpRumahInduk: '{{ number_format($pengajuan->kpr->dp_rumah_induk ?? 0, 0, ',', '.') }}',
-                            nominalKelebihan: {{ $pengajuan->kpr->nominal_kelebihan ?? 0 }},
-                            hargaTotal: {{ $pengajuan->kpr->harga_total ?? 0 }},
-                            get dpRumahIndukNumber() {
-                                return parseInt(this.dpRumahInduk.replace(/\D/g, '')) || 0;
-                            },
-                            get totalDpNumber() {
-                                return this.dpRumahIndukNumber + (this.nominalKelebihan || 0);
-                            },
-                            get dpPembeliNumber() {
-                                const hasil = this.totalDpNumber - this.sbumPemerintah;
-                                return hasil > 0 ? hasil : 0;
-                            },
-                            get hargaKprNumber() {
-                                const total = this.hargaTotal - this.totalDpNumber;
-                                return total > 0 ? total : 0;
-                            },
-                            get totalDp() { return formatRupiah(this.totalDpNumber.toString()); },
-                            get dpPembeli() { return formatRupiah(this.dpPembeliNumber.toString()); },
-                            get hargaKpr() { return formatRupiah(this.hargaKprNumber.toString()); },
-                            get hargaTotalFormatted() { return formatRupiah(this.hargaTotal.toString()); },
-                        }" class="space-y-5">
-
-                        <!-- Info SBUM -->
-                        <div class="mt-3 flex items-center gap-3 px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50
-                        dark:bg-yellow-900/30 dark:border-yellow-700">
+                        <div class="space-y-5">
+                            <!-- Info SBUM -->
                             <div
-                                class="flex items-center justify-center w-7 h-7 rounded-full bg-yellow-500 text-white font-bold text-sm">
-                                💡
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/30 dark:border-yellow-700">
+                                <span class="text-lg">💡</span>
+                                <div>
+                                    <p class="text-xs font-semibold text-yellow-800 dark:text-yellow-300">SBUM dari Pemerintah:
+                                        Rp {{ number_format($pengajuan->kpr?->sbum_dari_pemerintah ?: 4000000, 0, ',', '.') }}
+                                    </p>
+                                    <p class="text-[11px] text-yellow-600 dark:text-yellow-400">Diperhitungkan untuk memotong
+                                        nilai KPR Bank.</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-sm text-yellow-800 dark:text-yellow-300 font-medium">SBUM dari Pemerintah
-                                </p>
-                                <p class="text-xs text-yellow-600 dark:text-yellow-400">
-                                    Tambahan harga: Rp <span x-text="formatRupiah(sbumPemerintah.toString())"></span>
-                                </p>
-                            </div>
-                        </div>
 
-                        <!-- DP Rumah Induk -->
-                        <div>
-                            <label class="block mt-4 mb-1 text-sm font-medium text-gray-900 dark:text-white">
-                                DP Rumah Induk
-                            </label>
-                            <input type="text" x-model="dpRumahInduk" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600">
-                        </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Harga Rumah Asli -->
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Harga Rumah Asli
+                                    </label>
+                                    <input type="text" readonly
+                                        value="Rp {{ number_format($pengajuan->kpr?->harga_total ?? 0, 0, ',', '.') }}"
+                                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:text-white dark:border-gray-600 font-medium">
+                                </div>
 
-                        <!-- Kelebihan Tanah -->
-                        <div class="grid grid-cols-2 gap-4 items-end mt-4">
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Luas Kelebihan Tanah (m²)
-                                </label>
-                                <input type="text" readonly class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                                dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600"
-                                    value="{{ $pengajuan->kpr->luas_kelebihan ?? '-' }}">
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Nominal Kelebihan (Rp)
-                                </label>
-                                <input type="text" readonly :value="formatRupiah(nominalKelebihan.toString())" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed
-                                dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
-                            </div>
-                        </div>
+                                <!-- DP Rumah -->
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        DP Rumah
+                                    </label>
+                                    <input type="text" readonly
+                                        value="Rp {{ number_format($pengajuan->kpr?->dp_rumah_induk ?? $pengajuan->kpr?->dp_dibayarkan_pembeli ?? 0, 0, ',', '.') }}"
+                                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 cursor-not-allowed dark:bg-gray-800 dark:text-white dark:border-gray-600 font-semibold text-blue-700 dark:text-blue-300">
+                                </div>
 
-                        <!-- Total DP -->
-                        <div>
-                            <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                Total DP
-                            </label>
-                            <input type="text" readonly :value="totalDp" class="w-full bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-green-900/30 dark:border-green-700">
-                        </div>
-
-                        <!-- DP Dibayarkan Pembeli -->
-                        <div>
-                            <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                DP Dibayarkan Pembeli
-                            </label>
-                            <input type="text" readonly :value="dpPembeli" class="w-full bg-gray-100 border border-gray-300 text-gray-600 text-sm rounded-lg p-2.5 cursor-not-allowed
-                            dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
-                        </div>
-
-                        <!-- Harga Total & Nilai KPR -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                    Harga Total Rumah
-                                </label>
-                                <input type="text" readonly :value="hargaTotalFormatted" class="w-full bg-indigo-50 border border-indigo-300 text-indigo-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
-                                dark:bg-indigo-900/30 dark:border-indigo-700">
+                                <!-- Nilai KPR (Bank) -->
+                                <div>
+                                    <label class="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Nilai KPR (Bank)
+                                    </label>
+                                    @php
+                                        $sbumVal = $pengajuan->kpr?->sbum_dari_pemerintah ?: 4000000;
+                                        $dpVal = $pengajuan->kpr?->dp_rumah_induk ?? $pengajuan->kpr?->dp_dibayarkan_pembeli ?? 0;
+                                        $plafonKpr = $pengajuan->kpr?->harga_kpr ?: max(0, ($pengajuan->kpr?->harga_total ?? 0) - $sbumVal - $dpVal);
+                                    @endphp
+                                    <input type="text" readonly value="Rp {{ number_format($plafonKpr, 0, ',', '.') }}"
+                                        class="w-full bg-blue-50 border border-blue-300 text-blue-800 text-sm font-bold rounded-lg p-2.5 cursor-not-allowed dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block mb-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                    Nilai KPR
-                                </label>
-                                <input type="text" readonly :value="hargaKpr" class="w-full bg-blue-50 border border-blue-300 text-blue-700 text-sm font-semibold rounded-lg p-2.5 cursor-not-allowed
-                                dark:bg-blue-900/30 dark:border-blue-700">
-                            </div>
+
+                            <!-- Biaya Administrasi / Tambahan KPR (Jika Ada) -->
+                            @if ($pengajuan->biayaAdministrasi && $pengajuan->biayaAdministrasi->count() > 0)
+                                <div
+                                    class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gray-50/50 dark:bg-gray-800/30 space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Daftar Biaya
+                                            Administrasi / Tambahan</h4>
+                                        <span class="text-xs font-bold text-amber-700 dark:text-amber-300">
+                                            Total: Rp
+                                            {{ number_format($pengajuan->kpr?->total_biaya_administrasi ?? $pengajuan->biayaAdministrasi->sum('nominal'), 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <table class="w-full text-left text-xs text-gray-700 dark:text-gray-200">
+                                            <thead class="bg-gray-100 dark:bg-gray-700 uppercase text-gray-600 dark:text-gray-300">
+                                                <tr>
+                                                    <th class="px-3 py-2">Keterangan</th>
+                                                    <th class="px-3 py-2 text-right">Nominal (Rp)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                                @foreach ($pengajuan->biayaAdministrasi as $bItem)
+                                                    <tr>
+                                                        <td class="px-3 py-2 font-medium">{{ $bItem->keterangan }}</td>
+                                                        <td class="px-3 py-2 text-right font-semibold">Rp
+                                                            {{ number_format($bItem->nominal, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Fasilitas Termasuk dalam Biaya Administrasi & Notaris -->
+                                    @if ($pengajuan->promoAdmin && $pengajuan->promoAdmin->count() > 0)
+                                        <div class="pt-3 border-t border-gray-200 dark:border-gray-700 space-y-1.5">
+                                            <span class="text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400">
+                                                Biaya Administrasi & Notaris ini sudah termasuk:
+                                            </span>
+                                            <div class="flex flex-wrap gap-1.5">
+                                                @foreach ($pengajuan->promoAdmin as $pAdm)
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                                                        ✓ {{ $pAdm->nama_promo }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <!-- Note / Catatan Biaya Administrasi -->
+                                    @if (!empty($pengajuan->kpr?->catatan_biaya_administrasi))
+                                        <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <p class="text-xs italic text-gray-600 dark:text-gray-300">
+                                                <strong class="font-semibold not-italic">Note:</strong>
+                                                {{ $pengajuan->kpr?->catatan_biaya_administrasi }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
 
             <!-- 💸 Bonus Cash (muncul kalau cash dipilih) -->
@@ -524,7 +526,7 @@
                         @foreach ($pengajuan->bonusCash as $bonus)
                             <div class="flex gap-2 items-center">
                                 <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                             </div>
                         @endforeach
                     </div>
@@ -532,12 +534,12 @@
             @elseif($pengajuan->cara_bayar === 'kpr' && $pengajuan->bonusKpr->isNotEmpty())
                 <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] mb-6">
                     <div class="px-5 py-4 sm:px-6 sm:py-5 space-y-3 border-t border-gray-100 dark:border-gray-800">
-                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus Cash</h3>
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white/90 mb-2">Bonus KPR</h3>
 
                         @foreach ($pengajuan->bonusKpr as $bonus)
                             <div class="flex gap-2 items-center">
                                 <input type="text" readonly value="{{ $bonus->nama_bonus ?? '-' }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                             </div>
                         @endforeach
                     </div>
@@ -561,7 +563,7 @@
                                 Berapa Kali Angsur
                             </label>
                             <input type="text" readonly value="{{ $pengajuan->caraBayar->jumlah_cicilan ?? '-' }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                        dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                            dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                         </div>
 
                         <!-- Minimal DP -->
@@ -572,50 +574,105 @@
                             <input type="text" readonly
                                 value="{{ isset($pengajuan->caraBayar->minimal_dp) ? 'Rp ' . number_format($pengajuan->caraBayar->minimal_dp, 0, ',', '.') : '-' }}"
                                 class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                        dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                            dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
                         </div>
 
-                        <!-- Daftar Angsuran -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Angsuran
-                            </label>
-
-                            @if ($pengajuan->cicilan->count() > 0)
-                                @foreach ($pengajuan->cicilan as $index => $cicilan)
-                                    <div
-                                        class="flex flex-col md:flex-row md:items-center gap-3 pb-4 mb-2 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-lg p-3 transition-all">
-
-                                        <!-- Pembayaran Ke -->
-                                        <div class="w-full md:w-1/4">
-                                            <input type="text" readonly value="{{ 'Pembayaran ke - ' . $cicilan->pembayaran_ke }}"
-                                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                        @if ($pengajuan->cara_bayar === 'kpr')
+                            <!-- Cicilan DP Rumah -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                    1. Angsuran DP Rumah
+                                </label>
+                                @php $cicilanDpList = $pengajuan->cicilanDp ?? $pengajuan->cicilan->where('tipe_cicilan', 'dp'); @endphp
+                                @if ($cicilanDpList && $cicilanDpList->count() > 0)
+                                    @foreach ($cicilanDpList as $cicilan)
+                                        <div
+                                            class="flex flex-col md:flex-row md:items-center gap-3 pb-3 mb-2 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-lg p-2.5 transition-all">
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="{{ $cicilan->keterangan ?? ('Pembayaran ke - ' . $cicilan->pembayaran_ke . ' / DP Rumah') }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 font-medium cursor-not-allowed">
+                                            </div>
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="{{ $cicilan->tanggal_jatuh_tempo ? \Carbon\Carbon::parse($cicilan->tanggal_jatuh_tempo)->format('d M Y') : '-' }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            </div>
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="Rp {{ number_format($cicilan->nominal, 0, ',', '.') }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs text-right font-semibold rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            </div>
                                         </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 italic">Tidak ada data cicilan DP.</div>
+                                @endif
+                            </div>
 
-                                        <!-- Tanggal Jatuh Tempo -->
-                                        <div class="w-full md:w-1/3">
-                                            <input type="text" readonly
-                                                value="{{ $cicilan->tanggal_jatuh_tempo ? $cicilan->tanggal_jatuh_tempo->format('d M Y') : '-' }}"
-                                                class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                            <!-- Cicilan Biaya Tambahan (Jika Ada) -->
+                            @php $cicilanAdminList = $pengajuan->cicilanAdministrasi ?? $pengajuan->cicilan->where('tipe_cicilan', 'administrasi'); @endphp
+                            @if ($cicilanAdminList && $cicilanAdminList->count() > 0)
+                                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <label class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                                        2. Angsuran Biaya Tambahan
+                                    </label>
+                                    @foreach ($cicilanAdminList as $cicilan)
+                                        <div
+                                            class="flex flex-col md:flex-row md:items-center gap-3 pb-3 mb-2 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-lg p-2.5 transition-all">
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="{{ $cicilan->keterangan ?? ('Angsuran ke - ' . $cicilan->pembayaran_ke . ' Biaya Tambahan') }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 font-medium cursor-not-allowed">
+                                            </div>
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="{{ $cicilan->tanggal_jatuh_tempo ? \Carbon\Carbon::parse($cicilan->tanggal_jatuh_tempo)->format('d M Y') : '-' }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            </div>
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="Rp {{ number_format($cicilan->nominal, 0, ',', '.') }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs text-right font-semibold rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            </div>
                                         </div>
-
-                                        <!-- Nominal -->
-                                        <div class="w-full md:w-1/3">
-                                            <input type="text" readonly
-                                                value="Rp {{ number_format($cicilan->nominal, 0, ',', '.') }}" class="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
-                                                dark:bg-gray-800 dark:text-white dark:border-gray-600 cursor-not-allowed">
-                                        </div>
-
-                                    </div>
-                                @endforeach
-                            @else
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    Tidak ada data cicilan.
+                                    @endforeach
                                 </div>
                             @endif
-                        </div>
+                        @else
+                            <!-- Daftar Angsuran Cash -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    Daftar Angsuran CASH
+                                </label>
+                                @if ($pengajuan->cicilan->count() > 0)
+                                    @foreach ($pengajuan->cicilan as $index => $cicilan)
+                                        <div
+                                            class="flex flex-col md:flex-row md:items-center gap-3 pb-3 mb-2 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-lg p-2.5 transition-all">
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="{{ $cicilan->keterangan ?? ('Pembayaran ke - ' . $cicilan->pembayaran_ke) }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 font-medium cursor-not-allowed">
+                                            </div>
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="{{ $cicilan->tanggal_jatuh_tempo ? \Carbon\Carbon::parse($cicilan->tanggal_jatuh_tempo)->format('d M Y') : '-' }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            </div>
+                                            <div class="w-full md:w-1/3">
+                                                <input type="text" readonly
+                                                    value="Rp {{ number_format($cicilan->nominal, 0, ',', '.') }}"
+                                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs text-right font-semibold rounded-lg p-2 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed">
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-sm text-gray-500 dark:text-gray-400 italic">
+                                        Tidak ada data cicilan.
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -643,7 +700,7 @@
                         @csrf
                         @method('PATCH')
                         <button type="button" class="tolak-btn px-4 py-2 text-sm font-medium text-gray-800 bg-gray-300 rounded-lg shadow-md
-                        hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
+                                hover:bg-gray-400 hover:shadow-lg transition duration-200 ease-in-out">
                             Tolak
                         </button>
                     </form>
@@ -654,7 +711,7 @@
                         @csrf
                         @method('PATCH')
                         <button type="button" class="approve-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md
-                        hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
+                                hover:bg-blue-700 hover:shadow-lg transition duration-200 ease-in-out">
                             Acc / Approve
                         </button>
                     </form>

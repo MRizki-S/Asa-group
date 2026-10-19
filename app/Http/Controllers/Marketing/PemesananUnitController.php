@@ -32,6 +32,8 @@ use App\Models\PemesananUnitCashDokumen;
 use App\Models\PemesananUnitKeterlambatan;
 use App\Models\MasterAgentFee; // 🔹 Import model Fee Agen
 use App\Models\PemesananUnitFeeAgent; // 🔹 Import model Fee Agen Pemesanan
+use App\Models\PemesananUnitBiayaTambahan; // 🔹 Import model Biaya Tambahan
+use App\Models\PemesananUnitPromoAdmin; // 🔹 Import model Fasilitas Biaya Administrasi
 use App\Services\NotificationGroupService;
 
 class PemesananUnitController extends Controller
@@ -226,21 +228,29 @@ class PemesananUnitController extends Controller
             'nominal_bonus_kpr.*'           => 'nullable|numeric|min:0',
 
             // === FIELD CASH (wajib jika cara_bayar = cash) ===
-            'cash_harga_rumah'          => 'required_if:cara_bayar,cash|min:0',
-            'cash_luas_kelebihan'       => 'required_if:cara_bayar,cash',
-            'cash_nominal_kelebihan'    => 'required_if:cara_bayar,cash|numeric|min:0',
+            'cash_harga_rumah'          => 'required_if:cara_bayar,cash|numeric|min:0',
+            'cash_luas_kelebihan'       => 'nullable',
+            'cash_nominal_kelebihan'    => 'nullable|numeric|min:0',
             'cash_harga_jadi'           => 'required_if:cara_bayar,cash|numeric|min:0',
+            'cash_tambahan_keterangan'  => 'nullable|array',
+            'cash_tambahan_nominal'     => 'nullable|array',
 
             // === FIELD KPR (wajib jika cara_bayar = kpr) ===
-            'kpr_dp_dibayarkan_pembeli' => 'required_if:cara_bayar,kpr|numeric|min:0',
             'kpr_dp_rumah_induk'        => 'required_if:cara_bayar,kpr|numeric|min:0',
-            'kpr_luas_kelebihan'        => 'required_if:cara_bayar,kpr',
-            'kpr_nominal_kelebihan'     => 'required_if:cara_bayar,kpr|numeric|min:0',
-            'kpr_total_dp'              => 'required_if:cara_bayar,kpr|numeric|min:0',
             'kpr_harga_total'           => 'required_if:cara_bayar,kpr|numeric|min:0',
             'kpr_harga_kpr'             => 'required_if:cara_bayar,kpr|numeric|min:0',
+            'ada_biaya_admin'           => 'nullable|in:0,1',
+            'admin_keterangan'          => 'nullable|array',
+            'admin_nominal'             => 'nullable|array',
+            'admin_note'                => 'nullable|array',
+            'admin_pembayaran_ke'       => 'nullable|array',
+            'admin_tanggal_angsuran'    => 'nullable|array',
+            'admin_nominal_angsuran'    => 'nullable|array',
+            'catatan_biaya_administrasi'=> 'nullable|string|max:500',
+            'promo_admin_items'         => 'nullable|array',
+            'promo_admin_items.*'       => 'nullable|string|max:255',
 
-            // === FIELD CICILAN ===
+            // === FIELD CICILAN POKOK ===
             'pembayaran_ke'             => 'required|array|min:1',
             'tanggal_angsuran'          => 'required|array|min:1',
             'nominal_angsuran'          => 'required|array|min:1',
@@ -257,7 +267,6 @@ class PemesananUnitController extends Controller
             'required_if' => 'Field :attribute wajib diisi jika cara bayar adalah :value.',
         ]);
 
-        // dd($request->all());
         DB::beginTransaction();
 
         try {
@@ -290,17 +299,24 @@ class PemesananUnitController extends Controller
             $source       = $booking->source;
             $agent_id     = $booking->agent_id;
 
+            // Hitung total_biaya_admin untuk KPR
+            $totalBiayaAdmin = 0;
+            if ($request->cara_bayar === 'kpr' && $request->filled('ada_biaya_admin') && is_array($request->admin_nominal)) {
+                $totalBiayaAdmin = array_sum(array_map('floatval', $request->admin_nominal));
+            }
+
             // Tentukan total_tagihan dan sisa_tagihan sesuai cara bayar
             if ($request->cara_bayar === 'cash') {
                 $total_tagihan = $request->cash_harga_jadi ?? 0;
             } else {
-                // kpr
-                $total_tagihan = $request->kpr_dp_dibayarkan_pembeli ?? 0;
+                // kpr: dp dibayarkan pembeli + total biaya administrasi
+                $dpKpr = $request->kpr_dp_rumah_induk ?? $request->kpr_dp_dibayarkan_pembeli ?? 0;
+                $total_tagihan = $dpKpr + $totalBiayaAdmin;
             }
 
             $sisa_tagihan = $total_tagihan;
 
-            // 3️⃣ Simpan data utama ke pemesanan_unit (Requirement 1)
+            // 3️⃣ Simpan data utama ke pemesanan_unit
             $pemesanan = PemesananUnit::create([
                 'perumahaan_id'     => $request->perumahaan_id,
                 'tahap_id'          => $request->tahap_id,
@@ -340,10 +356,10 @@ class PemesananUnitController extends Controller
                 'alamat_detail'     => $request->alamat_detail,
             ]);
 
-            // 3️⃣ Simpan Snapshot global untuk pemesanan_unit ini
+            // 3️⃣ Simpan Snapshot global untuk pemesanan_unit ini (Promo, Mutu, Keterlambatan, Pembatalan, Cara Bayar)
             $this->snapshotGlobal($request, $pemesanan);
 
-            // 4️⃣ Simpan data cicilan (jika ada)
+            // 4️⃣ Simpan data cicilan pokok (DP / Cash)
             if ($request->has('pembayaran_ke') && is_array($request->pembayaran_ke)) {
                 foreach ($request->pembayaran_ke as $index => $pembayaranKe) {
                     PemesananUnitCicilan::create([
@@ -352,6 +368,23 @@ class PemesananUnitController extends Controller
                         'tanggal_jatuh_tempo' => $request->tanggal_angsuran[$index] ?? null,
                         'nominal'             => $request->nominal_angsuran[$index] ?? 0,
                         'status_bayar'        => 'pending',
+                        'tipe_cicilan'        => 'dp',
+                        'keterangan'          => $request->keterangan_angsuran[$index] ?? null,
+                    ]);
+                }
+            }
+
+            // 4.B Simpan cicilan biaya administrasi (jika KPR dan ada biaya admin)
+            if ($request->cara_bayar === 'kpr' && $request->filled('ada_biaya_admin') && is_array($request->admin_pembayaran_ke)) {
+                foreach ($request->admin_pembayaran_ke as $index => $aPembayaranKe) {
+                    PemesananUnitCicilan::create([
+                        'pemesanan_unit_id'   => $pemesanan->id,
+                        'pembayaran_ke'       => $aPembayaranKe,
+                        'tanggal_jatuh_tempo' => $request->admin_tanggal_angsuran[$index] ?? null,
+                        'nominal'             => $request->admin_nominal_angsuran[$index] ?? 0,
+                        'status_bayar'        => 'pending',
+                        'tipe_cicilan'        => 'administrasi',
+                        'keterangan'          => $request->admin_keterangan_angsuran[$index] ?? null,
                     ]);
                 }
             }
@@ -359,14 +392,35 @@ class PemesananUnitController extends Controller
             // 5️⃣ Percabangan cara bayar
             if ($request->cara_bayar === 'cash') {
 
+                $totalTambahanCash = 0;
+                if ($request->has('cash_tambahan_nominal') && is_array($request->cash_tambahan_nominal)) {
+                    $totalTambahanCash = array_sum(array_map('floatval', $request->cash_tambahan_nominal));
+                }
+
                 // 🔹 Simpan data ke tabel pemesanan_unit_cash
                 $cash = PemesananUnitCash::create([
                     'pemesanan_unit_id' => $pemesanan->id,
                     'harga_rumah'       => $request->cash_harga_rumah,
-                    'luas_kelebihan'    => $unit->luas_kelebihan ?? null,
-                    'nominal_kelebihan' => $unit->nominal_kelebihan ?? null,
+                    'luas_kelebihan'    => $request->cash_luas_kelebihan ?? ($unit->luas_kelebihan ?? null),
+                    'nominal_kelebihan' => $request->cash_nominal_kelebihan ?? ($unit->nominal_kelebihan ?? null),
+                    'total_tambahan'    => $totalTambahanCash,
                     'harga_jadi'        => $request->cash_harga_jadi,
                 ]);
+
+                // 🔹 Simpan rincian tambahan spesifikasi fisik (Bata merah, dll)
+                if ($request->has('cash_tambahan_keterangan') && is_array($request->cash_tambahan_keterangan)) {
+                    foreach ($request->cash_tambahan_keterangan as $idx => $ket) {
+                        if (!empty($ket)) {
+                            PemesananUnitBiayaTambahan::create([
+                                'pemesanan_unit_id' => $pemesanan->id,
+                                'tipe'              => 'cash_spesifikasi',
+                                'keterangan'        => $ket,
+                                'nominal'           => $request->cash_tambahan_nominal[$idx] ?? 0,
+                                'note'              => null,
+                            ]);
+                        }
+                    }
+                }
 
                 // 🔹 Buat daftar dokumen default
                 $defaultDokumen = [
@@ -389,41 +443,74 @@ class PemesananUnitController extends Controller
                 // 🔹 Simpan bonus cash (jika ada)
                 if ($request->has('nama_bonus_cash') && is_array($request->nama_bonus_cash)) {
                     foreach ($request->nama_bonus_cash as $index => $namaBonus) {
-                        $nominalBonus = $request->nominal_bonus_cash[$index] ?? 0;
+                        if (!empty($namaBonus)) {
+                            $nominalBonus = $request->nominal_bonus_cash[$index] ?? 0;
 
-                        PemesananUnitBonusCash::create([
-                            'pemesanan_unit_id' => $pemesanan->id,
-                            'nama_bonus'        => $namaBonus,
-                            'nominal_bonus'     => $nominalBonus,
-                        ]);
+                            PemesananUnitBonusCash::create([
+                                'pemesanan_unit_id' => $pemesanan->id,
+                                'nama_bonus'        => $namaBonus,
+                                'nominal_bonus'     => $nominalBonus,
+                            ]);
+                        }
                     }
                 }
             } elseif ($request->cara_bayar === 'kpr') {
                 // 🔹 Simpan data ke tabel pemesanan_unit_kpr
                 PemesananUnitKpr::create([
-                    'pemesanan_unit_id'     => $pemesanan->id,
-                    'bank_id'               => null, // sementara null
-                    'dp_rumah_induk'        => $request->kpr_dp_rumah_induk,
-                    'dp_dibayarkan_pembeli' => $request->kpr_dp_dibayarkan_pembeli,
-                    'sbum_dari_pemerintah'  => env('SBUM_PEMERINTAH', 4000000),
-                    'luas_kelebihan'        => $unit->luas_kelebihan ?? null,
-                    'nominal_kelebihan'     => $unit->nominal_kelebihan ?? null,
-                    'total_dp'              => $request->kpr_total_dp,
-                    'harga_kpr'             => $request->kpr_harga_kpr,
-                    'harga_total'           => $request->kpr_harga_total,
-                    'status_kpr'            => 'proses',
+                    'pemesanan_unit_id'        => $pemesanan->id,
+                    'bank_id'                  => null, // sementara null
+                    'dp_rumah_induk'           => $request->kpr_dp_rumah_induk,
+                    'dp_dibayarkan_pembeli'    => $request->kpr_dp_rumah_induk,
+                    'sbum_dari_pemerintah'     => $request->kpr_sbum_pemerintah ?? env('SBUM_PEMERINTAH', 4000000),
+                    'luas_kelebihan'           => null,
+                    'nominal_kelebihan'        => null,
+                    'total_dp'                 => $request->kpr_dp_rumah_induk,
+                    'harga_kpr'                => $request->kpr_harga_kpr,
+                    'harga_total'              => $request->kpr_harga_total,
+                    'total_biaya_administrasi'   => $totalBiayaAdmin,
+                    'catatan_biaya_administrasi' => $request->filled('ada_biaya_admin') ? $request->catatan_biaya_administrasi : null,
+                    'status_kpr'                 => 'proses',
                 ]);
+
+                // 🔹 Simpan rincian biaya administrasi & tambahan KPR
+                if ($request->filled('ada_biaya_admin') && is_array($request->admin_keterangan)) {
+                    foreach ($request->admin_keterangan as $idx => $ket) {
+                        if (!empty($ket)) {
+                            PemesananUnitBiayaTambahan::create([
+                                'pemesanan_unit_id' => $pemesanan->id,
+                                'tipe'              => 'kpr_administrasi',
+                                'keterangan'        => $ket,
+                                'nominal'           => $request->admin_nominal[$idx] ?? 0,
+                                'note'              => $request->admin_note[$idx] ?? null,
+                            ]);
+                        }
+                    }
+                }
+
+                // 🔹 Simpan fasilitas/legalitas yang termasuk biaya administrasi KPR
+                if ($request->filled('ada_biaya_admin') && is_array($request->promo_admin_items)) {
+                    foreach ($request->promo_admin_items as $promoAdmin) {
+                        if (!empty($promoAdmin)) {
+                            PemesananUnitPromoAdmin::create([
+                                'pemesanan_unit_id' => $pemesanan->id,
+                                'nama_promo'        => $promoAdmin,
+                            ]);
+                        }
+                    }
+                }
 
                 // 🔹 Simpan bonus kpr (jika ada)
                 if ($request->has('nama_bonus_kpr') && is_array($request->nama_bonus_kpr)) {
                     foreach ($request->nama_bonus_kpr as $index => $namaBonus) {
-                        $nominalBonus = $request->nominal_bonus_kpr[$index] ?? 0;
+                        if (!empty($namaBonus)) {
+                            $nominalBonus = $request->nominal_bonus_kpr[$index] ?? 0;
 
-                        PemesananUnitBonusKpr::create([
-                            'pemesanan_unit_id' => $pemesanan->id,
-                            'nama_bonus'        => $namaBonus,
-                            'nominal_bonus'     => $nominalBonus,
-                        ]);
+                            PemesananUnitBonusKpr::create([
+                                'pemesanan_unit_id' => $pemesanan->id,
+                                'nama_bonus'        => $namaBonus,
+                                'nominal_bonus'     => $nominalBonus,
+                            ]);
+                        }
                     }
                 }
             }
@@ -502,19 +589,35 @@ class PemesananUnitController extends Controller
          * 🔹 SNAPSHOT PROMO (berdasarkan cara_bayar)
          * ======================================
          */
-        $promoBatch = PpjbPromoBatch::with('items')
-            ->where('perumahaan_id', $pemesananUnit->perumahaan_id)
-            ->where('tipe', $request->cara_bayar)
-            ->where('status_aktif', true)
-            ->where('status_pengajuan', 'acc')
-            ->first();
+        // Ambil item promo yang dicentang sesuai cara bayar
+        $promoInput = $request->cara_bayar === 'cash'
+            ? $request->input('promo_cash_items', $request->input('promo_items', []))
+            : $request->input('promo_kpr_items', $request->input('promo_items', []));
 
-        if ($promoBatch && $promoBatch->items->count() > 0) {
-            foreach ($promoBatch->items as $item) {
-                PemesananUnitPromo::create([
-                    'pemesanan_unit_id' => $pemesananUnit->id,
-                    'nama_promo'        => $item->nama_promo,
-                ]);
+        if (!empty($promoInput) && is_array($promoInput)) {
+            foreach ($promoInput as $namaPromo) {
+                if (!empty($namaPromo)) {
+                    PemesananUnitPromo::create([
+                        'pemesanan_unit_id' => $pemesananUnit->id,
+                        'nama_promo'        => $namaPromo,
+                    ]);
+                }
+            }
+        } else {
+            $promoBatch = PpjbPromoBatch::with('items')
+                ->where('perumahaan_id', $pemesananUnit->perumahaan_id)
+                ->where('tipe', $request->cara_bayar)
+                ->where('status_aktif', true)
+                ->latest('id')
+                ->first();
+
+            if ($promoBatch && $promoBatch->items->count() > 0) {
+                foreach ($promoBatch->items as $item) {
+                    PemesananUnitPromo::create([
+                        'pemesanan_unit_id' => $pemesananUnit->id,
+                        'nama_promo'        => $item->nama_promo,
+                    ]);
+                }
             }
         }
 

@@ -10,6 +10,7 @@ use App\Models\PemesananUnitKpr;
 use App\Models\PemesananUnitCash;
 use App\Models\PemesananUnitMutu;
 use App\Models\PemesananUnitPromo;
+use App\Models\PemesananUnitPromoAdmin;
 use App\Models\PemesananUnitCicilan;
 use App\Models\PemesananUnitBonusKpr;
 use App\Models\PemesananUnitDataDiri;
@@ -90,6 +91,10 @@ class PemesananUnit extends Model
     {
         return $this->hasMany(PemesananUnitPromo::class);
     }
+    public function promoAdmin()
+    {
+        return $this->hasMany(PemesananUnitPromoAdmin::class);
+    }
     public function mutu()
     {
         return $this->hasMany(PemesananUnitMutu::class);
@@ -135,6 +140,31 @@ class PemesananUnit extends Model
     public function cicilan()
     {
         return $this->hasMany(PemesananUnitCicilan::class);
+    }
+
+    public function cicilanDp()
+    {
+        return $this->hasMany(PemesananUnitCicilan::class)->where('tipe_cicilan', 'dp');
+    }
+
+    public function cicilanAdministrasi()
+    {
+        return $this->hasMany(PemesananUnitCicilan::class)->where('tipe_cicilan', 'administrasi');
+    }
+
+    public function biayaTambahan()
+    {
+        return $this->hasMany(PemesananUnitBiayaTambahan::class);
+    }
+
+    public function biayaAdministrasi()
+    {
+        return $this->hasMany(PemesananUnitBiayaTambahan::class)->where('tipe', 'kpr_administrasi');
+    }
+
+    public function spesifikasiCash()
+    {
+        return $this->hasMany(PemesananUnitBiayaTambahan::class)->where('tipe', 'cash_spesifikasi');
     }
 
     public function pengajuanPembatalan()

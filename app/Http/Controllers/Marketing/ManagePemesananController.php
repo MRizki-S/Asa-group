@@ -169,7 +169,9 @@ class ManagePemesananController extends Controller
             'kpr.bank',
             'caraBayar',
             'cicilan',
+            'biayaTambahan',
             'promo',
+            'promoAdmin',
             'keterlambatan',
             'pembatalan',
             'bonusCash',
@@ -243,13 +245,17 @@ class ManagePemesananController extends Controller
             'perumahaan',
             'kpr',
             'cicilan',
+            'cicilanAdministrasi',
             'promo',
+            'promoAdmin',
+            'biayaAdministrasi',
+            'bonusKpr',
             'keterlambatan',
             'pembatalan',
             'sales',
         ])->findOrFail($id);
 
-        $namaSales = strtoupper($pemesanan->sales?->nama_lengkap) ?? '-';
+        $namaSales = strtoupper($pemesanan->sales?->nama_lengkap ?? '-');
         $dataDiri = $pemesanan->dataDiri;
         $unit = $pemesanan->unit;
         $type = $unit?->type;
@@ -275,16 +281,27 @@ class ManagePemesananController extends Controller
         $terbilangLuasBangunan = ucfirst($this->terbilang((int) $luasBangunan));
         $terbilangLuasTanah = ucfirst($this->terbilang((int) $luasTanah));
 
-        // Data Nominal KPR
+        // 1. Data Nominal Pokok Rumah KPR
         $hargaTotal = $kpr->harga_total ?? 0;
-        $dpRumahInduk = $kpr->dp_rumah_induk ?? 0;
-        $totalDp = $kpr->total_dp ?? 0;
-        $dpDibayarkanPembeli = $kpr->dp_dibayarkan_pembeli ?? 0;
-        $sbumPemerintah = $kpr->sbum_dari_pemerintah ?? 0;
-        $hargaKpr = $kpr->harga_kpr ?? 0;
+        $dpRumah = $kpr->dp_rumah_induk ?? $kpr->dp_dibayarkan_pembeli ?? 0;
+        $sbumPemerintah = $kpr->sbum_dari_pemerintah ?: 4000000;
+        $totalDp = $dpRumah + $sbumPemerintah; // DP Rumah Induk (DP Rumah + SBUM)
+        $dpDibayarkanPembeli = $dpRumah;
+        $hargaKpr = $kpr->harga_kpr ?: max(0, $hargaTotal - $sbumPemerintah - $dpRumah);
 
-        // Terbilang harga Total
+        // Terbilang harga Pokok
         $terbilangHargaTotal = ucfirst($this->terbilang($hargaTotal)) . ' rupiah';
+        $terbilangHargaKpr = ucfirst($this->terbilang($hargaKpr)) . ' rupiah';
+        $terbilangDpDibayarkan = ucfirst($this->terbilang($dpDibayarkanPembeli)) . ' rupiah';
+
+        // 2. Data Biaya Administrasi Tambahan KPR
+        $totalBiayaAdmin = $kpr->total_biaya_administrasi ?? 0;
+        $terbilangBiayaAdmin = ucfirst($this->terbilang($totalBiayaAdmin)) . ' rupiah';
+        $catatanBiayaAdmin = $kpr->catatan_biaya_administrasi ?: '-';
+
+        // 3. Grand Total (DP Pembeli + Biaya Admin)
+        $grandTotal = $dpDibayarkanPembeli + $totalBiayaAdmin;
+        $terbilangGrandTotal = ucfirst($this->terbilang($grandTotal)) . ' rupiah';
 
         // Luas Kelebihan dan nominal kelebihan tanah
         $luasKelebihanTanah = $unit?->luas_kelebihan ?? null;
@@ -295,92 +312,228 @@ class ManagePemesananController extends Controller
         $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
         $namaType = $type?->nama_type ?? '-';
 
-        // Ambil cicilan KPRnya
-        $cicilanList = $pemesanan->cicilan()
+        // ==========================================
+        // 🔹 CICILAN 1: DP RUMAH
+        // ==========================================
+        $cicilanDpList = $pemesanan->cicilan()
             ->where('is_active', 1)
+            ->where(function ($q) {
+                $q->where('tipe_cicilan', 'dp')->orWhereNull('tipe_cicilan');
+            })
             ->orderBy('pembayaran_ke')
-            ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal']);
+            ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal', 'keterangan']);
 
-        // Data clone row untuk cicilan
-        $rows = [];
-        foreach ($cicilanList as $i => $c) {
-            // Jika ini baris terakhir
-            $isLast = $i === count($cicilanList) - 1;
+        $rowsDp = [];
+        if (count($cicilanDpList) > 0) {
+            foreach ($cicilanDpList as $i => $c) {
+                $isLast = $i === count($cicilanDpList) - 1;
+                $ket = $c->keterangan ?: ($isLast ? 'Pelunasan' : 'Pembayaran ke-' . $c->pembayaran_ke);
+                $tgl = $c->tanggal_jatuh_tempo ? $c->tanggal_jatuh_tempo->translatedFormat('d F Y') : '-';
+                $nom = number_format($c->nominal, 0, ',', '.');
 
-            $rows[] = [
-                'NO_PEMBAYARAN' => $i + 1,
-                'KETERANGAN_PEMBAYARAN' => $isLast
-                    ? 'Pelunasan'
-                    : 'Pembayaran ke-' . $c->pembayaran_ke,
-                'TANGGAL_PEMBAYARAN' => $c->tanggal_jatuh_tempo
-                    ? $c->tanggal_jatuh_tempo->translatedFormat('d F Y')
-                    : '-',
-                'NOMINAL_PEMBAYARAN' => number_format($c->nominal, 0, ',', '.'),
+                $rowsDp[] = [
+                    'NO_PEMBAYARAN_DP' => $i + 1,
+                    'NO_PEMBAYARAN' => $i + 1, // backward compatibility
+                    'KETERANGAN_PEMBAYARAN_DP' => $ket,
+                    'KETERANGAN_PEMBAYARAN' => $ket,
+                    'TANGGAL_PEMBAYARAN_DP' => $tgl,
+                    'TANGGAL_PEMBAYARAN' => $tgl,
+                    'NOMINAL_PEMBAYARAN_DP' => $nom,
+                    'NOMINAL_PEMBAYARAN' => $nom,
+                ];
+            }
+        } else {
+            $rowsDp[] = [
+                'NO_PEMBAYARAN_DP' => '-',
+                'NO_PEMBAYARAN' => '-',
+                'KETERANGAN_PEMBAYARAN_DP' => '-',
+                'KETERANGAN_PEMBAYARAN' => '-',
+                'TANGGAL_PEMBAYARAN_DP' => '-',
+                'TANGGAL_PEMBAYARAN' => '-',
+                'NOMINAL_PEMBAYARAN_DP' => '0',
+                'NOMINAL_PEMBAYARAN' => '0',
             ];
         }
 
-        // Ambil data promo & bonus KPR dari snapshot
-        $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
-        $bonusList = $pemesanan->bonusKpr()->pluck('nama_bonus')->toArray();
+        // ==========================================
+        // 🔹 CICILAN 2: BIAYA ADMINISTRASI
+        // ==========================================
+        $cicilanAdminList = $pemesanan->cicilanAdministrasi()
+            ->where('is_active', 1)
+            ->orderBy('pembayaran_ke')
+            ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal', 'keterangan']);
 
-        // Gabungkan promo + bonus
-        $combinedList = array_filter(array_merge($promoList, $bonusList));
+        $rowsAdmin = [];
+        $daftarCicilanAdminText = '';
+        if (count($cicilanAdminList) > 0) {
+            foreach ($cicilanAdminList as $i => $c) {
+                $isLast = $i === count($cicilanAdminList) - 1;
+                $ket = $c->keterangan ?: ($isLast ? 'Pelunasan' : 'Pembayaran ke-' . $c->pembayaran_ke);
+                $tgl = $c->tanggal_jatuh_tempo ? $c->tanggal_jatuh_tempo->translatedFormat('d F Y') : '-';
+                $nom = number_format($c->nominal, 0, ',', '.');
 
-        // Format urutan promo/bonus untuk PPJB KPR
-        if (count($combinedList)) {
-
-            $hurufRange = range('a', 'z');
-
-            // KPR → selalu mulai dari huruf 'a'
-            $startIndex = 0;
-
-            $daftarPromo = '';
-            $indent = str_repeat(' ', 4); // spasi indent
-
-            foreach ($combinedList as $i => $item) {
-                $huruf = $hurufRange[$startIndex + $i] ?? '?';
-                $daftarPromo .= "{$huruf}.{$indent}{$item}\r\n";
+                $rowsAdmin[] = [
+                    'NO_CICILAN_ADMIN' => $i + 1,
+                    'NO_PEMBAYARAN_ADMIN' => $i + 1,
+                    'KETERANGAN_CICILAN_ADMIN' => $ket,
+                    'KETERANGAN_PEMBAYARAN_ADMIN' => $ket,
+                    'TANGGAL_CICILAN_ADMIN' => $tgl,
+                    'TANGGAL_PEMBAYARAN_ADMIN' => $tgl,
+                    'NOMINAL_CICILAN_ADMIN' => $nom,
+                    'NOMINAL_PEMBAYARAN_ADMIN' => $nom,
+                ];
+                $daftarCicilanAdminText .= ($i + 1) . ". {$ket} ({$tgl}) : Rp {$nom}\r\n";
             }
         } else {
-            $daftarPromo = '';
+            $rowsAdmin[] = [
+                'NO_CICILAN_ADMIN' => '-',
+                'NO_PEMBAYARAN_ADMIN' => '-',
+                'KETERANGAN_CICILAN_ADMIN' => '-',
+                'KETERANGAN_PEMBAYARAN_ADMIN' => '-',
+                'TANGGAL_CICILAN_ADMIN' => '-',
+                'TANGGAL_PEMBAYARAN_ADMIN' => '-',
+                'NOMINAL_CICILAN_ADMIN' => '0',
+                'NOMINAL_PEMBAYARAN_ADMIN' => '0',
+            ];
+            $daftarCicilanAdminText = '-';
+        }
+
+        // ==========================================
+        // 🔹 RINCIAN ITEM BIAYA ADMINISTRASI
+        // ==========================================
+        $rincianAdminList = $pemesanan->biayaAdministrasi()->get(['keterangan', 'nominal']);
+        $rowsRincianAdmin = [];
+        $daftarRincianAdminText = '';
+        if (count($rincianAdminList) > 0) {
+            foreach ($rincianAdminList as $i => $r) {
+                $nom = number_format($r->nominal, 0, ',', '.');
+                $rowsRincianAdmin[] = [
+                    'NO_ITEM_ADMIN' => $i + 1,
+                    'NO_BIAYA_ADMIN' => $i + 1,
+                    'NAMA_ITEM_ADMIN' => $r->keterangan,
+                    'KETERANGAN_BIAYA_ADMIN' => $r->keterangan,
+                    'NOMINAL_ITEM_ADMIN' => $nom,
+                    'NOMINAL_BIAYA_ADMIN' => $nom,
+                ];
+                $daftarRincianAdminText .= ($i + 1) . ". {$r->keterangan}: Rp {$nom}\r\n";
+            }
+        } else {
+            $rowsRincianAdmin[] = [
+                'NO_ITEM_ADMIN' => '-',
+                'NO_BIAYA_ADMIN' => '-',
+                'NAMA_ITEM_ADMIN' => '-',
+                'KETERANGAN_BIAYA_ADMIN' => '-',
+                'NOMINAL_ITEM_ADMIN' => '0',
+                'NOMINAL_BIAYA_ADMIN' => '0',
+            ];
+            $daftarRincianAdminText = '-';
+        }
+
+        // ==========================================
+        // 🔹 FASILITAS & LEGALITAS (PROMO & BONUS)
+        // ==========================================
+        $hurufRange = range('a', 'z');
+        $indent = str_repeat(' ', 4);
+
+        // 1. Promo / Fasilitas DP
+        $promoDpList = $pemesanan->promo()->pluck('nama_promo')->toArray();
+        $daftarPromoDp = '';
+        if (count($promoDpList)) {
+            foreach ($promoDpList as $i => $item) {
+                $huruf = $hurufRange[$i] ?? ($i + 1);
+                $daftarPromoDp .= "{$huruf}.{$indent}{$item}\r\n";
+            }
+        } else {
+            $daftarPromoDp = '-';
+        }
+
+        // 2. Promo / Fasilitas Biaya Administrasi
+        $promoAdminList = $pemesanan->promoAdmin()->pluck('nama_promo')->toArray();
+        $daftarPromoAdmin = '';
+        if (count($promoAdminList)) {
+            foreach ($promoAdminList as $i => $item) {
+                $huruf = $hurufRange[$i] ?? ($i + 1);
+                $daftarPromoAdmin .= "{$huruf}.{$indent}{$item}\r\n";
+            }
+        } else {
+            $daftarPromoAdmin = '-';
+        }
+
+        // 3. Bonus KPR
+        $bonusList = $pemesanan->bonusKpr()->whereNotNull('nama_bonus')->where('nama_bonus', '!=', '')->pluck('nama_bonus')->toArray();
+        $daftarBonusKpr = '';
+        if (count($bonusList)) {
+            foreach ($bonusList as $i => $item) {
+                $huruf = $hurufRange[$i] ?? ($i + 1);
+                $daftarBonusKpr .= "{$huruf}.{$indent}{$item}\r\n";
+            }
+        } else {
+            $daftarBonusKpr = '-';
+        }
+
+        // 4. Gabungan Promo DP + Bonus (untuk template lama ${DAFTAR_PROMO})
+        $combinedList = array_filter(array_merge($promoDpList, $bonusList));
+        $daftarPromoGabungan = '';
+        if (count($combinedList)) {
+            foreach ($combinedList as $i => $item) {
+                $huruf = $hurufRange[$i] ?? ($i + 1);
+                $daftarPromoGabungan .= "{$huruf}.{$indent}{$item}\r\n";
+            }
         }
 
         // Data Keterlambatan dan Persentase Denda
         $keterlambatan = $pemesanan->keterlambatan;
         $persentaseDenda = $keterlambatan?->persentase_denda ?? 0;
-
-        // Hapus ".00" dan ubah ke angka bulat
         $persenBulan = (int) $persentaseDenda;
-
-        // Hitung versi per 6 hari (1/4 bulan)
         $persen6Hari = round($persenBulan / 4, 2);
-
-        // Terbilang keterlambatan (tanpa koma)
         $terbilangKeterlambatanBulan = ucfirst($this->terbilang($persenBulan));
         $terbilangKeterlambatan6Hari = ucfirst($this->terbilang((int) round($persen6Hari)));
 
         // Data Pembatalan
         $pembatalan = $pemesanan->pembatalan;
         $persentasePembatalan = $pembatalan?->persentase_potongan ?? 0;
-
-        // Hapus ".00" dan ubah ke angka bulat
         $pembatalanPersen = (int) $persentasePembatalan;
-
-        // Terbilang pembatalan persen
         $terbilangPembatalanPersen = ucfirst($this->terbilang($pembatalanPersen));
+
+        $formattedHargaStandar = number_format($hargaTotal, 0, ',', '.');
 
         // Load template word sesuai dengan perumahaan ADL / LHR
         $templatePath = match ($namaPerumahaan) {
-            'Asa Dreamland' => public_path('templates/PPJB/PPJB (KPR) ADL.docx'),
+            'Asa Dreamland' => public_path('templates/PPJB/ADL KPR.docx'),
             'Lembah Hijau Residence' => public_path('templates/PPJB/PPJB (KPR) LHR.docx'),
             default => abort(404, 'Template PPJB KPR tidak ditemukan'),
         };
         $template = new TemplateProcessor($templatePath);
+        $templateVariables = $template->getVariables();
 
-        // Isi table cicilan foreach clone row
-        $template->cloneRowAndSetValues('NO_PEMBAYARAN', $rows);
+        // 1. Clone Row untuk Cicilan DP Rumah (Mendukung NO_PEMBAYARAN_DP atau NO_PEMBAYARAN lama)
+        if (in_array('NO_PEMBAYARAN_DP', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_PEMBAYARAN_DP', $rowsDp);
+        } elseif (in_array('NO_PEMBAYARAN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_PEMBAYARAN', $rowsDp);
+        }
 
-        // Data dikirim ke word template
+        // 2. Clone Row untuk Cicilan Biaya Administrasi (jika tabel ada di template)
+        if (in_array('NO_CICILAN_ADMIN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_CICILAN_ADMIN', $rowsAdmin);
+        } elseif (in_array('NO_PEMBAYARAN_ADMIN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_PEMBAYARAN_ADMIN', $rowsAdmin);
+        }
+
+        // 3. Clone Row untuk Rincian Item Biaya Administrasi (jika tabel ada di template)
+        if (in_array('NO_ITEM_ADMIN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_ITEM_ADMIN', $rowsRincianAdmin);
+        } elseif (in_array('NO_BIAYA_ADMIN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_BIAYA_ADMIN', $rowsRincianAdmin);
+        } elseif (in_array('KETERANGAN_BIAYA_ADMIN', $templateVariables)) {
+            $template->cloneRowAndSetValues('KETERANGAN_BIAYA_ADMIN', $rowsRincianAdmin);
+        } elseif (in_array('NAMA_ITEM_ADMIN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NAMA_ITEM_ADMIN', $rowsRincianAdmin);
+        }
+
+        // ==========================================
+        // 🔹 SET SEMUA VALUE KE TEMPLATE WORD
+        // ==========================================
         $template->setValue('NO_PEMESANAN', $noPemesanan);
         $template->setValue('NAMA_SALES', $namaSales);
         $template->setValue('NAMA_PEMBELI', strtoupper($dataDiri->nama_pribadi ?? '-'));
@@ -396,16 +549,43 @@ class ManagePemesananController extends Controller
         $template->setValue('TERBILANG_LUAS_BANGUNAN', $terbilangLuasBangunan);
         $template->setValue('TERBILANG_LUAS_TANAH', $terbilangLuasTanah);
         $template->setValue('NAMA_TIPE', $namaType);
-        $template->setValue('HARGA_TOTAL', number_format($hargaTotal, 0, ',', '.'));
+
+        // 1. Data Nominal Pokok Rumah KPR
+        $formattedHargaStandar = number_format($hargaTotal, 0, ',', '.');
+        $template->setValue('HARGA_TOTAL', $formattedHargaStandar);
+        $template->setValue('HARGA_STANDAR', $formattedHargaStandar);
+        $template->setValue('HARGA_STANDARD', $formattedHargaStandar);
         $template->setValue('TERBILANG_HARGA_TOTAL', $terbilangHargaTotal);
-        $template->setValue('DP_RUMAH_INDUK', number_format($dpRumahInduk, 0, ',', '.'));
+        $template->setValue('TERBILANG_HARGA_STANDAR', $terbilangHargaTotal);
+        $template->setValue('TERBILANG_HARGA_STANDARD', $terbilangHargaTotal);
+        $template->setValue('DP_RUMAH_INDUK', number_format($totalDp, 0, ',', '.'));
         $template->setValue('TOTAL_DP', number_format($totalDp, 0, ',', '.'));
         $template->setValue('DP_DIBAYARKAN_PEMBELI', number_format($dpDibayarkanPembeli, 0, ',', '.'));
+        $template->setValue('TERBILANG_DP_DIBAYARKAN', $terbilangDpDibayarkan);
         $template->setValue('SBUM_PEMERINTAH', number_format($sbumPemerintah, 0, ',', '.'));
         $template->setValue('HARGA_KPR', number_format($hargaKpr, 0, ',', '.'));
+        $template->setValue('TERBILANG_HARGA_KPR', $terbilangHargaKpr);
         $template->setValue('LUAS_KELEBIHAN_TANAH', $luasKelebihanTanah ?? '');
         $template->setValue('NOMINAL_KELEBIHAN_TANAH', $nominalKelebihanTanah ? number_format($nominalKelebihanTanah, 0, ',', '.') : '-');
-        $template->setValue('DAFTAR_PROMO', trim($daftarPromo), true);
+
+        // 2. Data Biaya Administrasi Tambahan
+        $template->setValue('TOTAL_BIAYA_ADMIN', number_format($totalBiayaAdmin, 0, ',', '.'));
+        $template->setValue('TERBILANG_BIAYA_ADMIN', $terbilangBiayaAdmin);
+        $template->setValue('CATATAN_BIAYA_ADMIN', $catatanBiayaAdmin);
+        $template->setValue('DAFTAR_RINCIAN_ADMIN', trim($daftarRincianAdminText));
+        $template->setValue('DAFTAR_CICILAN_ADMIN', trim($daftarCicilanAdminText));
+
+        // 3. Grand Total (Rumah + Admin)
+        $template->setValue('GRAND_TOTAL_TAGIHAN', number_format($grandTotal, 0, ',', '.'));
+        $template->setValue('TERBILANG_GRAND_TOTAL', $terbilangGrandTotal);
+
+        // 4. Promo & Bonus KPR (Terpisah & Gabungan)
+        $template->setValue('DAFTAR_PROMO_DP', trim($daftarPromoDp));
+        $template->setValue('DAFTAR_PROMO_ADMIN', trim($daftarPromoAdmin));
+        $template->setValue('DAFTAR_BONUS_KPR', trim($daftarBonusKpr));
+        $template->setValue('DAFTAR_PROMO', trim($daftarPromoGabungan ?: $daftarPromoDp)); // legacy fallback
+
+        // Ketentuan Keterlambatan & Pembatalan
         $template->setValue('KETERLAMBATAN_BULAN', $persenBulan);
         $template->setValue('KETERLAMBATAN_6HARI', $persen6Hari);
         $template->setValue('TERBILANG_KETERLAMBATAN_BULAN', $terbilangKeterlambatanBulan);
@@ -414,14 +594,14 @@ class ManagePemesananController extends Controller
         $template->setValue('TERBILANG_PEMBATALAN_PERSEN', $terbilangPembatalanPersen);
 
         // Simpan hasil dan download
-        // Pernamaaan File sesuai dengan perumahaan ADL / LHR
-        $prefix = match ($namaPerumahaan) {
-            'Asa Dreamland' => 'PPJB_KPR_ADL_',
-            'Lembah Hijau Residence' => 'PPJB_KPR_LHR_',
-            default => 'PPJB_KPR_',
+        $suffixPerumahaan = match ($namaPerumahaan) {
+            'Asa Dreamland' => 'ADL',
+            'Lembah Hijau Residence' => 'LHR',
+            default => str_replace(' ', '', $namaPerumahaan),
         };
 
-        $fileName = $prefix . $pemesanan->no_pemesanan . '.docx';
+        $cleanNamaUnit = str_replace(['/', '\\'], '', $namaUnit);
+        $fileName = 'PPJB-KPR-' . $cleanNamaUnit . '-' . $suffixPerumahaan . '.docx';
 
         $tempFile = storage_path('app/public/' . $fileName);
         $template->saveAs($tempFile);
@@ -440,6 +620,8 @@ class ManagePemesananController extends Controller
             'cash',
             'cicilan',
             'promo',
+            'spesifikasiCash',
+            'biayaTambahan',
             'keterlambatan',
             'pembatalan',
             'sales'
@@ -488,7 +670,60 @@ class ManagePemesananController extends Controller
         $namaPerumahaan = $pemesanan->perumahaan->nama_perumahaan ?? '-';
         $namaType = $type?->nama_type ?? '-';
 
-        // Ambil Cicilan CASHN
+        // ==========================================
+        // 🔹 BIAYA TAMBAHAN CASH (Spesifikasi Fisik: Bata Merah, dll)
+        // ==========================================
+        $biayaTambahanList = $pemesanan->spesifikasiCash;
+        if (!$biayaTambahanList || $biayaTambahanList->isEmpty()) {
+            $biayaTambahanList = $pemesanan->biayaTambahan->where('tipe', 'cash_spesifikasi');
+        }
+        if ($biayaTambahanList->isEmpty()) {
+            $biayaTambahanList = $pemesanan->biayaTambahan;
+        }
+
+        $totalBiayaTambahan = $cash->total_tambahan ?? 0;
+        if (!$totalBiayaTambahan && $biayaTambahanList->isNotEmpty()) {
+            $totalBiayaTambahan = $biayaTambahanList->sum('nominal');
+        }
+        $terbilangBiayaTambahan = ucfirst($this->terbilang($totalBiayaTambahan)) . ' rupiah';
+
+        $rowsBiayaTambahan = [];
+        $daftarBiayaTambahanText = '';
+        if ($biayaTambahanList->isNotEmpty()) {
+            $tableCounter = 3;
+            $textCounter = 1;
+            foreach ($biayaTambahanList as $item) {
+                if (empty($item->keterangan) && empty($item->nominal)) {
+                    continue;
+                }
+                $nom = number_format($item->nominal, 0, ',', '.');
+                $rowsBiayaTambahan[] = [
+                    'NO_BIAYA_TAMBAHAN' => $tableCounter,
+                    'NO_TAMBAHAN' => $tableCounter,
+                    'KETERANGAN_BIAYA_TAMBAHAN' => $item->keterangan,
+                    'KETERANGAN_TAMBAHAN' => $item->keterangan,
+                    'NOMINAL_BIAYA_TAMBAHAN' => $nom,
+                    'NOMINAL_TAMBAHAN' => $nom,
+                ];
+                $daftarBiayaTambahanText .= "{$textCounter}. {$item->keterangan}: Rp {$nom}\r\n";
+                $tableCounter++;
+                $textCounter++;
+            }
+        }
+
+        if (empty($rowsBiayaTambahan)) {
+            $rowsBiayaTambahan[] = [
+                'NO_BIAYA_TAMBAHAN' => 3,
+                'NO_TAMBAHAN' => 3,
+                'KETERANGAN_BIAYA_TAMBAHAN' => '-',
+                'KETERANGAN_TAMBAHAN' => '-',
+                'NOMINAL_BIAYA_TAMBAHAN' => '0',
+                'NOMINAL_TAMBAHAN' => '0',
+            ];
+            $daftarBiayaTambahanText = '-';
+        }
+
+        // Ambil Cicilan CASH
         $cicilanList = $pemesanan->cicilan()
             ->orderBy('pembayaran_ke')
             ->get(['pembayaran_ke', 'tanggal_jatuh_tempo', 'nominal']);
@@ -513,13 +748,13 @@ class ManagePemesananController extends Controller
 
         // Ambil data promo & bonus cash dari snapshot
         $promoList = $pemesanan->promo()->pluck('nama_promo')->toArray();
-        $bonusList = $pemesanan->bonusCash()->pluck(column: 'nama_bonus')->toArray();
+        $bonusList = $pemesanan->bonusCash()->pluck('nama_bonus')->toArray();
 
         // Gabungkan promo + bonus
         $combinedList = array_filter(array_merge($promoList, $bonusList));
 
         // Format urutan promo/bonus untuk PPJB CASH
-        if (count(value: $combinedList)) {
+        if (count($combinedList)) {
 
             $hurufRange = range('a', 'z');
 
@@ -547,7 +782,7 @@ class ManagePemesananController extends Controller
         // Hitung versi per 6 hari (1/4 bulan)
         $persen6Hari = round($persenBulan / 4, 2);
 
-        // Terbilang keterlmabatan (tanpa koma)
+        // Terbilang keterlambatan (tanpa koma)
         $terbilangKeterlambatanBulan = ucfirst($this->terbilang($persenBulan));
         $terbilangKeterlambatan6Hari = ucfirst($this->terbilang((int) round($persen6Hari)));
 
@@ -561,16 +796,39 @@ class ManagePemesananController extends Controller
         // Terbilang Pembatalan Persen
         $terbilangPembatalanPersen = ucfirst($this->terbilang($pembatalanPersen));
 
+        // 🔍 DEBUG: DD SEMUA DATA EXPORT CASH UNTUK DITINJAU USER
         // Load template word sesuai dengan perumahaan ADL / LHR
         $templatePath = match ($namaPerumahaan) {
-            'Asa Dreamland' => public_path('templates/PPJB/PPJB (TUNAI) ADL.docx'),
-            'Lembah Hijau Residence' => public_path('templates/PPJB/PPJB (TUNAI) LHR.docx'),
+            'Asa Dreamland' => file_exists(public_path('templates/PPJB/CASH ADL.docx'))
+                ? public_path('templates/PPJB/CASH ADL.docx')
+                : (file_exists(public_path('templates/PPJB/ADL CASH.docx'))
+                    ? public_path('templates/PPJB/ADL CASH.docx')
+                    : public_path('templates/PPJB/PPJB (TUNAI) ADL.docx')),
+            'Lembah Hijau Residence' => file_exists(public_path('templates/PPJB/PPJB CASH LHR.docx'))
+                ? public_path('templates/PPJB/PPJB CASH LHR.docx')
+                : (file_exists(public_path('templates/PPJB/LHR CASH.docx'))
+                    ? public_path('templates/PPJB/LHR CASH.docx')
+                    : public_path('templates/PPJB/PPJB (TUNAI) LHR.docx')),
             default => abort(404, 'Template PPJB TUNAI tidak ditemukan'),
         };
         $template = new TemplateProcessor($templatePath);
+        $templateVariables = $template->getVariables();
 
-        // Isi table cicilan foreeach dari clone row
-        $template->cloneRowAndSetValues('NO_PEMBAYARAN', $rows);
+        // 1. Clone Row untuk Biaya Tambahan (jika tabel ada di template)
+        if (in_array('NO_BIAYA_TAMBAHAN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_BIAYA_TAMBAHAN', $rowsBiayaTambahan);
+        } elseif (in_array('NO_TAMBAHAN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_TAMBAHAN', $rowsBiayaTambahan);
+        } elseif (in_array('KETERANGAN_BIAYA_TAMBAHAN', $templateVariables)) {
+            $template->cloneRowAndSetValues('KETERANGAN_BIAYA_TAMBAHAN', $rowsBiayaTambahan);
+        }
+
+        // 2. Clone Row untuk Cicilan Pembayaran
+        if (in_array('NO_PEMBAYARAN', $templateVariables)) {
+            $template->cloneRowAndSetValues('NO_PEMBAYARAN', $rows);
+        } elseif (in_array('KETERANGAN_PEMBAYARAN', $templateVariables)) {
+            $template->cloneRowAndSetValues('KETERANGAN_PEMBAYARAN', $rows);
+        }
 
         // Data dikirim ke word template
         $template->setValue('NO_PEMESANAN', $noPemesanan);
@@ -594,7 +852,15 @@ class ManagePemesananController extends Controller
         $template->setValue('HARGA_JADI', number_format($hargaJadi, 0, ',', '.'));
 
         $template->setValue('LUAS_KELEBIHAN_TANAH', $luasKelebihanTanah ?? '');
-        $template->setValue('NOMINAL_KELEBIHAN_TANAH', number_format($nominalKelebihanTanah, 0, ',', '.') ?? '-');
+        $template->setValue('NOMINAL_KELEBIHAN_TANAH', $nominalKelebihanTanah ? number_format($nominalKelebihanTanah, 0, ',', '.') : '-');
+
+        // Biaya Tambahan Cash
+        $template->setValue('TOTAL_BIAYA_TAMBAHAN', number_format($totalBiayaTambahan, 0, ',', '.'));
+        $template->setValue('TOTAL_TAMBAHAN', number_format($totalBiayaTambahan, 0, ',', '.'));
+        $template->setValue('TERBILANG_BIAYA_TAMBAHAN', $terbilangBiayaTambahan);
+        $template->setValue('TERBILANG_TOTAL_TAMBAHAN', $terbilangBiayaTambahan);
+        $template->setValue('DAFTAR_BIAYA_TAMBAHAN', trim($daftarBiayaTambahanText));
+
         $template->setValue('DAFTAR_PROMO', trim($daftarPromo), true);
         $template->setValue('KETERLAMBATAN_BULAN', $persenBulan);
         $template->setValue('KETERLAMBATAN_6HARI', $persen6Hari);
@@ -603,15 +869,16 @@ class ManagePemesananController extends Controller
         $template->setValue('PEMBATALAN_PERSEN', $pembatalanPersen);
         $template->setValue('TERBILANG_PEMBATALAN_PERSEN', $terbilangPembatalanPersen);
 
-        // Simpan Hasil dan Downloa
-        // Penamanaan file sesuai dengan perumahaan ADL / LHR
-        $prefix = match ($namaPerumahaan) {
-            'Asa Dreamland' => 'PPJB_TUNAI_ADL_',
-            'Lembah Hijau Residence' => 'PPJB_TUNAI_LHR_',
-            default => 'PPJB_TUNAI_',
+        // Simpan Hasil dan Download
+        $suffixPerumahaan = match ($namaPerumahaan) {
+            'Asa Dreamland' => 'ADL',
+            'Lembah Hijau Residence' => 'LHR',
+            default => str_replace(' ', '', $namaPerumahaan),
         };
 
-        $fileName = $prefix . $pemesanan->no_pemesanan . '.docx';
+        $cleanNamaUnit = str_replace(['/', '\\'], '', $namaUnit);
+        $fileName = 'PPJB-CASH-' . $cleanNamaUnit . '-' . $suffixPerumahaan . '.docx';
+
         $tempFile = storage_path('app/public/' . $fileName);
         $template->saveAs($tempFile);
 

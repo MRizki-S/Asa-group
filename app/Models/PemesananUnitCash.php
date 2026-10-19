@@ -12,7 +12,7 @@ class PemesananUnitCash extends Model
     use HasFactory;
     protected $table = 'pemesanan_unit_cash';
     protected $fillable = [
-        'pemesanan_unit_id', 'harga_rumah', 'luas_kelebihan', 'nominal_kelebihan', 'harga_jadi'
+        'pemesanan_unit_id', 'harga_rumah', 'luas_kelebihan', 'nominal_kelebihan', 'total_tambahan', 'harga_jadi'
     ];
 
     public function pemesananUnit() {
