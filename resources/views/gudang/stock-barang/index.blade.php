@@ -90,27 +90,89 @@
                 </span>
 
                 <div class="flex flex-wrap items-end gap-4">
-                    <!-- pilih ubs  -->
-                    <div class="flex-1 min-w-[250px]">
+                    <!-- Multi-Select Pilih Gudang -->
+                    <div class="flex-1 min-w-[260px] relative" @click.away="open = false" x-data="{
+                        open: false,
+                        selected: {{ json_encode($selectedUbs) }},
+                        allCodes: {{ json_encode($ubsData->pluck('kode_ubs')->toArray()) }},
+                        ubsMap: {
+                            @foreach($ubsData as $u)
+                                '{{ $u->kode_ubs }}': '{{ $u->nama_ubs }}',
+                            @endforeach
+                        },
+                        isAllSelected() {
+                            return this.allCodes.length > 0 && this.selected.length === this.allCodes.length;
+                        },
+                        toggleAll() {
+                            if (this.isAllSelected()) {
+                                this.selected = [];
+                            } else {
+                                this.selected = [...this.allCodes];
+                            }
+                        },
+                        getLabel() {
+                            if (this.isAllSelected()) {
+                                return 'Semua Gudang (' + this.allCodes.length + ')';
+                            }
+                            if (this.selected.length === 0) {
+                                return 'Pilih Gudang (0)';
+                            }
+                            if (this.selected.length === 1) {
+                                return (this.ubsMap[this.selected[0]] || this.selected[0]);
+                            }
+                            return this.selected.join(' + ') + ' (' + this.selected.length + ' Gudang)';
+                        }
+                    }">
                         <label class="block mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                             Pilih Gudang
                         </label>
 
-                        <select name="ubs_id"
-                            class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5
-                                                                            dark:bg-gray-700 dark:text-white border-gray-300" required>
+                        <button @click="open = !open" type="button"
+                            class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5 flex items-center justify-between text-left focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-xs">
+                            <span class="truncate font-medium" x-text="getLabel()"></span>
+                            <svg class="w-4 h-4 text-gray-500 ms-2 transition-transform duration-200 shrink-0"
+                                :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                            {{-- Opsi Semua Gudang --}}
-                            <option value="all" {{ request('ubs_id', 'all') == 'all' ? 'selected' : '' }}>
-                                Semua Gudang
-                            </option>
-                            {{-- Opsi UBS --}}
+                        {{-- Dropdown Checkbox Menu --}}
+                        <div x-show="open" x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            style="display: none;"
+                            class="absolute left-0 z-30 mt-1 w-full min-w-[280px] bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-2 space-y-1">
+                            
+                            {{-- Checkbox Master: Pilih Semua --}}
+                            <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer font-bold text-xs text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 pb-2 mb-1">
+                                <input type="checkbox" :checked="isAllSelected()" @change="toggleAll()"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                                <span class="flex-1">Pilih Semua Gudang</span>
+                                <span class="text-[10px] text-gray-400 font-normal" x-text="'(' + selected.length + '/' + allCodes.length + ')'"></span>
+                            </label>
+
+                            {{-- Checkbox Tiap UBS --}}
                             @foreach ($ubsData as $ubs)
-                            <option value="{{ $ubs->kode_ubs }}" {{ request('ubs_id') == $ubs->kode_ubs ? 'selected' : '' }}>
-                                {{ $ubs->nama_ubs }}
-                            </option>
+                            <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/60 cursor-pointer text-xs text-gray-700 dark:text-gray-300">
+                                <input type="checkbox" name="ubs_id[]" value="{{ $ubs->kode_ubs }}"
+                                    x-model="selected"
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                                <div class="flex-1 flex items-center justify-between">
+                                    <span class="font-medium">{{ $ubs->nama_ubs }}</span>
+                                    <span class="px-1.5 py-0.2 rounded font-mono font-bold text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                        {{ $ubs->kode_ubs }}
+                                    </span>
+                                </div>
+                            </label>
                             @endforeach
-                        </select>
+
+                            <div class="pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center px-1">
+                                <span class="text-[11px] text-gray-400" x-text="selected.length + ' dipilih'"></span>
+                                <button type="button" @click="open = false" class="px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 rounded">
+                                    Selesai
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Cari Material -->
@@ -213,25 +275,20 @@
                             <th class="border px-3 py-2.5 text-left min-w-[200px]">Nama Barang</th>
                             <th class="border px-3 py-2.5 text-center whitespace-nowrap w-24 md:w-28">Satuan</th>
                             <th class="border px-3 py-2.5 text-center whitespace-nowrap w-28 md:w-36">Total Stock</th>
-                            @if($selectedUbs != 'all')
+                            @if(count($selectedUbs) === 1)
                             <th class="border px-3 py-2.5 text-center whitespace-nowrap w-28 md:w-36">Minimal Stock</th>
                             @endif
                         </tr>
                     </thead>
 
-                    {{--
-                        PENTING: Kita menggunakan @foreach di luar <tbody>
-                            dan membuat satu
-                        <tbody> per barang agar x-data bekerja mandiri per baris
-                            --}}
                     @php
                     if (!function_exists('formatStock')) {
-                    function formatStock($val) {
-                    $formatted = number_format((float)$val, 2, ',', '.');
-                    $formatted = rtrim($formatted, '0');
-                    $formatted = rtrim($formatted, ',');
-                    return $formatted;
-                    }
+                        function formatStock($val) {
+                            $formatted = number_format((float)$val, 2, ',', '.');
+                            $formatted = rtrim($formatted, '0');
+                            $formatted = rtrim($formatted, ',');
+                            return $formatted;
+                        }
                     }
                     @endphp
                     @foreach($stocks as $barang)
@@ -239,54 +296,46 @@
                     $defaultKonversi = $barang->satuanKonversi->where('is_default', true)->first();
 
                     if ($defaultKonversi) {
-                    $satuanNama = $defaultKonversi->satuan->nama ?? 'Unknown';
-                    $konversiRate = (float)$defaultKonversi->konversi_ke_base;
+                        $satuanNama = $defaultKonversi->satuan->nama ?? 'Unknown';
+                        $konversiRate = (float)$defaultKonversi->konversi_ke_base;
                     } else {
-                    $satuanNama = $barang->baseUnit->nama ?? '-';
-                    $konversiRate = 1;
+                        $satuanNama = $barang->baseUnit->nama ?? '-';
+                        $konversiRate = 1;
                     }
 
-                    $stockVal = 0;
+                    // Total stok dari gudang-gudang yang terpilih
+                    $stockVal = $barang->stock->sum('jumlah_stock');
                     $minStockVal = 0;
 
-                    if($selectedUbs == 'all') {
-                    // Secara default base stock
-                    $stockVal = $barang->stock->sum('jumlah_stock');
-                    } elseif ($selectedUbs == 'hub') {
-                    $stockVal = $barang->stockHub->jumlah_stock ?? 0;
-                    $minStockVal = $barang->stockHub->minimal_stock ?? 0;
-                    } else {
-                    $s = $barang->stock->first();
-                    $stockVal = $s->jumlah_stock ?? 0;
-                    $minStockVal = $s->minimal_stock ?? 0;
+                    if (count($selectedUbs) === 1) {
+                        $s = $barang->stock->first();
+                        $minStockVal = $s->minimal_stock ?? 0;
                     }
 
                     // Divide by conversion rate
                     $stockDisplay = $stockVal / $konversiRate;
                     $minStockDisplay = $minStockVal / $konversiRate;
 
-                    // Cek apakah stock di bawah minimal (hanya relevan saat filter gudang tertentu)
-                    $isBelowMin = $selectedUbs !== 'all' && $minStockVal > 0 && $stockVal < $minStockVal;
+                    // Cek apakah stock di bawah minimal (hanya relevan saat filter 1 gudang tertentu)
+                    $isBelowMin = count($selectedUbs) === 1 && $minStockVal > 0 && $stockVal < $minStockVal;
                     $rowBg = $isBelowMin
-                        ? 'bg-red-50 border-red-200 hover:bg-red-100'
-                        : 'bg-blue-50 border-blue-200 hover:bg-blue-100';
-                    $textColor = $isBelowMin ? 'text-red-700' : 'text-blue-800';
+                        ? 'bg-red-50 border-red-200 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30'
+                        : 'bg-blue-50 border-blue-200 hover:bg-blue-100 dark:bg-gray-800/60 dark:hover:bg-gray-800';
+                    $textColor = $isBelowMin ? 'text-red-700 dark:text-red-400' : 'text-blue-800 dark:text-blue-300';
                     @endphp
 
                     <tbody x-data="{ open: false }" class="border-b">
                         {{-- ROW UTAMA --}}
                         <tr @click="open = !open"
-                            class="font-bold text-gray-900 border-t-2 cursor-pointer transition-colors {{ $rowBg }}">
+                            class="font-bold text-gray-900 dark:text-white border-t-2 cursor-pointer transition-colors {{ $rowBg }}">
                             <td class="border px-3 py-2 text-left {{ $textColor }} w-44 md:w-48">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    @if($selectedUbs == 'all')
-                                    <svg class="w-4 h-4 transition-transform duration-200 shrink-0"
+                                    <svg class="w-4 h-4 transition-transform duration-200 shrink-0 text-blue-600 dark:text-blue-400"
                                         :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg>
-                                    @endif
                                     <span class="font-mono text-xs sm:text-sm">{{ $barang->kode_barang }}</span>
                                     @if($isBelowMin)
                                         <span class="inline-flex items-center text-[9px] font-black uppercase tracking-wider bg-red-100 text-red-600 border border-red-300 px-1 py-0.2 rounded">
@@ -306,72 +355,102 @@
                             <td class="border px-3 py-2 text-center font-bold text-xs sm:text-sm w-28 md:w-36 whitespace-nowrap {{ $isBelowMin ? 'text-red-600' : '' }}">
                                 {{ formatStock($stockDisplay) }}
                             </td>
-                            @if($selectedUbs != 'all')
+                            @if(count($selectedUbs) === 1)
                             <td class="border px-3 py-2 text-center italic text-xs sm:text-sm w-28 md:w-36 whitespace-nowrap {{ $isBelowMin ? 'text-red-500 font-semibold' : 'text-gray-500' }}">
                                 {{ formatStock($minStockDisplay) }}
                             </td>
                             @endif
                         </tr>
 
-                        @if($selectedUbs == 'all')
-                        {{-- ROW DETAIL (DROPDOWN) - HANYA MUNCUL DI OPSI SEMUA GUDANG --}}
+                        {{-- ROW DETAIL (DROPDOWN) - RINCIAN PER GUDANG TERPILIH & DETAIL FIFO (COMPACT & EFISIEN) --}}
                         <tr x-show="open" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                             style="display: none;">
-                            <td colspan="{{ $selectedUbs != 'all' ? 5 : 4 }}" class="border p-0 bg-gray-50">
-                                <div class="p-3 sm:p-4 bg-white border-l-4 border-blue-500 m-2 shadow-inner overflow-x-auto">
-                                    <table class="w-full min-w-[700px] text-xs border">
-                                        <thead class="bg-gray-100 text-gray-600">
-                                            <tr>
-                                                <th class="border px-3 py-1 text-left">No. Nota</th>
-                                                <th class="border px-3 py-1 text-left">Merk</th>
-                                                <th class="border px-3 py-1 text-left">Supplier</th>
-                                                <th class="border px-3 py-1 text-center">Masuk</th>
-                                                <th class="border px-3 py-1 text-center text-blue-700">Sisa</th>
-                                                <th class="border px-3 py-1 text-center">Satuan</th>
-                                                <th class="border px-3 py-1 text-right">Harga Satuan</th>
-                                                <th class="border px-3 py-1 text-right">Harga Total Nota</th>
-                                                <th class="border px-3 py-1 text-right">Nilai Sisa</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @forelse($barang->notaDetails as $detail)
+                            <td colspan="{{ count($selectedUbs) === 1 ? 5 : 4 }}" class="border p-0 bg-slate-50/60 dark:bg-gray-900/40">
+                                <div class="px-3 py-2 bg-white dark:bg-gray-800/90 border-l-4 border-blue-500 m-1.5 rounded-r-lg shadow-2xs space-y-2">
+                                    
+                                    {{-- 1. RINCIAN STOK PER GUDANG TERPILIH (INLINE PILLS - SANGAT EFISIEN) --}}
+                                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                        <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1 me-1 shrink-0">
+                                            <i class="fa-solid fa-warehouse text-blue-500 text-xs"></i> Stok Gudang:
+                                        </span>
+
+                                        @foreach($selectedDbUbs as $ubs)
                                             @php
-                                             $dMasuk = ($detail->jumlah_base ?? 0) / $konversiRate;
-                                             $dSisa = ($detail->jumlah_sisa ?? 0) / $konversiRate;
-                                             $dHargaUnit = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * $konversiRate;
-                                             $dHargaTotalNota = $detail->harga_total ?? 0;
-                                             $dNilaiSisa = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
+                                                $stkGudang = $barang->stock->firstWhere('ubs_id', $ubs->id);
+                                                $stkQty = ($stkGudang->jumlah_stock ?? 0) / $konversiRate;
+                                                $stkMin = ($stkGudang->minimal_stock ?? 0) / $konversiRate;
+                                                $isGudangLow = $stkMin > 0 && $stkQty < $stkMin;
                                             @endphp
-                                            <tr class="hover:bg-yellow-50 border-b border-gray-100">
-                                                <td class="px-3 py-1 font-medium">{{ $detail->nota->nomor_nota ?? '-' }}</td>
-                                                <td class="px-3 py-1">{{ !empty($detail->merk) ? $detail->merk : '-' }}</td>
-                                                <td class="px-3 py-1">
-                                                    @if($detail->nota && $detail->nota->supplier)
-                                                        {{ $detail->nota->supplier->kode_supplier }} - {{ $detail->nota->supplier->nama_supplier }}
-                                                    @else
-                                                        -
-                                                    @endif
-                                                </td>
-                                                <td class="px-3 py-1 text-center">{{ formatStock($dMasuk) }}</td>
-                                                <td class="px-3 py-1 text-center font-bold text-blue-600">{{ formatStock($dSisa) }}</td>
-                                                <td class="px-3 py-1 text-center font-medium">{{ $satuanNama }}</td>
-                                                <td class="px-3 py-1 text-right tabular-nums">Rp {{ formatStock($dHargaUnit) }}</td>
-                                                <td class="px-3 py-1 text-right font-semibold tabular-nums">Rp {{ formatStock($dHargaTotalNota) }}</td>
-                                                <td class="px-3 py-1 text-right font-semibold text-blue-700 tabular-nums">Rp {{ formatStock($dNilaiSisa) }}</td>
-                                            </tr>
-                                            @empty
-                                            <tr>
-                                                <td colspan="9" class="px-3 py-2 text-center text-gray-400">Tidak ada
-                                                    stock FIFO aktif</td>
-                                            </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
+                                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs {{ $isGudangLow ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:border-red-800 dark:text-red-300' : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200' }}">
+                                                <span class="font-bold text-[11px] text-gray-600 dark:text-gray-400">{{ $ubs->nama_ubs }} ({{ $ubs->kode_ubs }}):</span>
+                                                <span class="font-mono font-bold {{ $isGudangLow ? 'text-red-600' : 'text-blue-600 dark:text-blue-400' }}">{{ formatStock($stkQty) }} {{ $satuanNama }}</span>
+                                                @if($stkMin > 0)
+                                                    <span class="text-[10px] {{ $isGudangLow ? 'text-red-500 font-bold' : 'text-gray-400' }}" title="Minimal Stok">(Min: {{ formatStock($stkMin) }})</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- 2. TABEL FIFO NOTA MASUK (COLLAPSIBLE / RINGKAS) --}}
+                                    @if($isAll && $barang->notaDetails && $barang->notaDetails->count() > 0)
+                                        <div class="pt-1.5 border-t border-gray-100 dark:border-gray-700" x-data="{ showFifo: false }">
+                                            <div class="flex items-center justify-between">
+                                                <button type="button" @click.stop="showFifo = !showFifo" 
+                                                    class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5 cursor-pointer">
+                                                    <i class="fa-solid fa-file-invoice text-emerald-600 text-[10px]"></i>
+                                                    <span x-text="showFifo ? 'Sembunyikan Rincian Nota FIFO ({{ $barang->notaDetails->count() }}) ▲' : 'Lihat Rincian Nota FIFO ({{ $barang->notaDetails->count() }} Nota) ▼'"></span>
+                                                </button>
+                                                <span class="text-[10px] text-gray-400">Total: {{ $barang->notaDetails->count() }} Nota Aktif</span>
+                                            </div>
+
+                                            <div x-show="showFifo" x-transition style="display: none;" class="mt-1.5 overflow-x-auto max-h-48 rounded border border-gray-200 dark:border-gray-700">
+                                                <table class="w-full min-w-[650px] text-[11px] border-collapse bg-white dark:bg-gray-900">
+                                                    <thead class="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 font-semibold sticky top-0">
+                                                        <tr>
+                                                            <th class="border px-2 py-1 text-left">No. Nota</th>
+                                                            <th class="border px-2 py-1 text-left">Merk</th>
+                                                            <th class="border px-2 py-1 text-left">Supplier</th>
+                                                            <th class="border px-2 py-1 text-center">Masuk</th>
+                                                            <th class="border px-2 py-1 text-center text-blue-700 dark:text-blue-400">Sisa</th>
+                                                            <th class="border px-2 py-1 text-center">Satuan</th>
+                                                            <th class="border px-2 py-1 text-right">Harga Satuan</th>
+                                                            <th class="border px-2 py-1 text-right">Harga Total Nota</th>
+                                                            <th class="border px-2 py-1 text-right">Nilai Sisa</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($barang->notaDetails as $detail)
+                                                        @php
+                                                         $dMasuk = ($detail->jumlah_base ?? 0) / $konversiRate;
+                                                         $dSisa = ($detail->jumlah_sisa ?? 0) / $konversiRate;
+                                                         $dHargaUnit = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * $konversiRate;
+                                                         $dHargaTotalNota = $detail->harga_total ?? 0;
+                                                         $dNilaiSisa = (($detail->harga_total ?? 0) / max($detail->jumlah_base ?? 1, 1)) * ($detail->jumlah_sisa ?? 0);
+                                                        @endphp
+                                                        <tr class="hover:bg-yellow-50/50 dark:hover:bg-yellow-950/20 border-b border-gray-100 dark:border-gray-800 text-[11px]">
+                                                            <td class="px-2 py-0.5 font-medium">{{ $detail->nota->nomor_nota ?? '-' }}</td>
+                                                            <td class="px-2 py-0.5">{{ !empty($detail->merk) ? $detail->merk : '-' }}</td>
+                                                            <td class="px-2 py-0.5 truncate max-w-[150px]">
+                                                                {{ $detail->nota->supplier->nama_supplier ?? '-' }}
+                                                            </td>
+                                                            <td class="px-2 py-0.5 text-center font-mono">{{ formatStock($dMasuk) }}</td>
+                                                            <td class="px-2 py-0.5 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ formatStock($dSisa) }}</td>
+                                                            <td class="px-2 py-0.5 text-center">{{ $satuanNama }}</td>
+                                                            <td class="px-2 py-0.5 text-right font-mono">Rp {{ formatStock($dHargaUnit) }}</td>
+                                                            <td class="px-2 py-0.5 text-right font-mono">Rp {{ formatStock($dHargaTotalNota) }}</td>
+                                                            <td class="px-2 py-0.5 text-right font-mono font-bold text-blue-700 dark:text-blue-400">Rp {{ formatStock($dNilaiSisa) }}</td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    @endif
+
                                 </div>
                             </td>
                         </tr>
-                        @endif
                     </tbody>
                     @endforeach
                 </table>

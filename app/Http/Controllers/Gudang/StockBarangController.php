@@ -26,27 +26,60 @@ class StockBarangController extends Controller
 
     private function getStockBarangData(Request $request)
     {
-        $ubsId = $request->get('ubs_id', 'all');
         $cariMaterial = $request->get('cariMaterial');
+        $ubsData = Ubs::orderBy('id')->get();
+        $allUbsCodes = $ubsData->pluck('kode_ubs')->toArray();
 
-        $ubsData = Ubs::all();
+        // Ambil ubs_id dari request (bisa string tunggal atau array)
+        $rawUbs = $request->get('ubs_id');
+
+        if ($rawUbs === null) {
+            // Default: Semua gudang aktif
+            $selectedUbsCodes = $allUbsCodes;
+        } elseif (is_string($rawUbs)) {
+            if ($rawUbs === 'all') {
+                $selectedUbsCodes = $allUbsCodes;
+            } else {
+                $selectedUbsCodes = in_array($rawUbs, $allUbsCodes) ? [$rawUbs] : $allUbsCodes;
+            }
+        } elseif (is_array($rawUbs)) {
+            if (in_array('all', $rawUbs)) {
+                $selectedUbsCodes = $allUbsCodes;
+            } else {
+                $selectedUbsCodes = array_values(array_intersect($allUbsCodes, $rawUbs));
+            }
+        } else {
+            $selectedUbsCodes = $allUbsCodes;
+        }
+
+        $isAll = count($selectedUbsCodes) === count($allUbsCodes) && count($allUbsCodes) > 0;
+
+        // Penentuan Judul Gudang
+        if ($isAll) {
+            $titleGudang = 'Semua Gudang';
+        } elseif (empty($selectedUbsCodes)) {
+            $titleGudang = 'Tidak Ada Gudang Dipilih';
+        } elseif (count($selectedUbsCodes) === 1) {
+            $currentUbs = $ubsData->firstWhere('kode_ubs', $selectedUbsCodes[0]);
+            $titleGudang = $currentUbs ? $currentUbs->nama_ubs : $selectedUbsCodes[0];
+        } else {
+            $titleGudang = implode(' + ', $selectedUbsCodes);
+        }
 
         // Query Utama MasterBarang
         $query = MasterBarang::query()->with(['baseUnit', 'satuanKonversi.satuan']);
 
-        // Eager Load Nota Details HANYA saat filter "all" (Semua Gudang)
-        if ($ubsId == 'all') {
-            $query->with([
-                'notaDetails' => function ($q) {
-                    $q->where('jumlah_sisa', '>', 0)
-                        ->whereHas('nota', function ($queryNota) {
-                            $queryNota->where('status', 'posted');
-                        })
-                        ->with('nota.supplier')
-                        ->orderBy('created_at', 'asc'); // FIFO
-                }
-            ]);
-        }
+        // Eager Load Nota Details untuk FIFO
+        $query->with([
+            'notaDetails' => function ($q) {
+                $q->where('jumlah_sisa', '>', 0)
+                    ->whereHas('nota', function ($queryNota) {
+                        $queryNota->where('status', 'posted');
+                    })
+                    ->with('nota.supplier')
+                    ->orderBy('created_at', 'asc'); // FIFO
+            }
+        ]);
 
         // Filter Pencarian Nama/Kode Barang
         if ($cariMaterial) {
@@ -56,35 +89,22 @@ class StockBarangController extends Controller
             });
         }
 
-        $titleGudang = 'Semua Gudang';
+        // Filter Berdasarkan Gudang Terpilih
+        $selectedDbUbs = $ubsData->whereIn('kode_ubs', $selectedUbsCodes);
+        $selectedDbUbsIds = $selectedDbUbs->pluck('id')->toArray();
 
-        // Filter Berdasarkan Gudang (Semua vs HUB vs UBS)
-        if ($ubsId == 'all') {
-            // Tampilkan SEMUA barang, ambil relasi stock
-            $query->with('stock');
-        } elseif ($ubsId == 'hub') {
-            // Tampilkan SEMUA barang, ambil relasi stock HUB saja
-            $query->with('stockHub');
-            $titleGudang = 'HUB (Pusat)';
-        } else {
-            // Tampilkan barang yang punya stok di UBS tertentu berdasarkan kode_ubs
-            $currentUbs = $ubsData->where('kode_ubs', $ubsId)->first();
-            $dbUbsId = $currentUbs ? $currentUbs->id : null;
-            $titleGudang = $currentUbs ? $currentUbs->kode_ubs : $ubsId;
-
-            $query->with(['stock' => function ($q) use ($dbUbsId) {
-                $q->where('stock_type', 'UBS')->where('ubs_id', $dbUbsId);
-            }]);
-        }
+        $query->with(['stock' => function ($q) use ($selectedDbUbsIds) {
+            $q->where('stock_type', 'UBS')->whereIn('ubs_id', $selectedDbUbsIds)->with('ubs');
+        }]);
 
         $stocks = $query->orderBy('kode_barang')->get();
 
-        return [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial];
+        return [$stocks, $ubsData, $titleGudang, $selectedUbsCodes, $cariMaterial, $selectedDbUbs, $isAll];
     }
 
     public function stockIndex(Request $request)
     {
-        [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial] = $this->getStockBarangData($request);
+        [$stocks, $ubsData, $titleGudang, $selectedUbsCodes, $cariMaterial, $selectedDbUbs, $isAll] = $this->getStockBarangData($request);
 
         return view('gudang.stock-barang.index', [
             'breadcrumbs' => [
@@ -95,22 +115,24 @@ class StockBarangController extends Controller
             ],
             'ubsData' => $ubsData,
             'stocks' => $stocks,
-            'selectedUbs' => $ubsId,
+            'selectedUbs' => $selectedUbsCodes,
+            'selectedDbUbs' => $selectedDbUbs,
             'titleGudang' => $titleGudang,
+            'isAll' => $isAll,
         ]);
     }
 
     public function exportExcel(Request $request)
     {
-        [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial] = $this->getStockBarangData($request);
+        [$stocks, $ubsData, $titleGudang, $selectedUbsCodes, $cariMaterial, $selectedDbUbs, $isAll] = $this->getStockBarangData($request);
 
-        $ubsFileName = $ubsId === 'all' ? 'Semua_Gudang' : ($ubsId === 'hub' ? 'HUB_Pusat' : str_replace(' ', '_', $titleGudang));
+        $ubsFileName = str_replace([' ', '+'], '_', $titleGudang);
         
         $tanggal = now()->format('Y-m-d');
         $filename = 'Stock_Barang_' . $ubsFileName . '_' . $tanggal . '.xlsx';
 
         return Excel::download(
-            new StockBarangExport($stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial),
+            new StockBarangExport($stocks, $selectedDbUbs, $titleGudang, $cariMaterial),
             $filename
         );
     }
@@ -118,9 +140,9 @@ class StockBarangController extends Controller
 
     public function exportPdf(Request $request)
     {
-        [$stocks, $ubsData, $titleGudang, $ubsId, $cariMaterial] = $this->getStockBarangData($request);
+        [$stocks, $ubsData, $titleGudang, $selectedUbsCodes, $cariMaterial, $selectedDbUbs, $isAll] = $this->getStockBarangData($request);
 
-        $ubsFileName = $ubsId === 'all' ? 'Semua_Gudang' : ($ubsId === 'hub' ? 'HUB_Pusat' : str_replace(' ', '_', $titleGudang));
+        $ubsFileName = str_replace([' ', '+'], '_', $titleGudang);
         
         $tanggal = now()->format('Y-m-d');
         $filename = 'Stock_Barang_' . $ubsFileName . '_' . $tanggal . '.pdf';
@@ -128,7 +150,9 @@ class StockBarangController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('gudang.stock-barang.export.pdf', [
             'stocks' => $stocks,
             'titleGudang' => $titleGudang,
-            'ubsId' => $ubsId
+            'selectedDbUbs' => $selectedDbUbs,
+            'cariMaterial' => $cariMaterial,
+            'isAll' => $isAll,
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download($filename);
