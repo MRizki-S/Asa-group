@@ -39,8 +39,17 @@
             $bolehPrintPPJB = false;
 
             if ($namaPerumahaanAktif === 'Asa Dreamland') {
-                // Khusus ADL → ROLE
-                $bolehPrintPPJB = $user->hasRole(['PROYEK MANAJER (ADL)', 'SPV PENJUALAN (ADL)', 'superadmin', 'STAFF SOLUSI KPR & PENJUALAN (ADL)']);
+                // Khusus ADL → ROLE atau PERMISSION
+                $bolehPrintPPJB = $user->hasRole([
+                    'PROYEK MANAJER (ADL)',
+                    'STAF PENJUALAN (ADL)',
+                    'SPV PENJUALAN (ADL)',
+                    'Superadmin',
+                    'superadmin',
+                    'STAF SOLUSI KPR & PENJUALAN (ADL)',
+                    'STAFF SOLUSI KPR & PENJUALAN (ADL)',
+                    'SPV PEMBIAYAAN KPR & BANK',
+                ]) || $user->can('marketing.kelola-pemesanan.print-ppjb');
             } else {
                 // Selain ADL → PERMISSION
                 $bolehPrintPPJB = $user->can('marketing.kelola-pemesanan.print-ppjb');
@@ -453,114 +462,220 @@
     </div>
 
     {{-- Modal Export Custom Excel --}}
-    <div x-show="showExportModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50" x-cloak>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-4xl p-6 border border-gray-200 dark:border-gray-700"
+    {{-- Modal Export Custom Excel --}}
+    <div x-show="showExportModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4" x-cloak>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl p-6 border border-gray-200 dark:border-gray-700 max-h-[92vh] flex flex-col"
              @click.away="showExportModal = false">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4" x-text="exportTitle"></h3>
             
-            <form action="{{ route('marketing.managePemesananAgent.exportExcel') }}" method="GET" @submit="showExportModal = false">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white" x-text="exportTitle"></h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Pilih kolom yang ingin disertakan dalam file Excel</p>
+                </div>
+                <button type="button" @click="showExportModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form action="{{ route('marketing.managePemesananAgent.exportExcel') }}" method="GET" @submit="showExportModal = false" class="flex flex-col flex-1 overflow-hidden mt-4">
                 <input type="hidden" name="tahun" value="{{ $tahun }}">
                 <input type="hidden" name="bulan" value="{{ $bulan }}">
                 <input type="hidden" name="source" :value="exportSource">
                 
-                <p class="text-xs text-gray-400 mb-3 uppercase font-bold tracking-wider">Pilih Kolom Yang Ingin Di-export</p>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <!-- Nama Unit (Wajib) -->
-                    <input type="hidden" name="columns[]" value="nama_unit">
-                    <label class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg cursor-not-allowed border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" checked disabled class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Nama Unit</span>
-                            <span class="block text-xs text-gray-400">Wajib disertakan</span>
-                        </div>
-                    </label>
+                {{-- Quick Actions --}}
+                <div class="flex items-center justify-between pb-2 mb-3">
+                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Pilihan Kolom Data</span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" 
+                            @click="$el.closest('form').querySelectorAll('input[type=checkbox]:not(:disabled)').forEach(cb => cb.checked = true)"
+                            class="px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 transition">
+                            Pilih Semua
+                        </button>
+                        <button type="button" 
+                            @click="$el.closest('form').querySelectorAll('input[type=checkbox]:not(:disabled)').forEach(cb => cb.checked = false)"
+                            class="px-2.5 py-1 text-xs font-semibold rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 transition">
+                            Kosongkan
+                        </button>
+                    </div>
+                </div>
 
-                    <!-- Nama Customer -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="nama_user" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Nama Customer</span>
-                            <span class="block text-xs text-gray-400">Nama lengkap customer</span>
-                        </div>
-                    </label>
+                {{-- Scrollable Columns Area --}}
+                <div class="overflow-y-auto pr-1 space-y-5 flex-1">
+                    
+                    {{-- 1. Informasi Utama & Penjualan --}}
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span> Informasi Utama & Penjualan
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            <!-- Nama Unit (Wajib) -->
+                            <input type="hidden" name="columns[]" value="nama_unit">
+                            <label class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg cursor-not-allowed border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" checked disabled class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Nama Unit</span>
+                                    <span class="block text-xs text-gray-400">Wajib disertakan</span>
+                                </div>
+                            </label>
 
-                    <!-- Sales / Agent -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="nama_agent_sales" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Sales / Agent</span>
-                            <span class="block text-xs text-gray-400">Nama marketing atau nama agen</span>
-                        </div>
-                    </label>
+                            <!-- Nama Customer -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="nama_user" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Nama Customer</span>
+                                    <span class="block text-xs text-gray-400">Nama lengkap customer</span>
+                                </div>
+                            </label>
 
-                    <!-- Tanggal Closing -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="tanggal_closing" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Tanggal Closing</span>
-                            <span class="block text-xs text-gray-400">Tanggal pemesanan unit</span>
-                        </div>
-                    </label>
+                            <!-- Sales / Agent -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="nama_agent_sales" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Sales / Agent</span>
+                                    <span class="block text-xs text-gray-400">Nama marketing atau agen</span>
+                                </div>
+                            </label>
 
-                    <!-- Cara Bayar -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="cara_bayar" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Cara Bayar</span>
-                            <span class="block text-xs text-gray-400">Metode pembayaran (KPR atau CASH)</span>
-                        </div>
-                    </label>
+                            <!-- Tanggal Closing -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="tanggal_closing" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Tanggal Closing</span>
+                                    <span class="block text-xs text-gray-400">Tanggal pemesanan unit</span>
+                                </div>
+                            </label>
 
-                    <!-- Status KPR -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="status_kpr" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Status KPR</span>
-                            <span class="block text-xs text-gray-400">Status berkas KPR unit</span>
-                        </div>
-                    </label>
+                            <!-- Cara Bayar -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="cara_bayar" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Cara Bayar</span>
+                                    <span class="block text-xs text-gray-400">Metode (KPR atau CASH)</span>
+                                </div>
+                            </label>
 
-                    <!-- Data Diri WhatsApp / Phone -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="no_hp" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">No. HP / WA</span>
-                            <span class="block text-xs text-gray-400">Nomor WhatsApp customer</span>
+                            <!-- Status KPR -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="status_kpr" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Status KPR</span>
+                                    <span class="block text-xs text-gray-400">Status & tanggal berkas KPR</span>
+                                </div>
+                            </label>
                         </div>
-                    </label>
+                    </div>
 
-                    <!-- Data Diri NIK KTP -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="no_ktp" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">NIK / No. KTP</span>
-                            <span class="block text-xs text-gray-400">Nomor KTP terdaftar</span>
-                        </div>
-                    </label>
+                    {{-- 2. Nominal & Skema Pembayaran (Harga, DP, KPR, Cicilan) --}}
+                    <div>
+                        <h4 class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Nominal & Skema Pembayaran
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            <!-- Harga Rumah -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-lg cursor-pointer border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/20">
+                                <input type="checkbox" name="columns[]" value="harga_rumah" checked class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Harga Rumah</span>
+                                    <span class="block text-xs text-gray-400">Harga total KPR / Jadi Cash</span>
+                                </div>
+                            </label>
 
-                    <!-- Data Diri Pekerjaan -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="pekerjaan" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Pekerjaan</span>
-                            <span class="block text-xs text-gray-400">Pekerjaan customer</span>
-                        </div>
-                    </label>
+                            <!-- Plafon KPR -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-lg cursor-pointer border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/20">
+                                <input type="checkbox" name="columns[]" value="plafon_kpr" checked class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Plafon KPR</span>
+                                    <span class="block text-xs text-gray-400">Nilai KPR diajukan ke Bank</span>
+                                </div>
+                            </label>
 
-                    <!-- Data Diri Alamat -->
-                    <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
-                        <input type="checkbox" name="columns[]" value="alamat" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
-                        <div>
-                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Alamat Lengkap</span>
-                            <span class="block text-xs text-gray-400">Alamat detail tempat tinggal</span>
+                            <!-- Total DP -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-lg cursor-pointer border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/20">
+                                <input type="checkbox" name="columns[]" value="nominal_dp" checked class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Total DP (Uang Muka)</span>
+                                    <span class="block text-xs text-gray-400">Nominal uang muka</span>
+                                </div>
+                            </label>
+
+                            <!-- Biaya Tambahan -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-lg cursor-pointer border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/20">
+                                <input type="checkbox" name="columns[]" value="biaya_tambahan" checked class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Biaya Tambahan</span>
+                                    <span class="block text-xs text-gray-400">Total biaya admin / spesifikasi</span>
+                                </div>
+                            </label>
+
+                            <!-- Rincian Cicilan -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-lg cursor-pointer border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/20">
+                                <input type="checkbox" name="columns[]" value="nominal_cicilan" checked class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Rincian Cicilan</span>
+                                    <span class="block text-xs text-gray-400">Cicilan DP & biaya tambahan</span>
+                                </div>
+                            </label>
+
+                            <!-- Total Tagihan -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 rounded-lg cursor-pointer border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/20">
+                                <input type="checkbox" name="columns[]" value="total_tagihan" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Total Tagihan</span>
+                                    <span class="block text-xs text-gray-400">Total kewajiban pembayaran</span>
+                                </div>
+                            </label>
                         </div>
-                    </label>
+                    </div>
+
+                    {{-- 3. Data Diri & Kontak Customer --}}
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span> Data Diri & Kontak Customer
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            <!-- Data Diri WhatsApp / Phone -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="no_hp" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">No. HP / WA</span>
+                                    <span class="block text-xs text-gray-400">Nomor WhatsApp customer</span>
+                                </div>
+                            </label>
+
+                            <!-- Data Diri NIK KTP -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="no_ktp" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">NIK / No. KTP</span>
+                                    <span class="block text-xs text-gray-400">Nomor KTP terdaftar</span>
+                                </div>
+                            </label>
+
+                            <!-- Data Diri Pekerjaan -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700">
+                                <input type="checkbox" name="columns[]" value="pekerjaan" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Pekerjaan</span>
+                                    <span class="block text-xs text-gray-400">Pekerjaan customer</span>
+                                </div>
+                            </label>
+
+                            <!-- Data Diri Alamat -->
+                            <label class="flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700 sm:col-span-2 md:col-span-3">
+                                <input type="checkbox" name="columns[]" value="alamat" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1">
+                                <div>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Alamat Lengkap</span>
+                                    <span class="block text-xs text-gray-400">Alamat detail tempat tinggal</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                 </div>
                 
-                <div class="flex justify-end gap-2">
+                <div class="flex items-center justify-end gap-2 pt-4 mt-3 border-t border-gray-100 dark:border-gray-700">
                     <button type="button" @click="showExportModal = false" class="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition">Batal</button>
-                    <button type="submit" class="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm transition">
+                    <button type="submit" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md transition active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>

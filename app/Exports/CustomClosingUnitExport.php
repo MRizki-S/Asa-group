@@ -38,9 +38,9 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
     protected $monthRanges = [];
 
     /**
-     * Cell status KPR.
+     * Cell cara bayar.
      */
-    protected $statusCells = [];
+    protected $caraBayarCells = [];
 
     /**
      * Kolom terakhir.
@@ -93,6 +93,18 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
         'tgl_acc' => 'Tgl. ACC KPR',
 
         'tgl_realisasi' => 'Tgl. Realisasi',
+
+        'harga_rumah' => 'Harga Rumah',
+
+        'plafon_kpr' => 'Plafon KPR',
+
+        'nominal_dp' => 'Total DP',
+
+        'biaya_tambahan' => 'Biaya Tambahan',
+
+        'nominal_cicilan' => 'Rincian Cicilan',
+
+        'total_tagihan' => 'Total Tagihan',
 
         'no_hp' => 'No. HP / WA',
 
@@ -198,7 +210,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
     public function array(): array
     {
         $this->monthRanges = [];
-        $this->statusCells = [];
+        $this->caraBayarCells = [];
 
         $itemsByMonth = $this->itemsByMonth();
 
@@ -317,60 +329,53 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
 
                     /**
                      * =================================================
-                     * STATUS KPR
+                     * CARA BAYAR (KPR = Kuning, CASH = Hijau)
                      * =================================================
                      */
                     if (
                         in_array(
-                            'status_kpr',
+                            'cara_bayar',
                             $this->columns,
                             true
                         )
                     ) {
-
-                        $status = strtolower(
+                        $caraBayar = strtolower(
                             trim(
                                 (string) (
-                                    $item->cara_bayar === 'kpr'
-                                        ? (
-                                            $item->kpr->status_kpr
-                                            ?? '-'
-                                        )
-                                        : '-'
+                                    $item->cara_bayar
+                                    ?? ''
                                 )
                             )
                         );
 
                         if (
                             in_array(
-                                $status,
+                                $caraBayar,
                                 [
-                                    'proses',
-                                    'acc',
-                                    'realisasi',
+                                    'kpr',
+                                    'cash',
                                 ],
                                 true
                             )
                         ) {
-
-                            $statusColumnIndex =
+                            $cbColumnIndex =
                                 array_search(
-                                    'status_kpr',
+                                    'cara_bayar',
                                     $this->columns,
                                     true
                                 ) + 2;
 
-                            $statusColumn =
+                            $cbColumn =
                                 Coordinate::stringFromColumnIndex(
-                                    $statusColumnIndex
+                                    $cbColumnIndex
                                 );
 
-                            $this->statusCells[] = [
+                            $this->caraBayarCells[] = [
                                 'cell' =>
-                                    $statusColumn .
+                                    $cbColumn .
                                     $currentExcelRow,
 
-                                'status' => $status,
+                                'cara_bayar' => $caraBayar,
                             ];
                         }
                     }
@@ -706,6 +711,53 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                 }
 
                 /**
+                 * Alignment kolom angka/nominal (Rata Kanan)
+                 */
+                $rightAlignColumns = [
+                    'harga_rumah',
+                    'plafon_kpr',
+                    'nominal_dp',
+                    'biaya_tambahan',
+                    'total_tagihan',
+                ];
+
+                foreach ($rightAlignColumns as $colKey) {
+                    if (in_array($colKey, $this->columns, true)) {
+                        $colIndex = array_search($colKey, $this->columns, true) + 2;
+                        $colLetter = Coordinate::stringFromColumnIndex($colIndex);
+                        $sheet->getStyle("{$colLetter}{$dataStartRow}:{$colLetter}{$dataEndRow}")
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_RIGHT)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
+                    }
+                }
+
+                /**
+                 * Alignment kolom tanggal, cara bayar, dsb (Rata Tengah)
+                 */
+                $centerAlignColumns = [
+                    'tanggal_closing',
+                    'cara_bayar',
+                    'status_kpr',
+                    'tgl_masuk_berkas',
+                    'tgl_acc',
+                    'tgl_realisasi',
+                    'no_hp',
+                    'no_ktp',
+                ];
+
+                foreach ($centerAlignColumns as $colKey) {
+                    if (in_array($colKey, $this->columns, true)) {
+                        $colIndex = array_search($colKey, $this->columns, true) + 2;
+                        $colLetter = Coordinate::stringFromColumnIndex($colIndex);
+                        $sheet->getStyle("{$colLetter}{$dataStartRow}:{$colLetter}{$dataEndRow}")
+                            ->getAlignment()
+                            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                            ->setVertical(Alignment::VERTICAL_CENTER);
+                    }
+                }
+
+                /**
                  * Tinggi row otomatis menyesuaikan isi (wrapText).
                  *
                  * -1 = auto height di PhpSpreadsheet.
@@ -724,20 +776,20 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
 
         /**
          * =========================================================
-         * STATUS KPR
+         * CARA BAYAR (KPR = Kuning, CASH = Hijau)
          * =========================================================
          */
-        foreach ($this->statusCells as $statusCell) {
+        foreach ($this->caraBayarCells as $cbCell) {
 
-            $status =
-                $statusCell['status'];
+            $caraBayar =
+                $cbCell['cara_bayar'];
 
-            $style = match ($status) {
+            $style = match ($caraBayar) {
 
                 /**
-                 * PROSES = Kuning
+                 * KPR = Kuning
                  */
-                'proses' => [
+                'kpr' => [
                     'fill' => [
                         'fillType' =>
                             Fill::FILL_SOLID,
@@ -757,9 +809,9 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                 ],
 
                 /**
-                 * ACC = Hijau
+                 * CASH = Hijau
                  */
-                'acc' => [
+                'cash' => [
                     'fill' => [
                         'fillType' =>
                             Fill::FILL_SOLID,
@@ -778,39 +830,17 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                     ],
                 ],
 
-                /**
-                 * REALISASI = Biru
-                 */
-                'realisasi' => [
-                    'fill' => [
-                        'fillType' =>
-                            Fill::FILL_SOLID,
-
-                        'startColor' => [
-                            'rgb' => '00B0F0',
-                        ],
-                    ],
-
-                    'font' => [
-                        'bold' => true,
-
-                        'color' => [
-                            'rgb' => '000000',
-                        ],
-                    ],
-                ],
-
                 default => [],
             };
 
             if (!empty($style)) {
 
                 $sheet->getStyle(
-                    $statusCell['cell']
+                    $cbCell['cell']
                 )->applyFromArray($style);
 
                 $sheet->getStyle(
-                    $statusCell['cell']
+                    $cbCell['cell']
                 )->getAlignment()
                     ->setHorizontal(
                         Alignment::HORIZONTAL_CENTER
@@ -987,6 +1017,11 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
             'agent',
             'dataDiri',
             'kpr.bank',
+            'cash',
+            'caraBayar',
+            'cicilan',
+            'biayaAdministrasi',
+            'spesifikasiCash',
         ])
             ->whereIn(
                 'cara_bayar',
@@ -996,9 +1031,9 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                 'status_pengajuan',
                 'acc'
             )
-            ->where(
-                'perumahaan_id',
-                $this->perumahaanId
+            ->when(
+                $this->perumahaanId,
+                fn ($q) => $q->where('perumahaan_id', $this->perumahaanId)
             )
             ->whereDoesntHave(
                 'pengajuanPembatalan',
@@ -1219,7 +1254,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
 
                         ? strtoupper(
                             (string) (
-                                $item->kpr->status_kpr
+                                $item->kpr?->status_kpr
                                 ?? '-'
                             )
                         )
@@ -1231,11 +1266,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                  */
                 'tgl_masuk_berkas' =>
                     $item->cara_bayar === 'kpr'
-                        ? (
-                            $item->kpr?->tanggal_masuk_berkas
-                                ? $item->kpr->tanggal_masuk_berkas->format('d-m-Y')
-                                : '-'
-                        )
+                        ? ($item->kpr?->tanggal_masuk_berkas?->format('d-m-Y') ?: '-')
                         : '-',
 
                 /**
@@ -1243,11 +1274,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                  */
                 'tgl_acc' =>
                     $item->cara_bayar === 'kpr'
-                        ? (
-                            $item->kpr?->tanggal_acc
-                                ? $item->kpr->tanggal_acc->format('d-m-Y')
-                                : '-'
-                        )
+                        ? ($item->kpr?->tanggal_acc?->format('d-m-Y') ?: '-')
                         : '-',
 
                 /**
@@ -1255,20 +1282,139 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                  */
                 'tgl_realisasi' =>
                     $item->cara_bayar === 'kpr'
-                        ? (
-                            $item->kpr?->tanggal_realisasi
-                                ? $item->kpr->tanggal_realisasi->format('d-m-Y')
-                                : '-'
-                        )
+                        ? ($item->kpr?->tanggal_realisasi?->format('d-m-Y') ?: '-')
                         : '-',
+
+                /**
+                 * Harga Rumah
+                 */
+                'harga_rumah' => match ($item->cara_bayar) {
+                    'kpr' => 'Rp ' . number_format($item->kpr?->harga_total ?: ($item->harga_normal ?: 0), 0, ',', '.'),
+                    'cash' => 'Rp ' . number_format($item->cash?->harga_jadi ?: ($item->cash?->harga_rumah ?: ($item->harga_cash ?: 0)), 0, ',', '.'),
+                    default => 'Rp ' . number_format($item->harga_normal ?: 0, 0, ',', '.'),
+                },
+
+                /**
+                 * Plafon KPR (Hanya KPR)
+                 */
+                'plafon_kpr' => match ($item->cara_bayar) {
+                    'kpr' => (function () use ($item) {
+                        $sbum = $item->kpr?->sbum_dari_pemerintah ?: 4000000;
+                        $dp = $item->kpr?->dp_rumah_induk ?? $item->kpr?->dp_dibayarkan_pembeli ?? 0;
+                        $plafon = $item->kpr?->harga_kpr ?: max(0, ($item->kpr?->harga_total ?? 0) - $sbum - $dp);
+                        return 'Rp ' . number_format($plafon, 0, ',', '.');
+                    })(),
+                    default => '-',
+                },
+
+                /**
+                 * Total DP (Uang Muka)
+                 */
+                'nominal_dp' => match ($item->cara_bayar) {
+                    'kpr' => (function () use ($item) {
+                        $dp = $item->kpr?->total_dp ?? $item->kpr?->dp_rumah_induk ?? $item->kpr?->dp_dibayarkan_pembeli ?? 0;
+                        return 'Rp ' . number_format($dp, 0, ',', '.');
+                    })(),
+                    'cash' => (function () use ($item) {
+                        $dp = $item->caraBayar?->minimal_dp ?? 0;
+                        return $dp > 0 ? ('Rp ' . number_format($dp, 0, ',', '.')) : '-';
+                    })(),
+                    default => '-',
+                },
+
+                /**
+                 * Biaya Tambahan (Total Biaya Tambahan / Administrasi)
+                 */
+                'biaya_tambahan' => match ($item->cara_bayar) {
+                    'kpr' => (function () use ($item) {
+                        $val = $item->kpr?->total_biaya_administrasi ?: ($item->biayaAdministrasi ? $item->biayaAdministrasi->sum('nominal') : 0);
+                        return $val > 0 ? ('Rp ' . number_format($val, 0, ',', '.')) : '-';
+                    })(),
+                    'cash' => (function () use ($item) {
+                        $val = $item->cash?->total_tambahan ?: ($item->spesifikasiCash ? $item->spesifikasiCash->sum('nominal') : 0);
+                        return $val > 0 ? ('Rp ' . number_format($val, 0, ',', '.')) : '-';
+                    })(),
+                    default => '-',
+                },
+
+                /**
+                 * Rincian Cicilan (Cicilan DP dan Cicilan Biaya Tambahan dalam 1 Kolom)
+                 */
+                'nominal_cicilan' => (function () use ($item) {
+                    if ($item->cicilan->isEmpty()) {
+                        return '-';
+                    }
+
+                    $activeCicilan = $item->cicilan->where('is_active', 1);
+                    if ($activeCicilan->isEmpty()) {
+                        $activeCicilan = $item->cicilan;
+                    }
+
+                    // Cicilan DP / Pokok
+                    $cicilanDp = $activeCicilan->where('tipe_cicilan', 'dp');
+                    if ($cicilanDp->isEmpty() && $item->cara_bayar === 'cash') {
+                        $cicilanDp = $activeCicilan->where('tipe_cicilan', '!=', 'administrasi');
+                    }
+
+                    // Cicilan Biaya Tambahan / Administrasi
+                    $cicilanAdmin = $activeCicilan->where('tipe_cicilan', 'administrasi');
+
+                    $sections = [];
+
+                    if ($cicilanDp->isNotEmpty()) {
+                        $dpLines = ["[Cicilan DP]"];
+                        foreach ($cicilanDp as $c) {
+                            $label = $c->keterangan ?: ('Ke-' . $c->pembayaran_ke);
+                            $dpLines[] = $label . ': Rp ' . number_format($c->nominal, 0, ',', '.');
+                        }
+                        $sections[] = implode("\n", $dpLines);
+                    }
+
+                    if ($cicilanAdmin->isNotEmpty()) {
+                        $adminLines = ["[Cicilan Biaya Tambahan]"];
+                        foreach ($cicilanAdmin as $c) {
+                            $label = $c->keterangan ?: ('Ke-' . $c->pembayaran_ke);
+                            $adminLines[] = $label . ': Rp ' . number_format($c->nominal, 0, ',', '.');
+                        }
+                        $sections[] = implode("\n", $adminLines);
+                    }
+
+                    if (empty($sections)) {
+                        $otherLines = [];
+                        foreach ($activeCicilan as $c) {
+                            $label = $c->keterangan ?: ('Ke-' . $c->pembayaran_ke);
+                            $otherLines[] = $label . ': Rp ' . number_format($c->nominal, 0, ',', '.');
+                        }
+                        return implode("\n", $otherLines);
+                    }
+
+                    return implode("\n\n", $sections);
+                })(),
+
+                /**
+                 * Total Tagihan Konsumen (DP Rumah + Total Biaya Tambahan)
+                 */
+                'total_tagihan' => match ($item->cara_bayar) {
+                    'kpr' => (function () use ($item) {
+                        $dp = $item->kpr?->total_dp ?? $item->kpr?->dp_rumah_induk ?? $item->kpr?->dp_dibayarkan_pembeli ?? 0;
+                        $biayaAdmin = $item->kpr?->total_biaya_administrasi ?: ($item->biayaAdministrasi ? $item->biayaAdministrasi->sum('nominal') : 0);
+                        $total = $dp + $biayaAdmin;
+                        return 'Rp ' . number_format($total, 0, ',', '.');
+                    })(),
+                    'cash' => (function () use ($item) {
+                        $total = $item->total_tagihan ?: ($item->cash?->harga_jadi ?: ($item->cash?->harga_rumah ?: 0));
+                        return 'Rp ' . number_format($total, 0, ',', '.');
+                    })(),
+                    default => '-',
+                },
 
                 /**
                  * No HP — prefix apostrof agar Excel simpan sebagai teks
                  */
                 'no_hp' =>
                     '\'' . (
-                        $item->dataDiri->no_hp
-                        ?? $item->customer->no_hp
+                        $item->dataDiri?->no_hp
+                        ?? $item->customer?->no_hp
                         ?? '-'
                     ),
 
@@ -1277,7 +1423,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                  */
                 'no_ktp' =>
                     '\'' . (
-                        $item->dataDiri->no_ktp
+                        $item->dataDiri?->no_ktp
                         ?? '-'
                     ),
 
@@ -1285,7 +1431,7 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                  * Pekerjaan
                  */
                 'pekerjaan' =>
-                    $item->dataDiri->pekerjaan
+                    $item->dataDiri?->pekerjaan
                     ?? '-',
 
                 /**
@@ -1386,6 +1532,18 @@ class CustomClosingUnitExport implements FromArray, WithStyles, WithCustomStartC
                 'tgl_acc' => 15,
 
                 'tgl_realisasi' => 17,
+
+                'harga_rumah' => 20,
+
+                'plafon_kpr' => 20,
+
+                'nominal_dp' => 18,
+
+                'biaya_tambahan' => 20,
+
+                'nominal_cicilan' => 30,
+
+                'total_tagihan' => 20,
 
                 default => 18,
             };
