@@ -1,6 +1,6 @@
 ✅ *PERSETUJUAN (ACC) BARANG KELUAR KE KAWASAN*
 
-Permintaan barang keluar ke kawasan telah disetujui (ACC) oleh SPV Layanan & Dukungan:
+Permintaan barang keluar ke kawasan telah disetujui (ACC) oleh {{ $spvRole ?? 'Petugas' }}:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 @if(!empty($order->nomor_nbk))
@@ -8,7 +8,7 @@ Permintaan barang keluar ke kawasan telah disetujui (ACC) oleh SPV Layanan & Duk
 @endif
 • *Perumahan:* {{ $namaPerumahan }}
 • *Kawasan:* {{ $namaKawasan }}
-• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? 'SPV Layanan & Dukungan' }}
+• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? '-' }}
 • *Tanggal Disetujui:* {{ $tanggalSpv ?? $tanggalAcc ?? now()->format('d/m/Y H:i') . ' WIB' }}
 
 *Daftar Barang yang Disetujui:*

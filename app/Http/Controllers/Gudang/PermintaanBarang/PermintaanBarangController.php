@@ -294,7 +294,9 @@ class PermintaanBarangController extends Controller
             });
 
             // Kirim notifikasi WA setelah transaksi berhasil commit
-            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $approver = Auth::user();
+            $adminName = $approver->nama_lengkap ?? $approver->username ?? 'Petugas';
+            $spvRole = $approver->getRoleNames()->first() ?? 'Petugas';
             if ($category === 'pembangunan_kawasan') {
                 $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN')));
                 if (!empty($targetGroup)) {
@@ -304,6 +306,7 @@ class PermintaanBarangController extends Controller
                         'namaPerumahan' => $order->kawasan?->perumahan?->nama_perumahaan ?? '-',
                         'namaKawasan' => $order->kawasan?->nama ?? '-',
                         'spvName' => $adminName,
+                        'spvRole' => $spvRole,
                         'tanggalSpv' => now()->format('d/m/Y H:i') . ' WIB',
                     ])->render();
                     $this->notification->sendWhatsApp($targetGroup, $message);
@@ -316,6 +319,7 @@ class PermintaanBarangController extends Controller
                         'order' => $order,
                         'namaProyek' => $order->proyek?->nama_project ?? $order->proyek?->nama ?? '-',
                         'spvName' => $adminName,
+                        'spvRole' => $spvRole,
                         'tanggalSpv' => now()->format('d/m/Y H:i') . ' WIB',
                     ])->render();
                     $this->notification->sendWhatsApp($targetGroup, $message);

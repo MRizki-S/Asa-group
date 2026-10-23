@@ -187,10 +187,27 @@ class DraftNotaMasukController extends Controller
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:master_barang,id',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
-            'items.*.jumlah_masuk' => 'required|numeric|min:0.0001',
-            'items.*.harga_satuan' => 'required|numeric|min:0',
-            'items.*.harga_total' => 'required|numeric|min:0',
+            'items.*.jumlah_masuk' => 'required|numeric|gt:0',
+            'items.*.harga_satuan' => 'required|numeric|gt:0',
+            'items.*.harga_total' => 'required|numeric|gt:0',
+        ], [
+            'items.*.harga_satuan.gt' => 'Harga satuan barang tidak boleh 0 atau kosong saat posting ke stok.',
+            'items.*.harga_satuan.required' => 'Harga satuan barang wajib diisi.',
+            'items.*.harga_total.gt' => 'Harga total barang tidak boleh 0 atau kosong saat posting ke stok.',
+            'items.*.harga_total.required' => 'Harga total barang wajib diisi.',
+            'items.*.jumlah_masuk.gt' => 'Jumlah barang masuk harus lebih dari 0.',
         ]);
+
+        // Validasi ganda: pastikan tidak ada barang dengan harga 0 atau kosong
+        foreach ($request->items as $index => $item) {
+            $hargaSatuan = (float) ($item['harga_satuan'] ?? 0);
+            $hargaTotal = (float) ($item['harga_total'] ?? 0);
+            if ($hargaSatuan <= 0 || $hargaTotal <= 0) {
+                return back()->withErrors([
+                    'error' => 'Semua item barang harus memiliki harga satuan dan harga total lebih dari 0 saat posting ke stok. Silakan lengkapi harga terlebih dahulu.'
+                ])->withInput();
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -267,8 +284,10 @@ class DraftNotaMasukController extends Controller
                 $stockSesudah = $stockSebelum + $jumlahBase;
 
                 // 6. Catat ke Stock Ledger sesuai dengan stock_type dan ubs_id pada header nota
+                $postedTanggal = \Carbon\Carbon::parse($request->tanggal_nota)->setTimeFrom(now());
+
                 StockLedger::create([
-                    'tanggal' => $request->tanggal_nota,
+                    'tanggal' => $postedTanggal,
                     'barang_id' => $item['barang_id'],
                     'stock_type' => $nota->stock_type,
                     'ubs_id' => $nota->ubs_id,

@@ -1,6 +1,6 @@
 ❌ *PENOLAKAN PERMINTAAN BARANG KELUAR KE KONTRAKTOR*
 
-Permintaan barang keluar ke kontraktor berikut telah ditolak:
+Permintaan barang keluar ke kontraktor berikut telah ditolak oleh {{ $penolakRole ?? 'Gudang' }}:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Nama Proyek:* {{ $namaProyek }}

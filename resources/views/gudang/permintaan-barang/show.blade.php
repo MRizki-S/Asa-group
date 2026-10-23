@@ -302,9 +302,13 @@
             @if ($order->catatan_gudang || $order->gudang_by || $order->spv_by || $order->acc_by || $order->nomor_nbk)
                 <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
                     @if ($order->spv_by || $order->acc_by)
+                        @php
+                            $approverUser = $order->spvBy ?? $order->accBy;
+                            $approverRoleName = $approverUser?->getRoleNames()->first() ?? 'Petugas';
+                        @endphp
                         <div class="rounded-xl border border-green-100 bg-green-50/50 p-3 dark:bg-green-900/20 dark:border-green-800">
-                            <span class="text-xs font-semibold text-green-700 dark:text-green-300">Disetujui Oleh (SPV Layanan & Dukungan):</span>
-                            <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ $order->spvBy?->nama_lengkap ?? $order->spvBy?->name ?? $order->accBy?->nama_lengkap ?? 'SPV Layanan & Dukungan' }}</p>
+                            <span class="text-xs font-semibold text-green-700 dark:text-green-300">Disetujui Oleh ({{ $approverRoleName }}):</span>
+                            <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ $approverUser?->nama_lengkap ?? $approverUser?->username ?? '-' }}</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ $order->tanggal_spv?->format('d/m/Y H:i') ?? $order->tanggal_selesai?->format('d/m/Y H:i') ?? '-' }}</p>
                         </div>
                     @endif

@@ -1,13 +1,13 @@
 ✅ *PERSETUJUAN (ACC) BARANG KELUAR KE KONTRAKTOR*
 
-Permintaan barang keluar ke kontraktor telah disetujui (ACC) oleh SPV Layanan & Dukungan:
+Permintaan barang keluar ke kontraktor telah disetujui (ACC) oleh {{ $spvRole ?? 'Petugas' }}:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 @if(!empty($order->nomor_nbk))
 • *No. NBK:* {{ $order->nomor_nbk }}
 @endif
 • *Nama Proyek:* {{ $namaProyek }}
-• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? 'SPV Layanan & Dukungan' }}
+• *Disetujui Oleh:* {{ $spvName ?? $adminGudang ?? '-' }}
 • *Tanggal Disetujui:* {{ $tanggalSpv ?? $tanggalAcc ?? now()->format('d/m/Y H:i') . ' WIB' }}
 
 *Daftar Barang yang Disetujui:*

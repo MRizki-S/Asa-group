@@ -530,8 +530,10 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA setelah SPV Layanan & Dukungan berhasil ACC
-            $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Layanan & Dukungan';
+            // Kirim notifikasi WA setelah berhasil ACC
+            $approver = Auth::user();
+            $spvName = $approver->nama_lengkap ?? $approver->username ?? 'Petugas';
+            $spvRole = $approver->getRoleNames()->first() ?? 'Petugas';
             $namaPerumahan = $order->kawasan?->perumahan?->nama_perumahaan ?? '-';
             $namaKawasan = $order->kawasan?->nama ?? '-';
 
@@ -542,6 +544,7 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                     'namaPerumahan' => $namaPerumahan,
                     'namaKawasan' => $namaKawasan,
                     'spvName' => $spvName,
+                    'spvRole' => $spvRole,
                     'tanggalSpv' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
                 $this->notification->sendWhatsApp($targetGroup, $message);
@@ -554,7 +557,7 @@ class PermintaanBarangPembangunanKawasanController extends Controller
 
         return redirect()
             ->route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => 'pembangunan_kawasan'])
-            ->with('success', 'Permintaan barang kawasan berhasil di-ACC resmi oleh SPV Layanan & Dukungan. Stok telah dipotong dan dicatat ke data real.');
+            ->with('success', "Permintaan barang kawasan berhasil di-ACC resmi oleh {$spvRole}. Stok telah dipotong dan dicatat ke data real.");
     }
 
     public function spvAccBarangOrder(Request $request, $id)
@@ -584,12 +587,15 @@ class PermintaanBarangPembangunanKawasanController extends Controller
 
         $targetGroup = env('FONNTE_ID_GROUP_TOLAK_ORDER_BARANG_KAWASAN', env('FONNTE_ID_GROUP_ORDER_BARANG_KAWASAN', env('FONNTE_ID_ORDER_BARANG_ABM')));
         if (!empty($targetGroup)) {
-            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $penolak = Auth::user();
+            $adminName = $penolak->nama_lengkap ?? $penolak->username ?? 'Petugas';
+            $penolakRole = $penolak->getRoleNames()->first() ?? 'Petugas';
             $message = view('notifications.whatsapp.pembangunan_kawasan.tolak_order_barang', [
                 'order' => $order,
                 'namaPerumahan' => $order->kawasan?->perumahan?->nama_perumahaan ?? '-',
                 'namaKawasan' => $order->kawasan?->nama ?? '-',
                 'adminGudang' => $adminName,
+                'penolakRole' => $penolakRole,
                 'alasanTolak' => $order->alasan_tolak ?? null,
                 'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             ])->render();

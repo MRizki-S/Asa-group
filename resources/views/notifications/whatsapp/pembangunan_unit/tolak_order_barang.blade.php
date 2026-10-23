@@ -1,6 +1,6 @@
 ❌ *PENOLAKAN PERMINTAAN BARANG KELUAR KE UNIT*
 
-Permintaan barang keluar ke unit telah *DITOLAK* oleh Gudang:
+Permintaan barang keluar ke unit telah *DITOLAK* oleh {{ $penolakRole ?? 'Gudang' }}:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
 • *Perumahan:* {{ $namaPerumahan }}

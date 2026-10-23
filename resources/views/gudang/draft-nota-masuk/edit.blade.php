@@ -245,16 +245,18 @@
                                     </td>
 
                                     <!-- Harga Satuan -->
-                                    <td class="border border-gray-300 p-1">
+                                    <td class="border border-gray-300 p-1" :class="{'bg-red-50 dark:bg-red-950/30': !item.harga_satuan || parseFloat(item.harga_satuan) <= 0}">
                                         <input type="text" x-model="item.harga_satuan_display"
                                             @input="formatHargaSatuan(item)" 
+                                            placeholder="0"
                                             class="w-full text-right border-none focus:ring-0 bg-transparent text-sm" required>
                                         <input type="hidden" :name="`items[${index}][harga_satuan]`" :value="item.harga_satuan">
                                     </td>
 
                                     <!-- Harga Total -->
-                                    <td class="border border-gray-300 p-1">
+                                    <td class="border border-gray-300 p-1" :class="{'bg-red-50 dark:bg-red-950/30': !item.harga_total || parseFloat(item.harga_total) <= 0}">
                                         <input type="text" x-model="item.harga_total_display"
+                                            placeholder="0"
                                             class="w-full text-right border-none focus:ring-0 bg-gray-100 dark:bg-gray-800/50 text-sm font-bold" readonly>
                                         <input type="hidden" :name="`items[${index}][harga_total]`" :value="item.harga_total">
                                     </td>
@@ -558,6 +560,43 @@
         const form = document.getElementById('form-nota');
         if (!form.checkValidity()) {
             form.reportValidity();
+            return;
+        }
+
+        // Cek validasi harga satuan dan harga total tidak boleh 0 atau kosong saat posting
+        const hargaSatuanInputs = form.querySelectorAll('input[name^="items"][name$="[harga_satuan]"]');
+        const hargaTotalInputs = form.querySelectorAll('input[name^="items"][name$="[harga_total]"]');
+
+        if (hargaSatuanInputs.length === 0) {
+            Swal.fire({
+                title: 'Item Barang Kosong',
+                text: 'Harap tambahkan minimal 1 item barang sebelum posting ke stok!',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        let hasZeroPrice = false;
+        let emptyIndex = null;
+        hargaSatuanInputs.forEach((input, idx) => {
+            const valSatuan = parseFloat(input.value) || 0;
+            const valTotal = parseFloat(hargaTotalInputs[idx]?.value) || 0;
+            if (valSatuan <= 0 || valTotal <= 0) {
+                hasZeroPrice = true;
+                if (emptyIndex === null) emptyIndex = idx + 1;
+            }
+        });
+
+        if (hasZeroPrice) {
+            Swal.fire({
+                title: 'Harga Tidak Boleh 0!',
+                text: 'Ada barang (baris ke-' + emptyIndex + ') yang harga satuannya atau harga totalnya masih 0 atau belum diinput. Semua barang wajib memiliki harga lebih dari 0 sebelum diposting ke stok!',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Lengkapi Harga'
+            });
             return;
         }
 

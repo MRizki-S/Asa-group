@@ -514,8 +514,10 @@ class PermintaanBarangPembangunanProyekController extends Controller
                 ]);
             });
 
-            // Kirim notifikasi WA setelah SPV Layanan & Dukungan berhasil ACC
-            $spvName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'SPV Layanan & Dukungan';
+            // Kirim notifikasi WA setelah berhasil ACC
+            $approver = Auth::user();
+            $spvName = $approver->nama_lengkap ?? $approver->username ?? 'Petugas';
+            $spvRole = $approver->getRoleNames()->first() ?? 'Petugas';
             $namaProyek = $order->proyek?->nama_project ?? $order->proyek?->nama ?? '-';
 
             $targetGroup = env('FONNTE_ID_ORDER_BARANG_ABM', env('FONNTE_ID_GROUP_ACC_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_PROYEK')));
@@ -524,6 +526,7 @@ class PermintaanBarangPembangunanProyekController extends Controller
                     'order' => $order->fresh(['details.barang.baseUnit']),
                     'namaProyek' => $namaProyek,
                     'spvName' => $spvName,
+                    'spvRole' => $spvRole,
                     'tanggalSpv' => now()->format('d/m/Y H:i') . ' WIB',
                 ])->render();
                 $this->notification->sendWhatsApp($targetGroup, $message);
@@ -536,7 +539,7 @@ class PermintaanBarangPembangunanProyekController extends Controller
 
         return redirect()
             ->route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => 'pembangunan_proyek_mangoon'])
-            ->with('success', 'Permintaan barang proyek berhasil di-ACC resmi oleh SPV Layanan & Dukungan. Stok telah dipotong dan dicatat ke data real.');
+            ->with('success', "Permintaan barang proyek berhasil di-ACC resmi oleh {$spvRole}. Stok telah dipotong dan dicatat ke data real.");
     }
 
     public function spvAccBarangOrder(Request $request, $id)
@@ -566,12 +569,15 @@ class PermintaanBarangPembangunanProyekController extends Controller
 
         $targetGroup = env('FONNTE_ID_GROUP_TOLAK_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_PROYEK', env('FONNTE_ID_ORDER_BARANG_ABM')));
         if (!empty($targetGroup)) {
-            $adminName = Auth::user()->nama_lengkap ?? Auth::user()->name ?? 'Admin Gudang';
+            $penolak = Auth::user();
+            $adminName = $penolak->nama_lengkap ?? $penolak->username ?? 'Petugas';
+            $penolakRole = $penolak->getRoleNames()->first() ?? 'Petugas';
             $namaProyek = $order->proyek?->nama_project ?? $order->proyek?->nama ?? '-';
             $message = view('notifications.whatsapp.pembangunan_proyek.tolak_order_barang', [
                 'order' => $order,
                 'namaProyek' => $namaProyek,
                 'adminGudang' => $adminName,
+                'penolakRole' => $penolakRole,
                 'alasanTolak' => $order->alasan_tolak ?? null,
                 'tanggal' => now()->format('d/m/Y H:i') . ' WIB',
             ])->render();
