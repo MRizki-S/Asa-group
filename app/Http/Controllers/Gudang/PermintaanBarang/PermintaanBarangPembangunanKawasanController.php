@@ -493,6 +493,17 @@ class PermintaanBarangPembangunanKawasanController extends Controller
             return back()->with('error', 'Permintaan barang kawasan ini sudah tidak dalam status menunggu proses.');
         }
 
+        $user = Auth::user();
+        $isStock = ($order->jenis_order ?? 'stock') === 'stock';
+        $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $canAcc = $user->hasRole('Superadmin')
+            || ($isStock && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-stock') || $user->can('gudang.permintaan-barang.aksi-stock')))
+            || ($isDirect && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-direct') || $user->can('gudang.permintaan-barang.aksi-direct')));
+
+        if (!$canAcc) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk ACC permintaan barang ' . ($isDirect ? 'direct' : 'stock') . '.');
+        }
+
         try {
             DB::transaction(function () use ($order, $request) {
                 // Generate nomor NBK resmi jika belum ada: NBK-KWS-YYYYMMDD-XXXX
@@ -578,6 +589,17 @@ class PermintaanBarangPembangunanKawasanController extends Controller
 
         if (!in_array($order->status_order, ['diproses', 'menunggu_spv'])) {
             return back()->with('error', 'Permintaan barang kawasan ini sudah tidak dalam status menunggu.');
+        }
+
+        $user = Auth::user();
+        $isStock = ($order->jenis_order ?? 'stock') === 'stock';
+        $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $canAksi = $user->hasRole('Superadmin')
+            || ($isStock && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-stock') || $user->can('gudang.permintaan-barang.aksi-stock')))
+            || ($isDirect && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-direct') || $user->can('gudang.permintaan-barang.aksi-direct')));
+
+        if (!$canAksi) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk menolak permintaan barang ' . ($isDirect ? 'direct' : 'stock') . '.');
         }
 
         $order->update([

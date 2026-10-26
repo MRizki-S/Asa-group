@@ -17,6 +17,11 @@ class PembangunanProyekBarangReturn extends Model
         return $this->belongsTo(PembangunanProyek::class, 'pembangunan_proyek_id');
     }
 
+    public function pembangunanProyek()
+    {
+        return $this->proyek();
+    }
+
     public function order()
     {
         return $this->belongsTo(PembangunanProyekBarangOrder::class, 'order_id');

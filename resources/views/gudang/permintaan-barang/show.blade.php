@@ -111,11 +111,17 @@
 
     $is3Step = in_array($category, ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon', 'pembangunan_proyek']);
 
-    $aksiPermMap = [
-        'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.aksi',
-        'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi',
-        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi',
-        'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi',
+    $aksiStockPermMap = [
+        'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.aksi-stock',
+        'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi-stock',
+        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-stock',
+        'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-stock',
+    ];
+    $aksiDirectPermMap = [
+        'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.aksi-direct',
+        'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi-direct',
+        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-direct',
+        'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-direct',
     ];
     $editPermMap = [
         'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.edit',
@@ -130,9 +136,17 @@
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.ajukan-kembali',
     ];
 
-    $permissionAksi = $aksiPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi';
+    $permissionAksiStock = $aksiStockPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi-stock';
+    $permissionAksiDirect = $aksiDirectPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi-direct';
     $permissionEdit = $editPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.edit';
     $permissionAjukanKembali = $ajukanKembaliPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.ajukan-kembali';
+
+    $isStockOrder = ($order->jenis_order ?? 'stock') === 'stock';
+    $isDirectOrder = ($order->jenis_order ?? '') === 'direct';
+
+    $canAksiOrder = auth()->user()?->hasRole('Superadmin')
+        || ($isStockOrder && (auth()->user()?->can($permissionAksiStock) || auth()->user()?->can('gudang.permintaan-barang.aksi-stock')))
+        || ($isDirectOrder && (auth()->user()?->can($permissionAksiDirect) || auth()->user()?->can('gudang.permintaan-barang.aksi-direct')));
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
@@ -514,7 +528,7 @@
                         Edit Tanggal
                     </button>
                 @endcan
-                @can($permissionAksi)
+                @if ($canAksiOrder)
                     {{-- Tombol Tolak --}}
                     <button type="button" @click="openTolakModal = true"
                         class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all focus:outline-none focus:ring-4 focus:ring-red-300 active:scale-95">
@@ -522,7 +536,7 @@
                         Tolak
                     </button>
 
-                    {{-- Tombol ACC SPV Layanan & Dukungan --}}
+                    {{-- Tombol ACC Permintaan (Stock / Direct) --}}
                     <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
                         @submit="accSubmitting = true">
                         @csrf
@@ -533,7 +547,7 @@
                             ACC Permintaan
                         </button>
                     </form>
-                @endcan
+                @endif
             </div>
         @endif
 

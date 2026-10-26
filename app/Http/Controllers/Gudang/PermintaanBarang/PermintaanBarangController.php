@@ -288,6 +288,19 @@ class PermintaanBarangController extends Controller
             return back()->with('error', 'Permintaan barang ini sudah tidak dalam status menunggu.');
         }
 
+        $user = Auth::user();
+        $isStock = ($order->jenis_order ?? 'stock') === 'stock';
+        $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $catPerm = $category === 'pembangunan_kawasan' ? 'pemb-kawasan' : 'pemb-mangoon';
+
+        $canAcc = $user->hasRole('Superadmin')
+            || ($isStock && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-stock") || $user->can('gudang.permintaan-barang.aksi-stock')))
+            || ($isDirect && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct") || $user->can('gudang.permintaan-barang.aksi-direct')));
+
+        if (!$canAcc) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk ACC permintaan barang ' . ($isDirect ? 'direct' : 'stock') . '.');
+        }
+
         try {
             DB::transaction(function () use ($order, $request, $category) {
                 $this->processAcc($order, $request, $category);
