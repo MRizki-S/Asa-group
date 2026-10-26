@@ -3,6 +3,31 @@
 @section('pageActive', 'PengajuanPembatalan')
 
 @section('content')
+@php
+    if (!function_exists('statusColor')) {
+        function statusColor($status)
+        {
+            $status = strtolower($status ?? 'pending');
+            return match ($status) {
+                'acc', 'disetujui', 'setuju' => [
+                    'bg-green-100',
+                    'border-green-500',
+                    'text-green-700',
+                ],
+                'tolak', 'ditolak', 'reject' => [
+                    'bg-red-100',
+                    'border-red-500',
+                    'text-red-700',
+                ],
+                default => [
+                    'bg-yellow-100',
+                    'border-yellow-500',
+                    'text-yellow-700',
+                ], // pending
+            };
+        }
+    }
+@endphp
     <!-- ===== Main Content Start ===== -->
     <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
@@ -94,29 +119,6 @@
                                             </td>
 
                                             @php
-                                                // Fungsi kecil buat tentuin warna status
-                                                function statusColor($status)
-                                                {
-                                                    $status = strtolower($status ?? 'pending');
-                                                    return match ($status) {
-                                                        'acc', 'disetujui', 'setuju' => [
-                                                            'bg-green-100',
-                                                            'border-green-500',
-                                                            'text-green-700',
-                                                        ],
-                                                        'tolak', 'ditolak', 'reject' => [
-                                                            'bg-red-100',
-                                                            'border-red-500',
-                                                            'text-red-700',
-                                                        ],
-                                                        default => [
-                                                            'bg-yellow-100',
-                                                            'border-yellow-500',
-                                                            'text-yellow-700',
-                                                        ], // pending
-                                                    };
-                                                }
-
                                                 // Ambil semua status
                                                 $statusPemasaran = strtolower(
                                                     $item->status_manager_pemasaran ?? 'pending',
@@ -224,29 +226,6 @@
                                         {{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}
                                     </td>
                                     @php
-                                        // Fungsi kecil buat tentuin warna status
-                                        function statusColor($status)
-                                        {
-                                            $status = strtolower($status ?? 'pending');
-                                            return match ($status) {
-                                                'acc', 'disetujui', 'setuju' => [
-                                                    'bg-green-100',
-                                                    'border-green-500',
-                                                    'text-green-700',
-                                                ],
-                                                'tolak', 'ditolak', 'reject' => [
-                                                    'bg-red-100',
-                                                    'border-red-500',
-                                                    'text-red-700',
-                                                ],
-                                                default => [
-                                                    'bg-yellow-100',
-                                                    'border-yellow-500',
-                                                    'text-yellow-700',
-                                                ], // pending
-                                            };
-                                        }
-
                                         // Ambil semua status
                                         $statusPemasaran = strtolower($item->status_mgr_pemasaran ?? 'pending');
                                         $statusKeuangan = strtolower($item->status_mgr_keuangan ?? 'pending');
