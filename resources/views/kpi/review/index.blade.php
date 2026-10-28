@@ -72,8 +72,10 @@
                                     </td>
                                     <td class="py-4 px-4 text-sm align-top">
                                         @php
-                                            $komponenBermasalah = $kpi->details->filter(function($d) {
-                                                return ($d->skor == 0 && !$d->nilai_tetap) || $d->is_review_khusus;
+                                            $tipeCek = ['KEPATUHAN', 'AKKUMULASI_NILAI'];
+                                            $komponenBermasalah = $kpi->details->filter(function($d) use ($tipeCek) {
+                                                $under90 = ($d->kepatuhan_percent < 90 && in_array(optional($d->komponen)->tipe_perhitungan, $tipeCek) && !$d->nilai_tetap);
+                                                return $under90 || ($d->is_review_khusus && !$d->nilai_tetap);
                                             });
                                         @endphp
                                         <ul class="space-y-1.5">
@@ -95,13 +97,23 @@
                                         </ul>
                                     </td>
                                     <td class="py-4 px-4 text-center align-middle">
-                                        @php $latestReq = $kpi->reviewRequests->first(); @endphp
-                                        <span
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-yellow-100 text-yellow-700 border border-yellow-200">
-                                            Menunggu Review
-                                        </span>
+                                        @php
+                                            $latestReq = $kpi->reviewRequests->first();
+                                            $hasDraftReview = $komponenBermasalah->contains(fn($d) => $d->skor > 0);
+                                        @endphp
+                                        @if ($hasDraftReview)
+                                            <span
+                                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-blue-700 border border-blue-200">
+                                                Draft Review
+                                            </span>
+                                        @else
+                                            <span
+                                                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                                Menunggu Review
+                                            </span>
+                                        @endif
                                         <p class="text-[9px] text-gray-400 mt-1 italic">Dikirim:
-                                            {{ $latestReq->created_at->diffForHumans() }}</p>
+                                            {{ $latestReq?->created_at?->diffForHumans() ?? '-' }}</p>
                                     </td>
                                     @can('kpi.kpi-riview.riview-skor')
                                         <td class="py-4 px-4 text-center align-middle">

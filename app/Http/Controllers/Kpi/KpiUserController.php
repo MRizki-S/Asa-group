@@ -285,6 +285,11 @@ class KpiUserController extends Controller
             'action_type' => 'nullable|string'
         ]);
 
+        $kpiUserCheck = KpiUser::findOrFail($id);
+        if ($kpiUserCheck->reviewRequests()->whereNull('direspon_pada')->exists()) {
+            return back()->withErrors(['review' => 'Penilaian ini sedang dalam proses review oleh manajer dan tidak dapat diubah hingga proses review selesai.'])->withInput();
+        }
+
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 

@@ -197,13 +197,18 @@
         {{-- Footer Form --}}
         <div
             class="mt-8 flex flex-col w-full md:flex-row justify-between items-center gap-4 bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-200 dark:border-gray-800 mb-10">
-            <div class="flex flex-col w-full md:flex-row justify-start items-center gap-3">
+            <div class="flex flex-col w-full md:flex-row justify-start items-start md:items-center gap-3">
                 @can('kpi.kpi-riview.simpan-hasil-riview')
-                <label class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase">Simpan sebagai:</label>
-                <select name="status" class="rounded-lg py-2 border-gray-300 text-sm font-bold focus:ring-blue-500">
-                    <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
-                    <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}>FINAL</option>
-                </select>
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase">Simpan sebagai:</label>
+                    <select name="status" class="rounded-lg py-2 border-gray-300 text-sm font-bold focus:ring-blue-500">
+                        <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
+                        <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}>FINAL</option>
+                    </select>
+                </div>
+                <span class="text-[11px] text-gray-500 italic">
+                    * Pilih <strong>DRAFT</strong> jika masih ingin merevisi nanti (tetap di daftar review), atau <strong>FINAL</strong> untuk mengunci nilai.
+                </span>
                 @endcan
             </div>
             <div class="flex w-full flex-col-reverse md:flex-row justify-end gap-3">

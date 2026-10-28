@@ -281,7 +281,7 @@
                                 class="rounded-lg py-2 border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-800 text-gray-700 dark:text-white text-sm font-bold focus:ring-blue-500">
                                 <option value="draft" {{ $kpiUser->status == 'draft' ? 'selected' : '' }}>DRAFT</option>
                                 <option value="final" {{ $kpiUser->status == 'final' ? 'selected' : '' }}
-                                    x-bind:disabled="hasProblem()">
+                                    x-bind:disabled="hasProblem() || {{ $prosesReview ? 'true' : 'false' }}">
                                     FINAL
                                 </option>
                             </select>
@@ -310,8 +310,12 @@
                         @can('kpi.kpi-user.update-simpan-nilai')
                             <button type="submit" name="action_type" value="save"
                                 @click="document.getElementById('form_action_type').value = 'save'"
-                                :disabled="submitting" :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
-                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm">
+                                @if ($prosesReview) disabled @endif
+                                :disabled="submitting || {{ $prosesReview ? 'true' : 'false' }}"
+                                class="px-6 py-2 w-full md:w-fit text-sm text-center font-medium rounded-lg shadow-sm transition
+                                {{ $prosesReview
+                                    ? 'text-gray-400 bg-gray-100 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+                                    : 'text-white bg-blue-600 hover:bg-blue-700' }}">
                                 <span x-text="submitting ? 'Memproses...' : 'Simpan Nilai'"></span>
                             </button>
                         @endcan

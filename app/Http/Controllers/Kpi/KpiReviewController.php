@@ -19,7 +19,7 @@ class KpiReviewController extends Controller
             ->whereHas('reviewRequests', function ($query) {
                 $query->whereNull('direspon_pada');
             })
-            ->with(['karyawan', 'details.tasks', 'reviewRequests' => function ($q) {
+            ->with(['karyawan', 'details.tasks', 'details.komponen', 'reviewRequests' => function ($q) {
                 $q->whereNull('direspon_pada')->latest();
             }])
             ->latest()
@@ -37,7 +37,7 @@ class KpiReviewController extends Controller
     public function edit($id)
     {
 
-        $kpiUser = KpiUser::with(['karyawan', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details.tasks', 'details.komponen', 'reviewRequests'])->findOrFail($id);
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
@@ -58,34 +58,50 @@ class KpiReviewController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'skor_custom'   => 'required|array',
+            'skor_custom'   => 'sometimes|array',
             'skor_custom.*' => 'in:0,70,100',
             'status'        => 'required|in:draft,final',
         ]);
 
         DB::transaction(function () use ($request, $id) {
             $kpiUser = KpiUser::findOrFail($id);
+            $isFinal = $request->status === 'final';
 
-            KpiReviewRequest::where('kpi_user_id', $id)
-                ->whereNull('direspon_pada')
-                ->update(['direspon_pada' => now()]);
+            // Hanya tandai review request telah direspon jika status FINAL
+            if ($isFinal) {
+                KpiReviewRequest::where('kpi_user_id', $id)
+                    ->whereNull('direspon_pada')
+                    ->update(['direspon_pada' => now()]);
+            }
 
-            foreach ($request->skor_custom as $detailId => $skor) {
-                $detail = KpiUserKomponen::findOrFail($detailId);
+            if ($request->has('skor_custom')) {
+                foreach ($request->skor_custom as $detailId => $skor) {
+                    $detail = KpiUserKomponen::findOrFail($detailId);
 
-                $detail->update([
-                    'skor' => $skor,
-                    'nilai_akhir' => ($detail->bobot / 100) * $skor,
-                    'nilai_tetap' => true,
-                    'is_review_khusus' => false,
-                ]);
+                    $updateData = [
+                        'skor' => $skor,
+                        'nilai_akhir' => ($detail->bobot / 100) * $skor,
+                    ];
+
+                    // Kunci komponen secara permanen hanya jika status FINAL
+                    if ($isFinal) {
+                        $updateData['nilai_tetap'] = true;
+                        $updateData['is_review_khusus'] = false;
+                    }
+
+                    $detail->update($updateData);
+                }
             }
 
             $kpiUser->update([
-                'status'      => $request->status,
+                'status' => $request->status,
             ]);
         });
 
-        return redirect()->route('kpi.review.index')->with('success', 'Review materialitas dan status KPI berhasil diperbarui.');
+        $message = $request->status === 'final'
+            ? 'Review KPI berhasil difinalisasi.'
+            : 'Draft review KPI berhasil disimpan.';
+
+        return redirect()->route('kpi.review.index')->with('success', $message);
     }
 }
