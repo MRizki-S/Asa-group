@@ -9,15 +9,72 @@
         href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css">
 
     <style>
-        .select2-container--bootstrap4 .select2-selection--single {
-            height: 44px !important;
-            padding: 8px 12px !important;
-            border-radius: 0.5rem !important;
-            border: 1px solid #d1d5db !important;
-            display: flex !important;
-            align-items: center !important;
+        /* Pastikan container dan dropdown tidak pernah overflow atau memicu horizontal scroll */
+        .select2-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            display: block !important;
         }
 
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: 46px !important;
+            padding: 8px 12px !important;
+            border-radius: 0.75rem !important;
+            border: 1px solid #d1d5db !important;
+            background-color: #ffffff !important;
+            font-size: 0.875rem !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            line-height: 28px !important;
+            color: #1f2937 !important;
+            padding-left: 0 !important;
+            padding-right: 28px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            max-width: 100% !important;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            height: 44px !important;
+            right: 10px !important;
+        }
+
+        .select2-container--bootstrap4 .select2-search--dropdown {
+            padding: 8px !important;
+        }
+
+        .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field {
+            height: 38px !important;
+            padding: 6px 12px !important;
+            border-radius: 0.5rem !important;
+            border: 1px solid #3b82f6 !important;
+            font-size: 0.875rem !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+            width: 100% !important;
+        }
+
+        .select2-dropdown {
+            border-radius: 0.75rem !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e5e7eb !important;
+            z-index: 9999 !important;
+            overflow: hidden !important;
+            max-width: 100% !important;
+        }
+
+        .select2-results__option {
+            white-space: normal !important;
+            word-break: break-word !important;
+            line-height: 1.4 !important;
+            padding: 8px 12px !important;
+        }
+
+        /* Dark Mode Support */
         .dark .select2-container--bootstrap4 .select2-selection--single {
             background-color: #1f2937 !important;
             border-color: #374151 !important;
@@ -34,6 +91,12 @@
             color: #f3f4f6 !important;
         }
 
+        .dark .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f9fafb !important;
+        }
+
         .dark .select2-results__option {
             color: #f3f4f6 !important;
         }
@@ -42,13 +105,9 @@
             background-color: #3b82f6 !important;
             color: #ffffff !important;
         }
-
-        .select2-container {
-            width: 100% !important;
-        }
     </style>
 
-    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6" x-data="gantiUnitHandler()">
+    <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6">
 
         <!-- Breadcrumb -->
         <div x-data="{ pageName: 'Ganti Unit (Private)' }">
@@ -91,38 +150,35 @@
         @endif
 
         <!-- Card Form Ganti Unit -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] mb-8">
-            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
-                <div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="p-2 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                            </svg>
-                        </span>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-white">
-                                Form Ganti Unit Pemesanan
-                            </h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                Pindahkan pemesanan unit yang sudah di-ACC ke unit baru yang available. Status unit lama akan otomatis kembali menjadi Available dan unit pengganti menjadi Sold.
-                            </p>
-                        </div>
+        <div id="cardFormGantiUnit" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] mb-8" x-data="gantiUnitHandler()">
+            <div class="border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
+                <div class="flex items-center gap-2.5">
+                    <span class="p-2 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+                            Form Ganti Unit Pemesanan
+                        </h3>
+                        @if ($namaPerumahaan)
+                            <div class="text-xs font-semibold text-gray-600 dark:text-gray-300 mt-0.5">
+                                Perumahan: {{ $namaPerumahaan }}
+                            </div>
+                        @endif
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Pindahkan pemesanan unit yang sudah di-ACC ke unit baru yang available. Status unit lama akan otomatis kembali menjadi Available dan unit pengganti menjadi Sold.
+                        </p>
                     </div>
                 </div>
-
-                @if ($namaPerumahaan)
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
-                        🏠 {{ $namaPerumahaan }}
-                    </span>
-                @endif
             </div>
 
             <form id="formGantiUnit" action="{{ route('marketing.gantiUnit.store') }}" method="POST" @submit.prevent="submitForm">
                 @csrf
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
                     {{-- Box Unit Awal --}}
                     <div class="lg:col-span-5 bg-gray-50 dark:bg-gray-800/40 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-4">
@@ -137,44 +193,46 @@
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                                 Pemesanan Unit (Nama Unit & Customer) <span class="text-red-500">*</span>
                             </label>
-                            <select id="select_pemesanan_unit" name="pemesanan_unit_id" class="form-control select2 w-full" required>
-                                <option value="">-- Pilih Pemesanan Unit (ACC) --</option>
-                                @foreach ($pemesananList as $item)
-                                    @php
-                                        $namaCustomer = $item->customer->nama_lengkap ?? $item->customer->username ?? '-';
-                                        $namaUnit = $item->unit->nama_unit ?? '-';
-                                        $blok = $item->unit->blok->nama_blok ?? '';
-                                        $tahap = $item->tahap->nama_tahap ?? '';
-                                        $sales = $item->sales->nama_lengkap ?? $item->sales->username ?? '-';
-                                        $label = "{$namaUnit}" . ($blok ? " (Blok {$blok})" : "") . " — {$namaCustomer}" . ($item->customer->username ? " [{$item->customer->username}]" : "");
-                                    @endphp
-                                    <option value="{{ $item->id }}"
-                                        data-unit-id="{{ $item->unit_id }}"
-                                        data-unit-name="{{ $namaUnit }}"
-                                        data-blok="{{ $blok }}"
-                                        data-tahap="{{ $tahap }}"
-                                        data-customer="{{ $namaCustomer }}"
-                                        data-customer-username="{{ $item->customer->username ?? '-' }}"
-                                        data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
-                                        data-cara-bayar="{{ strtoupper($item->cara_bayar) }}"
-                                        data-sales="{{ $sales }}"
-                                        data-tgl-pesan="{{ $item->tanggal_pemesanan ? \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d M Y') : '-' }}"
-                                        {{ old('pemesanan_unit_id') == $item->id ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div wire:ignore x-ignore>
+                                <select id="select_pemesanan_unit" name="pemesanan_unit_id" class="form-control select2 w-full" required>
+                                    <option value="">-- Pilih Pemesanan Unit (ACC) --</option>
+                                    @foreach ($pemesananList as $item)
+                                        @php
+                                            $namaCustomer = $item->customer->nama_lengkap ?? $item->customer->username ?? '-';
+                                            $namaUnit = $item->unit->nama_unit ?? '-';
+                                            $blok = $item->unit->blok->nama_blok ?? '';
+                                            $tahap = $item->tahap->nama_tahap ?? '';
+                                            $sales = $item->sales->nama_lengkap ?? $item->sales->username ?? '-';
+                                            $label = "{$namaUnit}" . ($blok ? " (Blok {$blok})" : "") . " — {$namaCustomer}" . ($item->customer->username ? " [{$item->customer->username}]" : "");
+                                        @endphp
+                                        <option value="{{ $item->id }}"
+                                            data-unit-id="{{ $item->unit_id }}"
+                                            data-unit-name="{{ $namaUnit }}"
+                                            data-blok="{{ $blok }}"
+                                            data-tahap="{{ $tahap }}"
+                                            data-customer="{{ $namaCustomer }}"
+                                            data-customer-username="{{ $item->customer->username ?? '-' }}"
+                                            data-no-hp="{{ $item->customer->no_hp ?? '-' }}"
+                                            data-cara-bayar="{{ strtoupper($item->cara_bayar) }}"
+                                            data-sales="{{ $sales }}"
+                                            data-tgl-pesan="{{ $item->tanggal_pemesanan ? \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d M Y') : '-' }}"
+                                            {{ old('pemesanan_unit_id') == $item->id ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         {{-- Preview Detail Pemesanan Terpilih --}}
                         <div x-show="selectedPemesanan.id" x-transition class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs space-y-2">
-                            <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
-                                <span class="text-gray-500">Unit Saat Ini:</span>
-                                <span class="font-bold text-gray-900 dark:text-white" x-text="selectedPemesanan.unitName + (selectedPemesanan.blok ? ' (Blok ' + selectedPemesanan.blok + ')' : '')"></span>
+                            <div class="flex justify-between items-start text-gray-700 dark:text-gray-300">
+                                <span class="text-gray-500 shrink-0 mr-2">Unit Saat Ini:</span>
+                                <span class="font-bold text-gray-900 dark:text-white text-right" x-text="selectedPemesanan.unitName + (selectedPemesanan.blok ? ' (Blok ' + selectedPemesanan.blok + ')' : '')"></span>
                             </div>
                             <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                                 <span class="text-gray-500">Customer:</span>
-                                <span class="font-semibold" x-text="selectedPemesanan.customer + ' (' + selectedPemesanan.username + ')'"></span>
+                                <span class="font-semibold text-right" x-text="selectedPemesanan.customer + (selectedPemesanan.username && selectedPemesanan.username !== '-' ? ' (' + selectedPemesanan.username + ')' : '')"></span>
                             </div>
                             <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                                 <span class="text-gray-500">No HP Customer:</span>
@@ -188,13 +246,13 @@
                             </div>
                             <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                                 <span class="text-gray-500">Sales / Tanggal:</span>
-                                <span x-text="selectedPemesanan.sales + ' | ' + selectedPemesanan.tglPesan"></span>
+                                <span class="text-right" x-text="selectedPemesanan.sales + ' | ' + selectedPemesanan.tglPesan"></span>
                             </div>
                         </div>
                     </div>
 
                     {{-- Icon Panah Pergantian --}}
-                    <div class="lg:col-span-2 flex flex-col items-center justify-center text-center py-2">
+                    <div class="lg:col-span-2 flex flex-col items-center justify-center text-center pt-8">
                         <div class="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full border border-blue-200 dark:border-blue-700 shadow-sm animate-pulse">
                             <svg class="w-6 h-6 rotate-90 lg:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -218,43 +276,45 @@
                             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                                 Unit Pengganti (Available) <span class="text-red-500">*</span>
                             </label>
-                            <select id="select_unit_baru" name="unit_baru_id" class="form-control select2 w-full" required>
-                                <option value="">-- Pilih Unit Pengganti (Available) --</option>
-                                @foreach ($unitAvailable as $unit)
-                                    @php
-                                        $blok = $unit->blok->nama_blok ?? '';
-                                        $tahap = $unit->tahap->nama_tahap ?? '';
-                                        $type = $unit->type->nama_type ?? '';
-                                        $harga = $unit->harga_final ?? $unit->harga_jual ?? 0;
-                                        $labelUnit = "{$unit->nama_unit}" . ($blok ? " (Blok {$blok})" : "") . ($tahap ? " — {$tahap}" : "") . ($type ? " [Type {$type}]" : "");
-                                    @endphp
-                                    <option value="{{ $unit->id }}"
-                                        data-unit-name="{{ $unit->nama_unit }}"
-                                        data-blok="{{ $blok }}"
-                                        data-tahap="{{ $tahap }}"
-                                        data-type="{{ $type }}"
-                                        data-harga="{{ number_format($harga, 0, ',', '.') }}"
-                                        data-luas-kelebihan="{{ $unit->luas_kelebihan ?? 0 }}"
-                                        {{ old('unit_baru_id') == $unit->id ? 'selected' : '' }}>
-                                        {{ $labelUnit }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div wire:ignore x-ignore>
+                                <select id="select_unit_baru" name="unit_baru_id" class="form-control select2 w-full" required>
+                                    <option value="">-- Pilih Unit Pengganti (Available) --</option>
+                                    @foreach ($unitAvailable as $unit)
+                                        @php
+                                            $blok = $unit->blok->nama_blok ?? '';
+                                            $tahap = $unit->tahap->nama_tahap ?? '';
+                                            $type = $unit->type->nama_type ?? '';
+                                            $harga = $unit->harga_final ?? $unit->harga_jual ?? 0;
+                                            $labelUnit = "{$unit->nama_unit}" . ($blok ? " (Blok {$blok})" : "") . ($tahap ? " — {$tahap}" : "") . ($type ? " [Type {$type}]" : "");
+                                        @endphp
+                                        <option value="{{ $unit->id }}"
+                                            data-unit-name="{{ $unit->nama_unit }}"
+                                            data-blok="{{ $blok }}"
+                                            data-tahap="{{ $tahap }}"
+                                            data-type="{{ $type }}"
+                                            data-harga="{{ number_format($harga, 0, ',', '.') }}"
+                                            data-luas-kelebihan="{{ $unit->luas_kelebihan ?? 0 }}"
+                                            {{ old('unit_baru_id') == $unit->id ? 'selected' : '' }}>
+                                            {{ $labelUnit }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         {{-- Preview Detail Unit Baru Terpilih --}}
                         <div x-show="selectedUnitBaru.id" x-transition class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs space-y-2">
-                            <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
-                                <span class="text-gray-500">Unit Pengganti:</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="selectedUnitBaru.unitName + (selectedUnitBaru.blok ? ' (Blok ' + selectedUnitBaru.blok + ')' : '')"></span>
+                            <div class="flex justify-between items-start text-gray-700 dark:text-gray-300">
+                                <span class="text-gray-500 shrink-0 mr-2">Unit Pengganti:</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400 text-right" x-text="selectedUnitBaru.unitName + (selectedUnitBaru.blok ? ' (Blok ' + selectedUnitBaru.blok + ')' : '')"></span>
                             </div>
                             <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                                 <span class="text-gray-500">Tahap:</span>
-                                <span class="font-semibold" x-text="selectedUnitBaru.tahap || '-'"></span>
+                                <span class="font-semibold text-right" x-text="selectedUnitBaru.tahap || '-'"></span>
                             </div>
                             <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                                 <span class="text-gray-500">Type / Luas:</span>
-                                <span x-text="(selectedUnitBaru.type || '-') + ' | Kelebihan: ' + selectedUnitBaru.luasKelebihan + ' m²'"></span>
+                                <span class="text-right" x-text="(selectedUnitBaru.type || '-') + ' | Kelebihan: ' + selectedUnitBaru.luasKelebihan + ' m²'"></span>
                             </div>
                             <div class="flex justify-between items-center text-gray-700 dark:text-gray-300">
                                 <span class="text-gray-500">Estimasi Harga Unit:</span>
@@ -297,7 +357,7 @@
                 </span>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto" wire:ignore x-ignore>
                 <table id="table-daftarPemesanan" class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs uppercase">
@@ -348,7 +408,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-2.5 text-center">
-                                    <button type="button" @click="pilihPemesananLangsung('{{ $pesan->id }}')"
+                                    <button type="button" onclick="pilihPemesananUnit('{{ $pesan->id }}')"
                                         class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition shadow-sm">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -371,11 +431,36 @@
 
     </div>
 
-    <!-- Select2 & Simple-DataTables Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <script>
+        // Global helper untuk memilih unit dari tabel pemesanan langsung
+        window.pilihPemesananUnit = function(id) {
+            $('#select_pemesanan_unit').val(id).trigger('change');
+            document.getElementById('cardFormGantiUnit')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        // Otomatis fokus ke input search setiap kali Select2 dibuka & cegah tutup sendiri saat scroll
+        $(document).on('select2:open', function(e) {
+            // Unbind event scroll.select2 dari window dan parent container agar Select2 TIDAK otomatis tertutup saat ada scrollbar
+            $(window).off('scroll.select2');
+            $('body').off('scroll.select2');
+            if (e.target) {
+                $(e.target).parents().off('scroll.select2');
+            }
+
+            const focusSearch = () => {
+                const searchField = document.querySelector('.select2-container--open .select2-search__field')
+                    || document.querySelector('.select2-search--dropdown .select2-search__field');
+                if (searchField) {
+                    searchField.focus();
+                }
+            };
+
+            focusSearch();
+            requestAnimationFrame(focusSearch);
+            setTimeout(focusSearch, 30);
+            setTimeout(focusSearch, 80);
+        });
+
         function gantiUnitHandler() {
             return {
                 selectedPemesanan: {
@@ -410,7 +495,7 @@
                 initSelect2() {
                     const self = this;
 
-                    // Select Pemesanan Unit
+                    // Select Pemesanan Unit Asal
                     $('#select_pemesanan_unit').select2({
                         theme: 'bootstrap4',
                         placeholder: '-- Cari & Pilih Pemesanan Unit (ACC) --',
@@ -438,7 +523,7 @@
                         }
                     });
 
-                    // Select Unit Baru
+                    // Select Unit Baru (Pengganti)
                     $('#select_unit_baru').select2({
                         theme: 'bootstrap4',
                         placeholder: '-- Cari & Pilih Unit Pengganti (Available) --',
@@ -464,9 +549,7 @@
                 },
 
                 pilihPemesananLangsung(id) {
-                    $('#select_pemesanan_unit').val(id).trigger('change');
-                    // Scroll smoothly to form
-                    document.getElementById('formGantiUnit').scrollIntoView({ behavior: 'smooth' });
+                    window.pilihPemesananUnit(id);
                 },
 
                 resetSelection() {

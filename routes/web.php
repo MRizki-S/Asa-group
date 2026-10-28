@@ -287,6 +287,8 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
     // routoe pengajuan pembatalan pemesanan unit
     Route::get('/pengajuan-pembatalan', [PengajuanPembatalanController::class, 'ListPengajuan'])
         ->name('marketing.pengajuan-pembatalan.listPengajuan');
+    Route::get('/pengajuan-pembatalan/riwayat', [PengajuanPembatalanController::class, 'riwayatPembatalan'])
+        ->name('marketing.pengajuan-pembatalan.riwayat');
     Route::get('/pengajuan-pembatalan/{id}', [PengajuanPembatalanController::class, 'show'])
         ->name('marketing.pengajuan-pembatalan.show');
     // 🔹 Route Keputusan Proyek Manager

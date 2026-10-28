@@ -168,9 +168,15 @@
                     <div class="flex flex-col gap-1.5">
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Order</label>
                         <select name="jenis_order" class="rounded-lg border-gray-300 bg-white text-gray-800 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 min-w-[140px]">
-                            <option value="all" {{ $jenisOrder === 'all' ? 'selected' : '' }}>Semua</option>
-                            <option value="stock" {{ $jenisOrder === 'stock' ? 'selected' : '' }}>Stock</option>
-                            <option value="direct" {{ $jenisOrder === 'direct' ? 'selected' : '' }}>Direct</option>
+                            @if (($forcedJenis ?? null) === 'stock')
+                                <option value="stock" selected>Stock</option>
+                            @elseif (($forcedJenis ?? null) === 'direct')
+                                <option value="direct" selected>Direct</option>
+                            @else
+                                <option value="all" {{ $jenisOrder === 'all' ? 'selected' : '' }}>Semua</option>
+                                <option value="stock" {{ $jenisOrder === 'stock' ? 'selected' : '' }}>Stock</option>
+                                <option value="direct" {{ $jenisOrder === 'direct' ? 'selected' : '' }}>Direct</option>
+                            @endif
                         </select>
                     </div>
 

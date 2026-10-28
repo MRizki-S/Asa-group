@@ -114,7 +114,7 @@ class PengajuanPemesananController extends Controller
     public function approve($id)
     {
         DB::transaction(function () use ($id) {
-            $pemesanan = PemesananUnit::with(['customer', 'sales', 'unit', 'cicilan', 'dataDiri', 'perumahaan'])->findOrFail($id);
+            $pemesanan = PemesananUnit::with(['customer', 'sales', 'agent', 'unit', 'cicilan', 'dataDiri', 'perumahaan'])->findOrFail($id);
             // dd($pemesanan);
             // Update status pengajuan jadi "acc"
             $pemesanan->update([
@@ -191,14 +191,41 @@ class PengajuanPemesananController extends Controller
                 "Tim kami siap mendampingi Anda hingga proses *serah terima rumah* selesai dengan lancar😊.\n" .
                 "Terima kasih atas kepercayaannya 🙏. ";
 
-            // Kirim WA
-            if ($pemesanan->source == 'internal' && $pemesanan->sales->no_hp) {
+            // Kirim WA ke Sales
+            if ($pemesanan->source == 'internal' && $pemesanan->sales && $pemesanan->sales->no_hp) {
                 $this->notification->sendWhatsApp($pemesanan->sales->no_hp, $messageSales);
             }
 
             // if ($pemesanan->customer->no_hp) {
             //     $this->notification->sendWhatsApp($pemesanan->customer->no_hp, $messageCustomer);
             // }
+
+            // 🔹 Kirim notifikasi Closing ke Group Marketing sesuai UBS / Perumahan
+            $groupMap = [
+                'Asa Dreamland'          => env('FONNTE_ID_GROUP_MARKETING_ADL'),
+                'Lembah Hijau Residence' => env('FONNTE_ID_GROUP_MARKETING_LHR'),
+            ];
+
+            $groupId = $groupMap[$namaPerumahaan] ?? null;
+
+            if ($groupId) {
+                $tanggalObj = $pemesanan->tanggal_pemesanan
+                    ? \Carbon\Carbon::parse($pemesanan->tanggal_pemesanan)
+                    : now();
+                $tanggalClosing = strtoupper($tanggalObj->locale('id')->translatedFormat('d F Y'));
+
+                if ($pemesanan->source === 'agent' && $pemesanan->agent) {
+                    $namaMarketingOrAgent = $pemesanan->agent->nama_agent ?? '-';
+                } else {
+                    $namaMarketingOrAgent = $pemesanan->sales->nama_lengkap
+                        ?? $pemesanan->sales->username
+                        ?? ($pemesanan->agent->nama_agent ?? '-');
+                }
+
+                $messageGroup = "✅ CLOSING UNIT {$unitName} — {$tanggalClosing} — {$namaMarketingOrAgent}";
+
+                $this->notification->sendWhatsApp($groupId, $messageGroup);
+            }
         });
 
         return redirect()

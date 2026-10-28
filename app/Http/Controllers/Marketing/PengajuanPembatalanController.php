@@ -100,6 +100,8 @@ class PengajuanPembatalanController extends Controller
             'pemesananUnit.unit',
             'pemesananUnit.customer',
             'pemesananUnit.sales',
+            'pemesananUnit.agent',
+            'pemesananUnit.dataDiri',
             'diajukanOleh',
             'disetujuiPemasaranOleh',
             'disetujuiKeuanganOleh',
@@ -144,6 +146,85 @@ class PengajuanPembatalanController extends Controller
         ]);
     }
 
+    // halaman untuk riwayat pembatalan pemesanan unit
+    public function riwayatPembatalan(Request $request)
+    {
+        $perumahaanId = $this->currentPerumahaanId();
+        $user         = Auth::user();
+
+        $namaPerumahaan    = 'Global';
+        $riwayatPembatalan = collect();
+
+        // 🗓️ Filter Tahun dan Bulan berdasarkan tanggal_pengajuan (Default: Tahun ini, Semua Bulan)
+        $tahun = $request->input('tahun', date('Y'));
+        $bulan = $request->input('bulan', '');
+
+        // 🔹 Query dasar riwayat pembatalan (semua yang statusnya bukan pending, atau sudah acc/tolak)
+        $query = PengajuanPembatalanPemesananUnit::with([
+            'pemesananUnit.perumahaan',
+            'pemesananUnit.unit',
+            'pemesananUnit.customer',
+            'pemesananUnit.sales',
+            'pemesananUnit.agent',
+            'pemesananUnit.dataDiri',
+            'diajukanOleh',
+            'disetujuiPemasaranOleh',
+            'disetujuiKeuanganOleh',
+        ])
+        ->where('status_pengajuan', '!=', 'pending');
+
+        if ($tahun) {
+            $query->whereYear('tanggal_pengajuan', $tahun);
+        }
+        if ($bulan !== '' && $bulan !== null && $bulan !== 'all') {
+            $query->whereMonth('tanggal_pengajuan', (int) $bulan);
+        }
+
+        $query->orderByDesc('updated_at');
+
+        // 🔸 Filter tambahan kalau login sebagai Marketing
+        if ($user->hasAnyRole(['Marketing', 'STAF PENJUALAN (ADL)', 'STAF PENJUALAN (LHR)'])) {
+            $query->where('diajukan_oleh', $user->id);
+        }
+
+        if ($user->is_global) {
+            // 🌐 Jika user global → ambil semua & group by perumahaan
+            $riwayatPembatalan = $query->get()->groupBy('pemesananUnit.perumahaan_id');
+        } else {
+            // 🏠 Jika bukan global → filter hanya perumahaan user
+            $riwayatPembatalan = $query
+                ->whereHas('pemesananUnit', function ($q) use ($perumahaanId) {
+                    $q->where('perumahaan_id', $perumahaanId);
+                })
+                ->get();
+
+            // Ambil nama perumahaan
+            $perumahaan = Perumahaan::find($perumahaanId);
+            if ($perumahaan) {
+                $namaPerumahaan = $perumahaan->nama_perumahaan;
+            }
+        }
+
+        return view('marketing.pengajuan-pembatalanPemesanan.riwayat', [
+            'breadcrumbs'       => [
+                [
+                    'label' => 'Pengajuan Pembatalan Pemesanan Unit',
+                    'url'   => route('marketing.pengajuan-pembatalan.listPengajuan'),
+                ],
+                [
+                    'label' => 'Riwayat Pembatalan Unit' .
+                    ($user->is_global ? ' (Global)' : ' - ' . $namaPerumahaan),
+                    'url'   => '',
+                ],
+            ],
+            'isGlobal'          => $user->is_global,
+            'riwayatPembatalan' => $riwayatPembatalan,
+            'namaPerumahaan'    => $namaPerumahaan,
+            'tahun'             => $tahun,
+            'bulan'             => $bulan,
+        ]);
+    }
+
     public function show($id)
     {
         // Ambil pengajuan pembatalan beserta relasi pemesanan dan data terkait
@@ -152,6 +233,8 @@ class PengajuanPembatalanController extends Controller
             'pemesananUnit.unit',
             'pemesananUnit.customer',
             'pemesananUnit.sales',
+            'pemesananUnit.agent',
+            'pemesananUnit.dataDiri',
         ])->findOrFail($id);
 
         // Ambil data pemesanan terkait

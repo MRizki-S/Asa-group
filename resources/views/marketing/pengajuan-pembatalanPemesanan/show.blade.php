@@ -56,14 +56,38 @@
                 <table class="w-full text-gray-800">
                     <tbody>
                         <tr>
-                            <td class="font-medium text-gray-700 w-40">Nama User</td>
+                            <td class="font-medium text-gray-700 w-40">Nama Customer</td>
                             <td class="w-4 text-center">:</td>
-                            <td>{{ $pemesanan->customer->username ?? '-' }}</td>
+                            <td>
+                                @php
+                                    $namaCustomer = $pemesanan->dataDiri->nama_pribadi
+                                        ?? (!empty(trim($pemesanan->customer->nama_lengkap ?? '')) ? trim($pemesanan->customer->nama_lengkap) : null)
+                                        ?? $pemesanan->customer->username
+                                        ?? '-';
+                                @endphp
+                                <span class="font-semibold text-gray-800 dark:text-white">
+                                    {{ $namaCustomer }}
+                                </span>
+                            </td>
                         </tr>
                         <tr>
-                            <td class="font-medium text-gray-700">Nama Sales</td>
+                            <td class="font-medium text-gray-700">{{ ($pemesanan->source === 'agent' && $pemesanan->agent) ? 'Nama Agent' : 'Nama Sales' }}</td>
                             <td class="text-center">:</td>
-                            <td>{{ $pemesanan->sales->username ?? '-' }}</td>
+                            <td>
+                                @php
+                                    $namaSales = ($pemesanan->source === 'agent' && $pemesanan->agent)
+                                        ? $pemesanan->agent->nama_agent
+                                        : (!empty(trim($pemesanan->sales->nama_lengkap ?? ''))
+                                            ? trim($pemesanan->sales->nama_lengkap)
+                                            : ($pemesanan->sales->username ?? '-'));
+                                @endphp
+                                <span class="font-semibold text-gray-800 dark:text-white">
+                                    {{ $namaSales }}
+                                </span>
+                                @if($pemesanan->source === 'agent')
+                                    <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Agent</span>
+                                @endif
+                            </td>
                         </tr>
                         <tr>
                             <td class="font-medium text-gray-700">Unit</td>

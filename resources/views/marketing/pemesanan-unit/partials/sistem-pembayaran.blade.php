@@ -221,32 +221,6 @@
             @endif
         </div>
 
-        <!-- Bonus Cash -->
-        <div class="border-t border-gray-100 dark:border-gray-800 pt-5 space-y-3">
-            <h4 class="text-base font-medium text-gray-800 dark:text-white/90">Bonus Cash (Opsional)</h4>
-            <template x-for="(bonus, index) in bonusCashList" :key="index">
-                <div class="flex gap-2 items-center">
-                    <select x-model="bonus.nama_bonus" name="nama_bonus_cash[]"
-                        class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2 dark:bg-gray-700 dark:text-white border-gray-300">
-                        <option value="">-- Pilih Bonus --</option>
-                        <template x-for="item in availableBonusCash(index)" :key="item.nama_bonus">
-                            <option :value="item.nama_bonus" x-text="item.nama_bonus"></option>
-                        </template>
-                    </select>
-                    <button type="button" @click="bonusCashList.splice(index, 1)"
-                        class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50"
-                        x-show="bonusCashList.length > 1 && index > 0">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                    <input type="hidden" :value="getNominalCash(bonus.nama_bonus)" name="nominal_bonus_cash[]">
-                </div>
-            </template>
-            <button type="button" @click="addBonusCash()"
-                class="px-3 py-1.5 text-xs text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Tambah Bonus
-            </button>
-        </div>
     </div>
 
 
@@ -667,32 +641,7 @@
             @endif
         </div>
 
-        <!-- Bonus KPR -->
-        <div class="border-t border-gray-100 dark:border-gray-800 pt-5 space-y-3">
-            <h4 class="text-base font-medium text-gray-800 dark:text-white/90">Bonus KPR (Opsional)</h4>
-            <template x-for="(bonus, index) in bonusKprList" :key="index">
-                <div class="flex gap-2 items-center">
-                    <select x-model="bonus.nama_bonus" name="nama_bonus_kpr[]"
-                        class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2 dark:bg-gray-700 dark:text-white border-gray-300">
-                        <option value="">-- Pilih Bonus --</option>
-                        <template x-for="item in availableBonusKpr(index)" :key="item.nama_bonus">
-                            <option :value="item.nama_bonus" x-text="item.nama_bonus"></option>
-                        </template>
-                    </select>
-                    <button type="button" @click="bonusKprList.splice(index, 1)"
-                        class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50"
-                        x-show="bonusKprList.length > 1 && index > 0">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                    <input type="hidden" :value="getNominalKpr(bonus.nama_bonus)" name="nominal_bonus_kpr[]">
-                </div>
-            </template>
-            <button type="button" @click="addBonusKpr()"
-                class="px-3 py-1.5 text-xs text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Tambah Bonus
-            </button>
-        </div>
+
     </div>
 
 </div>

@@ -105,6 +105,45 @@ class PermintaanBarangController extends Controller
             : $options;
     }
 
+    /**
+     * Tentukan pembatasan jenis order (stock vs direct) untuk user saat ini berdasarkan hak akses.
+     * Return: [$canStock, $canDirect, $forcedJenis]
+     * - $forcedJenis = 'stock'  -> jika HANYA punya hak aksi-stock
+     * - $forcedJenis = 'direct' -> jika HANYA punya hak aksi-direct
+     * - $forcedJenis = null     -> jika punya kedua aksi atau tidak punya aksi sama sekali (bisa lihat semua)
+     */
+    private function resolveJenisOrderAccess($user, string $category): array
+    {
+        if (!$user) {
+            return [false, false, null];
+        }
+
+        $isSuperadmin = $user->hasRole('Superadmin');
+
+        $catPerm = match ($category) {
+            'pembangunan_kawasan' => 'pemb-kawasan',
+            'pembangunan_proyek_mangoon', 'pembangunan_proyek' => 'pemb-mangoon',
+            default => 'pemb-unit',
+        };
+
+        $canStock = $isSuperadmin
+            || $user->can("gudang.permintaan-barang.{$catPerm}.aksi-stock")
+            || $user->can('gudang.permintaan-barang.aksi-stock');
+
+        $canDirect = $isSuperadmin
+            || $user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct")
+            || $user->can('gudang.permintaan-barang.aksi-direct');
+
+        $forcedJenis = null;
+        if ($canStock && !$canDirect) {
+            $forcedJenis = 'stock';
+        } elseif (!$canStock && $canDirect) {
+            $forcedJenis = 'direct';
+        }
+
+        return [$canStock, $canDirect, $forcedJenis];
+    }
+
     // view daftar permintaan barang yang masih diproses (status menunggu)
     public function index(Request $request)
     {
@@ -126,15 +165,26 @@ class PermintaanBarangController extends Controller
         $config = $this->getOrderConfig($category);
         $query = $this->orderQuery($category);
 
+        // 🔒 Cek pembatasan hak akses aksi-stock vs aksi-direct
+        $user = Auth::user();
+        [$canStock, $canDirect, $forcedJenis] = $this->resolveJenisOrderAccess($user, $category);
+
+        if ($forcedJenis !== null) {
+            // Hanya punya salah satu hak akses -> paksa jenis_order tersebut
+            $filterJenis = $forcedJenis;
+            $query->where('jenis_order', $forcedJenis);
+        } else {
+            // Punya keduanya atau tidak punya aksi sama sekali -> tampil semua (bisa filter bebas)
+            if ($filterJenis !== 'all') {
+                $query->where('jenis_order', $filterJenis);
+            }
+        }
+
         if ($status === 'diproses') {
             // Untuk tab permintaan berjalan, tampilkan baik yang diproses maupun menunggu_spv jika filter default
             $query->whereIn('status_order', ['diproses', 'menunggu_spv']);
         } elseif ($status !== 'all') {
             $query->where('status_order', $status);
-        }
-
-        if ($filterJenis !== 'all') {
-            $query->where('jenis_order', $filterJenis);
         }
 
         if ($request->filled('tanggal')) {
@@ -148,6 +198,9 @@ class PermintaanBarangController extends Controller
             'status' => $status,
             'category' => $category,
             'jenisOrder' => $filterJenis,
+            'forcedJenis' => $forcedJenis,
+            'canStock' => $canStock,
+            'canDirect' => $canDirect,
             'tanggal' => $request->get('tanggal'),
             'statusOptions' => $this->statusOptions(),
             'isHistory' => false,
@@ -180,14 +233,25 @@ class PermintaanBarangController extends Controller
         $config = $this->getOrderConfig($category);
         $query = $this->orderQuery($category);
 
+        // 🔒 Cek pembatasan hak akses aksi-stock vs aksi-direct
+        $user = Auth::user();
+        [$canStock, $canDirect, $forcedJenis] = $this->resolveJenisOrderAccess($user, $category);
+
+        if ($forcedJenis !== null) {
+            // Hanya punya salah satu hak akses -> paksa jenis_order tersebut
+            $filterJenis = $forcedJenis;
+            $query->where('jenis_order', $forcedJenis);
+        } else {
+            // Punya keduanya atau tidak punya aksi sama sekali -> tampil semua (bisa filter bebas)
+            if ($filterJenis !== 'all') {
+                $query->where('jenis_order', $filterJenis);
+            }
+        }
+
         if ($status === 'all') {
             $query->whereNotIn('status_order', ['diproses', 'menunggu_spv']);
         } else {
             $query->where('status_order', $status);
-        }
-
-        if ($filterJenis !== 'all') {
-            $query->where('jenis_order', $filterJenis);
         }
 
         if ($request->filled('tanggal')) {
@@ -201,6 +265,9 @@ class PermintaanBarangController extends Controller
             'status' => $status,
             'category' => $category,
             'jenisOrder' => $filterJenis,
+            'forcedJenis' => $forcedJenis,
+            'canStock' => $canStock,
+            'canDirect' => $canDirect,
             'statusOptions' => $this->statusOptions(false),
             'isHistory' => true,
             'titlePage' => 'Riwayat ' . $config['title'],

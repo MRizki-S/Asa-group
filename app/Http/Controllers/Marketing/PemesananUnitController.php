@@ -85,11 +85,21 @@ class PemesananUnitController extends Controller
 
         // Map data agar mudah dipakai di view
         $customersData = $bookings->map(function ($b) {
+            $user = $b->user;
+            $namaLengkap = trim($user->nama_lengkap ?: ($user->username ?? ''));
+            $words = preg_split('/\s+/', $namaLengkap, -1, PREG_SPLIT_NO_EMPTY);
+            $namaRingkas = count($words) > 2 ? ($words[0] . ' ' . $words[1]) : $namaLengkap;
+            $namaUnit = $b->unit->nama_unit ?? '-';
+            $displayLabel = ($namaRingkas ?: '-') . ' - ' . $namaUnit;
+
             return [
-                'id'       => $b->user->id,
-                'username' => $b->user->username,
-                'no_hp'    => $b->user->no_hp,
-                'booking'  => [
+                'id'            => $b->user->id,
+                'username'      => $b->user->username,
+                'nama_lengkap'  => $b->user->nama_lengkap ?: ($b->user->username ?? ''),
+                'nama_ringkas'  => $namaRingkas,
+                'display_label' => $displayLabel,
+                'no_hp'         => $b->user->no_hp ?? '',
+                'booking'       => [
                     'id'                => $b->id,
                     'perumahaan_id'     => $b->perumahaan_id,
                     'tahap_id'          => $b->tahap_id,

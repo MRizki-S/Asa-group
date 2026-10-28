@@ -13,7 +13,7 @@
                 <label for="nama_pribadi" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Nama User <span class="text-red-500">*</span>
                 </label>
-                <input type="text" id="nama_pribadi" name="nama_pribadi"
+                <input type="text" id="nama_pribadi" name="nama_pribadi" x-model="namaPribadi"
                     class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
             dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="Masukkan nama lengkap" required>
@@ -24,7 +24,7 @@
                 <label for="no_hp" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Nomor HP <span class="text-red-500">*</span>
                 </label>
-                <input type="number" id="no_hp" name="no_hp" required
+                <input type="text" inputmode="numeric" id="no_hp" name="no_hp" x-model="noHp" required
                     class="form-control w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5
             dark:bg-gray-700 dark:text-white dark:border-gray-600"
                     placeholder="Contoh: 081234567890">

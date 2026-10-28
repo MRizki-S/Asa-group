@@ -15,9 +15,9 @@
             <select id="selectUser" name="user_id" required
                 class="select-user w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5">
                 <option value="">Pilih Akun Customer</option>
-                <template x-for="c in customers" :key="c.id">
-                    <option :value="c.id" x-text="c.username + ' — ' + c.no_hp"></option>
-                </template>
+                @foreach ($customersData as $c)
+                    <option value="{{ $c['id'] }}">{{ $c['display_label'] }}</option>
+                @endforeach
             </select>
         </div>
 

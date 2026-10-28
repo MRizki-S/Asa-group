@@ -173,6 +173,8 @@
                 selectedCustomerId: '',
                 selectedCustomer: null,
                 hasSelected: false,
+                namaPribadi: '',
+                noHp: '',
 
                 // CARA BAYAR
                 caraBayar: '',
@@ -361,27 +363,58 @@
                     this.selectedCustomer = this.customers.find(c => c.id == id) || null;
                     this.hasSelected = !!this.selectedCustomer;
 
-                    if (this.hasSelected && this.selectedCustomer.booking) {
-                        const finalVal = parseInt((this.selectedCustomer.booking.harga_final || 0).toString().split('.')[0]) || 0;
-                        const kelebihanVal = parseInt((this.selectedCustomer.booking.nominal_kelebihan || 0).toString().split('.')[0]) || 0;
+                    if (this.hasSelected && this.selectedCustomer) {
+                        // Auto-fill nama user dan nomor hp ke data diri
+                        const fullName = this.selectedCustomer.nama_lengkap || this.selectedCustomer.username || '';
+                        const phone = this.selectedCustomer.no_hp || '';
+                        this.namaPribadi = fullName;
+                        this.noHp = phone;
 
-                        // set data KPR
-                        this.kprHargaTotalNumber = finalVal;
-                        this.kprHargaTotal = this.formatNumber(finalVal);
-                        this.kprDpRumahIndukNumber = 0;
-                        this.kprDpRumahInduk = '';
+                        const inputNama = document.getElementById('nama_pribadi');
+                        if (inputNama) {
+                            inputNama.value = fullName;
+                            inputNama.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        const inputHp = document.getElementById('no_hp');
+                        if (inputHp) {
+                            inputHp.value = phone;
+                            inputHp.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
 
-                        // set data Cash
-                        this.cashHargaRumahNumber = finalVal;
-                        this.cashHargaRumah = this.formatNumber(finalVal);
-                        this.cashLuasKelebihan = this.selectedCustomer.booking.luas_kelebihan ?? '';
-                        this.cashNominalKelebihanNumber = kelebihanVal;
-                        this.cashNominalKelebihan = kelebihanVal > 0 ? this.formatNumber(kelebihanVal) : '';
+                        if (this.selectedCustomer.booking) {
+                            const finalVal = parseInt((this.selectedCustomer.booking.harga_final || 0).toString().split('.')[0]) || 0;
+                            const kelebihanVal = parseInt((this.selectedCustomer.booking.nominal_kelebihan || 0).toString().split('.')[0]) || 0;
 
-                        if (this.selectedCustomer.booking.perumahaan_id) {
-                            this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
+                            // set data KPR
+                            this.kprHargaTotalNumber = finalVal;
+                            this.kprHargaTotal = this.formatNumber(finalVal);
+                            this.kprDpRumahIndukNumber = 0;
+                            this.kprDpRumahInduk = '';
+
+                            // set data Cash
+                            this.cashHargaRumahNumber = finalVal;
+                            this.cashHargaRumah = this.formatNumber(finalVal);
+                            this.cashLuasKelebihan = this.selectedCustomer.booking.luas_kelebihan ?? '';
+                            this.cashNominalKelebihanNumber = kelebihanVal;
+                            this.cashNominalKelebihan = kelebihanVal > 0 ? this.formatNumber(kelebihanVal) : '';
+
+                            if (this.selectedCustomer.booking.perumahaan_id) {
+                                this.fetchSettingPpjb(this.selectedCustomer.booking.perumahaan_id);
+                            }
                         }
                     } else {
+                        this.namaPribadi = '';
+                        this.noHp = '';
+                        const inputNama = document.getElementById('nama_pribadi');
+                        if (inputNama) {
+                            inputNama.value = '';
+                            inputNama.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        const inputHp = document.getElementById('no_hp');
+                        if (inputHp) {
+                            inputHp.value = '';
+                            inputHp.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
                         this._resetAngsuranState();
                     }
                 },
@@ -761,6 +794,13 @@
 
                     select.on('change', function() {
                         self.setCustomer(this.value);
+                    });
+
+                    select.on('select2:open', () => {
+                        const searchField = document.querySelector('.select2-search__field');
+                        if (searchField) {
+                            searchField.focus();
+                        }
                     });
 
                     const pre = select.val();
