@@ -123,6 +123,12 @@
         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-direct',
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-direct',
     ];
+    $aksiCashPermMap = [
+        'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.aksi-cash',
+        'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi-cash',
+        'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-cash',
+        'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-cash',
+    ];
     $editPermMap = [
         'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.edit',
         'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.edit',
@@ -138,15 +144,18 @@
 
     $permissionAksiStock = $aksiStockPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi-stock';
     $permissionAksiDirect = $aksiDirectPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi-direct';
+    $permissionAksiCash = $aksiCashPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi-cash';
     $permissionEdit = $editPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.edit';
     $permissionAjukanKembali = $ajukanKembaliPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.ajukan-kembali';
 
     $isStockOrder = ($order->jenis_order ?? 'stock') === 'stock';
     $isDirectOrder = ($order->jenis_order ?? '') === 'direct';
+    $isCashOrder = ($order->jenis_order ?? '') === 'cash';
 
     $canAksiOrder = auth()->user()?->hasRole('Superadmin')
         || ($isStockOrder && (auth()->user()?->can($permissionAksiStock) || auth()->user()?->can('gudang.permintaan-barang.aksi-stock')))
-        || ($isDirectOrder && (auth()->user()?->can($permissionAksiDirect) || auth()->user()?->can('gudang.permintaan-barang.aksi-direct')));
+        || ($isDirectOrder && (auth()->user()?->can($permissionAksiDirect) || auth()->user()?->can('gudang.permintaan-barang.aksi-direct')))
+        || ($isCashOrder && (auth()->user()?->can($permissionAksiCash) || auth()->user()?->can('gudang.permintaan-barang.aksi-cash')));
 @endphp
 
 <div class="mx-auto max-w-[--breakpoint-2xl] p-4 md:p-6"
@@ -370,10 +379,13 @@
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah Permintaan</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Jumlah Base</th>
                             <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Konfirmasi</th>
-                            @if ($order->jenis_order !== 'direct')
+                            @if ($order->jenis_order !== 'direct' && $order->jenis_order !== 'cash')
                                 <th class="border border-gray-300 px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                     Stock Saat Ini {{ $ubsCode ? '(' . $ubsCode . ')' : '' }}
                                 </th>
+                            @endif
+                            @if ($order->jenis_order === 'cash')
+                                <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Harga Satuan</th>
                             @endif
                             <th class="border border-gray-300 px-3 py-2 text-right text-sm font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">Harga Total</th>
                         </tr>
@@ -400,7 +412,45 @@
                                     $isOver = ($totalOrderedUpToThis - $baseRap) > 0.001;
                                 }
                             @endphp
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                @if ($order->jenis_order === 'cash')
+                                    x-data="{
+                                        qty: {{ (float) $detail->jumlah_input }},
+                                        valueSatuan: '{{ (int) old('harga_satuan.' . $detail->id, $detail->harga_satuan_snapshot ?? 0) }}',
+                                        displaySatuan: '',
+                                        valueTotal: '{{ (int) old('harga_total.' . $detail->id, $detail->harga_total_snapshot ?? (($detail->harga_satuan_snapshot ?? 0) * (float) $detail->jumlah_input)) }}',
+                                        displayTotal: '',
+                                        init() {
+                                            if (this.valueSatuan && parseInt(this.valueSatuan) > 0) {
+                                                this.displaySatuan = formatRupiah(this.valueSatuan);
+                                            }
+                                            if (this.valueTotal && parseInt(this.valueTotal) > 0) {
+                                                this.displayTotal = formatRupiah(this.valueTotal);
+                                            }
+                                        },
+                                        onSatuanInput(e) {
+                                            let clean = e.target.value.replace(/\D/g, '');
+                                            this.valueSatuan = clean;
+                                            this.displaySatuan = clean ? formatRupiah(clean) : '';
+                                            let numSatuan = parseFloat(clean) || 0;
+                                            let calcTotal = Math.round(this.qty * numSatuan);
+                                            this.valueTotal = calcTotal > 0 ? String(calcTotal) : '';
+                                            this.displayTotal = calcTotal > 0 ? formatRupiah(calcTotal) : '';
+                                        },
+                                        onTotalInput(e) {
+                                            let clean = e.target.value.replace(/\D/g, '');
+                                            this.valueTotal = clean;
+                                            this.displayTotal = clean ? formatRupiah(clean) : '';
+                                            let numTotal = parseFloat(clean) || 0;
+                                            if (this.qty > 0 && numTotal > 0) {
+                                                let calcSatuan = Math.round(numTotal / this.qty);
+                                                this.valueSatuan = String(calcSatuan);
+                                                this.displaySatuan = formatRupiah(calcSatuan);
+                                            }
+                                        }
+                                    }"
+                                @endif
+                            >
                                 <td class="border border-gray-300 px-3 py-2">
                                     <div class="text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-' }}
@@ -437,7 +487,7 @@
                                         {{ $detail->konfirmasi ? 'Ya' : 'Belum' }}
                                     </span>
                                 </td>
-                                @if ($order->jenis_order !== 'direct')
+                                @if ($order->jenis_order !== 'direct' && $order->jenis_order !== 'cash')
                                     @php
                                         $baseStock = $stocks[$detail->barang_id] ?? 0;
                                         $conv = $conversions[$detail->id] ?? 1.0;
@@ -453,8 +503,33 @@
                                         {{ $formatQty($stockInDefault) }} {{ $detail->satuan }}
                                     </td>
                                 @endif
+                                @if ($order->jenis_order === 'cash')
+                                    <td class="border border-gray-300 px-3 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
+                                        @if ($order->status_order === 'diproses' && !$detail->konfirmasi && $canAksiOrder)
+                                            <input type="text"
+                                                x-model="displaySatuan"
+                                                @input="onSatuanInput($event)"
+                                                placeholder="Harga satuan"
+                                                class="w-32 rounded-lg border border-emerald-300 bg-emerald-50/50 px-2.5 py-1.5 text-right text-sm font-semibold text-gray-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:bg-gray-800 dark:border-gray-600 dark:text-white shadow-xs">
+                                            <input type="hidden" form="acc-form"
+                                                name="harga_satuan[{{ $detail->id }}]"
+                                                :value="valueSatuan">
+                                        @else
+                                            {{ !is_null($detail->harga_satuan_snapshot) ? 'Rp ' . number_format((float) $detail->harga_satuan_snapshot, 0, ',', '.') : '-' }}
+                                        @endif
+                                    </td>
+                                @endif
                                 <td class="border border-gray-300 px-3 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                    @if ($order->jenis_order === 'direct' && $order->status_order === 'diproses' && ! $detail->konfirmasi)
+                                    @if ($order->jenis_order === 'cash' && $order->status_order === 'diproses' && !$detail->konfirmasi && $canAksiOrder)
+                                        <input type="text"
+                                            x-model="displayTotal"
+                                            @input="onTotalInput($event)"
+                                            placeholder="Total harga"
+                                            class="w-36 rounded-lg border border-emerald-300 bg-emerald-50/50 px-2.5 py-1.5 text-right text-sm font-bold text-emerald-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:bg-gray-800 dark:border-gray-600 dark:text-emerald-400 shadow-xs">
+                                        <input type="hidden" form="acc-form"
+                                            name="harga_total[{{ $detail->id }}]"
+                                            :value="valueTotal">
+                                    @elseif ($order->jenis_order === 'direct' && $order->status_order === 'diproses' && ! $detail->konfirmasi)
                                         <div class="inline-block" x-data="rupiahInput('{{ (int) old('harga_total.' . $detail->id, $detail->harga_total_snapshot ?? '') ? (int) old('harga_total.' . $detail->id, $detail->harga_total_snapshot) : '' }}')">
                                             <input type="text"
                                                 x-model="display"
@@ -483,7 +558,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $order->jenis_order === 'direct' ? 5 : 6 }}" class="border border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
+                                <td colspan="{{ $order->jenis_order === 'cash' ? 6 : ($order->jenis_order === 'direct' ? 5 : 6) }}" class="border border-gray-300 px-3 py-8 text-center text-sm text-gray-500">
                                     Belum ada detail barang.
                                 </td>
                             </tr>
@@ -536,7 +611,7 @@
                         Tolak
                     </button>
 
-                    {{-- Tombol ACC Permintaan (Stock / Direct) --}}
+                    {{-- Tombol ACC Permintaan (Stock / Direct / Cash) --}}
                     <form id="acc-form" x-ref="accForm" method="POST" action="{{ $accRoute }}"
                         @submit="accSubmitting = true">
                         @csrf
@@ -609,6 +684,8 @@
                         <p class="text-sm font-semibold text-green-800 dark:text-green-300">
                             @if ($order->jenis_order === 'direct')
                                 ACC akan memproses pengeluaran barang direct dan mencatat biaya bahan proyek.
+                            @elseif ($order->jenis_order === 'cash')
+                                ACC akan menyetujui pengeluaran barang cash dan mencatat realisasi termin sesuai nominal pengajuan/koreksi tanpa memotong stok gudang.
                             @else
                                 ACC akan mengurangi stock UBS dan sisa nota barang masuk secara FIFO, mencatat realisasi termin, serta menerbitkan Nota Barang Keluar (NBK) resmi.
                             @endif
@@ -635,7 +712,7 @@
                     <button type="button" :disabled="accSubmitting"
                         @click="if ($refs.accForm.reportValidity()) { accSubmitting = true; $refs.accForm.requestSubmit() }"
                         class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-sm transition disabled:opacity-60">
-                        <span x-text="accSubmitting ? 'Memproses...' : 'Ya, Setujui & Potong Stok'"></span>
+                        <span x-text="accSubmitting ? 'Memproses...' : '{{ $order->jenis_order === 'cash' ? 'Ya, Setujui & Catat Termin' : ($order->jenis_order === 'direct' ? 'Ya, Setujui & Catat Biaya' : 'Ya, Setujui & Potong Stok') }}'"></span>
                     </button>
                 </div>
             </div>

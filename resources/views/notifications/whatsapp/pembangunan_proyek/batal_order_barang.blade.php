@@ -3,6 +3,7 @@
 Permintaan barang keluar ke kontraktor berikut telah dibatalkan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
+• *Tipe:* {{ strtoupper($order->jenis_order ?? 'stock') }}
 • *Nama Proyek:* {{ $namaProyek }}
 • *Dibatalkan Oleh:* {{ $pembatal }}
 • *Tanggal Batal:* {{ $tanggal }}

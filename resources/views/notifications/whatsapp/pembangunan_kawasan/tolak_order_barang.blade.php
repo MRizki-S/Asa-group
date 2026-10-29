@@ -3,6 +3,7 @@
 Permintaan barang keluar ke kawasan berikut telah ditolak oleh {{ $penolakRole ?? 'Gudang' }}:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
+• *Tipe:* {{ strtoupper($order->jenis_order ?? 'stock') }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Ditolak Oleh:* {{ $adminGudang }}

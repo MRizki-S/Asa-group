@@ -224,12 +224,14 @@ class PembangunanKawasanOrderBarangController extends Controller
 
         $request->validate([
             'pembangunan_kawasan_id' => 'required|exists:pembangunan_kawasan,id',
-            'jenis_order' => 'required|in:stock,direct',
+            'jenis_order' => 'required|in:stock,direct,cash',
             'catatan' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:master_barang,id',
             'items.*.satuan_id' => 'required|exists:master_satuan,id',
             'items.*.jumlah_input' => 'required|numeric|min:0.0001',
+            'items.*.harga_satuan' => 'nullable|numeric|min:0',
+            'items.*.harga_total' => 'nullable|numeric|min:0',
         ]);
 
         $kawasan = PembangunanKawasan::with('perumahan')->find($request->pembangunan_kawasan_id);
@@ -299,6 +301,11 @@ class PembangunanKawasanOrderBarangController extends Controller
                     ->where('satuan_id', $item['satuan_id'])->first();
                 $jumlahBase = $konversi ? ($item['jumlah_input'] * $konversi->konversi_ke_base) : $item['jumlah_input'];
 
+                $hargaSatuan = ($request->jenis_order === 'cash') ? ($item['harga_satuan'] ?? null) : null;
+                $hargaTotal = ($request->jenis_order === 'cash')
+                    ? ($item['harga_total'] ?? ($hargaSatuan ? $hargaSatuan * (float) $item['jumlah_input'] : null))
+                    : null;
+
                 PembangunanKawasanBarangOrderDetail::create([
                     'order_id' => $order->id,
                     'barang_id' => $item['barang_id'],
@@ -307,7 +314,9 @@ class PembangunanKawasanOrderBarangController extends Controller
                     'nama_barang' => $namaBarang,
                     'satuan' => $satuan->nama ?? '',
                     'jumlah_base' => $jumlahBase,
-                    'ubs_id' => $ubsId
+                    'ubs_id' => $ubsId,
+                    'harga_satuan_snapshot' => $hargaSatuan,
+                    'harga_total_snapshot' => $hargaTotal,
                 ]);
             }
 

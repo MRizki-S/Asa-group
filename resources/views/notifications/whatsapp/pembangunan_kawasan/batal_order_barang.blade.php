@@ -3,6 +3,7 @@
 Permintaan barang keluar ke kawasan berikut telah dibatalkan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
+• *Tipe:* {{ strtoupper($order->jenis_order ?? 'stock') }}
 • *Perumahan:* {{ $namaPerumahan }}
 • *Nama Kawasan:* {{ $namaKawasan }}
 • *Dibatalkan Oleh:* {{ $pembatal }}

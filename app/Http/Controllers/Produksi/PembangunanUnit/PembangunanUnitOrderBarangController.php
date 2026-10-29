@@ -224,7 +224,9 @@ class PembangunanUnitOrderBarangController extends Controller
             'items.*.satuan' => 'required',
             'items.*.jumlah_input' => 'required|numeric|min:0.0001',
             'items.*.faktor_konversi' => 'nullable|numeric|min:0.0001',
-            'jenis_order' => 'required|string|in:stock,direct'
+            'items.*.harga_satuan' => 'nullable|numeric|min:0',
+            'items.*.harga_total' => 'nullable|numeric|min:0',
+            'jenis_order' => 'required|string|in:stock,direct,cash'
         ]);
 
         try {
@@ -283,11 +285,13 @@ class PembangunanUnitOrderBarangController extends Controller
 
             foreach ($request->items as $item) {
                 $barang = MasterBarang::findOrFail($item['barang_id']);
-                $expectedStock = $request->jenis_order === 'stock';
 
-                if ((bool) $barang->is_stock !== $expectedStock) {
-                    $jenis = $expectedStock ? 'stock' : 'direct';
-                    throw new \Exception("Barang {$barang->nama_barang} bukan tipe {$jenis}.");
+                if ($request->jenis_order !== 'cash') {
+                    $expectedStock = $request->jenis_order === 'stock';
+                    if ((bool) $barang->is_stock !== $expectedStock) {
+                        $jenis = $expectedStock ? 'stock' : 'direct';
+                        throw new \Exception("Barang {$barang->nama_barang} bukan tipe {$jenis}.");
+                    }
                 }
 
                 // Backend menjadi sumber kebenaran untuk konversi satuan.
@@ -322,6 +326,11 @@ class PembangunanUnitOrderBarangController extends Controller
                     }
                 }
 
+                $hargaSatuan = ($request->jenis_order === 'cash') ? ($item['harga_satuan'] ?? null) : null;
+                $hargaTotal = ($request->jenis_order === 'cash')
+                    ? ($item['harga_total'] ?? ($hargaSatuan ? $hargaSatuan * (float) $item['jumlah_input'] : null))
+                    : null;
+
                 PembangunanUnitBarangOrderDetail::create([
                     'order_id' => $order->id,
                     'barang_id' => $item['barang_id'],
@@ -333,6 +342,8 @@ class PembangunanUnitOrderBarangController extends Controller
                     'jumlah_input' => $item['jumlah_input'],
                     'jumlah_base' => $newQtyBase,
                     'alasan_permintaan_tidak_sesuai_rap' => $alasan,
+                    'harga_satuan_snapshot' => $hargaSatuan,
+                    'harga_total_snapshot' => $hargaTotal,
                 ]);
             }
 

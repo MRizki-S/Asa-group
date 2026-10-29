@@ -106,16 +106,18 @@ class PermintaanBarangController extends Controller
     }
 
     /**
-     * Tentukan pembatasan jenis order (stock vs direct) untuk user saat ini berdasarkan hak akses.
-     * Return: [$canStock, $canDirect, $forcedJenis]
+     * Tentukan pembatasan jenis order (stock vs direct vs cash) untuk user saat ini berdasarkan hak akses.
+     * Return: [$canStock, $canDirect, $canCash, $allowedJenis, $forcedJenis]
      * - $forcedJenis = 'stock'  -> jika HANYA punya hak aksi-stock
      * - $forcedJenis = 'direct' -> jika HANYA punya hak aksi-direct
-     * - $forcedJenis = null     -> jika punya kedua aksi atau tidak punya aksi sama sekali (bisa lihat semua)
+     * - $forcedJenis = 'cash'   -> jika HANYA punya hak aksi-cash
+     * - $forcedJenis = null     -> jika punya 2 aksi, 3 aksi, atau 0 aksi (hanya read-only)
+     * - $allowedJenis           -> array jenis order yang diizinkan dilihat user (misal ['stock', 'direct'])
      */
     private function resolveJenisOrderAccess($user, string $category): array
     {
         if (!$user) {
-            return [false, false, null];
+            return [false, false, false, [], null];
         }
 
         $isSuperadmin = $user->hasRole('Superadmin');
@@ -134,14 +136,33 @@ class PermintaanBarangController extends Controller
             || $user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct")
             || $user->can('gudang.permintaan-barang.aksi-direct');
 
-        $forcedJenis = null;
-        if ($canStock && !$canDirect) {
-            $forcedJenis = 'stock';
-        } elseif (!$canStock && $canDirect) {
-            $forcedJenis = 'direct';
+        $canCash = $isSuperadmin
+            || $user->can("gudang.permintaan-barang.{$catPerm}.aksi-cash")
+            || $user->can('gudang.permintaan-barang.aksi-cash');
+
+        $activeActions = [];
+        if ($canStock) $activeActions[] = 'stock';
+        if ($canDirect) $activeActions[] = 'direct';
+        if ($canCash) $activeActions[] = 'cash';
+
+        $totalAksi = count($activeActions);
+
+        if ($isSuperadmin || $totalAksi === 3 || $totalAksi === 0) {
+            // Superadmin, punya ke-3 aksi, ATAU tidak punya aksi sama sekali (hanya punya akses .read)
+            // -> Bisa melihat semua daftar
+            $allowedJenis = ['stock', 'direct', 'cash'];
+            $forcedJenis = null;
+        } elseif ($totalAksi === 1) {
+            // Hanya punya 1 aksi -> terkunci khusus pada jenis tersebut
+            $allowedJenis = $activeActions;
+            $forcedJenis = $activeActions[0];
+        } else {
+            // Punya 2 aksi dari 3 -> hanya boleh melihat 2 jenis aksi yang dimiliki
+            $allowedJenis = $activeActions;
+            $forcedJenis = null;
         }
 
-        return [$canStock, $canDirect, $forcedJenis];
+        return [$canStock, $canDirect, $canCash, $allowedJenis, $forcedJenis];
     }
 
     // view daftar permintaan barang yang masih diproses (status menunggu)
@@ -159,24 +180,32 @@ class PermintaanBarangController extends Controller
             $filterJenis = 'all';
         } else {
             $category = $request->get('category', 'pembangunan_unit');
-            $filterJenis = in_array($rawJenisOrder, ['stock', 'direct']) ? $rawJenisOrder : 'all';
+            $filterJenis = in_array($rawJenisOrder, ['stock', 'direct', 'cash']) ? $rawJenisOrder : 'all';
         }
 
         $config = $this->getOrderConfig($category);
         $query = $this->orderQuery($category);
 
-        // 🔒 Cek pembatasan hak akses aksi-stock vs aksi-direct
+        // 🔒 Cek pembatasan hak akses aksi-stock vs aksi-direct vs aksi-cash
         $user = Auth::user();
-        [$canStock, $canDirect, $forcedJenis] = $this->resolveJenisOrderAccess($user, $category);
+        [$canStock, $canDirect, $canCash, $allowedJenis, $forcedJenis] = $this->resolveJenisOrderAccess($user, $category);
 
         if ($forcedJenis !== null) {
             // Hanya punya salah satu hak akses -> paksa jenis_order tersebut
             $filterJenis = $forcedJenis;
             $query->where('jenis_order', $forcedJenis);
         } else {
-            // Punya keduanya atau tidak punya aksi sama sekali -> tampil semua (bisa filter bebas)
             if ($filterJenis !== 'all') {
-                $query->where('jenis_order', $filterJenis);
+                if (in_array($filterJenis, $allowedJenis)) {
+                    $query->where('jenis_order', $filterJenis);
+                } else {
+                    $filterJenis = 'all';
+                    $query->whereIn('jenis_order', $allowedJenis);
+                }
+            } else {
+                if (count($allowedJenis) < 3) {
+                    $query->whereIn('jenis_order', $allowedJenis);
+                }
             }
         }
 
@@ -201,6 +230,8 @@ class PermintaanBarangController extends Controller
             'forcedJenis' => $forcedJenis,
             'canStock' => $canStock,
             'canDirect' => $canDirect,
+            'canCash' => $canCash,
+            'allowedJenis' => $allowedJenis,
             'tanggal' => $request->get('tanggal'),
             'statusOptions' => $this->statusOptions(),
             'isHistory' => false,
@@ -227,24 +258,32 @@ class PermintaanBarangController extends Controller
             $filterJenis = 'all';
         } else {
             $category = $request->get('category', 'pembangunan_unit');
-            $filterJenis = in_array($rawJenisOrder, ['stock', 'direct']) ? $rawJenisOrder : 'all';
+            $filterJenis = in_array($rawJenisOrder, ['stock', 'direct', 'cash']) ? $rawJenisOrder : 'all';
         }
 
         $config = $this->getOrderConfig($category);
         $query = $this->orderQuery($category);
 
-        // 🔒 Cek pembatasan hak akses aksi-stock vs aksi-direct
+        // 🔒 Cek pembatasan hak akses aksi-stock vs aksi-direct vs aksi-cash
         $user = Auth::user();
-        [$canStock, $canDirect, $forcedJenis] = $this->resolveJenisOrderAccess($user, $category);
+        [$canStock, $canDirect, $canCash, $allowedJenis, $forcedJenis] = $this->resolveJenisOrderAccess($user, $category);
 
         if ($forcedJenis !== null) {
             // Hanya punya salah satu hak akses -> paksa jenis_order tersebut
             $filterJenis = $forcedJenis;
             $query->where('jenis_order', $forcedJenis);
         } else {
-            // Punya keduanya atau tidak punya aksi sama sekali -> tampil semua (bisa filter bebas)
             if ($filterJenis !== 'all') {
-                $query->where('jenis_order', $filterJenis);
+                if (in_array($filterJenis, $allowedJenis)) {
+                    $query->where('jenis_order', $filterJenis);
+                } else {
+                    $filterJenis = 'all';
+                    $query->whereIn('jenis_order', $allowedJenis);
+                }
+            } else {
+                if (count($allowedJenis) < 3) {
+                    $query->whereIn('jenis_order', $allowedJenis);
+                }
             }
         }
 
@@ -268,6 +307,8 @@ class PermintaanBarangController extends Controller
             'forcedJenis' => $forcedJenis,
             'canStock' => $canStock,
             'canDirect' => $canDirect,
+            'canCash' => $canCash,
+            'allowedJenis' => $allowedJenis,
             'statusOptions' => $this->statusOptions(false),
             'isHistory' => true,
             'titlePage' => 'Riwayat ' . $config['title'],
@@ -358,14 +399,16 @@ class PermintaanBarangController extends Controller
         $user = Auth::user();
         $isStock = ($order->jenis_order ?? 'stock') === 'stock';
         $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $isCash = ($order->jenis_order ?? '') === 'cash';
         $catPerm = $category === 'pembangunan_kawasan' ? 'pemb-kawasan' : 'pemb-mangoon';
 
         $canAcc = $user->hasRole('Superadmin')
             || ($isStock && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-stock") || $user->can('gudang.permintaan-barang.aksi-stock')))
-            || ($isDirect && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct") || $user->can('gudang.permintaan-barang.aksi-direct')));
+            || ($isDirect && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct") || $user->can('gudang.permintaan-barang.aksi-direct')))
+            || ($isCash && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-cash") || $user->can('gudang.permintaan-barang.aksi-cash')));
 
         if (!$canAcc) {
-            return back()->with('error', 'Anda tidak memiliki hak akses untuk ACC permintaan barang ' . ($isDirect ? 'direct' : 'stock') . '.');
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk ACC permintaan barang ' . ($order->jenis_order ?? 'ini') . '.');
         }
 
         try {
@@ -428,6 +471,21 @@ class PermintaanBarangController extends Controller
 
         if ($order->status_order !== 'diproses') {
             return back()->with('error', 'Permintaan barang ini sudah tidak dalam status menunggu.');
+        }
+
+        $user = Auth::user();
+        $isStock = ($order->jenis_order ?? 'stock') === 'stock';
+        $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $isCash = ($order->jenis_order ?? '') === 'cash';
+        $catPerm = $category === 'pembangunan_kawasan' ? 'pemb-kawasan' : 'pemb-mangoon';
+
+        $canTolak = $user->hasRole('Superadmin')
+            || ($isStock && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-stock") || $user->can('gudang.permintaan-barang.aksi-stock')))
+            || ($isDirect && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct") || $user->can('gudang.permintaan-barang.aksi-direct')))
+            || ($isCash && ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-cash") || $user->can('gudang.permintaan-barang.aksi-cash')));
+
+        if (!$canTolak) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk menolak permintaan barang ' . ($order->jenis_order ?? 'ini') . '.');
         }
 
         $order->update([
@@ -539,6 +597,24 @@ class PermintaanBarangController extends Controller
             $jumlahBase = $this->resolveJumlahBase($detail);
             $hargaTotal = 0.0;
             $hargaSatuanBase = 0.0;
+
+            if ($order->jenis_order === 'cash') {
+                $cashPrices = $this->resolveCashPrices($request, $detail);
+                $hargaTotal = $cashPrices['harga_total'];
+                $hargaSatuanBase = $cashPrices['harga_satuan'];
+
+                $detail->update([
+                    'konfirmasi' => true,
+                    'jumlah_base' => $jumlahBase,
+                    'harga_satuan_snapshot' => $hargaSatuanBase,
+                    'harga_total_snapshot' => $hargaTotal,
+                ]);
+
+                if ($jumlahBase > 0) {
+                    $this->upsertBahan($order, $detail, $hargaTotal, $category);
+                }
+                continue;
+            }
 
             if ($jumlahBase > 0) {
                 if ($detail->barang?->is_stock) {
@@ -713,8 +789,61 @@ class PermintaanBarangController extends Controller
         return round($hargaTotal, 2);
     }
 
+    private function resolveCashPrices(Request $request, $detail): array
+    {
+        $hargaTotalInput = $request->input("harga_total.{$detail->id}");
+        $hargaSatuanInput = $request->input("harga_satuan.{$detail->id}");
+        $qtyInput = (float) ($detail->jumlah_input ?? 0);
+
+        $hargaTotal = null;
+        $hargaSatuan = null;
+
+        if ($hargaTotalInput !== null && $hargaTotalInput !== '') {
+            $hargaTotal = (float) $hargaTotalInput;
+        }
+        if ($hargaSatuanInput !== null && $hargaSatuanInput !== '') {
+            $hargaSatuan = (float) $hargaSatuanInput;
+        }
+
+        if ($hargaTotal === null && $hargaSatuan !== null && $qtyInput > 0) {
+            $hargaTotal = round($hargaSatuan * $qtyInput, 2);
+        } elseif ($hargaSatuan === null && $hargaTotal !== null && $qtyInput > 0) {
+            $hargaSatuan = round($hargaTotal / $qtyInput, 2);
+        }
+
+        if ($hargaTotal === null) {
+            if (!is_null($detail->harga_total_snapshot)) {
+                $hargaTotal = (float) $detail->harga_total_snapshot;
+            } elseif (!is_null($detail->harga_satuan_snapshot) && $qtyInput > 0) {
+                $hargaTotal = round((float) $detail->harga_satuan_snapshot * $qtyInput, 2);
+            }
+        }
+
+        if ($hargaSatuan === null) {
+            if (!is_null($detail->harga_satuan_snapshot)) {
+                $hargaSatuan = (float) $detail->harga_satuan_snapshot;
+            } elseif ($hargaTotal !== null && $qtyInput > 0) {
+                $hargaSatuan = round($hargaTotal / $qtyInput, 2);
+            }
+        }
+
+        if ($hargaTotal === null || $hargaTotal < 0) {
+            $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
+            throw new \Exception("Harga total untuk barang cash {$namaBarang} wajib valid dan tidak boleh minus.");
+        }
+
+        return [
+            'harga_total' => round($hargaTotal, 2),
+            'harga_satuan' => round($hargaSatuan ?? 0, 2),
+        ];
+    }
+
     private function assertDetailMatchesOrderType($order, $detail): void
     {
+        if ($order->jenis_order === 'cash') {
+            return;
+        }
+
         $barang = $detail->barang;
 
         if (!$barang) {

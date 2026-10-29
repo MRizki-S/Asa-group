@@ -33,6 +33,17 @@
             if (isNaN(num)) return '0';
             return num.toLocaleString('id-ID', { maximumFractionDigits: 4 });
         },
+        formatRupiah(val) {
+            let num = parseFloat(val);
+            if (isNaN(num)) return 'Rp 0';
+            return 'Rp ' + Math.round(num).toLocaleString('id-ID');
+        },
+        hasCashPrice() {
+            return this.modalItems.some(item => item.is_cash && item.harga_satuan > 0);
+        },
+        getTotalCashPrice() {
+            return this.modalItems.reduce((acc, item) => acc + (parseFloat(item.harga_total) || 0), 0);
+        },
         selectedOrders: [],
         toggleOrder(id) {
             id = parseInt(id);
@@ -169,13 +180,22 @@
                         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Order</label>
                         <select name="jenis_order" class="rounded-lg border-gray-300 bg-white text-gray-800 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 min-w-[140px]">
                             @if (($forcedJenis ?? null) === 'stock')
-                                <option value="stock" selected>Stock</option>
+                                <option value="stock" selected>Barang Stock</option>
                             @elseif (($forcedJenis ?? null) === 'direct')
-                                <option value="direct" selected>Direct</option>
+                                <option value="direct" selected>Barang Direct</option>
+                            @elseif (($forcedJenis ?? null) === 'cash')
+                                <option value="cash" selected>Barang Cash</option>
                             @else
                                 <option value="all" {{ $jenisOrder === 'all' ? 'selected' : '' }}>Semua</option>
-                                <option value="stock" {{ $jenisOrder === 'stock' ? 'selected' : '' }}>Stock</option>
-                                <option value="direct" {{ $jenisOrder === 'direct' ? 'selected' : '' }}>Direct</option>
+                                @if (in_array('stock', $allowedJenis ?? ['stock', 'direct', 'cash']))
+                                    <option value="stock" {{ $jenisOrder === 'stock' ? 'selected' : '' }}>Barang Stock</option>
+                                @endif
+                                @if (in_array('direct', $allowedJenis ?? ['stock', 'direct', 'cash']))
+                                    <option value="direct" {{ $jenisOrder === 'direct' ? 'selected' : '' }}>Barang Direct</option>
+                                @endif
+                                @if (in_array('cash', $allowedJenis ?? ['stock', 'direct', 'cash']))
+                                    <option value="cash" {{ $jenisOrder === 'cash' ? 'selected' : '' }}>Barang Cash</option>
+                                @endif
                             @endif
                         </select>
                     </div>
@@ -296,12 +316,15 @@
                             $statusClass = $statusMap[$order->status_order] ?? 'bg-gray-100 text-gray-700';
                             $statusLabel = $statusLabels[$order->status_order] ?? str_replace('_', ' ', $order->status_order);
 
-                            $itemsData = $order->details->map(function ($detail) {
+                            $itemsData = $order->details->map(function ($detail) use ($order) {
                                 return [
                                     'nama_barang' => $detail->nama_barang ?? $detail->barang?->nama_barang ?? '-',
                                     'kode_barang' => $detail->barang?->kode_barang ?? '',
                                     'jumlah' => (float) ($detail->jumlah_input ?? 0),
                                     'satuan' => $detail->satuan ?? ($detail->satuanModel?->nama ?? $detail->barang?->baseUnit?->nama ?? '-'),
+                                    'harga_satuan' => (float) ($detail->harga_satuan_snapshot ?? 0),
+                                    'harga_total' => (float) ($detail->harga_total_snapshot ?? 0),
+                                    'is_cash' => $order->jenis_order === 'cash',
                                 ];
                             })->values();
                         @endphp
@@ -336,9 +359,19 @@
                                 <div class="text-xs text-gray-500">{{ $subLocationLabel }}</div>
                             </td>
                             <td class="text-center">
-                                <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $order->jenis_order === 'stock' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700' }}">
-                                    {{ strtoupper($order->jenis_order) }}
-                                </span>
+                                @if ($order->jenis_order === 'cash')
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                        CASH
+                                    </span>
+                                @elseif ($order->jenis_order === 'stock')
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                                        STOCK
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300">
+                                        {{ strtoupper($order->jenis_order) }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="text-center font-medium text-gray-900 dark:text-white">
                                 <button type="button"
@@ -501,8 +534,14 @@
                             <tr>
                                 <th class="px-4 py-3 w-12 text-center">No</th>
                                 <th class="px-4 py-3">Nama Barang</th>
-                                <th class="px-4 py-3 text-right w-32">Jumlah</th>
-                                <th class="px-4 py-3 text-center w-28">Satuan</th>
+                                <th class="px-4 py-3 text-right w-28">Jumlah</th>
+                                <th class="px-4 py-3 text-center w-24">Satuan</th>
+                                <template x-if="hasCashPrice()">
+                                    <th class="px-4 py-3 text-right w-32">Harga Satuan</th>
+                                </template>
+                                <template x-if="hasCashPrice()">
+                                    <th class="px-4 py-3 text-right w-32">Total Harga</th>
+                                </template>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60 bg-white dark:bg-gray-800">
@@ -519,6 +558,12 @@
                                     <td class="px-4 py-3 text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300" x-text="item.satuan"></span>
                                     </td>
+                                    <template x-if="hasCashPrice()">
+                                        <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300" x-text="formatRupiah(item.harga_satuan)"></td>
+                                    </template>
+                                    <template x-if="hasCashPrice()">
+                                        <td class="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400" x-text="formatRupiah(item.harga_total)"></td>
+                                    </template>
                                 </tr>
                             </template>
                         </tbody>
@@ -532,10 +577,14 @@
             </template>
         </div>
 
-        <div class="flex justify-between items-center gap-3 px-5 py-3.5 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
-            <span class="text-xs text-gray-500 dark:text-gray-400">
-                Total: <strong class="text-gray-700 dark:text-gray-300" x-text="modalItems.length"></strong> jenis barang
-            </span>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 px-5 py-3.5 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">
+            <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                <span>Total: <strong class="text-gray-700 dark:text-gray-300" x-text="modalItems.length"></strong> jenis barang</span>
+                <template x-if="hasCashPrice()">
+                    <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800"
+                        x-text="'Total Cash: ' + formatRupiah(getTotalCashPrice())"></span>
+                </template>
+            </div>
             <button type="button" @click="isItemModalOpen = false"
                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 shadow-sm">
                 Tutup

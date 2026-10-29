@@ -3,8 +3,8 @@
 Permintaan barang keluar ke unit berikut telah dibatalkan:
 
 • *No. Order:* {{ $order->nomor_order ?? '-' }}
+• *Tipe:* {{ strtoupper($order->jenis_order ?? 'stock') }}
 • *Perumahan:* {{ $namaPerumahan }}
-• *Tahap:* {{ $namaTahap }}
 • *Unit:* {{ $namaUnit }}
 • *Dibatalkan Oleh:* {{ $pembatal }}
 • *Tanggal Batal:* {{ $tanggal }}

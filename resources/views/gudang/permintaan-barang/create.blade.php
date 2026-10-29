@@ -127,15 +127,12 @@
                     <select x-ref="pembangunanSelect"
                         class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
                         <option value="">-- Pilih Pembangunan Unit --</option>
-                        <template x-for="pu in filteredPembangunanUnits" :key="pu.id">
-                            <option :value="pu.id" x-text="pu.label_formatted"></option>
-                        </template>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Select QC Pembangunan Unit <span class="text-red-500">*</span></label>
-                    <select x-ref="qcSelect" x-model="qcId"
+                    <select x-ref="qcSelect"
                         class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50">
                         <option value="">-- Pilih QC --</option>
                     </select>
@@ -218,7 +215,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- Card Left (7 Cols): List Semua Barang yang ada di Gudang / RAP -->
-        <div class="lg:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex flex-col h-[680px]">
+        <div class="lg:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex flex-col h-[680px] min-h-0">
 
             <!-- Header Left Card & Button Toggle Stock/Direct -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-3 mb-3 shrink-0">
@@ -226,17 +223,22 @@
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg> Katalog Barang Gudang
                 </h4>
 
-                <!-- 2 Tombol Tipe Order (Stock vs Direct) -->
-                <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                <!-- 3 Tombol Tipe Order (Stock vs Direct vs Cash) -->
+                <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 gap-0.5">
                     <button type="button" @click="setJenisOrderType('stock')"
                         :class="jenisOrderType === 'stock' ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-800 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
-                        class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                        class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h6m-6 4h6m-6 4h6"/></svg> Barang Stock
                     </button>
                     <button type="button" @click="setJenisOrderType('direct')"
                         :class="jenisOrderType === 'direct' ? 'bg-white text-orange-600 shadow-sm dark:bg-gray-800 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
-                        class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                        class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Barang Direct
+                    </button>
+                    <button type="button" @click="setJenisOrderType('cash')"
+                        :class="jenisOrderType === 'cash' ? 'bg-white text-emerald-600 shadow-sm dark:bg-gray-800 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'"
+                        class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Barang Cash
                     </button>
                 </div>
             </div>
@@ -253,11 +255,11 @@
             </div>
 
             <!-- List Barang Scrollable Container -->
-            <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-5">
+            <div class="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-5">
 
                 @if($category === 'pembangunan_unit')
-                <!-- List Atas: Barang RAP (Jika QC Terpilih) - KHUSUS PEMBANGUNAN UNIT -->
-                <div>
+                <!-- List Atas: Barang RAP (Jika QC Terpilih) - KHUSUS PEMBANGUNAN UNIT (Hanya untuk Stock & Direct) -->
+                <div x-show="jenisOrderType !== 'cash'">
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <span class="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider bg-blue-50 dark:bg-blue-900/40 px-2.5 py-1 rounded-md border border-blue-100 dark:border-blue-800 flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg> 1. Barang Sesuai RAP QC
@@ -308,12 +310,12 @@
                 </div>
                 @endif
 
-                <!-- Pemisah Garis Biasa antara Barang RAP dan Barang Luar RAP / Stok Gudang -->
+                <!-- Pemisah Garis Biasa antara Barang RAP dan Barang Luar RAP / Stok Gudang / Master Barang -->
                 <div class="pt-2">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-md border border-gray-200 dark:border-gray-600 flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
-                            {{ $category === 'pembangunan_unit' ? '2. Barang Di Luar RAP (Stok Gudang)' : 'Daftar Barang Stok Gudang' }}
+                            <span x-text="jenisOrderType === 'cash' ? 'Daftar Master Barang (Pembelian Cash Bebas)' : ('{{ $category }}' === 'pembangunan_unit' ? '2. Barang Di Luar RAP (Stok Gudang)' : 'Daftar Barang Stok Gudang')"></span>
                         </span>
                         <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
                     </div>
@@ -323,9 +325,14 @@
                         <template x-for="bg in filteredGudangItems()" :key="bg.id">
                             <div class="p-3.5 bg-gray-50/70 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700/70 flex items-center justify-between gap-3 hover:border-gray-300 transition-all">
                                 <div class="min-w-0 flex-1">
-                                    <p class="text-[9px] font-mono text-gray-400 uppercase" x-text="bg.kode_barang"></p>
-                                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="bg.nama_barang"></h5>
-                                    <p class="text-[10px] text-gray-500 font-medium mt-0.5" x-text="'Stok: ' + formatNumber(bg.stok_gudang) + ' ' + bg.base_unit_nama"></p>
+                                    <div class="flex items-center gap-1.5">
+                                        <p class="text-[9px] font-mono text-gray-400 uppercase" x-text="bg.kode_barang"></p>
+                                        <span x-show="jenisOrderType === 'cash'" class="text-[9px] px-1.5 py-0.2 rounded font-bold"
+                                            :class="bg.is_stock ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'"
+                                            x-text="bg.is_stock ? 'Stock' : 'Direct'"></span>
+                                    </div>
+                                    <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate mt-0.5" x-text="bg.nama_barang"></h5>
+                                    <p class="text-[10px] text-gray-500 font-medium mt-0.5" x-text="jenisOrderType === 'cash' ? ('Satuan: ' + bg.base_unit_nama) : ('Stok: ' + formatNumber(bg.stok_gudang) + ' ' + bg.base_unit_nama)"></p>
                                 </div>
                                 <button type="button" @click="addToCart(bg, false, null)" :disabled="isButtonAddDisabled()"
                                     class="px-3 py-1.5 bg-gray-800 hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed text-white dark:bg-gray-700 dark:hover:bg-gray-600 text-xs font-bold rounded-lg shadow-sm transition shrink-0 flex items-center gap-1">
@@ -340,7 +347,7 @@
         </div>
 
         <!-- Card Right (5 Cols): Keranjang Checkout Order Barang (Desktop Only) -->
-        <div class="hidden lg:flex lg:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex-col h-[680px]">
+        <div class="hidden lg:flex lg:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03] flex-col h-[680px] min-h-0">
 
             <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 mb-3 shrink-0">
                 <h4 class="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
@@ -362,7 +369,7 @@
             </div>
 
             <!-- Cart Items Container -->
-            <div class="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3">
+            <div class="flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar space-y-3">
                 <template x-for="(item, idx) in cart" :key="item.barang_id + '-' + (item.rap_id ?? 'null')">
                     <div
                         x-show="cartMatchesSearch(item)"
@@ -374,21 +381,25 @@
                         <div class="pr-6">
                             <div class="flex items-center justify-between gap-1.5">
                                 <div class="flex items-center gap-1.5 min-w-0">
+                                    <span x-show="jenisOrderType === 'cash'" class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 text-[8px] font-black uppercase rounded">CASH</span>
                                     @if($category === 'pembangunan_unit')
-                                    <span x-show="item.is_rap" class="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[8px] font-black uppercase rounded">RAP</span>
-                                    <span x-show="!item.is_rap" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded">Luar RAP</span>
+                                    <span x-show="jenisOrderType !== 'cash' && item.is_rap" class="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[8px] font-black uppercase rounded">RAP</span>
+                                    <span x-show="jenisOrderType !== 'cash' && !item.is_rap" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded">Luar RAP</span>
                                     @endif
                                     <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="item.nama_barang"></h5>
                                 </div>
                             </div>
                             <div class="flex flex-wrap items-center justify-between text-[10px] text-gray-400 mt-1 gap-1">
                                 <span x-text="item.kode_barang"></span>
-                                <div class="flex items-center gap-2">
+                                <div x-show="jenisOrderType !== 'cash'" class="flex items-center gap-2">
                                     <span x-show="item.is_rap" class="text-blue-600 dark:text-blue-400 font-medium"
                                         x-text="'Terorder: ' + formatNumber(getConvertedOrdered(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
                                     <span x-show="item.is_rap" class="text-indigo-600 dark:text-indigo-400 font-bold"
                                         x-text="'Sisa RAP: ' + formatNumber(getConvertedRemainingRap(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
                                     <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Stok: ' + formatNumber(getConvertedStock(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
+                                </div>
+                                <div x-show="jenisOrderType === 'cash'" class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                    <span>Pembelian Cash (Non-Stok)</span>
                                 </div>
                             </div>
                         </div>
@@ -434,9 +445,35 @@
                             </div>
                         </div>
 
+                        <!-- Input Harga Satuan & Kalkulasi Total Khusus Pembelian Cash -->
+                        <div x-show="jenisOrderType === 'cash'" class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div>
+                                <label class="block text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase mb-1">
+                                    Harga Satuan (Rp) <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-700 overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500">
+                                    <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-[10px] font-bold text-gray-400 pointer-events-none">Rp</span>
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        x-model="item.harga_satuan"
+                                        @input="formatItemHargaSatuan(item)"
+                                        placeholder="0"
+                                        class="w-full text-xs font-bold text-right bg-transparent text-gray-800 dark:text-white border-0 focus:ring-0 focus:outline-none py-1.5 pl-7 pr-2"
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total Harga (Rp)</label>
+                                <div class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-800/80 py-1.5 px-2 text-right">
+                                    <span class="text-xs font-black text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + formatNumber(calculateItemTotal(item))"></span>
+                                </div>
+                            </div>
+                        </div>
+
                         @if($category === 'pembangunan_unit')
-                        <!-- Textarea Alasan jika barang diluar RAP ATAU akumulasi order melebihi RAP (hanya untuk tipe Pembangunan) -->
-                        <div x-show="jenisPembangunan !== 'servis' && (!item.is_rap || isExceedingRap(item))" class="pt-1">
+                        <!-- Textarea Alasan jika barang diluar RAP ATAU akumulasi order melebihi RAP (hanya untuk tipe Stock & Direct) -->
+                        <div x-show="jenisOrderType !== 'cash' && jenisPembangunan !== 'servis' && (!item.is_rap || isExceedingRap(item))" class="pt-1">
                             <label class="block text-[10px] font-bold text-red-500 uppercase mb-1">
                                 <span x-show="!item.is_rap">Alasan Permintaan (Diluar RAP) <span class="text-red-500">*</span></span>
                                 <span x-show="item.is_rap && isExceedingRap(item)">Alasan Permintaan (Melebihi RAP) <span class="text-red-500">*</span></span>
@@ -455,8 +492,19 @@
                 </div>
             </div>
 
+            <!-- Total Pembelian Cash Ringkasan -->
+            <div x-show="jenisOrderType === 'cash' && cart.length > 0" class="pt-3 border-t border-emerald-100 dark:border-emerald-900/40 mt-3 shrink-0">
+                <div class="p-3 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span>Total Pembelian Cash:</span>
+                    </div>
+                    <span class="text-sm font-black text-emerald-700 dark:text-emerald-300" x-text="'Rp ' + formatNumber(calculateTotalCash())"></span>
+                </div>
+            </div>
+
             <!-- Footer Submit & Reset (50:50) -->
-            <div class="pt-3 border-t border-gray-100 dark:border-gray-800 mt-3 shrink-0 grid grid-cols-2 gap-2">
+            <div class="pt-3 border-t border-gray-100 dark:border-gray-800 mt-2 shrink-0 grid grid-cols-2 gap-2">
                 <button type="button" @click="resetCart()" :disabled="cart.length === 0"
                     class="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 text-xs font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
                     title="Bersihkan Keranjang">
@@ -580,20 +628,24 @@
 
                         <div class="pr-7">
                             <div class="flex items-center gap-1.5 min-w-0">
+                                <span x-show="jenisOrderType === 'cash'" class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300 text-[8px] font-black uppercase rounded">CASH</span>
                                 @if($category === 'pembangunan_unit')
-                                <span x-show="item.is_rap" class="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[8px] font-black uppercase rounded">RAP</span>
-                                <span x-show="!item.is_rap" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded">Luar RAP</span>
+                                <span x-show="jenisOrderType !== 'cash' && item.is_rap" class="px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[8px] font-black uppercase rounded">RAP</span>
+                                <span x-show="jenisOrderType !== 'cash' && !item.is_rap" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 text-[8px] font-black uppercase rounded">Luar RAP</span>
                                 @endif
                                 <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate" x-text="item.nama_barang"></h5>
                             </div>
                             <div class="flex flex-wrap items-center justify-between text-[10px] text-gray-400 mt-1 gap-1">
                                 <span class="font-mono" x-text="item.kode_barang"></span>
-                                <div class="flex items-center gap-1.5">
+                                <div x-show="jenisOrderType !== 'cash'" class="flex items-center gap-1.5">
                                     <span x-show="item.is_rap" class="text-blue-600 dark:text-blue-400 font-medium"
                                         x-text="'Terorder: ' + formatNumber(getConvertedOrdered(item))"></span>
                                     <span x-show="item.is_rap" class="text-indigo-600 dark:text-indigo-400 font-bold"
                                         x-text="'Sisa: ' + formatNumber(getConvertedRemainingRap(item))"></span>
                                     <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Stok: ' + formatNumber(getConvertedStock(item)) + ' ' + (item.satuans.find(s=>s.id == item.satuan_id)?.nama_satuan || '')"></span>
+                                </div>
+                                <div x-show="jenisOrderType === 'cash'" class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                    <span>Pembelian Cash</span>
                                 </div>
                             </div>
                         </div>
@@ -620,8 +672,42 @@
                                 </select>
                             </div>
                         </div>
+
+                        <!-- Mobile Cash Input Harga Satuan & Total -->
+                        <div x-show="jenisOrderType === 'cash'" class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div>
+                                <label class="block text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase mb-1">
+                                    Harga Satuan (Rp) <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-gray-700 overflow-hidden">
+                                    <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs font-bold text-gray-400 pointer-events-none">Rp</span>
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        x-model="item.harga_satuan"
+                                        @input="formatItemHargaSatuan(item)"
+                                        placeholder="0"
+                                        class="w-full text-sm font-bold text-right bg-transparent text-gray-800 dark:text-white border-0 focus:ring-0 focus:outline-none p-2 pl-8"
+                                    >
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total (Rp)</label>
+                                <div class="rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-800/80 p-2 text-right">
+                                    <span class="text-xs font-black text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + formatNumber(calculateItemTotal(item))"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </template>
+            </div>
+
+            <!-- Total Pembelian Cash Mobile Summary -->
+            <div x-show="jenisOrderType === 'cash' && cart.length > 0" class="px-5 pt-3 shrink-0">
+                <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300">Total Pembelian Cash:</span>
+                    <span class="text-sm font-black text-emerald-700 dark:text-emerald-300" x-text="'Rp ' + formatNumber(calculateTotalCash())"></span>
+                </div>
             </div>
 
             <!-- Drawer Footer -->
@@ -669,7 +755,9 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 p-3 bg-blue-50/50 rounded-xl border border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/40 text-xs">
                         <div>
                             <span class="text-gray-500">Tipe Order:</span>
-                            <span class="font-bold uppercase ml-1" :class="jenisOrderType === 'stock' ? 'text-blue-600' : 'text-orange-600'" x-text="jenisOrderType === 'stock' ? 'Barang Stock' : 'Barang Direct'"></span>
+                            <span class="font-bold uppercase ml-1"
+                                :class="jenisOrderType === 'stock' ? 'text-blue-600' : (jenisOrderType === 'direct' ? 'text-orange-600' : 'text-emerald-600')"
+                                x-text="jenisOrderType === 'stock' ? 'Barang Stock' : (jenisOrderType === 'direct' ? 'Barang Direct' : 'Barang Cash')"></span>
                         </div>
                         <div>
                             <span class="text-gray-500">Total Item:</span>
@@ -685,8 +773,10 @@
                                     <th class="p-3">No</th>
                                     <th class="p-3">Barang</th>
                                     <th class="p-3 text-center">Jumlah Order</th>
+                                    <th x-show="jenisOrderType === 'cash'" class="p-3 text-right">Harga Satuan</th>
+                                    <th x-show="jenisOrderType === 'cash'" class="p-3 text-right">Total Harga</th>
                                     @if($category === 'pembangunan_unit')
-                                    <th class="p-3 text-center">Status Barang</th>
+                                    <th x-show="jenisOrderType !== 'cash'" class="p-3 text-center">Status Barang</th>
                                     @endif
                                     <th class="p-3">Alasan / Catatan</th>
                                 </tr>
@@ -702,8 +792,10 @@
                                         <td class="p-3 text-center font-bold text-gray-800 dark:text-white">
                                             <span x-text="formatNumber(c.qty) + ' ' + (c.satuans.find(s=>s.id == c.satuan_id)?.nama_satuan || c.satuan_nama)"></span>
                                         </td>
+                                        <td x-show="jenisOrderType === 'cash'" class="p-3 text-right font-medium text-gray-700 dark:text-gray-300" x-text="'Rp ' + formatNumber(parseHarga(c.harga_satuan))"></td>
+                                        <td x-show="jenisOrderType === 'cash'" class="p-3 text-right font-bold text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + formatNumber(calculateItemTotal(c))"></td>
                                         @if($category === 'pembangunan_unit')
-                                        <td class="p-3 text-center">
+                                        <td x-show="jenisOrderType !== 'cash'" class="p-3 text-center">
                                             <span x-show="c.is_rap && !isExceedingRap(c)" class="inline-flex px-2 py-0.5 text-[10px] font-black rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
                                                 Sesuai RAP
                                             </span>
@@ -721,6 +813,13 @@
                                     </tr>
                                 </template>
                             </tbody>
+                            <tfoot x-show="jenisOrderType === 'cash'" class="bg-emerald-50 dark:bg-emerald-950/40 border-t border-emerald-200 dark:border-emerald-800 font-bold">
+                                <tr>
+                                    <td colspan="4" class="p-3 text-right text-emerald-800 dark:text-emerald-300 font-bold">Grand Total Pembelian Cash:</td>
+                                    <td class="p-3 text-right text-emerald-700 dark:text-emerald-300 text-sm font-black" x-text="'Rp ' + formatNumber(calculateTotalCash())"></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -743,8 +842,6 @@
     </div>
 </div>
 
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 function createOrderUnitComponent() {
@@ -846,15 +943,19 @@ function createOrderUnitComponent() {
                     });
 
                     // Inisialisasi Select2 QC
-                    $(this.$refs.qcSelect).select2({
+                    const qcSelectEl = $(this.$refs.qcSelect);
+                    qcSelectEl.select2({
                         theme: 'bootstrap4',
                         placeholder: '-- Pilih QC --',
                         allowClear: true,
                         width: '100%'
-                    }).on('change', (e) => {
-                        this.qcId = e.target.value;
-                        this.onQcChange();
                     });
+                    qcSelectEl
+                        .off('change.orderUnit')
+                        .on('change.orderUnit', (e) => {
+                            this.qcId = e.target.value;
+                            this.onQcChange();
+                        });
 
                 } else if (this.category === 'pembangunan_kawasan') {
                     // Inisialisasi Select2 Pembangunan Kawasan
@@ -911,16 +1012,24 @@ function createOrderUnitComponent() {
                                 qcSelectEl.append(new Option(label, q.id, false, false));
                             }
                         });
-                        qcSelectEl.select2('destroy');
+
+                        if (qcSelectEl.hasClass('select2-hidden-accessible')) {
+                            qcSelectEl.select2('destroy');
+                        }
+
                         qcSelectEl.select2({
                             theme: 'bootstrap4',
                             placeholder: '-- Pilih QC --',
                             allowClear: true,
                             width: '100%'
-                        }).on('change', (e) => {
-                            this.qcId = e.target.value;
-                            this.onQcChange();
                         });
+
+                        qcSelectEl
+                            .off('change.orderUnit')
+                            .on('change.orderUnit', (e) => {
+                                this.qcId = e.target.value;
+                                this.onQcChange();
+                            });
                     });
                 }
             } catch(e) {
@@ -941,6 +1050,7 @@ function createOrderUnitComponent() {
         },
 
         filteredRapItems() {
+            if (this.jenisOrderType === 'cash') return [];
             let q = this.searchQuery.toLowerCase().trim();
             return this.rapItems.filter((item) => {
                 let matchType = (this.jenisOrderType === 'stock') ? (item.is_stock === true) : (item.is_stock === false);
@@ -952,19 +1062,37 @@ function createOrderUnitComponent() {
         },
 
         filteredGudangItems() {
-            let q = this.searchQuery.toLowerCase().trim();
-            // Ambil daftar barang_id yang ada di RAP QC terpilih
-            let rapBarangIds = this.rapItems.map((r) => String(r.barang_id));
+            const q = this.searchQuery.toLowerCase().trim();
 
-            return this.allBarangGudang.filter((item) => {
-                // Hindari duplikasi: jika barang sudah ada di RAP QC, hilangkan dari list luar RAP
-                if (rapBarangIds.includes(String(item.id))) return false;
+            // Set mempercepat pengecekan barang yang sudah tercantum di RAP.
+            const rapBarangIds = new Set(
+                this.jenisOrderType === 'cash'
+                    ? []
+                    : this.rapItems.map(r => String(r.barang_id))
+            );
 
-                let matchType = (this.jenisOrderType === 'stock') ? (item.is_stock === true) : (item.is_stock === false);
-                if (!matchType) return false;
+            return this.allBarangGudang.filter(item => {
+                if (
+                    this.jenisOrderType !== 'cash' &&
+                    rapBarangIds.has(String(item.id))
+                ) {
+                    return false;
+                }
+
+                if (this.jenisOrderType !== 'cash') {
+                    const matchType = this.jenisOrderType === 'stock'
+                        ? item.is_stock === true
+                        : item.is_stock === false;
+
+                    if (!matchType) return false;
+                }
+
                 if (!q) return true;
-                return (item.nama_barang && item.nama_barang.toLowerCase().includes(q)) ||
-                       (item.kode_barang && item.kode_barang.toLowerCase().includes(q));
+
+                const nama = (item.nama_barang || '').toLowerCase();
+                const kode = (item.kode_barang || '').toLowerCase();
+
+                return nama.includes(q) || kode.includes(q);
             });
         },
 
@@ -1057,6 +1185,7 @@ function createOrderUnitComponent() {
                         satuan_id: defaultSatuanId,
                         satuan_nama: defaultSatuanNama,
                         satuans: availableSatuans,
+                        harga_satuan: '',
                         alasan: ''
                     });
                 }
@@ -1076,7 +1205,7 @@ function createOrderUnitComponent() {
             let stokBase = rapObj ? (rapObj.stok_gudang || 0) : (barang.stok_gudang || 0);
 
             let defaultQty = 1;
-            if (rapObj && rapObj.volume) {
+            if (this.jenisOrderType !== 'cash' && rapObj && rapObj.volume) {
                 let st = availableSatuans.find(s => s.id == defaultSatuanId);
                 let konversi = st ? (parseFloat(st.konversi_ke_base) || 1) : 1;
                 let rapTotalBase = (parseFloat(rapObj.volume) || 0) * (parseFloat(rapObj.faktor_konversi) || 1);
@@ -1099,6 +1228,7 @@ function createOrderUnitComponent() {
                 satuan_id: defaultSatuanId,
                 satuan_nama: defaultSatuanNama,
                 satuans: availableSatuans,
+                harga_satuan: '',
                 alasan: ''
             });
         },
@@ -1110,6 +1240,33 @@ function createOrderUnitComponent() {
             let parts = num.toString().split('.');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             return parts.join(',');
+        },
+
+        // Helper format rupiah input saat mengetik harga satuan cash
+        formatItemHargaSatuan(item) {
+            if (!item.harga_satuan) return;
+            let clean = String(item.harga_satuan).replace(/[^0-9]/g, '');
+            let num = parseInt(clean, 10);
+            item.harga_satuan = isNaN(num) ? '' : num.toLocaleString('id-ID');
+        },
+
+        // Helper parse harga ke integer numerik bersih
+        parseHarga(val) {
+            let clean = String(val || '0').replace(/[^0-9]/g, '');
+            let num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        },
+
+        // Helper kalkulasi total harga per item cash (Qty * Harga Satuan)
+        calculateItemTotal(item) {
+            let qty = this.parseQty(item.qty);
+            let harga = this.parseHarga(item.harga_satuan);
+            return Math.round(qty * harga);
+        },
+
+        // Helper kalkulasi grand total pembelian cash
+        calculateTotalCash() {
+            return this.cart.reduce((sum, item) => sum + this.calculateItemTotal(item), 0);
         },
 
         // Helper untuk menghitung stok gudang terkonversi sesuai satuan terpilih
@@ -1156,23 +1313,22 @@ function createOrderUnitComponent() {
             return (totalOrderedBase + inputBase) > (rapTotalBase + 0.0001);
         },
 
-        // Handler validasi max input stok — hanya cap ke stok max, tidak reset paksa ke 0.01
-        // Dipanggil @change (saat user selesai mengetik dan keluar dari field)
+        // Handler validasi max input stok
         validateQtyOnChange(item) {
-            // Normalisasi koma ke titik (untuk input gaya Indonesia seperti "0,5")
             let raw = String(item.qty || '').replace(',', '.');
             let val = parseFloat(raw);
 
-            // Kalau tidak valid atau negatif — biarkan saja, jangan paksa reset
-            // (user mungkin sedang menghapus untuk ganti angka)
             if (isNaN(val) || val <= 0) return;
 
-            // Cap ke stok maksimum jika melebihi
-            let maxStok = this.getConvertedStock(item);
-            if (maxStok > 0 && val > maxStok) {
-                item.qty = maxStok;
+            // Jika bukan order cash, batasi ke stok gudang
+            if (this.jenisOrderType !== 'cash') {
+                let maxStok = this.getConvertedStock(item);
+                if (maxStok > 0 && val > maxStok) {
+                    item.qty = maxStok;
+                } else {
+                    item.qty = val;
+                }
             } else {
-                // Simpan kembali sebagai angka bersih (dot sebagai desimal)
                 item.qty = val;
             }
         },
@@ -1181,12 +1337,16 @@ function createOrderUnitComponent() {
         incrementQty(item) {
             let raw = String(item.qty || '0').replace(',', '.');
             let current = parseFloat(raw) || 0;
-            // Deteksi apakah desimal
             let isDecimal = current % 1 !== 0;
             let step = isDecimal ? 0.1 : 1;
             let newVal = Math.round((current + step) * 10000) / 10000;
-            let maxStok = this.getConvertedStock(item);
-            item.qty = (maxStok > 0) ? Math.min(newVal, maxStok) : newVal;
+
+            if (this.jenisOrderType !== 'cash') {
+                let maxStok = this.getConvertedStock(item);
+                item.qty = (maxStok > 0) ? Math.min(newVal, maxStok) : newVal;
+            } else {
+                item.qty = newVal;
+            }
         },
 
         // Decrement qty: -1 untuk bulat, -0.1 untuk desimal, min 0.01
@@ -1200,7 +1360,6 @@ function createOrderUnitComponent() {
         },
 
         removeFromCart(index) {
-            // index adalah index asli di this.cart (bukan dari filtered)
             this.cart.splice(index, 1);
         },
 
@@ -1257,7 +1416,23 @@ function createOrderUnitComponent() {
                 return;
             }
 
-            if (this.category === 'pembangunan_unit' && this.jenisPembangunan !== 'servis') {
+            // Validasi khusus pembelian cash: setiap item wajib memiliki harga satuan > 0
+            if (this.jenisOrderType === 'cash') {
+                let missingHarga = false;
+                this.cart.forEach((c) => {
+                    if (this.parseHarga(c.harga_satuan) <= 0) {
+                        missingHarga = true;
+                    }
+                });
+
+                if (missingHarga) {
+                    Swal.fire('Peringatan', 'Mohon isi Harga Satuan (lebih dari 0) untuk setiap barang pada pembelian cash!', 'warning');
+                    return;
+                }
+            }
+
+            // Validasi alasan RAP hanya berlaku untuk tipe Stock & Direct
+            if (this.category === 'pembangunan_unit' && this.jenisPembangunan !== 'servis' && this.jenisOrderType !== 'cash') {
                 let missingAlasan = false;
                 let missingAlasanRap = false;
                 this.cart.forEach((c) => {
@@ -1314,7 +1489,9 @@ function createOrderUnitComponent() {
                             jumlah_input: this.parseQty(c.qty),
                             faktor_konversi: st ? st.konversi_ke_base : 1,
                             pembangunan_unit_rap_bahan_id: c.rap_id,
-                            alasan: c.alasan
+                            alasan: c.alasan,
+                            harga_satuan: this.jenisOrderType === 'cash' ? this.parseHarga(c.harga_satuan) : null,
+                            harga_total: this.jenisOrderType === 'cash' ? this.calculateItemTotal(c) : null
                         };
                     })
                 };
@@ -1330,7 +1507,9 @@ function createOrderUnitComponent() {
                         return {
                             id: c.barang_id,
                             satuan_id: c.satuan_id,
-                            jumlah_input: this.parseQty(c.qty)
+                            jumlah_input: this.parseQty(c.qty),
+                            harga_satuan: this.jenisOrderType === 'cash' ? this.parseHarga(c.harga_satuan) : null,
+                            harga_total: this.jenisOrderType === 'cash' ? this.calculateItemTotal(c) : null
                         };
                     })
                 };
@@ -1346,7 +1525,9 @@ function createOrderUnitComponent() {
                         return {
                             id: c.barang_id,
                             satuan_id: c.satuan_id,
-                            jumlah_input: this.parseQty(c.qty)
+                            jumlah_input: this.parseQty(c.qty),
+                            harga_satuan: this.jenisOrderType === 'cash' ? this.parseHarga(c.harga_satuan) : null,
+                            harga_total: this.jenisOrderType === 'cash' ? this.calculateItemTotal(c) : null
                         };
                     })
                 };

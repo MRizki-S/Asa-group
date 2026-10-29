@@ -159,12 +159,20 @@
                     <table class="header-wrap">
                         <tr>
                             <td style="width: 65%;">
-                                <div class="title-box">Bon Permintaan &amp; Pengeluaran Barang</div>
+                                <div class="title-box">
+                                    Bon Permintaan &amp; Pengeluaran Barang
+                                    @if(($order->jenis_order ?? '') === 'cash')
+                                        <span style="font-size: 7.5pt; vertical-align: middle; background-color: #065f46; color: #ffffff; padding: 1.5px 5px; border-radius: 3px; font-weight: bold; letter-spacing: 0.5px; margin-left: 4px;">PEMBELIAN CASH</span>
+                                    @endif
+                                </div>
                                 <div class="subtitle">{{ $subTitle }}</div>
                             </td>
                             <td style="width: 35%;" class="nbk-box">
                                 <div class="nbk-number">{{ $order->nomor_nbk ?? $order->nomor_order }}</div>
                                 <div class="nbk-ref">Ref: {{ $order->nomor_order }}</div>
+                                @if(($order->jenis_order ?? '') === 'cash')
+                                    <div class="badge-part"><span style="display:inline-block; background-color:#e6f4ea; color:#137333; border:1px solid #ceead6; padding:1px 4px; border-radius:3px; font-weight:bold; font-size:6.5pt; margin-right:3px;">PEMBELIAN CASH</span></div>
+                                @endif
                                 @if($topSlot['totalParts'] > 1)
                                     <div class="badge-part">[Bagian {{ $topSlot['part'] }} dari {{ $topSlot['totalParts'] }}]</div>
                                 @endif
@@ -256,34 +264,61 @@
                     <table class="items-table">
                         <thead>
                             <tr>
-                                <th style="width: 5%;">No.</th>
-                                <th style="width: 16%;">Kode Item</th>
-                                <th style="width: 38%;">Nama Material</th>
-                                <th style="width: 12%;">Qty Diminta</th>
-                                <th style="width: 12%;">Qty Diserahkan</th>
-                                <th style="width: 17%;">Satuan</th>
+                                @if(($order->jenis_order ?? '') === 'cash')
+                                    <th style="width: 5%;">No.</th>
+                                    <th style="width: 14%;">Kode Item</th>
+                                    <th style="width: 29%;">Nama Material</th>
+                                    <th style="width: 10%;">Qty</th>
+                                    <th style="width: 8%;">Satuan</th>
+                                    <th style="width: 16%;">Harga Satuan</th>
+                                    <th style="width: 18%;">Total Harga</th>
+                                @else
+                                    <th style="width: 5%;">No.</th>
+                                    <th style="width: 16%;">Kode Item</th>
+                                    <th style="width: 38%;">Nama Material</th>
+                                    <th style="width: 12%;">Qty Diminta</th>
+                                    <th style="width: 12%;">Qty Diserahkan</th>
+                                    <th style="width: 17%;">Satuan</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
+                            @php $topTotalCash = 0; @endphp
                             @foreach($topSlot['items'] as $itemIdx => $item)
                                 @php
                                     $qtyKeluar = !is_null($item->jumlah_acc) ? (float)$item->jumlah_acc : (float)$item->jumlah_input;
                                     $rowNum = $topSlot['startIndex'] + $itemIdx;
+                                    $hargaSatuan = !is_null($item->harga_satuan_snapshot) ? (float)$item->harga_satuan_snapshot : 0;
+                                    $hargaTotal = !is_null($item->harga_total_snapshot) ? (float)$item->harga_total_snapshot : ($hargaSatuan * $qtyKeluar);
+                                    $topTotalCash += $hargaTotal;
                                 @endphp
                                 <tr>
                                     <td class="text-center">{{ $rowNum }}</td>
                                     <td>{{ $item->barang?->kode_barang ?? '-' }}</td>
                                     <td>
                                         <span class="font-bold">{{ $item->nama_barang ?? $item->barang?->nama_barang ?? '-' }}</span>
-                                        @if(!($order->qc?->is_servis ?? false) && empty($item->rap_bahan_id) && $category === 'pembangunan_unit')
+                                        @if(!($order->qc?->is_servis ?? false) && empty($item->rap_bahan_id) && $category === 'pembangunan_unit' && ($order->jenis_order ?? '') !== 'cash')
                                             <span style="font-size:6.5pt; color:#888;"> [Luar RAP]</span>
                                         @endif
                                     </td>
-                                    <td class="text-center">{{ $formatQty($item->jumlah_input) }}</td>
-                                    <td class="text-center font-bold">{{ $formatQty($qtyKeluar) }}</td>
-                                    <td class="text-center">{{ $item->satuan }}</td>
+                                    @if(($order->jenis_order ?? '') === 'cash')
+                                        <td class="text-center font-bold">{{ $formatQty($qtyKeluar) }}</td>
+                                        <td class="text-center">{{ $item->satuan }}</td>
+                                        <td style="text-align: right;">{{ $hargaSatuan > 0 ? 'Rp ' . number_format($hargaSatuan, 0, ',', '.') : '-' }}</td>
+                                        <td style="text-align: right; font-weight: bold;">{{ $hargaTotal > 0 ? 'Rp ' . number_format($hargaTotal, 0, ',', '.') : '-' }}</td>
+                                    @else
+                                        <td class="text-center">{{ $formatQty($item->jumlah_input) }}</td>
+                                        <td class="text-center font-bold">{{ $formatQty($qtyKeluar) }}</td>
+                                        <td class="text-center">{{ $item->satuan }}</td>
+                                    @endif
                                 </tr>
                             @endforeach
+                            @if(($order->jenis_order ?? '') === 'cash')
+                                <tr style="background-color: #f2f2f2;">
+                                    <td colspan="6" style="text-align: right; font-weight: bold; padding: 2.5px 6px;">Total Pembelian Cash:</td>
+                                    <td style="text-align: right; font-weight: bold; padding: 2.5px 6px;">Rp {{ number_format($topTotalCash, 0, ',', '.') }}</td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
 
@@ -363,12 +398,20 @@
                         <table class="header-wrap">
                             <tr>
                                 <td style="width: 65%;">
-                                    <div class="title-box">Bon Permintaan &amp; Pengeluaran Barang</div>
+                                    <div class="title-box">
+                                        Bon Permintaan &amp; Pengeluaran Barang
+                                        @if(($order->jenis_order ?? '') === 'cash')
+                                            <span style="font-size: 7.5pt; vertical-align: middle; background-color: #065f46; color: #ffffff; padding: 1.5px 5px; border-radius: 3px; font-weight: bold; letter-spacing: 0.5px; margin-left: 4px;">PEMBELIAN CASH</span>
+                                        @endif
+                                    </div>
                                     <div class="subtitle">{{ $subTitle }}</div>
                                 </td>
                                 <td style="width: 35%;" class="nbk-box">
                                     <div class="nbk-number">{{ $order->nomor_nbk ?? $order->nomor_order }}</div>
                                     <div class="nbk-ref">Ref: {{ $order->nomor_order }}</div>
+                                    @if(($order->jenis_order ?? '') === 'cash')
+                                        <div class="badge-part"><span style="display:inline-block; background-color:#e6f4ea; color:#137333; border:1px solid #ceead6; padding:1px 4px; border-radius:3px; font-weight:bold; font-size:6.5pt; margin-right:3px;">PEMBELIAN CASH</span></div>
+                                    @endif
                                     @if($botSlot['totalParts'] > 1)
                                         <div class="badge-part">[Bagian {{ $botSlot['part'] }} dari {{ $botSlot['totalParts'] }}]</div>
                                     @endif
@@ -460,34 +503,61 @@
                         <table class="items-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 5%;">No.</th>
-                                    <th style="width: 16%;">Kode Item</th>
-                                    <th style="width: 38%;">Nama Material</th>
-                                    <th style="width: 12%;">Qty Diminta</th>
-                                    <th style="width: 12%;">Qty Diserahkan</th>
-                                    <th style="width: 17%;">Satuan</th>
+                                    @if(($order->jenis_order ?? '') === 'cash')
+                                        <th style="width: 5%;">No.</th>
+                                        <th style="width: 14%;">Kode Item</th>
+                                        <th style="width: 29%;">Nama Material</th>
+                                        <th style="width: 10%;">Qty</th>
+                                        <th style="width: 8%;">Satuan</th>
+                                        <th style="width: 16%;">Harga Satuan</th>
+                                        <th style="width: 18%;">Total Harga</th>
+                                    @else
+                                        <th style="width: 5%;">No.</th>
+                                        <th style="width: 16%;">Kode Item</th>
+                                        <th style="width: 38%;">Nama Material</th>
+                                        <th style="width: 12%;">Qty Diminta</th>
+                                        <th style="width: 12%;">Qty Diserahkan</th>
+                                        <th style="width: 17%;">Satuan</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $botTotalCash = 0; @endphp
                                 @foreach($botSlot['items'] as $itemIdx => $item)
                                     @php
                                         $qtyKeluar = !is_null($item->jumlah_acc) ? (float)$item->jumlah_acc : (float)$item->jumlah_input;
                                         $rowNum = $botSlot['startIndex'] + $itemIdx;
+                                        $hargaSatuan = !is_null($item->harga_satuan_snapshot) ? (float)$item->harga_satuan_snapshot : 0;
+                                        $hargaTotal = !is_null($item->harga_total_snapshot) ? (float)$item->harga_total_snapshot : ($hargaSatuan * $qtyKeluar);
+                                        $botTotalCash += $hargaTotal;
                                     @endphp
                                     <tr>
                                         <td class="text-center">{{ $rowNum }}</td>
                                         <td>{{ $item->barang?->kode_barang ?? '-' }}</td>
                                         <td>
                                             <span class="font-bold">{{ $item->nama_barang ?? $item->barang?->nama_barang ?? '-' }}</span>
-                                            @if(!($order->qc?->is_servis ?? false) && empty($item->rap_bahan_id) && $category === 'pembangunan_unit')
+                                            @if(!($order->qc?->is_servis ?? false) && empty($item->rap_bahan_id) && $category === 'pembangunan_unit' && ($order->jenis_order ?? '') !== 'cash')
                                                 <span style="font-size:6.5pt; color:#888;"> [Luar RAP]</span>
                                             @endif
                                         </td>
-                                        <td class="text-center">{{ $formatQty($item->jumlah_input) }}</td>
-                                        <td class="text-center font-bold">{{ $formatQty($qtyKeluar) }}</td>
-                                        <td class="text-center">{{ $item->satuan }}</td>
+                                        @if(($order->jenis_order ?? '') === 'cash')
+                                            <td class="text-center font-bold">{{ $formatQty($qtyKeluar) }}</td>
+                                            <td class="text-center">{{ $item->satuan }}</td>
+                                            <td style="text-align: right;">{{ $hargaSatuan > 0 ? 'Rp ' . number_format($hargaSatuan, 0, ',', '.') : '-' }}</td>
+                                            <td style="text-align: right; font-weight: bold;">{{ $hargaTotal > 0 ? 'Rp ' . number_format($hargaTotal, 0, ',', '.') : '-' }}</td>
+                                        @else
+                                            <td class="text-center">{{ $formatQty($item->jumlah_input) }}</td>
+                                            <td class="text-center font-bold">{{ $formatQty($qtyKeluar) }}</td>
+                                            <td class="text-center">{{ $item->satuan }}</td>
+                                        @endif
                                     </tr>
                                 @endforeach
+                                @if(($order->jenis_order ?? '') === 'cash')
+                                    <tr style="background-color: #f2f2f2;">
+                                        <td colspan="6" style="text-align: right; font-weight: bold; padding: 2.5px 6px;">Total Pembelian Cash:</td>
+                                        <td style="text-align: right; font-weight: bold; padding: 2.5px 6px;">Rp {{ number_format($botTotalCash, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
 

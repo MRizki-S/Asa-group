@@ -496,12 +496,14 @@ class PermintaanBarangPembangunanKawasanController extends Controller
         $user = Auth::user();
         $isStock = ($order->jenis_order ?? 'stock') === 'stock';
         $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $isCash = ($order->jenis_order ?? '') === 'cash';
         $canAcc = $user->hasRole('Superadmin')
             || ($isStock && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-stock') || $user->can('gudang.permintaan-barang.aksi-stock')))
-            || ($isDirect && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-direct') || $user->can('gudang.permintaan-barang.aksi-direct')));
+            || ($isDirect && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-direct') || $user->can('gudang.permintaan-barang.aksi-direct')))
+            || ($isCash && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-cash') || $user->can('gudang.permintaan-barang.aksi-cash')));
 
         if (!$canAcc) {
-            return back()->with('error', 'Anda tidak memiliki hak akses untuk ACC permintaan barang ' . ($isDirect ? 'direct' : 'stock') . '.');
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk ACC permintaan barang ' . ($order->jenis_order ?? 'ini') . '.');
         }
 
         try {
@@ -566,9 +568,13 @@ class PermintaanBarangPembangunanKawasanController extends Controller
                 ->with('error', 'Gagal memproses ACC pengeluaran barang kawasan: ' . $e->getMessage());
         }
 
+        $successMsg = $isCash
+            ? "Permintaan barang kawasan cash berhasil di-ACC resmi oleh {$spvRole}. Realisasi termin telah dicatat tanpa memotong stok gudang."
+            : "Permintaan barang kawasan berhasil di-ACC resmi oleh {$spvRole}. Stok telah dipotong dan dicatat ke data real.";
+
         return redirect()
             ->route('gudang.permintaanBarang.show', ['id' => $order->id, 'jenis_order' => 'pembangunan_kawasan'])
-            ->with('success', "Permintaan barang kawasan berhasil di-ACC resmi oleh {$spvRole}. Stok telah dipotong dan dicatat ke data real.");
+            ->with('success', $successMsg);
     }
 
     public function spvAccBarangOrder(Request $request, $id)
@@ -594,12 +600,14 @@ class PermintaanBarangPembangunanKawasanController extends Controller
         $user = Auth::user();
         $isStock = ($order->jenis_order ?? 'stock') === 'stock';
         $isDirect = ($order->jenis_order ?? '') === 'direct';
+        $isCash = ($order->jenis_order ?? '') === 'cash';
         $canAksi = $user->hasRole('Superadmin')
             || ($isStock && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-stock') || $user->can('gudang.permintaan-barang.aksi-stock')))
-            || ($isDirect && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-direct') || $user->can('gudang.permintaan-barang.aksi-direct')));
+            || ($isDirect && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-direct') || $user->can('gudang.permintaan-barang.aksi-direct')))
+            || ($isCash && ($user->can('gudang.permintaan-barang.pemb-kawasan.aksi-cash') || $user->can('gudang.permintaan-barang.aksi-cash')));
 
         if (!$canAksi) {
-            return back()->with('error', 'Anda tidak memiliki hak akses untuk menolak permintaan barang ' . ($isDirect ? 'direct' : 'stock') . '.');
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk menolak permintaan barang ' . ($order->jenis_order ?? 'ini') . '.');
         }
 
         $order->update([
@@ -706,6 +714,24 @@ class PermintaanBarangPembangunanKawasanController extends Controller
             $jumlahBase = $this->resolveJumlahBaseOrder($detail);
             $hargaTotal = 0.0;
             $hargaSatuanBase = 0.0;
+
+            if ($order->jenis_order === 'cash') {
+                $cashPrices = $this->resolveCashPricesOrder($request, $detail);
+                $hargaTotal = $cashPrices['harga_total'];
+                $hargaSatuanBase = $cashPrices['harga_satuan'];
+
+                $detail->update([
+                    'konfirmasi' => true,
+                    'jumlah_base' => $jumlahBase,
+                    'harga_satuan_snapshot' => $hargaSatuanBase,
+                    'harga_total_snapshot' => $hargaTotal,
+                ]);
+
+                if ($jumlahBase > 0) {
+                    $this->upsertPembangunanKawasanBahan($order, $detail, $hargaTotal);
+                }
+                continue;
+            }
 
             if ($jumlahBase > 0) {
                 if ($detail->barang?->is_stock) {
@@ -868,8 +894,61 @@ class PermintaanBarangPembangunanKawasanController extends Controller
         return round($hargaTotal, 2);
     }
 
+    private function resolveCashPricesOrder(Request $request, $detail): array
+    {
+        $hargaTotalInput = $request->input("harga_total.{$detail->id}");
+        $hargaSatuanInput = $request->input("harga_satuan.{$detail->id}");
+        $qtyInput = (float) ($detail->jumlah_input ?? 0);
+
+        $hargaTotal = null;
+        $hargaSatuan = null;
+
+        if ($hargaTotalInput !== null && $hargaTotalInput !== '') {
+            $hargaTotal = (float) $hargaTotalInput;
+        }
+        if ($hargaSatuanInput !== null && $hargaSatuanInput !== '') {
+            $hargaSatuan = (float) $hargaSatuanInput;
+        }
+
+        if ($hargaTotal === null && $hargaSatuan !== null && $qtyInput > 0) {
+            $hargaTotal = round($hargaSatuan * $qtyInput, 2);
+        } elseif ($hargaSatuan === null && $hargaTotal !== null && $qtyInput > 0) {
+            $hargaSatuan = round($hargaTotal / $qtyInput, 2);
+        }
+
+        if ($hargaTotal === null) {
+            if (!is_null($detail->harga_total_snapshot)) {
+                $hargaTotal = (float) $detail->harga_total_snapshot;
+            } elseif (!is_null($detail->harga_satuan_snapshot) && $qtyInput > 0) {
+                $hargaTotal = round((float) $detail->harga_satuan_snapshot * $qtyInput, 2);
+            }
+        }
+
+        if ($hargaSatuan === null) {
+            if (!is_null($detail->harga_satuan_snapshot)) {
+                $hargaSatuan = (float) $detail->harga_satuan_snapshot;
+            } elseif ($hargaTotal !== null && $qtyInput > 0) {
+                $hargaSatuan = round($hargaTotal / $qtyInput, 2);
+            }
+        }
+
+        if ($hargaTotal === null || $hargaTotal < 0) {
+            $namaBarang = $detail->nama_barang ?? $detail->barang?->nama_barang ?? 'Barang';
+            throw new \Exception("Harga total untuk barang cash {$namaBarang} wajib valid dan tidak boleh minus.");
+        }
+
+        return [
+            'harga_total' => round($hargaTotal, 2),
+            'harga_satuan' => round($hargaSatuan ?? 0, 2),
+        ];
+    }
+
     private function assertDetailMatchesOrderType(PembangunanKawasanBarangOrder $order, $detail): void
     {
+        if ($order->jenis_order === 'cash') {
+            return;
+        }
+
         $barang = $detail->barang;
 
         if (!$barang) {
