@@ -15,15 +15,11 @@ class KpiRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $manager = Role::firstOrCreate([
-            'name' => 'Manager Strategi & Kepatuhan',
-            'guard_name' => 'web',
-        ]);
+        $manager = Role::whereIn('name', ['MANAJER STRATEGI & KEPATUHAN', 'Manager Strategi & Kepatuhan'])->first() 
+            ?? Role::create(['name' => 'MANAJER STRATEGI & KEPATUHAN', 'guard_name' => 'web']);
 
-        $staff = Role::firstOrCreate([
-            'name' => 'Staff Admin Eksekutif',
-            'guard_name' => 'web',
-        ]);
+        $staff = Role::whereIn('name', ['STAF ADMINISTRASI EKSEKUTIF', 'Staff Admin Eksekutif'])->first() 
+            ?? Role::create(['name' => 'STAF ADMINISTRASI EKSEKUTIF', 'guard_name' => 'web']);
 
         $managerPermissions = [
             'kpi.master-kpi.read',
@@ -31,9 +27,9 @@ class KpiRoleSeeder extends Seeder
             'kpi.kpi-user.update',
             'kpi.kpi-user.detail',
             'kpi.kpi-user.export',
-            'kpi.kpi-riview.read',
-            'kpi.kpi-riview.riview-skor',
-            'kpi.kpi-riview.simpan-hasil-riview',
+            'kpi.kpi-user.review',
+            'kpi.kpi-user.minta-revisi',
+            'kpi.kpi-user.finalisasi',
         ];
 
         $staffPermissions = [
@@ -49,8 +45,6 @@ class KpiRoleSeeder extends Seeder
             'kpi.kpi-user.detail',
             'kpi.kpi-user.export',
             'kpi.kpi-user.delete',
-            'kpi.kpi-riview.read',
-            'kpi.kpi-riview.riview-skor',
         ];
 
         // Manager
@@ -67,8 +61,8 @@ class KpiRoleSeeder extends Seeder
             );
         }
 
-        // Assign (atomic)
-        $manager->syncPermissions($createManagerPermissions);
+        // Assign without wiping existing other domain permissions
+        $manager->givePermissionTo($createManagerPermissions);
 
         // Staff
         $createStaffPermissions = Permission::whereIn('name', $staffPermissions)->get();
@@ -84,7 +78,7 @@ class KpiRoleSeeder extends Seeder
             );
         }
 
-        // Assign (atomic)
-        $staff->syncPermissions($createStaffPermissions);
+        // Assign without wiping existing other domain permissions
+        $staff->givePermissionTo($createStaffPermissions);
     }
 }

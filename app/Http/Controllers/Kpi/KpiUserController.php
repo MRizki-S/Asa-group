@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Role;
-use App\Models\KpiReviewRequest;
 use App\Models\KpiUserKomponen;
 use App\Services\NotificationPribadiService;
 
@@ -38,15 +37,27 @@ class KpiUserController extends Controller
         $statusFilter = $request->get('status');
         $devisiFilter = $request->get('devisi');
 
-        $query = KpiUser::with(['karyawan', 'details', 'karyawan.role.devisi'])
+        $query = KpiUser::with(['karyawan', 'details', 'karyawan.role.devisi', 'finalizedBy'])
             ->where('tahun', (int) $tahunFilter);
 
         if ($bulanFilter !== null && $bulanFilter !== '') {
             $query->where('bulan', (int) $bulanFilter);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $statusFilter);
+        $user = auth()->user();
+        $isManagerReviewer = $this->isManagerReviewer($user);
+
+        if ($isManagerReviewer) {
+            $allowedStatuses = ['menunggu_review', 'final'];
+            if ($request->filled('status') && in_array($statusFilter, $allowedStatuses)) {
+                $query->where('status', $statusFilter);
+            } else {
+                $query->whereIn('status', $allowedStatuses);
+            }
+        } else {
+            if ($request->filled('status')) {
+                $query->where('status', $statusFilter);
+            }
         }
 
         if ($request->filled('role')) {
@@ -67,11 +78,12 @@ class KpiUserController extends Controller
         $devisis = \App\Models\Devisi::orderBy('nama_devisi')->get();
 
         return view('kpi.user-kpi.index', [
-            'allKpiUser'  => $allKpiUser,
-            'bulanFilter' => $bulanFilter,
-            'tahunFilter' => $tahunFilter,
-            'roles'       => $roles,
-            'devisis'     => $devisis,
+            'allKpiUser'        => $allKpiUser,
+            'bulanFilter'       => $bulanFilter,
+            'tahunFilter'       => $tahunFilter,
+            'roles'             => $roles,
+            'devisis'           => $devisis,
+            'isManagerReviewer' => $isManagerReviewer,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI Karyawan', 'url' => '#']
             ],
@@ -83,6 +95,10 @@ class KpiUserController extends Controller
      */
     public function create()
     {
+        if ($this->isManagerReviewer(auth()->user())) {
+            return redirect()->route('kpi.user.index')->with('error', 'Manajer tidak memiliki akses untuk membuat data inisialisasi KPI.');
+        }
+
         $roles = Role::all(); // Mengambil semua role dari Spatie
 
         return view('kpi.user-kpi.create', [
@@ -118,6 +134,10 @@ class KpiUserController extends Controller
      */
     public function store(Request $request)
     {
+        if ($this->isManagerReviewer(auth()->user())) {
+            return redirect()->route('kpi.user.index')->with('error', 'Manajer tidak memiliki akses untuk membuat data inisialisasi KPI.');
+        }
+
         $request->validate([
             'role_id' => 'required',
             'user_ids' => 'required|array',
@@ -222,24 +242,24 @@ class KpiUserController extends Controller
      */
     public function show($id)
     {
-        $kpiUser = KpiUser::with(['karyawan', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details', 'details.tasks', 'finalizedBy'])->findOrFail($id);
+
+        if ($this->isManagerReviewer(auth()->user()) && in_array($kpiUser->status, ['draft', 'revisi'])) {
+            return redirect()->route('kpi.user.index')->with('error', 'Data KPI ini belum diajukan atau sedang direvisi oleh Admin.');
+        }
+
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
-
-        $bolehRequest = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() === 0
-            && $kpiUser->details->count() > 0;
-
-        $prosesReview = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() > 0;
 
         return view('kpi.user-kpi.edit', [
             'kpiUser' => $kpiUser,
             'indicators' => $indicators,
             'modeMapping' => $modeMapping,
-            'bolehRequest' =>  $bolehRequest,
-            'prosesReview' => $prosesReview,
+            'isReadOnly' => true,
+            'isManager' => false,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Input Nilai: ' . $kpiUser->karyawan->nama, 'url' => '#']
+                ['label' => 'Detail Nilai: ' . $kpiUser->karyawan->nama, 'url' => '#']
             ],
         ]);
     }
@@ -249,24 +269,39 @@ class KpiUserController extends Controller
      */
     public function edit($id)
     {
-        $kpiUser = KpiUser::with(['karyawan', 'details', 'details.tasks', 'reviewRequests'])->findOrFail($id);
+        $kpiUser = KpiUser::with(['karyawan', 'details', 'details.tasks', 'finalizedBy'])->findOrFail($id);
+
+        if ($kpiUser->isFinal()) {
+            return redirect()->route('kpi.user.show', $id);
+        }
+
+        $user = auth()->user();
+        if ($this->isManagerReviewer($user) && in_array($kpiUser->status, ['draft', 'revisi'])) {
+            return redirect()->route('kpi.user.index')->with('error', 'Data KPI ini belum diajukan atau sedang direvisi oleh Admin.');
+        }
+
+        $isManager = $user->can('kpi.kpi-user.review');
+
+        // Jika status menunggu_review dan user bukan manager (misal admin biasa), kunci ke mode read-only
+        $isReadOnly = false;
+        if ($kpiUser->isMenungguReview() && !$isManager) {
+            $isReadOnly = true;
+        }
+
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
-        $bolehRequest = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() === 0
-            && $kpiUser->details->count() > 0;
-
-        $prosesReview = $kpiUser->reviewRequests->whereNull('direspon_pada')->count() > 0;
+        $pageTitle = ($isManager && $kpiUser->isMenungguReview() ? 'Review Nilai: ' : 'Input Nilai: ') . $kpiUser->karyawan->nama;
 
         return view('kpi.user-kpi.edit', [
             'kpiUser' => $kpiUser,
             'indicators' => $indicators,
             'modeMapping' => $modeMapping,
-            'bolehRequest' =>  $bolehRequest,
-            'prosesReview' => $prosesReview,
+            'isReadOnly' => $isReadOnly,
+            'isManager' => $isManager,
             'breadcrumbs' => [
                 ['label' => 'Penilaian KPI', 'url' => route('kpi.user.index')],
-                ['label' => 'Input Nilai: ' . $kpiUser->karyawan->nama, 'url' => '#']
+                ['label' => $pageTitle, 'url' => '#']
             ],
         ]);
     }
@@ -276,41 +311,87 @@ class KpiUserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $kpiUser = KpiUser::findOrFail($id);
+
+        if ($kpiUser->isFinal()) {
+            return back()->withErrors(['status' => 'Penilaian KPI ini sudah difinalisasi dan tidak dapat diubah lagi.'])->withInput();
+        }
+
+        $user = auth()->user();
+        if ($this->isManagerReviewer($user) && in_array($kpiUser->status, ['draft', 'revisi'])) {
+            return back()->withErrors(['status' => 'Data KPI ini belum diajukan atau sedang direvisi oleh Admin.'])->withInput();
+        }
+
+        $isManager = $user->can('kpi.kpi-user.review');
+        $actionType = $request->input('action_type', 'save_draft');
+
+        // Validasi hak akses saat status menunggu_review
+        if ($kpiUser->isMenungguReview() && !$isManager) {
+            return back()->withErrors(['review' => 'Penilaian ini sedang dalam proses review oleh manajer dan tidak dapat diubah.'])->withInput();
+        }
+
+        // Aturan validasi
+        $rules = [
             'task' => 'required|array',
             'catatan' => 'nullable|array',
             'is_review_khusus' => 'nullable|array',
             'alasan_review_khusus' => 'nullable|array',
-            'status' => 'required|in:draft,final',
-            'action_type' => 'nullable|string'
-        ]);
+            'skor_custom' => 'nullable|array',
+            'catatan_revisi' => 'nullable|string',
+        ];
 
-        $kpiUserCheck = KpiUser::findOrFail($id);
-        if ($kpiUserCheck->reviewRequests()->whereNull('direspon_pada')->exists()) {
-            return back()->withErrors(['review' => 'Penilaian ini sedang dalam proses review oleh manajer dan tidak dapat diubah hingga proses review selesai.'])->withInput();
+        if ($actionType === 'minta_revisi') {
+            $rules['catatan_revisi'] = 'required|string';
+        }
+
+        $request->validate($rules);
+
+        // Tentukan target status berdasarkan aksi dan hak akses
+        $targetStatus = $kpiUser->status;
+
+        if ($actionType === 'finalisasi') {
+            if (!$user->can('kpi.kpi-user.finalisasi')) {
+                return back()->withErrors(['status' => 'Anda tidak memiliki hak akses untuk memfinalisasi penilaian KPI ini.'])->withInput();
+            }
+            $targetStatus = 'final';
+        } elseif ($actionType === 'minta_revisi') {
+            if (!$user->can('kpi.kpi-user.minta-revisi')) {
+                return back()->withErrors(['status' => 'Anda tidak memiliki hak akses untuk meminta revisi penilaian KPI ini.'])->withInput();
+            }
+            $targetStatus = 'revisi';
+        } elseif ($actionType === 'simpan_draft_review') {
+            if (!$isManager) {
+                return back()->withErrors(['status' => 'Aksi ini hanya dapat dilakukan oleh Manajer.'])->withInput();
+            }
+            $targetStatus = 'menunggu_review';
+        } elseif ($actionType === 'posting_manager') {
+            if ($this->isManagerReviewer($user)) {
+                return back()->withErrors(['status' => 'Aksi pengajuan ini hanya dapat dilakukan oleh Admin pembuat penilaian.'])->withInput();
+            }
+            $targetStatus = 'menunggu_review';
+        } elseif ($actionType === 'save_draft') {
+            $targetStatus = $kpiUser->status === 'revisi' ? 'revisi' : 'draft';
         }
 
         $indicators = KpiIndicator::all();
         $modeMapping = $indicators->pluck('tipe_indikator', 'tipe_perhitungan')->toArray();
 
-        DB::transaction(function () use ($request, $id, $indicators, $modeMapping) {
-            $kpiUser = KpiUser::findOrFail($id);
-
+        DB::transaction(function () use ($request, $kpiUser, $indicators, $modeMapping, $isManager, $targetStatus) {
             foreach ($request->task as $komponenId => $tasks) {
-                $totalTargetKomponen = 0;
-                $totalTercapaiKomponen = 0;
-                $totalNilaiDariSelect = 0;
-
                 $userKomponen = $kpiUser->details()->where('id', $komponenId)->first();
-                if ($userKomponen && $userKomponen->nilai_tetap) {
+                if (!$userKomponen) {
                     continue;
                 }
+
                 $tipePerhitungan = $userKomponen->komponen->tipe_perhitungan;
                 $currentMode = $modeMapping[$tipePerhitungan] ?? 'range';
                 $taskCount = count($tasks);
 
+                $totalTargetKomponen = 0;
+                $totalTercapaiKomponen = 0;
+                $totalNilaiDariSelect = 0;
+
                 foreach ($tasks as $taskId => $values) {
-                    // dd($values);
                     $target = isset($values['target']) ? (float) str_replace('.', '', $values['target']) : 0;
 
                     if ($currentMode === 'select') {
@@ -330,7 +411,7 @@ class KpiUserController extends Controller
                         'tercapai' => $tercapai,
                         'nilai' => $nilaiSelect,
                         'alasan_tidak_tercapai' => $alasan,
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
 
                     $totalTargetKomponen += $target;
@@ -338,26 +419,40 @@ class KpiUserController extends Controller
                     $totalNilaiDariSelect += ($currentMode === 'select' ? $nilaiSelect : 0);
                 }
 
-                $skor = 0;
-                $persenKepatuhan = 0;
+                // Cek override skor dari Manager (Hanya berlaku saat status menunggu_review dan di-review oleh Manager)
+                $customSkor = $request->input("skor_custom.{$komponenId}");
+                $hasCustomSkor = $isManager && $kpiUser->isMenungguReview() && ($customSkor !== null && $customSkor !== '' && $customSkor !== 'auto');
 
-                if ($tipePerhitungan === 'KONDISI_LANGSUNG') {
-                    $skor = $totalNilaiDariSelect;
+                if ($hasCustomSkor) {
+                    $skor = (float) $customSkor;
+                    $nilaiTetap = true;
                     $persenKepatuhan = $skor;
-                } elseif ($tipePerhitungan === 'AKKUMULASI_NILAI') {
-                    $persenKepatuhan = ($taskCount > 0) ? ($totalNilaiDariSelect / ($taskCount * 100)) * 100 : 0;
-                    $skor = $this->lookupSkor($indicators, 'KEPATUHAN', $persenKepatuhan);
-                } elseif ($tipePerhitungan === 'SELISIH_STOK') {
-                    $selisihMurni = abs($totalTargetKomponen - $totalTercapaiKomponen);
-                    $persenKepatuhan = $totalTargetKomponen > 0 ? ($selisihMurni / $totalTargetKomponen) * 100 : 0;
-
-                    $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
-                } elseif ($tipePerhitungan === 'PROPORSIONAL') {
-                    $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
-                    $skor = min(100, $persenKepatuhan);
+                    if ($tipePerhitungan === 'PROPORSIONAL' || $tipePerhitungan === 'SELISIH_STOK') {
+                        $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
+                    }
                 } else {
-                    $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
-                    $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
+                    // Saat Admin menginput/mengedit draft, nilai dihitung otomatis murni dari task
+                    $nilaiTetap = false;
+                    $skor = 0;
+                    $persenKepatuhan = 0;
+
+                    if ($tipePerhitungan === 'KONDISI_LANGSUNG') {
+                        $skor = $totalNilaiDariSelect;
+                        $persenKepatuhan = $skor;
+                    } elseif ($tipePerhitungan === 'AKKUMULASI_NILAI') {
+                        $persenKepatuhan = ($taskCount > 0) ? ($totalNilaiDariSelect / ($taskCount * 100)) * 100 : 0;
+                        $skor = $this->lookupSkor($indicators, 'KEPATUHAN', $persenKepatuhan);
+                    } elseif ($tipePerhitungan === 'SELISIH_STOK') {
+                        $selisihMurni = abs($totalTargetKomponen - $totalTercapaiKomponen);
+                        $persenKepatuhan = $totalTargetKomponen > 0 ? ($selisihMurni / $totalTargetKomponen) * 100 : 0;
+                        $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
+                    } elseif ($tipePerhitungan === 'PROPORSIONAL') {
+                        $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
+                        $skor = min(100, $persenKepatuhan);
+                    } else {
+                        $persenKepatuhan = $totalTargetKomponen > 0 ? ($totalTercapaiKomponen / $totalTargetKomponen) * 100 : 0;
+                        $skor = $this->lookupSkor($indicators, $tipePerhitungan, $persenKepatuhan);
+                    }
                 }
 
                 $isKhusus = isset($request->is_review_khusus[$komponenId]) && $request->is_review_khusus[$komponenId] == '1';
@@ -372,47 +467,119 @@ class KpiUserController extends Controller
                     'catatan_tambahan' => $request->catatan[$komponenId] ?? null,
                     'is_review_khusus' => $isKhusus,
                     'alasan_review_khusus' => $alasanKhusus,
+                    'nilai_tetap' => $nilaiTetap,
                 ]);
             }
 
-            $kpiUser->update(['status' => $request->status]);
+            $updateHeader = ['status' => $targetStatus];
+
+            if ($targetStatus === 'final') {
+                $updateHeader['finalized_by'] = auth()->id();
+                $updateHeader['finalized_at'] = now();
+            } elseif ($targetStatus === 'revisi') {
+                $updateHeader['catatan_revisi'] = $request->input('catatan_revisi');
+            }
+
+            $kpiUser->update($updateHeader);
         });
 
-        if ($request->input('action_type') === 'request_review') {
-            $kpiUser = KpiUser::with(['karyawan', 'details'])->findOrFail($id);
+        // Helper nama bulan bahasa Indonesia
+        $daftarBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        $namaBulan = $daftarBulan[(int) $kpiUser->bulan] ?? date('F', mktime(0, 0, 0, $kpiUser->bulan, 1, $kpiUser->tahun));
+        $periode = "{$namaBulan} {$kpiUser->tahun}";
 
-            KpiReviewRequest::create([
-                'kpi_user_id' => $id
-            ]);
-
+        // WhatsApp Notification
+        if ($targetStatus === 'menunggu_review' && $actionType === 'posting_manager') {
+            $kpiUser->refresh();
             $namaKaryawan = $kpiUser->karyawan->nama;
-            $periode = date('F Y', mktime(0, 0, 0, $kpiUser->bulan, 1, $kpiUser->tahun));
+            $jabatanKaryawan = $kpiUser->karyawan->role?->name ?? '-';
 
             $komponenNol = $kpiUser->details->where('skor', 0)->pluck('nama_komponen')->toArray();
             $komponenKhusus = $kpiUser->details->where('is_review_khusus', true)->pluck('nama_komponen')->toArray();
             $semuaKomponen = array_unique(array_merge($komponenNol, $komponenKhusus));
-            $komponenText = !empty($semuaKomponen) ? implode(', ', $semuaKomponen) : '-';
+            $catatanKomponen = !empty($semuaKomponen) ? implode(', ', $semuaKomponen) : 'Normal';
 
-            $message = "⚠️ *REQUEST REVIEW KPI*\n\n" .
-                "Halo Manajer Strategi & Kepatuhan, terdapat penilaian KPI karyawan yang membutuhkan review:\n\n" .
-                "```\n" .
-                "👤 Karyawan  : {$namaKaryawan}\n" .
-                "📅 Periode   : {$periode}\n" .
-                "📊 Komponen  : {$komponenText}\n" .
-                "```\n\n" .
-                "Mohon segera melakukan pengecekan dan penyesuaian skor melalui dashboard sistem KPI. Terima kasih. 🙏";
+            $message = view('notifications.whatsapp.kpi.posting_review', [
+                'namaKaryawan'    => $namaKaryawan,
+                'jabatanKaryawan' => $jabatanKaryawan,
+                'periode'         => $periode,
+                'skorAkhir'       => $kpiUser->total_nilai,
+                'catatanKomponen' => $catatanKomponen,
+            ])->render();
 
             try {
-                // 089685813512
-                $this->notificationPribadi->sendWhatsApp("089685813512", $message);
+                $noHpManager = env('FONNTE_NO_MANAGER_STRATEGI', '6289685813512');
+                if (!empty($noHpManager)) {
+                    $this->notificationPribadi->sendWhatsApp($noHpManager, $message);
+                }
             } catch (\Throwable $e) {
                 \Log::error('Error kirim notif WA KPI Review: ' . $e->getMessage());
             }
 
-            return redirect()->route('kpi.user.index')->with('success', 'Data KPI berhasil disimpan & permintaan review berhasil dikirim ke Manajer Strategi & Kepatuhan.');
+            return redirect()->route('kpi.user.index')->with('success', 'Penilaian KPI berhasil disimpan & diajukan ke Manajer untuk review.');
         }
 
-        return redirect()->back()->with('success', 'Data KPI berhasil diperbarui.');
+        if ($targetStatus === 'revisi') {
+            $namaKaryawan = $kpiUser->karyawan->nama;
+            $jabatanKaryawan = $kpiUser->karyawan->role?->name ?? '-';
+            $catatan = $request->input('catatan_revisi');
+            $rolePengembali = auth()->user()->roles->first()->name ?? 'Manajer Strategi & Kepatuhan';
+
+            $message = view('notifications.whatsapp.kpi.minta_revisi', [
+                'namaKaryawan'    => $namaKaryawan,
+                'jabatanKaryawan' => $jabatanKaryawan,
+                'periode'         => $periode,
+                'catatanRevisi'   => $catatan,
+                'rolePengembali'  => $rolePengembali,
+            ])->render();
+
+            try {
+                $noHpAdmin = env('FONNTE_NO_ADMIN_EKSEKUTIF', '6282119916732');
+                if (!empty($noHpAdmin)) {
+                    $this->notificationPribadi->sendWhatsApp($noHpAdmin, $message);
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Error kirim notif WA KPI Revisi: ' . $e->getMessage());
+            }
+
+            return redirect()->route('kpi.user.index')->with('success', 'Penilaian KPI berhasil dikembalikan ke Admin untuk direvisi.');
+        }
+
+        if ($targetStatus === 'final') {
+            $kpiUser->refresh();
+            $namaKaryawan = $kpiUser->karyawan->nama;
+            $jabatanKaryawan = $kpiUser->karyawan->role?->name ?? '-';
+            $namaManajer = auth()->user()->nama_lengkap ?? 'Manajer Strategi & Kepatuhan';
+
+            $message = view('notifications.whatsapp.kpi.finalisasi', [
+                'namaKaryawan'    => $namaKaryawan,
+                'jabatanKaryawan' => $jabatanKaryawan,
+                'periode'         => $periode,
+                'nilaiAkhir'      => $kpiUser->total_nilai,
+                'namaManajer'     => $namaManajer,
+            ])->render();
+
+            try {
+                $noHpAdmin = env('FONNTE_NO_ADMIN_EKSEKUTIF', '6282119916732');
+                if (!empty($noHpAdmin)) {
+                    $this->notificationPribadi->sendWhatsApp($noHpAdmin, $message);
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Error kirim notif WA KPI Finalisasi: ' . $e->getMessage());
+            }
+
+            return redirect()->route('kpi.user.index')->with('success', 'Penilaian KPI berhasil disetujui & difinalisasi.');
+        }
+
+        if ($actionType === 'simpan_draft_review') {
+            return redirect()->back()->with('success', 'Draft review KPI berhasil disimpan (status tetap Menunggu Review).');
+        }
+
+        return redirect()->back()->with('success', 'Draft penilaian KPI berhasil disimpan.');
     }
     /**
      * Fungsi pembantu untuk mencari skor berdasarkan range di database
@@ -437,9 +604,35 @@ class KpiUserController extends Controller
      */
     public function destroy(string $id)
     {
-        $user = KpiUser::findOrFail($id);
-        $user->delete();
+        $kpiUser = KpiUser::findOrFail($id);
+
+        if ($this->isManagerReviewer(auth()->user())) {
+            return redirect()->route('kpi.user.index')->with('error', 'Manajer tidak memiliki akses untuk menghapus data KPI.');
+        }
+
+        if ($kpiUser->isFinal()) {
+            return redirect()->route('kpi.user.index')->with('error', 'Penilaian KPI yang sudah difinalisasi tidak dapat dihapus.');
+        }
+
+        $kpiUser->delete();
 
         return redirect()->route('kpi.user.index')->with('success', 'User kpi berhasil dihapus.');
+    }
+
+    /**
+     * Memeriksa apakah user saat ini bertindak sebagai Reviewer (Manajer Strategi & Kepatuhan)
+     */
+    private function isManagerReviewer($user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->hasRole(['Superadmin', 'superadmin'])) {
+            return false;
+        }
+
+        return $user->hasRole(['MANAJER STRATEGI & KEPATUHAN', 'Manager Strategi & Kepatuhan']) || 
+            ($user->can('kpi.kpi-user.review') && !$user->can('kpi.kpi-user.create'));
     }
 }

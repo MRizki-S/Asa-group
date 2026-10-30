@@ -18,6 +18,17 @@ class KpiExportController extends Controller
     {
         $kpi = KpiUser::with(['details', 'karyawan.role.devisi'])->findOrFail($id);
 
+        $user = auth()->user();
+        $isSuperadmin = $user ? $user->hasRole(['Superadmin', 'superadmin']) : false;
+        $isManagerReviewer = !$isSuperadmin && $user && (
+            $user->hasRole(['MANAJER STRATEGI & KEPATUHAN', 'Manager Strategi & Kepatuhan']) || 
+            ($user->can('kpi.kpi-user.review') && !$user->can('kpi.kpi-user.create'))
+        );
+
+        if ($isManagerReviewer && in_array($kpi->status, ['draft', 'revisi'])) {
+            return redirect()->route('kpi.user.index')->with('error', 'Data KPI ini belum diajukan atau sedang direvisi oleh Admin.');
+        }
+
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('KPI ' . substr($kpi->karyawan->nama, 0, 20));
@@ -140,9 +151,21 @@ class KpiExportController extends Controller
             'tahun'     => 'nullable',
         ]);
 
-        $kpiList = KpiUser::with(['details', 'karyawan.role.devisi'])
-            ->whereIn('id', $request->kpi_ids)
-            ->get()
+        $user = auth()->user();
+        $isSuperadmin = $user ? $user->hasRole(['Superadmin', 'superadmin']) : false;
+        $isManagerReviewer = !$isSuperadmin && $user && (
+            $user->hasRole(['MANAJER STRATEGI & KEPATUHAN', 'Manager Strategi & Kepatuhan']) || 
+            ($user->can('kpi.kpi-user.review') && !$user->can('kpi.kpi-user.create'))
+        );
+
+        $query = KpiUser::with(['details', 'karyawan.role.devisi'])
+            ->whereIn('id', $request->kpi_ids);
+
+        if ($isManagerReviewer) {
+            $query->whereIn('status', ['menunggu_review', 'final']);
+        }
+
+        $kpiList = $query->get()
             ->sortBy(function ($kpi) {
                 $devisiName = $kpi->karyawan->role?->devisi?->nama_devisi ?? 'LAINNYA';
                 $userName = $kpi->karyawan->nama ?? '';

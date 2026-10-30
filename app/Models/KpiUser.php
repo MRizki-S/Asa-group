@@ -12,12 +12,24 @@ class KpiUser extends Model
         'karyawan_id',
         'bulan',
         'tahun',
-        'status'
+        'status',
+        'catatan_revisi',
+        'finalized_by',
+        'finalized_at',
+    ];
+
+    protected $casts = [
+        'finalized_at' => 'datetime',
     ];
 
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    public function finalizedBy()
+    {
+        return $this->belongsTo(User::class, 'finalized_by');
     }
 
     public function details()
@@ -30,8 +42,24 @@ class KpiUser extends Model
         return round($this->details()->sum('nilai_akhir') ?? 0);
     }
 
-    public function reviewRequests()
+    // Helper status dokumen KPI
+    public function isDraft(): bool
     {
-        return $this->hasMany(KpiReviewRequest::class, 'kpi_user_id');
+        return $this->status === 'draft';
+    }
+
+    public function isMenungguReview(): bool
+    {
+        return $this->status === 'menunggu_review';
+    }
+
+    public function isRevisi(): bool
+    {
+        return $this->status === 'revisi';
+    }
+
+    public function isFinal(): bool
+    {
+        return $this->status === 'final';
     }
 }

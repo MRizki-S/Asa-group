@@ -43,7 +43,6 @@ use App\Http\Controllers\Keuangan\TransaksiJurnalController;
 use App\Http\Controllers\Kpi\KpiDashboardController;
 use App\Http\Controllers\Kpi\KpiExportController;
 use App\Http\Controllers\Kpi\KpiKomponenController;
-use App\Http\Controllers\Kpi\KpiReviewController;
 use App\Http\Controllers\Kpi\KpiUserController;
 use App\Http\Controllers\Marketing\AdendumController;
 use App\Http\Controllers\Marketing\AdendumListController;
@@ -943,16 +942,15 @@ Route::middleware(['auth', 'can:keuangan.upah-borongan.akuntan.read'])->prefix('
 Route::middleware('auth')->prefix('kpi')->group(function () {
     Route::resource('komponen', KpiKomponenController::class)->names('kpi.komponen');
     Route::resource('user', KpiUserController::class)->names('kpi.user');
-    Route::get('/kpi-review', [KpiReviewController::class, 'index'])->name('kpi.review.index');
-    Route::put('/kpi-review/{id}', [KpiReviewController::class, 'update'])->name('kpi.review.update');
-    Route::get('/kpi-review/{id}/edit', [KpiReviewController::class, 'edit'])->name('kpi.review.edit');
     Route::get('/dashboard', [KpiDashboardController::class, 'index'])->name('kpi.dashboard.index');
+    Route::post('user/export', [KpiExportController::class, 'export'])->name('kpi.user.export');
+    Route::get('/dashboard/export', [KpiDashboardController::class, 'exportExcel'])->name('kpi.dashboard.export');
 });
 
-Route::get('/kpi-user/get-role-data/{roleId}', [KpiUserController::class, 'getRoleData'])->name('kpi.user.getRoleData');
-Route::get('/kpi-user/{id}/export-excel', [KpiExportController::class, 'exportById'])->name('kpi.user.exportExcel');
-Route::post('kpi/user/export', [KpiExportController::class, 'export'])->name('kpi.user.export');
-Route::get('/kpi/dashboard/export', [KpiDashboardController::class, 'exportExcel'])->name('kpi.dashboard.export');
+Route::middleware('auth')->group(function () {
+    Route::get('/kpi-user/get-role-data/{roleId}', [KpiUserController::class, 'getRoleData'])->name('kpi.user.getRoleData');
+    Route::get('/kpi-user/{id}/export-excel', [KpiExportController::class, 'exportById'])->name('kpi.user.exportExcel');
+});
 
 Route::middleware('auth')->prefix('superadmin')->group(function () {
     Route::post('role-hakakses/{id}/duplicate', [RoleHakAksesController::class, 'duplicate'])->name('superadmin.roleHakAkses.duplicate');

@@ -23,6 +23,33 @@
             </script>
         @endif
 
+        @if (session('error'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Akses Dibatasi',
+                        text: "{{ session('error') }}",
+                        showConfirmButton: true
+                    });
+                });
+            </script>
+        @endif
+
+        @if (session('success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: "{{ session('success') }}",
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                });
+            </script>
+        @endif
+
         <div class="space-y-5 sm:space-y-6">
             <div
                 class="rounded-2xl border border-gray-200 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
@@ -98,11 +125,17 @@
                     </select>
 
                     <select name="status"
-                        class="flex-1 min-w-[130px] max-w-[160px] bg-gray-50 border border-gray-200 text-sm rounded-lg py-2 pl-3 pr-8
+                        class="flex-1 min-w-[130px] max-w-[180px] bg-gray-50 border border-gray-200 text-sm rounded-lg py-2 pl-3 pr-8
                dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-white outline-none
                focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer">
-                        <option value="">Semua Status</option>
-                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>DRAFT</option>
+                        <option value="">{{ $isManagerReviewer ? 'Semua Status (Review & Final)' : 'Semua Status' }}</option>
+                        @if (!$isManagerReviewer)
+                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>DRAFT</option>
+                        @endif
+                        <option value="menunggu_review" {{ request('status') == 'menunggu_review' ? 'selected' : '' }}>MENUNGGU REVIEW</option>
+                        @if (!$isManagerReviewer)
+                            <option value="revisi" {{ request('status') == 'revisi' ? 'selected' : '' }}>REVISI</option>
+                        @endif
                         <option value="final" {{ request('status') == 'final' ? 'selected' : '' }}>FINAL</option>
                     </select>
 
@@ -129,7 +162,7 @@
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Total Nilai</th>
                                 <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Status</th>
 
-                                @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail'])
+                                @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail', 'kpi.kpi-user.review'])
                                     <th class="py-3 px-4 font-medium text-sm text-gray-700 dark:text-gray-400 text-center">Aksi</th>
                                 @endcanany
                             </tr>
@@ -158,19 +191,50 @@
                                         <p>{{ round((float) $item->total_nilai) }}</p>
                                     </td>
                                     <td class="py-4 px-4 text-sm text-center">
-                                        <span
-                                            class="{{ $item->status == 'draft' ? 'text-yellow-600' : 'text-green-600' }} font-bold text-xs uppercase tracking-wider">
-                                            {{ $item->status }}
-                                        </span>
+                                        @if ($item->status == 'draft')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                                                Draft
+                                            </span>
+                                        @elseif ($item->status == 'menunggu_review')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                                                Menunggu Review
+                                            </span>
+                                        @elseif ($item->status == 'revisi')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                                                Revisi
+                                            </span>
+                                        @elseif ($item->status == 'final')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                                Final
+                                            </span>
+                                        @endif
                                     </td>
-                                    @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail'])
+                                    @canany(['kpi.kpi-user.update', 'kpi.kpi-user.delete', 'kpi.kpi-user.detail', 'kpi.kpi-user.review'])
                                         <td class="py-4 px-4 text-center">
                                             <div class="flex items-center justify-center gap-2">
-                                                @if ($item->status == 'draft')
+                                                {{-- Status DRAFT / REVISI: Admin/Staff dapat Edit --}}
+                                                @if ($item->status == 'draft' || $item->status == 'revisi')
                                                     @can('kpi.kpi-user.update')
                                                         <a href="{{ route('kpi.user.edit', $item->id) }}"
                                                             class="px-2.5 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-md hover:bg-yellow-200 transition">Edit</a>
+                                                    @else
+                                                        @can('kpi.kpi-user.detail')
+                                                            <a href="{{ route('kpi.user.show', $item->id) }}"
+                                                                class="px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition">Detail</a>
+                                                        @endcan
                                                     @endcan
+                                                {{-- Status MENUNGGU_REVIEW: Manager Review, lainnya Detail --}}
+                                                @elseif ($item->status == 'menunggu_review')
+                                                    @can('kpi.kpi-user.review')
+                                                        <a href="{{ route('kpi.user.edit', $item->id) }}"
+                                                            class="px-2.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition shadow-sm">Review</a>
+                                                    @else
+                                                        @can('kpi.kpi-user.detail')
+                                                            <a href="{{ route('kpi.user.show', $item->id) }}"
+                                                                class="px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition">Detail</a>
+                                                        @endcan
+                                                    @endcan
+                                                {{-- Status FINAL: Detail --}}
                                                 @else
                                                     @can('kpi.kpi-user.detail')
                                                         <a href="{{ route('kpi.user.show', $item->id) }}"
@@ -179,12 +243,14 @@
                                                 @endif
 
                                                 @can('kpi.kpi-user.delete')
-                                                    <form action="{{ route('kpi.user.destroy', $item->id) }}" method="POST"
-                                                        class="delete-form inline">
-                                                        @csrf @method('DELETE')
-                                                        <button type="button"
-                                                            class="delete-btn px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700 transition">Hapus</button>
-                                                    </form>
+                                                    @if ($item->status !== 'final')
+                                                        <form action="{{ route('kpi.user.destroy', $item->id) }}" method="POST"
+                                                            class="delete-form inline">
+                                                            @csrf @method('DELETE')
+                                                            <button type="button"
+                                                                class="delete-btn px-3 py-1 text-xs text-white bg-red-600 rounded hover:bg-red-700 transition">Hapus</button>
+                                                        </form>
+                                                    @endif
                                                 @endcan
                                             </div>
                                         </td>
@@ -243,8 +309,8 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                                     {{ $item->karyawan->role?->name ?? '-' }}
                                     <span
-                                        class="ml-1.5 {{ $item->status == 'draft' ? 'text-yellow-600' : 'text-green-600' }} font-medium uppercase">
-                                        · {{ $item->status }}
+                                        class="ml-1.5 text-green-600 font-semibold uppercase">
+                                        · FINAL
                                     </span>
                                 </p>
                             </div>

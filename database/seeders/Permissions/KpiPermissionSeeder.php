@@ -29,6 +29,9 @@ class KpiPermissionSeeder extends Seeder
             'kpi.kpi-user.detail',
             'kpi.kpi-user.export',
             'kpi.kpi-user.delete',
+            'kpi.kpi-user.review',
+            'kpi.kpi-user.minta-revisi',
+            'kpi.kpi-user.finalisasi',
 
             // Kpi Riview
             'kpi.kpi-riview.read',
