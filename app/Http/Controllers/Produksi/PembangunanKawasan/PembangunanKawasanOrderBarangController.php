@@ -217,6 +217,8 @@ class PembangunanKawasanOrderBarangController extends Controller
                         'barang_id' => $b['id'] ?? $b['barang_id'] ?? null,
                         'satuan_id' => $b['satuan_id'] ?? null,
                         'jumlah_input' => $b['jumlah_input'] ?? null,
+                        'harga_satuan' => $b['harga_satuan'] ?? null,
+                        'harga_total' => $b['harga_total'] ?? null,
                     ];
                 })->toArray()
             ]);

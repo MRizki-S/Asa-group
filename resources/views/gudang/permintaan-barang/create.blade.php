@@ -1503,10 +1503,13 @@ function createOrderUnitComponent() {
                     waktu_order: this.waktuLive,
                     catatan: this.catatan,
                     jenis_order: this.jenisOrderType,
-                    barang: this.cart.map((c) => {
+                    items: this.cart.map((c) => {
+                        let st = c.satuans.find((s) => s.id == c.satuan_id);
                         return {
-                            id: c.barang_id,
+                            barang_id: c.barang_id,
+                            nama_barang: c.nama_barang,
                             satuan_id: c.satuan_id,
+                            satuan: st ? st.nama_satuan : c.satuan_nama,
                             jumlah_input: this.parseQty(c.qty),
                             harga_satuan: this.jenisOrderType === 'cash' ? this.parseHarga(c.harga_satuan) : null,
                             harga_total: this.jenisOrderType === 'cash' ? this.calculateItemTotal(c) : null
@@ -1521,10 +1524,13 @@ function createOrderUnitComponent() {
                     waktu_order: this.waktuLive,
                     catatan: this.catatan,
                     jenis_order: this.jenisOrderType,
-                    barang: this.cart.map((c) => {
+                    items: this.cart.map((c) => {
+                        let st = c.satuans.find((s) => s.id == c.satuan_id);
                         return {
-                            id: c.barang_id,
+                            barang_id: c.barang_id,
+                            nama_barang: c.nama_barang,
                             satuan_id: c.satuan_id,
+                            satuan: st ? st.nama_satuan : c.satuan_nama,
                             jumlah_input: this.parseQty(c.qty),
                             harga_satuan: this.jenisOrderType === 'cash' ? this.parseHarga(c.harga_satuan) : null,
                             harga_total: this.jenisOrderType === 'cash' ? this.calculateItemTotal(c) : null
