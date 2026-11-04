@@ -3,15 +3,17 @@
 @php
     $category = request()->get('category', $category ?? 'pembangunan_unit');
     $pageActive = [
-        'pembangunan_unit' => 'BarangReturnUnit',
-        'pembangunan_kawasan' => 'BarangReturnKawasan',
+        'pembangunan_unit'           => 'BarangReturnUnit',
+        'pembangunan_kawasan'        => 'BarangReturnKawasan',
         'pembangunan_proyek_mangoon' => 'BarangReturnProyek',
+        'pembangunan_lain'           => 'BarangReturnLain',
     ][$category] ?? 'BarangReturnUnit';
 
     $indexRouteName = [
-        'pembangunan_unit' => 'gudang.returnBarang.unit.index',
-        'pembangunan_kawasan' => 'gudang.returnBarang.kawasan.index',
+        'pembangunan_unit'           => 'gudang.returnBarang.unit.index',
+        'pembangunan_kawasan'        => 'gudang.returnBarang.kawasan.index',
         'pembangunan_proyek_mangoon' => 'gudang.returnBarang.proyek.index',
+        'pembangunan_lain'           => 'gudang.returnBarang.pembangunanLain.index',
     ][$category] ?? 'gudang.returnBarang.unit.index';
 @endphp
 
@@ -149,17 +151,6 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">QC Pembangunan <span class="text-red-500">*</span></label>
-                    <select x-ref="qcSelect" name="pembangunan_unit_qc_id" :disabled="!pembangunanUnitId || loadingSummary" required
-                        class="w-full">
-                        <option value="">-- Pilih QC --</option>
-                        <template x-for="q in selectedQcList" :key="q.id">
-                            <option :value="q.id" x-text="q.nama_qc"></option>
-                        </template>
-                    </select>
-                </div>
-
-                <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Unit</label>
                     <input type="text" disabled :value="selectedUnitInfo?.pengawas_nama || '-'"
                         class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
@@ -215,6 +206,35 @@
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Proyek</label>
                     <input type="text" disabled :value="selectedProyekInfo?.pengawas_nama || '-'"
                         class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+            @elseif($category === 'pembangunan_lain')
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Proyek Induk <span class="text-red-500">*</span></label>
+                    <select x-ref="proyekLainSelect" name="pembangunan_lain_id" required class="w-full">
+                        <option value="">-- Pilih Proyek Induk --</option>
+                        @foreach($pembangunanLain as $pl)
+                            <option value="{{ $pl->id }}">{{ $pl->nama_proyek }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Sub-Pekerjaan <span class="text-red-500">*</span></label>
+                    <select x-ref="subLainSelect" name="pembangunan_lain_sub_id" :disabled="!pembangunanLainId || loadingSummary" required class="w-full">
+                        <option value="">-- Pilih Sub-Pekerjaan --</option>
+                        <template x-for="sub in selectedSubList" :key="sub.id">
+                            <option :value="sub.id" x-text="sub.nama_sub"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Gudang Penerima Retur (UBS) <span class="text-red-500">*</span></label>
+                    <select x-model="selectedUbsId" name="ubs_id" class="w-full rounded-xl border border-gray-300 bg-gray-50 p-3 text-xs sm:text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                        @foreach($ubsList as $u)
+                            <option value="{{ $u->id }}">{{ $u->nama_ubs }}</option>
+                        @endforeach
+                    </select>
                 </div>
             @endif
 
@@ -392,11 +412,14 @@
 
                     @if($category === 'pembangunan_unit')
                         <input type="hidden" name="pembangunan_unit_id" :value="pembangunanUnitId">
-                        <input type="hidden" name="pembangunan_unit_qc_id" :value="targetId">
                     @elseif($category === 'pembangunan_kawasan')
                         <input type="hidden" name="pembangunan_kawasan_id" :value="targetId">
                     @elseif($category === 'pembangunan_proyek_mangoon' || $category === 'pembangunan_proyek')
                         <input type="hidden" name="pembangunan_proyek_id" :value="targetId">
+                    @elseif($category === 'pembangunan_lain')
+                        <input type="hidden" name="pembangunan_lain_id" :value="pembangunanLainId">
+                        <input type="hidden" name="pembangunan_lain_sub_id" :value="targetId">
+                        <input type="hidden" name="ubs_id" :value="selectedUbsId">
                     @endif
 
                     <input type="hidden" name="tanggal_return" :value="tanggalReturnSimpan + ' ' + waktuLive">
@@ -535,10 +558,14 @@
             pembangunanUnits: @json($pembangunanUnits),
             pembangunanKawasan: @json($pembangunanKawasan),
             pembangunanProyek: @json($pembangunanProyek),
+            pembangunanLain: @json($pembangunanLain ?? []),
+            ubsList: @json($ubsList ?? []),
             
             pembangunanUnitId: '',
+            pembangunanLainId: '',
+            selectedSubList: [],
+            selectedUbsId: '1',
             targetId: '',
-            selectedQcList: [],
             selectedKawasanPeriodeName: '',
             jenisPembangunan: 'pembangunan',
             get filteredPembangunanUnits() {
@@ -550,20 +577,15 @@
             onJenisPembangunanChange() {
                 this.pembangunanUnitId = '';
                 this.targetId = '';
-                this.selectedQcList = [];
                 this.availableBarangList = [];
                 this.cart = [];
 
                 let unitSelectEl = $(this.$refs.unitSelect);
-                let qcSelectEl = $(this.$refs.qcSelect);
-
                 unitSelectEl.val('').empty().append('<option value="">-- Pilih Pembangunan Unit --</option>');
                 this.filteredPembangunanUnits.forEach(pu => {
                     unitSelectEl.append(new Option(pu.label_formatted, pu.id, false, false));
                 });
                 unitSelectEl.trigger('change.select2');
-
-                qcSelectEl.val('').empty().append('<option value="">-- Pilih QC --</option>').trigger('change.select2');
             },
             
             get selectedUnitInfo() {
@@ -619,16 +641,6 @@
                             this.pembangunanUnitId = e.target.value;
                             this.onUnitChange();
                         });
-
-                        $(this.$refs.qcSelect).select2({
-                            theme: 'bootstrap4',
-                            placeholder: '-- Pilih QC --',
-                            allowClear: true,
-                            width: '100%'
-                        }).on('change', (e) => {
-                            this.targetId = e.target.value;
-                            this.fetchSummary();
-                        });
                     } else if (category === 'pembangunan_kawasan') {
                         $(this.$refs.kawasanSelect).select2({
                             theme: 'bootstrap4',
@@ -649,6 +661,26 @@
                             this.targetId = e.target.value;
                             this.fetchSummary();
                         });
+                    } else if (category === 'pembangunan_lain') {
+                        $(this.$refs.proyekLainSelect).select2({
+                            theme: 'bootstrap4',
+                            placeholder: '-- Pilih Proyek Induk --',
+                            allowClear: true,
+                            width: '100%'
+                        }).on('change', (e) => {
+                            this.pembangunanLainId = e.target.value;
+                            this.onProyekLainChange();
+                        });
+
+                        $(this.$refs.subLainSelect).select2({
+                            theme: 'bootstrap4',
+                            placeholder: '-- Pilih Sub-Pekerjaan --',
+                            allowClear: true,
+                            width: '100%'
+                        }).on('change', (e) => {
+                            this.targetId = e.target.value;
+                            this.fetchSummary();
+                        });
                     }
                 });
             },
@@ -658,27 +690,30 @@
                 return parseFloat(num).toLocaleString('id-ID', { maximumFractionDigits: 3 });
             },
 
-            onUnitChange() {
+            onProyekLainChange() {
                 this.targetId = '';
                 this.availableBarangList = [];
                 this.cart = [];
-                const found = this.pembangunanUnits.find(u => u.id == this.pembangunanUnitId);
-                const allQcs = found ? (found.pembangunan_unit_qc || []) : [];
-
-                if (this.jenisPembangunan === 'servis') {
-                    this.selectedQcList = allQcs.filter(q => Boolean(q.is_servis));
-                } else {
-                    this.selectedQcList = allQcs.filter(q => !q.is_servis);
-                }
+                const found = this.pembangunanLain.find(p => p.id == this.pembangunanLainId);
+                this.selectedSubList = found ? (found.subs || []) : [];
 
                 this.$nextTick(() => {
-                    const qcEl = $(this.$refs.qcSelect);
-                    qcEl.empty().append('<option value="">-- Pilih QC --</option>');
-                    this.selectedQcList.forEach(q => {
-                        qcEl.append(new Option(q.nama_qc, q.id));
+                    const subEl = $(this.$refs.subLainSelect);
+                    subEl.empty().append('<option value="">-- Pilih Sub-Pekerjaan --</option>');
+                    this.selectedSubList.forEach(s => {
+                        subEl.append(new Option(s.nama_sub, s.id));
                     });
-                    qcEl.val('').trigger('change.select2');
+                    subEl.val('').trigger('change.select2');
                 });
+            },
+
+            onUnitChange() {
+                this.targetId = this.pembangunanUnitId;
+                this.availableBarangList = [];
+                this.cart = [];
+                if (this.pembangunanUnitId) {
+                    this.fetchSummary();
+                }
             },
 
             onKawasanChange() {
@@ -712,11 +747,13 @@
 
                 let url = '';
                 if (this.category === 'pembangunan_unit') {
-                    url = `/gudang/return-barang/qc-summary/${this.targetId}`;
+                    url = `/gudang/return-barang/unit-summary/${this.pembangunanUnitId}`;
                 } else if (this.category === 'pembangunan_kawasan') {
                     url = `/gudang/return-barang/kawasan-summary/${this.targetId}`;
                 } else if (this.category === 'pembangunan_proyek_mangoon' || this.category === 'pembangunan_proyek') {
                     url = `/gudang/return-barang/proyek-summary/${this.targetId}`;
+                } else if (this.category === 'pembangunan_lain') {
+                    url = `/gudang/return-barang/pembangunan-lain-summary/${this.targetId}`;
                 }
 
                 try {

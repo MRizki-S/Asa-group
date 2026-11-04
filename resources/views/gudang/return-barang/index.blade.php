@@ -32,6 +32,16 @@
             'locationHeader' => 'Nama Proyek',
             'prefix' => 'RTN-PRY-',
         ],
+        'pembangunan_lain' => [
+            'active' => 'BarangReturnLain',
+            'pageName' => 'Retur Barang Pemb. Lain-lain',
+            'historyName' => 'Riwayat Retur Barang Pemb. Lain-lain',
+            'indexRoute' => 'gudang.returnBarang.pembangunanLain.index',
+            'historyRoute' => 'gudang.returnBarang.pembangunanLain.history',
+            'showRoute' => 'gudang.returnBarang.pembangunanLain.show',
+            'locationHeader' => 'Proyek / Sub-Pekerjaan',
+            'prefix' => 'RTN-BLL-',
+        ],
     ];
 
     $cfg = $categoryMap[$category ?? 'pembangunan_unit'] ?? $categoryMap['pembangunan_unit'];
@@ -82,12 +92,23 @@
 
                     <div class="flex flex-wrap items-center gap-2">
                         @if (!$isHistory)
+                            @php
+                                $createReturnPermMap = [
+                                    'pembangunan_unit' => 'gudang.return-barang.return-unit.create',
+                                    'pembangunan_kawasan' => 'gudang.return-barang.return-kawasan.create',
+                                    'pembangunan_proyek' => 'gudang.return-barang.return-mangoon.create',
+                                    'pembangunan_lain' => 'gudang.return-barang.return-lain.create',
+                                ];
+                                $createReturnPerm = $createReturnPermMap[$category] ?? null;
+                            @endphp
+                            @if (!$createReturnPerm || auth()->user()->can($createReturnPerm))
                             <a href="{{ route('gudang.returnBarang.create', ['category' => $category ?? 'pembangunan_unit']) }}"
                                 class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg> Tambah Barang Retur
                             </a>
+                            @endif
                         @endif
 
                         @if ($isHistory)
@@ -96,10 +117,21 @@
                                 Kembali ke Konfirmasi Retur
                             </a>
                         @else
+                            @php
+                                $histReturnPermMap = [
+                                    'pembangunan_unit' => 'gudang.return-barang.return-unit.history',
+                                    'pembangunan_kawasan' => 'gudang.return-barang.return-kawasan.history',
+                                    'pembangunan_proyek' => 'gudang.return-barang.return-mangoon.history',
+                                    'pembangunan_lain' => 'gudang.return-barang.return-lain.history',
+                                ];
+                                $histReturnPerm = $histReturnPermMap[$category] ?? null;
+                            @endphp
+                            @if (!$histReturnPerm || auth()->user()->can($histReturnPerm))
                             <a href="{{ route($cfg['historyRoute']) }}"
                                 class="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 transition dark:bg-slate-700 dark:hover:bg-slate-600">
                                 Riwayat Retur Barang
                             </a>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -166,6 +198,9 @@
                                 } elseif (($category ?? '') === 'pembangunan_kawasan') {
                                     $locName = $ret->kawasan?->nama ?? '-';
                                     $subLocName = $ret->kawasan?->perumahan?->nama_perumahaan ?? '-';
+                                } elseif (($category ?? '') === 'pembangunan_lain') {
+                                    $locName = $ret->proyek?->nama_proyek ?? '-';
+                                    $subLocName = $ret->sub?->nama_sub ?? '-';
                                 } else {
                                     $locName = $ret->proyek?->nama_project ?? $ret->proyek?->nama ?? '-';
                                     $subLocName = '-';

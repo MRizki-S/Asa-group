@@ -26,6 +26,14 @@
             'rejectRoute' => 'gudang.permintaanBarang.pembangunanProyek.rejectReturn',
             'prefix' => 'RTN-PRY-',
         ],
+        'pembangunan_lain' => [
+            'active'      => 'BarangReturnLain',
+            'pageName'    => 'Detail Retur Barang Pemb. Lain-lain',
+            'indexRoute'  => 'gudang.returnBarang.pembangunanLain.index',
+            'accRoute'    => 'gudang.permintaanBarang.pembangunanLain.accReturn',
+            'rejectRoute' => 'gudang.permintaanBarang.pembangunanLain.rejectReturn',
+            'prefix'      => 'RTN-BLL-',
+        ],
     ];
 
     $cfg = $categoryMap[$category ?? 'pembangunan_unit'] ?? $categoryMap['pembangunan_unit'];
@@ -46,6 +54,10 @@
         $perumahaanLabel = $kawasan?->perumahan?->nama_perumahaan ?? '-';
         $mainLocLabel = $kawasan?->nama ?? '-';
         $pengawasLabel = $kawasan?->pengawas?->nama_lengkap ?? $kawasan?->pengawas?->name ?? '-';
+    } elseif (($category ?? '') === 'pembangunan_lain') {
+        $perumahaanLabel = $return->proyek?->nama_proyek ?? '-';
+        $mainLocLabel = $return->sub?->nama_sub ?? '-';
+        $pengawasLabel = '-';
     } else {
         $proyek = $return->proyek;
         $mainLocLabel = $proyek?->nama_project ?? $proyek?->nama ?? '-';
@@ -80,6 +92,7 @@
         'pembangunan_unit' => 'gudang.return-barang.return-unit.aksi',
         'pembangunan_kawasan' => 'gudang.return-barang.return-kawasan.aksi',
         'pembangunan_proyek' => 'gudang.return-barang.return-mangoon.aksi',
+        'pembangunan_lain' => 'gudang.return-barang.return-lain.aksi',
     ];
     $permissionAksi = $aksiPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.return-barang.return-unit.aksi';
 @endphp
@@ -158,7 +171,7 @@
             </div>
 
             @if (($category ?? 'pembangunan_unit') === 'pembangunan_unit')
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 {{ $return->qc ? 'md:grid-cols-4' : 'md:grid-cols-3' }} gap-4 mb-4">
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Perumahan</label>
                         <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
@@ -171,12 +184,14 @@
                             {{ $mainLocLabel }}
                         </div>
                     </div>
+                    @if ($return->qc)
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">QC</label>
                         <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
                             {{ $qcLabel }}
                         </div>
                     </div>
+                    @endif
                     <div>
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas</label>
                         <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
@@ -202,6 +217,27 @@
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas Kawasan</label>
                         <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
                             {{ $pengawasLabel }}
+                        </div>
+                    </div>
+                </div>
+            @elseif (($category ?? '') === 'pembangunan_lain')
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Proyek Induk</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 font-semibold">
+                            {{ $perumahaanLabel }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sub-Pekerjaan</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 font-semibold">
+                            {{ $mainLocLabel }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Gudang Penerima (UBS)</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $return->ubs?->nama_ubs ?? 'Asa Dreamland' }}
                         </div>
                     </div>
                 </div>
@@ -378,7 +414,7 @@
         </a>
 
         @if ($return->status === 'diproses')
-            @can($permissionAksi)
+            @if (isset($permissionAksi) && auth()->user()->can($permissionAksi))
                 <div class="flex gap-2">
                     {{-- Tombol Tolak --}}
                     <button type="button" @click="openTolakModal = true"
@@ -394,7 +430,7 @@
                         ACC
                     </button>
                 </div>
-            @endcan
+            @endif
         @endif
 
         @if ($return->status === 'ditolak')

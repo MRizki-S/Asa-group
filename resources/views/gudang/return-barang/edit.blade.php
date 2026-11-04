@@ -3,17 +3,19 @@
 @php
     $category = request()->get('category', $category ?? 'pembangunan_unit');
     $pageActive = [
-        'pembangunan_unit' => 'BarangReturnUnit',
-        'pembangunan_kawasan' => 'BarangReturnKawasan',
+        'pembangunan_unit'           => 'BarangReturnUnit',
+        'pembangunan_kawasan'        => 'BarangReturnKawasan',
         'pembangunan_proyek_mangoon' => 'BarangReturnProyek',
-        'pembangunan_proyek' => 'BarangReturnProyek',
+        'pembangunan_proyek'         => 'BarangReturnProyek',
+        'pembangunan_lain'           => 'BarangReturnLain',
     ][$category] ?? 'BarangReturnUnit';
 
     $indexRouteName = [
-        'pembangunan_unit' => 'gudang.returnBarang.unit.index',
-        'pembangunan_kawasan' => 'gudang.returnBarang.kawasan.index',
+        'pembangunan_unit'           => 'gudang.returnBarang.unit.index',
+        'pembangunan_kawasan'        => 'gudang.returnBarang.kawasan.index',
         'pembangunan_proyek_mangoon' => 'gudang.returnBarang.proyek.index',
-        'pembangunan_proyek' => 'gudang.returnBarang.proyek.index',
+        'pembangunan_proyek'         => 'gudang.returnBarang.proyek.index',
+        'pembangunan_lain'           => 'gudang.returnBarang.pembangunanLain.index',
     ][$category] ?? 'gudang.returnBarang.unit.index';
 
     $targetIdVal = '';
@@ -21,9 +23,11 @@
 
     if ($category === 'pembangunan_unit') {
         $pembangunanUnitIdVal = $return->pembangunan_unit_id;
-        $targetIdVal = $return->pembangunan_unit_qc_id;
+        $targetIdVal = $return->pembangunan_unit_id;
     } elseif ($category === 'pembangunan_kawasan') {
         $targetIdVal = $return->pembangunan_kawasan_id;
+    } elseif ($category === 'pembangunan_lain') {
+        $targetIdVal = $return->pembangunan_lain_sub_id;
     } else {
         $targetIdVal = $return->pembangunan_proyek_id;
     }
@@ -148,11 +152,13 @@
                         class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
 
+                @if ($return->qc)
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">QC Pembangunan</label>
                     <input type="text" readonly value="{{ $return->qc?->nama_qc ?? '-' }}"
                         class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
+                @endif
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Unit</label>
@@ -188,6 +194,22 @@
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Subcon</label>
                     <input type="text" disabled value="{{ $return->kawasan?->periodes->first()?->subcon ?? '-' }}"
                         class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+            @elseif($category === 'pembangunan_lain')
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Proyek Induk</label>
+                    <input type="text" readonly value="{{ $return->proyek?->nama_proyek ?? '-' }}"
+                        class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Sub-Pekerjaan</label>
+                    <input type="text" readonly value="{{ $return->sub?->nama_sub ?? '-' }}"
+                        class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Gudang Penerima (UBS)</label>
+                    <input type="text" readonly value="{{ $return->ubs?->nama_ubs ?? '-' }}"
+                        class="w-full rounded-xl border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800 dark:text-gray-300">
                 </div>
             @else
                 <div>
@@ -559,11 +581,13 @@
 
                 let url = '';
                 if (this.category === 'pembangunan_unit') {
-                    url = `/gudang/return-barang/qc-summary/${this.targetId}`;
+                    url = `/gudang/return-barang/unit-summary/${this.targetId}`;
                 } else if (this.category === 'pembangunan_kawasan') {
                     url = `/gudang/return-barang/kawasan-summary/${this.targetId}`;
                 } else if (this.category === 'pembangunan_proyek_mangoon' || this.category === 'pembangunan_proyek') {
                     url = `/gudang/return-barang/proyek-summary/${this.targetId}`;
+                } else if (this.category === 'pembangunan_lain') {
+                    url = `/gudang/return-barang/pembangunan-lain-summary/${this.targetId}`;
                 }
 
                 try {
