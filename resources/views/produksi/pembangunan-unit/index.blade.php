@@ -47,18 +47,26 @@
                     </h3>
                 </div>
 
-                {{-- Tab Navigation (Proses / Servis) --}}
-                <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit mb-5">
+                {{-- Tab Navigation (Proses / 100% / Servis) --}}
+                <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit mb-5 overflow-x-auto max-w-full">
                     <a href="{{ route('produksi.pembangunanUnit.index', array_merge(request()->query(), ['tab' => 'proses'])) }}"
-                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 {{ $activeTab === 'proses' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap {{ $activeTab === 'proses' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                         <i class="fa-solid fa-person-digging text-xs"></i>
                         <span>Proses</span>
                         <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $activeTab === 'proses' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
                             {{ $countProses }}
                         </span>
                     </a>
+                    <a href="{{ route('produksi.pembangunanUnit.index', array_merge(request()->query(), ['tab' => '100'])) }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap {{ $activeTab === '100' ? 'bg-white dark:bg-gray-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                        <i class="fa-solid fa-list-check text-xs"></i>
+                        <span>100%</span>
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $activeTab === '100' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
+                            {{ $count100 }}
+                        </span>
+                    </a>
                     <a href="{{ route('produksi.pembangunanUnit.index', array_merge(request()->query(), ['tab' => 'servis'])) }}"
-                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 {{ $activeTab === 'servis' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap {{ $activeTab === 'servis' ? 'bg-white dark:bg-gray-700 shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                         <i class="fa-solid fa-wrench text-xs"></i>
                         <span>Servis</span>
                         <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $activeTab === 'servis' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400' }}">
@@ -90,7 +98,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <!-- Select Tahap -->
-                            <div class="{{ $activeTab === 'proses' && !auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']) ? '' : 'col-span-2' }}">
+                            <div class="col-span-2">
                                 <select name="tahapFil" id="selectTahapMobile"
                                     class="w-full bg-gray-50 border text-gray-900 text-xs rounded-lg p-2
                                     dark:bg-gray-600 dark:text-white">
@@ -102,19 +110,6 @@
                                     </template>
                                 </select>
                             </div>
-                            @if($activeTab === 'proses')
-                            @unless(auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']))
-                            <!-- Select Status -->
-                            <div>
-                                <select name="statusFil" id="selectStatusFilMobile"
-                                    class="w-full bg-gray-50 border text-gray-900 text-xs rounded-lg p-2 dark:bg-gray-600 dark:text-white">
-                                    <option value="all" {{ ($statusFil ?? 'all') === 'all' ? 'selected' : '' }}>Semua Status</option>
-                                    <option value="proses" {{ ($statusFil ?? '') === 'proses' ? 'selected' : '' }}>Proses</option>
-                                    <option value="selesai" {{ ($statusFil ?? '') === 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                </select>
-                            </div>
-                            @endunless
-                            @endif
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <button type="submit"
@@ -155,30 +150,6 @@
                                 });
                             </script>
                         </div>
-
-                        @if($activeTab === 'proses')
-                        @unless(auth()->user()->hasRole(['STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']))
-                            <!-- Select Status Pembangunan -->
-                            <div class="w-64">
-                                <select name="statusFil" id="selectStatusFil"
-                                    class="w-full bg-gray-50 border text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-600 dark:text-white">
-                                    <option value="all" {{ ($statusFil ?? 'all') === 'all' ? 'selected' : '' }}>Semua Status</option>
-                                    <option value="proses" {{ ($statusFil ?? '') === 'proses' ? 'selected' : '' }}>Proses</option>
-                                    <option value="selesai" {{ ($statusFil ?? '') === 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                </select>
-                                <script>
-                                    $(document).ready(function() {
-                                        $('#selectStatusFil').select2({
-                                            placeholder: "Semua Status",
-                                            theme: 'bootstrap4',
-                                            allowClear: false,
-                                            width: '100%'
-                                        });
-                                    });
-                                </script>
-                            </div>
-                        @endunless
-                        @endif
 
                         <div class="flex gap-2">
                             <button type="submit"
@@ -502,7 +473,13 @@
                             </div>
                         @empty
                             <div class="col-span-full py-8 text-center text-gray-400 text-sm">
-                                {{ $activeTab === 'servis' ? 'Tidak ada data unit dalam masa servis.' : 'Tidak ada data unit dalam proses pembangunan.' }}
+                                @if($activeTab === 'servis')
+                                    Tidak ada data unit dalam masa servis.
+                                @elseif($activeTab === '100')
+                                    Tidak ada data unit dengan progres 100%.
+                                @else
+                                    Tidak ada data unit dalam proses pembangunan.
+                                @endif
                             </div>
                         @endforelse
                     </div>

@@ -40,7 +40,10 @@ class PembangunanUnitController extends Controller
 
         // Menentukan tab aktif (default 'servis' untuk Staf Mutu, 'proses' untuk role lainnya)
         $activeTab = $request->query('tab');
-        if (!in_array($activeTab, ['proses', 'servis'])) {
+        if ($activeTab === '100%') {
+            $activeTab = '100';
+        }
+        if (!in_array($activeTab, ['proses', '100', 'servis'])) {
             $activeTab = $isStaffMutu ? 'servis' : 'proses';
         }
 
@@ -68,18 +71,8 @@ class PembangunanUnitController extends Controller
             });
         }
 
-        // Hitung total unit untuk badge masing-masing tab
-        $countProses = (clone $baseQuery)->whereDoesntHave('pembangunanUnitQc', function ($q) {
-            $q->where('is_servis', true);
-        })->count();
-
-        $countServis = (clone $baseQuery)->whereHas('pembangunanUnitQc', function ($q) {
-            $q->where('is_servis', true);
-        })->count();
-
-        // Query utama sesuai tab aktif
-        $query = clone $baseQuery;
-        $query->with([
+        // Ambil data unit beserta relasi untuk kalkulasi progres QC
+        $allUnits = (clone $baseQuery)->with([
             'perumahaan:id,nama_perumahaan,slug',
             'tahap:id,perumahaan_id,nama_tahap,slug',
             'unit:id,blok_id,nama_unit',
@@ -88,47 +81,58 @@ class PembangunanUnitController extends Controller
             'qcContainer',
             'pengajuan',
             'pembangunanUnitQc.pembangunanUnitQcTask'
-        ])->latest('created_at');
-
-        if ($activeTab === 'servis') {
-            $query->whereHas('pembangunanUnitQc', function ($q) {
-                $q->where('is_servis', true);
-            });
-        } else {
-            $query->whereDoesntHave('pembangunanUnitQc', function ($q) {
-                $q->where('is_servis', true);
-            });
-
-            if (!$isStaffMutu && $request->filled('statusFil')) {
-                $statusFil = $request->input('statusFil');
-                if ($statusFil !== 'all') {
-                    $query->where('status_pembangunan', $statusFil);
-                }
-            }
-        }
-
-        $allPembangunanUnit = $query->get()->map(function ($unit) {
+        ])->latest('created_at')->get()->map(function ($unit) {
             $regularQcs = $unit->pembangunanUnitQc->where('is_servis', false);
             $totalQc = $regularQcs->count();
             $sumProgressQc = 0;
 
             foreach ($regularQcs as $qc) {
-                $qcProgress = $qc->total_task > 0 ? ($qc->task_selesai_count / $qc->total_task) * 100 : 0;
+                $totalTask = $qc->pembangunanUnitQcTask->count();
+                $taskSelesai = $qc->pembangunanUnitQcTask->where('selesai', 1)->count();
+                $qcProgress = $totalTask > 0 ? ($taskSelesai / $totalTask) * 100 : 0;
 
                 $qc->persentase_qc = round($qcProgress, 2);
                 $sumProgressQc += $qcProgress;
             }
 
             $unit->total_progres = $totalQc > 0 ? round($sumProgressQc / $totalQc, 2) : 0;
+            $unit->has_servis = $unit->pembangunanUnitQc->where('is_servis', true)->isNotEmpty();
 
             return $unit;
         });
 
+        // Hitung total unit untuk badge masing-masing tab
+        // 1. Tab Proses: Unit yang belum 100% dan bukan servis
+        $countProses = $allUnits->filter(function ($u) {
+            return !$u->has_servis && $u->total_progres < 100;
+        })->count();
+
+        // 2. Tab 100%: Unit yang sudah 100% dan belum masuk masa servis (tidak dobel dengan servis)
+        $count100 = $allUnits->filter(function ($u) {
+            return !$u->has_servis && $u->total_progres >= 100;
+        })->count();
+
+        // 3. Tab Servis: Unit yang sudah memiliki rekap QC servis (is_servis = true)
+        $countServis = $allUnits->filter(function ($u) {
+            return $u->has_servis;
+        })->count();
+
+        // Filter data unit sesuai tab aktif
+        if ($activeTab === 'servis') {
+            $allPembangunanUnit = $allUnits->filter(fn($u) => $u->has_servis);
+        } elseif ($activeTab === '100') {
+            $allPembangunanUnit = $allUnits->filter(fn($u) => !$u->has_servis && $u->total_progres >= 100);
+        } else { // 'proses'
+            $allPembangunanUnit = $allUnits->filter(fn($u) => !$u->has_servis && $u->total_progres < 100);
+        }
+
         if ($isStaffMutu) {
             $allPembangunanUnit = $allPembangunanUnit->filter(function ($unit) {
                 return $unit->total_progres >= 100;
-            })->values();
+            });
         }
+
+        $allPembangunanUnit = $allPembangunanUnit->values();
 
         $perumahaan = Perumahaan::select('id', 'slug')->where('id', $perumahaanId)->first();
 
@@ -142,6 +146,7 @@ class PembangunanUnitController extends Controller
             'statusFil' => $statusFil,
             'activeTab' => $activeTab,
             'countProses' => $countProses,
+            'count100' => $count100,
             'countServis' => $countServis,
             'breadcrumbs' => [['label' => 'Pembangunan Unit', 'url' => route('produksi.pembangunanUnit.index')]],
         ]);
