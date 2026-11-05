@@ -596,17 +596,17 @@ Route::middleware('auth')->prefix('gudang')->group(function () {
         Route::patch('/permintaan-barang/pembangunan-proyek/{id}/resubmit', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'resubmitBarangOrder'])->name('gudang.permintaanBarang.pembangunanProyek.resubmit');
 
         // Pembangunan Lain-lain Order Workflow
-        Route::post('/permintaan-barang/pembangunan-lain/store', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'store'])->name('gudang.permintaanBarang.pembangunanLain.store');
+        Route::post('/permintaan-barang/pembangunan-lain/store', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'store'])->name('gudang.permintaanBarang.pembangunanLain.store')->middleware('can:gudang.permintaan-barang.pemb-lain.create');
         Route::patch('/permintaan-barang/pembangunan-lain/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'accBarangOrder'])->name('gudang.permintaanBarang.pembangunanLain.acc');
         Route::patch('/permintaan-barang/pembangunan-lain/{id}/spv-acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'accBarangOrder'])->name('gudang.permintaanBarang.pembangunanLain.spvAcc');
         Route::get('/permintaan-barang/pembangunan-lain/{id}/nota-pdf', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'notaPdf'])->name('gudang.permintaanBarang.pembangunanLain.notaPdf');
         Route::patch('/permintaan-barang/pembangunan-lain/{id}/tolak', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'tolakBarangOrder'])->name('gudang.permintaanBarang.pembangunanLain.tolak');
-        Route::patch('/permintaan-barang/pembangunan-lain/{id}/resubmit', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'resubmitBarangOrder'])->name('gudang.permintaanBarang.pembangunanLain.resubmit');
+        Route::patch('/permintaan-barang/pembangunan-lain/{id}/resubmit', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'resubmitBarangOrder'])->name('gudang.permintaanBarang.pembangunanLain.resubmit')->middleware('can:gudang.permintaan-barang.pemb-lain.ajukan-kembali');
 
         Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.accReturn');
         Route::patch('/permintaan-barang/pembangunan-proyek/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanProyekController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanProyek.rejectReturn');
         Route::patch('/permintaan-barang/pembangunan-lain/return/{id}/acc', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'accBarangReturn'])->name('gudang.permintaanBarang.pembangunanLain.accReturn')->middleware('can:gudang.return-barang.return-lain.aksi');
-        Route::patch('/permintaan-barang/pembangunan-lain/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanLain.rejectReturn');
+        Route::patch('/permintaan-barang/pembangunan-lain/return/{id}/reject', [\App\Http\Controllers\Gudang\PermintaanBarang\PermintaanBarangPembangunanLainController::class, 'rejectBarangReturn'])->name('gudang.permintaanBarang.pembangunanLain.rejectReturn')->middleware('can:gudang.return-barang.return-lain.aksi');
     });
 
     // Transfer Stock Read-only & Helpers

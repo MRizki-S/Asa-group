@@ -40,6 +40,13 @@
         $unitLabel = $pembangunanItem?->nama_project ?? $pembangunanItem?->nama ?? '-';
         $qcLabel = $pembangunanItem?->nama_project ?? $pembangunanItem?->nama ?? '-';
         $pengawasLabel = $pembangunanItem?->pengawas?->nama_lengkap ?? $pembangunanItem?->pengawas?->name ?? '-';
+    } elseif ($category === 'pembangunan_lain') {
+        $pembangunanItem = $order->proyek;
+        $perumahaanLabel = $order->proyek?->nama_proyek ?? 'Pemb. Lain-lain';
+        $tahapLabel = $order->sub?->nama_sub ?? 'Sub-Pekerjaan';
+        $unitLabel = $order->ubs ? "{$order->ubs->nama_ubs} ({$order->ubs->kode_ubs})" : ($order->jenis_order === 'stock' ? '-' : 'Non-Stock');
+        $qcLabel = $order->sub?->nama_sub ?? '-';
+        $pengawasLabel = $order->pengawas?->nama_lengkap ?? $order->pengawas?->name ?? '-';
     }
 
     $statusMap = [
@@ -72,42 +79,52 @@
         ? route('gudang.permintaanBarang.pembangunanUnit.acc', ['id' => $order->id])
         : ($category === 'pembangunan_kawasan'
             ? route('gudang.permintaanBarang.pembangunanKawasan.acc', ['id' => $order->id])
-            : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
-                ? route('gudang.permintaanBarang.pembangunanProyek.acc', ['id' => $order->id])
-                : route('gudang.permintaanBarang.acc', ['id' => $order->id, 'jenis_order' => $category])));
+            : ($category === 'pembangunan_lain'
+                ? route('gudang.permintaanBarang.pembangunanLain.acc', ['id' => $order->id])
+                : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
+                    ? route('gudang.permintaanBarang.pembangunanProyek.acc', ['id' => $order->id])
+                    : route('gudang.permintaanBarang.acc', ['id' => $order->id, 'jenis_order' => $category]))));
 
     $tolakRoute = $category === 'pembangunan_unit'
         ? route('gudang.permintaanBarang.pembangunanUnit.tolak', ['id' => $order->id])
         : ($category === 'pembangunan_kawasan'
             ? route('gudang.permintaanBarang.pembangunanKawasan.tolak', ['id' => $order->id])
-            : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
-                ? route('gudang.permintaanBarang.pembangunanProyek.tolak', ['id' => $order->id])
-                : route('gudang.permintaanBarang.tolak', ['id' => $order->id, 'jenis_order' => $category])));
+            : ($category === 'pembangunan_lain'
+                ? route('gudang.permintaanBarang.pembangunanLain.tolak', ['id' => $order->id])
+                : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
+                    ? route('gudang.permintaanBarang.pembangunanProyek.tolak', ['id' => $order->id])
+                    : route('gudang.permintaanBarang.tolak', ['id' => $order->id, 'jenis_order' => $category]))));
 
     $resubmitRoute = $category === 'pembangunan_unit'
         ? route('gudang.permintaanBarang.pembangunanUnit.resubmit', ['id' => $order->id])
         : ($category === 'pembangunan_kawasan'
             ? route('gudang.permintaanBarang.pembangunanKawasan.resubmit', ['id' => $order->id])
-            : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
-                ? route('gudang.permintaanBarang.pembangunanProyek.resubmit', ['id' => $order->id])
-                : route('gudang.permintaanBarang.resubmit', ['id' => $order->id, 'jenis_order' => $category])));
+            : ($category === 'pembangunan_lain'
+                ? route('gudang.permintaanBarang.pembangunanLain.resubmit', ['id' => $order->id])
+                : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
+                    ? route('gudang.permintaanBarang.pembangunanProyek.resubmit', ['id' => $order->id])
+                    : route('gudang.permintaanBarang.resubmit', ['id' => $order->id, 'jenis_order' => $category]))));
 
     // Rute khusus 3-step workflow (berlaku untuk pembangunan_unit, pembangunan_kawasan, dan pembangunan_proyek_mangoon)
     $spvAccRoute = $category === 'pembangunan_unit'
         ? route('gudang.permintaanBarang.pembangunanUnit.spvAcc', ['id' => $order->id])
         : ($category === 'pembangunan_kawasan'
             ? route('gudang.permintaanBarang.pembangunanKawasan.spvAcc', ['id' => $order->id])
-            : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
-                ? route('gudang.permintaanBarang.pembangunanProyek.spvAcc', ['id' => $order->id])
-                : null));
+            : ($category === 'pembangunan_lain'
+                ? route('gudang.permintaanBarang.pembangunanLain.spvAcc', ['id' => $order->id])
+                : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
+                    ? route('gudang.permintaanBarang.pembangunanProyek.spvAcc', ['id' => $order->id])
+                    : null)));
 
     $notaPdfRoute = $category === 'pembangunan_unit'
         ? route('gudang.permintaanBarang.pembangunanUnit.notaPdf', $order->id)
         : ($category === 'pembangunan_kawasan'
             ? route('gudang.permintaanBarang.pembangunanKawasan.notaPdf', $order->id)
-            : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
-                ? route('gudang.permintaanBarang.pembangunanProyek.notaPdf', $order->id)
-                : null));
+            : ($category === 'pembangunan_lain'
+                ? route('gudang.permintaanBarang.pembangunanLain.notaPdf', $order->id)
+                : (in_array($category, ['pembangunan_proyek_mangoon', 'pembangunan_proyek'])
+                    ? route('gudang.permintaanBarang.pembangunanProyek.notaPdf', $order->id)
+                    : null)));
 
     $is3Step = in_array($category, ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon', 'pembangunan_proyek']);
 
@@ -116,30 +133,35 @@
         'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi-stock',
         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-stock',
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-stock',
+        'pembangunan_lain'           => 'gudang.permintaan-barang.pemb-lain.aksi-stock',
     ];
     $aksiDirectPermMap = [
         'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.aksi-direct',
         'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi-direct',
         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-direct',
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-direct',
+        'pembangunan_lain'           => 'gudang.permintaan-barang.pemb-lain.aksi-direct',
     ];
     $aksiCashPermMap = [
         'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.aksi-cash',
         'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.aksi-cash',
         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.aksi-cash',
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.aksi-cash',
+        'pembangunan_lain'           => 'gudang.permintaan-barang.pemb-lain.aksi-cash',
     ];
     $editPermMap = [
         'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.edit',
         'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.edit',
         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.edit',
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.edit',
+        'pembangunan_lain'           => 'gudang.permintaan-barang.pemb-lain.edit',
     ];
     $ajukanKembaliPermMap = [
         'pembangunan_unit'           => 'gudang.permintaan-barang.pemb-unit.ajukan-kembali',
         'pembangunan_kawasan'        => 'gudang.permintaan-barang.pemb-kawasan.ajukan-kembali',
         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.ajukan-kembali',
         'pembangunan_proyek'         => 'gudang.permintaan-barang.pemb-mangoon.ajukan-kembali',
+        'pembangunan_lain'           => 'gudang.permintaan-barang.pemb-lain.ajukan-kembali',
     ];
 
     $permissionAksiStock = $aksiStockPermMap[$category ?? 'pembangunan_unit'] ?? 'gudang.permintaan-barang.pemb-unit.aksi-stock';
@@ -285,6 +307,36 @@
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Diajukan Oleh</label>
                         <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
                             {{ $order->user->nama_lengkap ?? $order->user->name ?? $order->pembuat->nama_lengkap ?? '-' }}
+                        </div>
+                    </div>
+                </div>
+            @elseif ($category === 'pembangunan_lain')
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Proyek Induk</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 font-semibold">
+                            {{ $order->proyek?->nama_proyek ?? '-' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sub-Pekerjaan</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200 font-semibold">
+                            {{ $order->sub?->nama_sub ?? '-' }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Gudang Asal</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $order->ubs ? $order->ubs->nama_ubs . ' (' . $order->ubs->kode_ubs . ')' : ($order->jenis_order === 'stock' ? '-' : 'Non-Stok (' . strtoupper($order->jenis_order) . ')') }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pengawas / PIC</label>
+                        <div class="w-full bg-gray-50 border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 dark:bg-gray-700/50 dark:text-gray-200">
+                            {{ $order->pengawas?->nama_lengkap ?? $order->pengawas?->name ?? $order->pembuat?->nama_lengkap ?? '-' }}
                         </div>
                     </div>
                 </div>
@@ -702,8 +754,19 @@
                         </div>
                     </div>
                     <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Unit / Lokasi</p>
-                        <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $perumahaanLabel }} / {{ $tahapLabel }} / {{ $unitLabel }}</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                            {{ $category === 'pembangunan_lain' ? 'Proyek / Pekerjaan' : 'Unit / Lokasi' }}
+                        </p>
+                        @if ($category === 'pembangunan_lain')
+                            <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                {{ $order->proyek?->nama_proyek ?? '-' }} [{{ $order->sub?->nama_sub ?? '-' }}]
+                                @if($order->ubs)
+                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-normal">({{ $order->ubs->nama_ubs }})</span>
+                                @endif
+                            </p>
+                        @else
+                            <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $perumahaanLabel }} / {{ $tahapLabel }} / {{ $unitLabel }}</p>
+                        @endif
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 px-5 py-4 bg-gray-50 border-t border-gray-100 dark:bg-gray-900/40 dark:border-gray-700">

@@ -1682,6 +1682,19 @@ class PermintaanBarangPembangunanUnitController extends Controller
         if ($category === 'pembangunan_proyek') {
             $category = 'pembangunan_proyek_mangoon';
         }
+
+        $retCreatePermMap = [
+            'pembangunan_unit'           => 'gudang.return-barang.return-unit.create',
+            'pembangunan_kawasan'        => 'gudang.return-barang.return-kawasan.create',
+            'pembangunan_proyek_mangoon' => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_proyek'         => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_lain'           => 'gudang.return-barang.return-lain.create',
+        ];
+        $perm = $retCreatePermMap[$category] ?? null;
+        if ($perm && !Auth::user()->hasRole('Superadmin') && !Auth::user()->can($perm)) {
+            abort(403, 'Anda tidak memiliki hak akses untuk membuat retur ini.');
+        }
+
         $perumahaanId = $this->currentPerumahaanId();
 
         $pembangunanUnits = collect();
@@ -1781,6 +1794,18 @@ class PermintaanBarangPembangunanUnitController extends Controller
     public function storeReturn(Request $request)
     {
         $category = $request->input('category', 'pembangunan_unit');
+
+        $retCreatePermMap = [
+            'pembangunan_unit'           => 'gudang.return-barang.return-unit.create',
+            'pembangunan_kawasan'        => 'gudang.return-barang.return-kawasan.create',
+            'pembangunan_proyek_mangoon' => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_proyek'         => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_lain'           => 'gudang.return-barang.return-lain.create',
+        ];
+        $perm = $retCreatePermMap[$category] ?? null;
+        if ($perm && !Auth::user()->hasRole('Superadmin') && !Auth::user()->can($perm)) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk membuat retur ini.');
+        }
 
         if ($category === 'pembangunan_unit') {
             $request->validate([
@@ -1895,7 +1920,7 @@ class PermintaanBarangPembangunanUnitController extends Controller
                             'namaPerumahan' => $unit->tahap->perumahaan->nama_perumahaan ?? '-',
                             'namaTahap'     => $unit->tahap->nama_tahap ?? '-',
                             'namaUnit'      => $unit->nama_unit ?? '-',
-                            'namaQc'        => $return->qc->nama_qc ?? null,
+                            'namaQc'        => $return->qc?->nama_qc ?? null,
                             'pengaju'       => Auth::user()->nama_lengkap ?? Auth::user()->name,
                             'tanggal'       => now()->format('d/m/Y H:i') . ' WIB',
                             'return'        => $return,
@@ -2186,6 +2211,19 @@ class PermintaanBarangPembangunanUnitController extends Controller
     public function editReturn(Request $request, $id)
     {
         $category = $request->get('category', 'pembangunan_unit');
+
+        $retCreatePermMap = [
+            'pembangunan_unit'           => 'gudang.return-barang.return-unit.create',
+            'pembangunan_kawasan'        => 'gudang.return-barang.return-kawasan.create',
+            'pembangunan_proyek_mangoon' => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_proyek'         => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_lain'           => 'gudang.return-barang.return-lain.create',
+        ];
+        $perm = $retCreatePermMap[$category] ?? null;
+        if ($perm && !Auth::user()->hasRole('Superadmin') && !Auth::user()->can($perm)) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengedit retur ini.');
+        }
+
         $return = null;
         $titlePage = 'Edit Retur Barang';
         $indexRoute = 'gudang.returnBarang.unit.index';
@@ -2234,6 +2272,18 @@ class PermintaanBarangPembangunanUnitController extends Controller
     public function updateReturn(Request $request, $id)
     {
         $category = $request->input('category', 'pembangunan_unit');
+
+        $retCreatePermMap = [
+            'pembangunan_unit'           => 'gudang.return-barang.return-unit.create',
+            'pembangunan_kawasan'        => 'gudang.return-barang.return-kawasan.create',
+            'pembangunan_proyek_mangoon' => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_proyek'         => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_lain'           => 'gudang.return-barang.return-lain.create',
+        ];
+        $perm = $retCreatePermMap[$category] ?? null;
+        if ($perm && !Auth::user()->hasRole('Superadmin') && !Auth::user()->can($perm)) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk mengedit retur ini.');
+        }
 
         $request->validate([
             'tanggal_return' => 'required|date',
@@ -2399,6 +2449,18 @@ class PermintaanBarangPembangunanUnitController extends Controller
     public function resubmitReturn(Request $request, $id)
     {
         $category = $request->input('category', 'pembangunan_unit');
+
+        $retCreatePermMap = [
+            'pembangunan_unit'           => 'gudang.return-barang.return-unit.create',
+            'pembangunan_kawasan'        => 'gudang.return-barang.return-kawasan.create',
+            'pembangunan_proyek_mangoon' => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_proyek'         => 'gudang.return-barang.return-mangoon.create',
+            'pembangunan_lain'           => 'gudang.return-barang.return-lain.create',
+        ];
+        $perm = $retCreatePermMap[$category] ?? null;
+        if ($perm && !Auth::user()->hasRole('Superadmin') && !Auth::user()->can($perm)) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk mengajukan ulang retur ini.');
+        }
 
         try {
             if ($category === 'pembangunan_unit') {

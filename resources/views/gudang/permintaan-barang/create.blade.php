@@ -6,6 +6,7 @@
         'pembangunan_unit' => 'PermintaanBarangUnit',
         'pembangunan_kawasan' => 'PermintaanBarangKawasan',
         'pembangunan_proyek_mangoon' => 'PermintaanBarangProyek',
+        'pembangunan_lain' => 'PermintaanBarangLain',
     ][$category] ?? 'PermintaanBarangUnit';
 @endphp
 
@@ -200,6 +201,58 @@
                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pengawas Proyek</label>
                     <input type="text" disabled :value="selectedProyekInfo?.pengawas_nama || '-'"
                         class="w-full rounded-xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 font-semibold dark:bg-gray-800/80 dark:border-gray-700 dark:text-gray-300 outline-none cursor-not-allowed opacity-85 shadow-sm">
+                </div>
+            @elseif($category === 'pembangunan_lain')
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pilih Proyek Induk <span class="text-red-500">*</span></label>
+                    <select x-ref="proyekLainSelect"
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">-- Pilih Proyek Induk --</option>
+                        @foreach($pembangunanLain as $pl)
+                            <option value="{{ $pl->id }}">{{ $pl->nama_proyek }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">Pilih Sub-Pekerjaan <span class="text-red-500">*</span></label>
+                    <select x-model="pembangunanLainSubId"
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+                        :disabled="!pembangunanLainId || availableSubs.length === 0">
+                        <option value="">-- Pilih Sub-Pekerjaan --</option>
+                        <template x-for="sub in availableSubs" :key="sub.id">
+                            <option :value="sub.id" x-text="sub.nama_sub"></option>
+                        </template>
+                    </select>
+                    <p x-show="pembangunanLainId && availableSubs.length === 0" class="mt-1 text-xs text-red-500">
+                        Proyek ini belum memiliki sub-pekerjaan aktif.
+                    </p>
+                </div>
+
+                <!-- Gudang Asal: Hanya muncul jika jenisOrderType === 'stock' -->
+                <div x-show="jenisOrderType === 'stock'" x-transition>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">
+                        Pilih Gudang Asal <span class="text-red-500">*</span>
+                    </label>
+                    <select x-model="selectedUbsId" @change="onUbsChange()"
+                        class="w-full rounded-xl border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">-- Pilih Gudang Asal --</option>
+                        @foreach($allGudang as $gudang)
+                            <option value="{{ $gudang->id }}">{{ $gudang->nama_ubs }} ({{ $gudang->kode_ubs }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-2">
+                        Pengawas / PIC Lapangan
+                    </label>
+                    <select x-ref="pengawasLainSelect" class="form-control select2 w-full">
+                        <option value="">-- Pilih Pengawas (Opsional) --</option>
+                        @foreach($allPengawas as $p)
+                            <option value="{{ $p->id }}">{{ $p->display_label ?? ($p->nama_lengkap ?: $p->name) }}</option>
+                        @endforeach
+                    </select>
                 </div>
             @endif
 
@@ -854,6 +907,25 @@ function createOrderUnitComponent() {
         pembangunanUnitId: '',
         pembangunanKawasanId: '',
         pembangunanProyekId: '',
+        pembangunanLainId: '',
+        pembangunanLainSubId: '',
+        selectedUbsId: '',
+        pengawasId: '',
+        allPembangunanLain: {!! ($pembangunanLain ?? collect())->toJson() !!},
+        allGudang: {!! ($allGudang ?? collect())->toJson() !!},
+        allPengawas: {!! ($allPengawas ?? collect())->toJson() !!},
+        get availableSubs() {
+            if (!this.pembangunanLainId) return [];
+            let p = this.allPembangunanLain.find(x => x.id == this.pembangunanLainId);
+            return p ? (p.subs || []) : [];
+        },
+        onUbsChange() {
+            if (this.category === 'pembangunan_lain') {
+                this.allBarangGudang.forEach(b => {
+                    b.stok_gudang = (b.stocks_by_ubs && b.stocks_by_ubs[this.selectedUbsId]) ? b.stocks_by_ubs[this.selectedUbsId] : 0;
+                });
+            }
+        },
         activePeriodeLabel: '',
         kawasanHasActivePeriode: null,
         qcId: '',
@@ -978,6 +1050,31 @@ function createOrderUnitComponent() {
                         width: '100%'
                     }).on('change', (e) => {
                         this.pembangunanProyekId = e.target.value;
+                    });
+                } else if (this.category === 'pembangunan_lain') {
+                    // Inisialisasi Select2 Pembangunan Lain-lain
+                    $(this.$refs.proyekLainSelect).select2({
+                        theme: 'bootstrap4',
+                        placeholder: '-- Pilih Proyek Induk --',
+                        allowClear: true,
+                        width: '100%'
+                    }).on('change', (e) => {
+                        this.pembangunanLainId = e.target.value;
+                        this.pembangunanLainSubId = '';
+                        let subs = this.availableSubs;
+                        if (subs.length === 1) {
+                            this.pembangunanLainSubId = subs[0].id;
+                        }
+                    });
+
+                    // Inisialisasi Select2 Pengawas / PIC Lapangan
+                    $(this.$refs.pengawasLainSelect).select2({
+                        theme: 'bootstrap4',
+                        placeholder: '-- Pilih Pengawas / PIC (Opsional) --',
+                        allowClear: true,
+                        width: '100%'
+                    }).on('change', (e) => {
+                        this.pengawasId = e.target.value;
                     });
                 }
             });
@@ -1370,6 +1467,10 @@ function createOrderUnitComponent() {
                 return !this.pembangunanKawasanId || this.kawasanHasActivePeriode === false;
             } else if (this.category === 'pembangunan_proyek_mangoon') {
                 return !this.pembangunanProyekId;
+            } else if (this.category === 'pembangunan_lain') {
+                if (!this.pembangunanLainId || !this.pembangunanLainSubId) return true;
+                if (this.jenisOrderType === 'stock' && !this.selectedUbsId) return true;
+                return false;
             }
             return false;
         },
@@ -1407,6 +1508,19 @@ function createOrderUnitComponent() {
             } else if (this.category === 'pembangunan_proyek_mangoon') {
                 if (!this.pembangunanProyekId) {
                     Swal.fire('Peringatan', 'Silakan pilih Pembangunan Proyek terlebih dahulu!', 'warning');
+                    return;
+                }
+            } else if (this.category === 'pembangunan_lain') {
+                if (!this.pembangunanLainId) {
+                    Swal.fire('Peringatan', 'Silakan pilih Proyek Induk terlebih dahulu!', 'warning');
+                    return;
+                }
+                if (!this.pembangunanLainSubId) {
+                    Swal.fire('Peringatan', 'Silakan pilih Sub-Pekerjaan terlebih dahulu!', 'warning');
+                    return;
+                }
+                if (this.jenisOrderType === 'stock' && !this.selectedUbsId) {
+                    Swal.fire('Peringatan', 'Silakan pilih Gudang Asal terlebih dahulu untuk order bertipe Stock!', 'warning');
                     return;
                 }
             }
@@ -1520,6 +1634,30 @@ function createOrderUnitComponent() {
                 targetUrl = "{{ route('produksi.pembangunanProyek.orderStore') }}";
                 payload = {
                     pembangunan_proyek_id: this.pembangunanProyekId,
+                    tanggal_order: this.tanggalNbkSimpan,
+                    waktu_order: this.waktuLive,
+                    catatan: this.catatan,
+                    jenis_order: this.jenisOrderType,
+                    items: this.cart.map((c) => {
+                        let st = c.satuans.find((s) => s.id == c.satuan_id);
+                        return {
+                            barang_id: c.barang_id,
+                            nama_barang: c.nama_barang,
+                            satuan_id: c.satuan_id,
+                            satuan: st ? st.nama_satuan : c.satuan_nama,
+                            jumlah_input: this.parseQty(c.qty),
+                            harga_satuan: this.jenisOrderType === 'cash' ? this.parseHarga(c.harga_satuan) : null,
+                            harga_total: this.jenisOrderType === 'cash' ? this.calculateItemTotal(c) : null
+                        };
+                    })
+                };
+            } else if (this.category === 'pembangunan_lain') {
+                targetUrl = "{{ route('gudang.permintaanBarang.pembangunanLain.store') }}";
+                payload = {
+                    pembangunan_lain_id: this.pembangunanLainId,
+                    pembangunan_lain_sub_id: this.pembangunanLainSubId,
+                    ubs_id: this.jenisOrderType === 'stock' ? this.selectedUbsId : null,
+                    pengawas_id: this.pengawasId || null,
                     tanggal_order: this.tanggalNbkSimpan,
                     waktu_order: this.waktuLive,
                     catatan: this.catatan,

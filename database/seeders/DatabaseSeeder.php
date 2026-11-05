@@ -20,6 +20,7 @@ use Database\Seeders\Permissions\KpiPermissionSeeder;
 use Database\Seeders\Permissions\TargetMarketingPermissionSeeder;
 use Database\Seeders\Permissions\ProduksiPermissionSeeder;
 use Database\Seeders\Permissions\MenuGudangSeeder;
+use Database\Seeders\Permissions\PembangunanLainPermissionSeeder;
 use Database\Seeders\Permissions\HrManagementPermissionSeeder;
 use Database\Seeders\Roles\ManagerDukunganLayananRoleSeeder;
 use Database\Seeders\Roles\MarketingRoleSeeder;
@@ -64,6 +65,9 @@ class DatabaseSeeder extends Seeder
 
             // Gudang Sistem
             MenuGudangSeeder::class,
+
+            // Pembangunan Lain-lain Sistem
+            PembangunanLainPermissionSeeder::class,
 
             // HR Management Sistem
             HrManagementPermissionSeeder::class,

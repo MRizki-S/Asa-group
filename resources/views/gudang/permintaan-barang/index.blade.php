@@ -5,6 +5,7 @@
         'pembangunan_unit' => 'PermintaanBarangUnit',
         'pembangunan_kawasan' => 'PermintaanBarangKawasan',
         'pembangunan_proyek_mangoon' => 'PermintaanBarangProyek',
+        'pembangunan_lain' => 'PermintaanBarangLain',
     ][$category] ?? 'PermintaanBarangUnit';
 @endphp
 
@@ -124,17 +125,18 @@
                                     'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.create',
                                     'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.create',
                                     'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.create',
+                                    'pembangunan_lain' => 'gudang.permintaan-barang.pemb-lain.create',
                                 ];
-                                $createPermission = $createPermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.create';
+                                $createPermission = $createPermMap[$category] ?? null;
                             @endphp
-                            @can($createPermission)
+                            @if ($createPermission && auth()->user()->can($createPermission))
                                 <a href="{{ route('gudang.permintaanBarang.pembangunanUnit.create', ['category' => $category]) }}"
                                     class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition shadow-sm">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg> Tambah Barang Keluar
                                 </a>
-                            @endcan
+                            @endif
                         @endif
 
                         @if ($isHistory)
@@ -158,6 +160,7 @@
                                     'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.history',
                                     'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.history',
                                     'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.history',
+                                    'pembangunan_lain' => 'gudang.permintaan-barang.pemb-lain.history',
                                 ];
                                 $historyPermission = $historyPermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.history';
                             @endphp
@@ -299,6 +302,9 @@
                             } elseif ($category === 'pembangunan_proyek_mangoon') {
                                 $locationLabel = $order->proyek?->nama_project ?? $order->proyek?->nama ?? 'Proyek';
                                 $subLocationLabel = 'Proyek Mangoon';
+                            } elseif ($category === 'pembangunan_lain') {
+                                $locationLabel = $order->proyek?->nama_proyek ?? '-';
+                                $subLocationLabel = ($order->sub?->nama_sub ?? '-') . ($order->ubs ? ' (' . $order->ubs->nama_ubs . ')' : '');
                             }
 
                             $statusMap = [
@@ -402,7 +408,9 @@
                                                 ? route('gudang.permintaanBarang.pembangunanUnit.notaPdf', $order->id)
                                                 : ($category === 'pembangunan_kawasan'
                                                     ? route('gudang.permintaanBarang.pembangunanKawasan.notaPdf', $order->id)
-                                                    : route('gudang.permintaanBarang.pembangunanProyek.notaPdf', $order->id));
+                                                    : ($category === 'pembangunan_lain'
+                                                        ? route('gudang.permintaanBarang.pembangunanLain.notaPdf', $order->id)
+                                                        : route('gudang.permintaanBarang.pembangunanProyek.notaPdf', $order->id)));
                                         @endphp
                                         <a href="{{ $notaPdfSingleRoute }}" target="_blank"
                                             class="inline-flex items-center gap-1 text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 dark:bg-purple-800 dark:text-purple-100 dark:hover:bg-purple-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1 active:scale-95"
@@ -419,28 +427,30 @@
                                         'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.edit',
                                         'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.edit',
                                         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.edit',
+                                        'pembangunan_lain' => 'gudang.permintaan-barang.pemb-lain.edit',
                                     ];
                                     $editPermission = $editPermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.edit';
                                 @endphp
 
-                                @can($editPermission)
+                                @if (auth()->user()->can($editPermission))
                                     @if ($order->status_order === 'diproses')
                                         <button type="button" @click="openEditTanggalModal({{ $order->id }}, '{{ $order->tanggal_diajukan ? $order->tanggal_diajukan->format('Y-m-d\TH:i') : '' }}', '{{ $order->nomor_order ?? 'REQ-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) }}')"
                                             class="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-100 dark:hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1 active:scale-95">
                                             Edit Tanggal
                                         </button>
                                     @endif
-                                @endcan
+                                @endif
                                 @php
                                     $deletePermMap = [
                                         'pembangunan_unit' => 'gudang.permintaan-barang.pemb-unit.delete',
                                         'pembangunan_kawasan' => 'gudang.permintaan-barang.pemb-kawasan.delete',
                                         'pembangunan_proyek_mangoon' => 'gudang.permintaan-barang.pemb-mangoon.delete',
+                                        'pembangunan_lain' => 'gudang.permintaan-barang.pemb-lain.delete',
                                     ];
                                     $deletePermission = $deletePermMap[$category] ?? 'gudang.permintaan-barang.pemb-unit.delete';
                                 @endphp
 
-                                @can($deletePermission)
+                                @if (auth()->user()->can($deletePermission))
                                     @if ($order->status_order !== 'selesai')
                                         <form action="{{ route('gudang.permintaanBarang.destroy', ['id' => $order->id, 'category' => $category]) }}" method="POST" class="inline delete-form">
                                             @csrf
@@ -450,7 +460,7 @@
                                             </button>
                                         </form>
                                     @endif
-                                @endcan
+                                @endif
                             </td>
                         </tr>
                     @empty

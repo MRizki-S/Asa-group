@@ -12,6 +12,8 @@ use App\Models\PembangunanKawasanBarangFifoUsage;
 use App\Models\PembangunanProyekBahan;
 use App\Models\PembangunanProyekBarangOrder;
 use App\Models\PembangunanProyekBarangFifoUsage;
+use App\Models\PembangunanLainBahan;
+use App\Models\PembangunanLainBarangOrder;
 use App\Models\PembangunanUnitBahan;
 use App\Models\PembangunanUnitBarangOrder;
 use App\Models\StockGudang;
@@ -78,6 +80,22 @@ class PermintaanBarangController extends Controller
                 'parent_id_field' => 'pembangunan_proyek_id',
                 'qc_id_field' => null,
             ],
+            'pembangunan_lain' => [
+                'model' => PembangunanLainBarangOrder::class,
+                'with' => [
+                    'details.barang.baseUnit',
+                    'pembuat',
+                    'proyek',
+                    'sub',
+                    'ubs',
+                    'pengawas',
+                ],
+                'title' => 'Permintaan Barang Lain-lain',
+                'bahanModel' => PembangunanLainBahan::class,
+                'parent_id_field' => 'pembangunan_lain_id',
+                'sub_id_field' => 'pembangunan_lain_sub_id',
+                'qc_id_field' => null,
+            ],
         ];
 
         return $configs[$jenisOrder] ?? $configs['pembangunan_unit'];
@@ -125,6 +143,7 @@ class PermintaanBarangController extends Controller
         $catPerm = match ($category) {
             'pembangunan_kawasan' => 'pemb-kawasan',
             'pembangunan_proyek_mangoon', 'pembangunan_proyek' => 'pemb-mangoon',
+            'pembangunan_lain' => 'pemb-lain',
             default => 'pemb-unit',
         };
 
@@ -172,7 +191,7 @@ class PermintaanBarangController extends Controller
         $rawJenisOrder = $request->get('jenis_order', 'pembangunan_unit');
 
         // Categories from sidebar
-        $categories = ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon'];
+        $categories = ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon', 'pembangunan_lain'];
 
         // Resolve category and filter
         if (in_array($rawJenisOrder, $categories)) {
@@ -251,7 +270,7 @@ class PermintaanBarangController extends Controller
         $status = $request->get('status', 'all');
         $rawJenisOrder = $request->get('jenis_order', 'pembangunan_unit');
 
-        $categories = ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon'];
+        $categories = ['pembangunan_unit', 'pembangunan_kawasan', 'pembangunan_proyek_mangoon', 'pembangunan_lain'];
 
         if (in_array($rawJenisOrder, $categories)) {
             $category = $rawJenisOrder;
@@ -916,6 +935,17 @@ class PermintaanBarangController extends Controller
         $category = $request->get('category', 'pembangunan_unit');
         $config   = $this->getOrderConfig($category);
 
+        $catPerm = match ($category) {
+            'pembangunan_kawasan' => 'pemb-kawasan',
+            'pembangunan_proyek_mangoon', 'pembangunan_proyek' => 'pemb-mangoon',
+            'pembangunan_lain' => 'pemb-lain',
+            default => 'pemb-unit',
+        };
+
+        if (!Auth::user()->hasRole('Superadmin') && !Auth::user()->can("gudang.permintaan-barang.{$catPerm}.delete")) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk menghapus permintaan barang ini.');
+        }
+
         $order = $config['model']::with(['details'])->findOrFail($id);
 
         if ($order->status_order === 'selesai') {
@@ -946,6 +976,17 @@ class PermintaanBarangController extends Controller
 
         $category = $request->category;
         $config = $this->getOrderConfig($category);
+
+        $catPerm = match ($category) {
+            'pembangunan_kawasan' => 'pemb-kawasan',
+            'pembangunan_proyek_mangoon', 'pembangunan_proyek' => 'pemb-mangoon',
+            'pembangunan_lain' => 'pemb-lain',
+            default => 'pemb-unit',
+        };
+
+        if (!Auth::user()->hasRole('Superadmin') && !Auth::user()->can("gudang.permintaan-barang.{$catPerm}.edit")) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk mengubah tanggal permintaan barang ini.');
+        }
         
         $order = $config['model']::findOrFail($id);
 

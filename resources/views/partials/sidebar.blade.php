@@ -1265,9 +1265,11 @@
                 'gudang.permintaan-barang.pemb-unit.read',
                 'gudang.permintaan-barang.pemb-kawasan.read',
                 'gudang.permintaan-barang.pemb-mangoon.read',
+                'gudang.permintaan-barang.pemb-lain.read',
                 'gudang.return-barang.return-unit.read',
                 'gudang.return-barang.return-kawasan.read',
                 'gudang.return-barang.return-mangoon.read',
+                'gudang.return-barang.return-lain.read',
                 'gudang.upah-harian-tukang.master-tukang.read',
                 'gudang.upah-harian-tukang.upah-abm.read',
                 'gudang.upah-harian-tukang.upah-mangoon.read'
@@ -1710,7 +1712,7 @@
                                 @endcan
 
                                 <!-- Rekap Per Hari Nota Masuk -->
-                                @can('gudang.nota-masuk.daftar-nota-masuk.read')
+                                <!-- @can('gudang.nota-masuk.daftar-nota-masuk.read')
                                 <li>
                                     <a href="{{ route('gudang.rekapNotaMasuk.index') }}"
                                         class="menu-dropdown-item group flex items-center"
@@ -1723,7 +1725,7 @@
                                         Rekap Masuk & Keluar
                                     </a>
                                 </li>
-                                @endcan
+                                @endcan -->
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
@@ -1736,21 +1738,23 @@
                         'gudang.permintaan-barang.pemb-unit.read',
                         'gudang.permintaan-barang.pemb-kawasan.read',
                         'gudang.permintaan-barang.pemb-mangoon.read',
+                        'gudang.permintaan-barang.pemb-lain.read',
                         'gudang.return-barang.return-unit.read',
                         'gudang.return-barang.return-kawasan.read',
-                        'gudang.return-barang.return-mangoon.read'
+                        'gudang.return-barang.return-mangoon.read',
+                        'gudang.return-barang.return-lain.read'
                     ])
                     <li>
                         <a href="#"
                             @click.prevent="selected = (selected === 'MaterialProyekGroup' ? '':'MaterialProyekGroup')"
                             class="menu-item group"
-                            :class="(selected === 'MaterialProyekGroup') || (page === 'PermintaanBarang' || page === 'PermintaanBarangUnit' || page === 'PermintaanBarangKawasan' || page === 'PermintaanBarangProyek' ||
-                                page === 'BarangReturnGudang' || page === 'BarangReturnUnit' || page === 'BarangReturnKawasan' || page === 'BarangReturnProyek' || page === 'proFormLayout') ? 'menu-item-active' :
+                            :class="(selected === 'MaterialProyekGroup') || (page === 'PermintaanBarang' || page === 'PermintaanBarangUnit' || page === 'PermintaanBarangKawasan' || page === 'PermintaanBarangProyek' || page === 'PermintaanBarangLain' ||
+                                page === 'BarangReturnGudang' || page === 'BarangReturnUnit' || page === 'BarangReturnKawasan' || page === 'BarangReturnProyek' || page === 'BarangReturnLain' || page === 'proFormLayout') ? 'menu-item-active' :
                             'menu-item-inactive'">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 :class="(selected === 'MaterialProyekGroup') ||
-                                (page === 'PermintaanBarang' || page === 'PermintaanBarangUnit' || page === 'PermintaanBarangKawasan' || page === 'PermintaanBarangProyek' ||
-                                    page === 'BarangReturnGudang' || page === 'BarangReturnUnit' || page === 'BarangReturnKawasan' || page === 'BarangReturnProyek' ||
+                                (page === 'PermintaanBarang' || page === 'PermintaanBarangUnit' || page === 'PermintaanBarangKawasan' || page === 'PermintaanBarangProyek' || page === 'PermintaanBarangLain' ||
+                                    page === 'BarangReturnGudang' || page === 'BarangReturnUnit' || page === 'BarangReturnKawasan' || page === 'BarangReturnProyek' || page === 'BarangReturnLain' ||
                                     page === 'proFormLayout') ?
                                 'menu-item-icon-active' :
                                 'menu-item-icon-inactive'"
@@ -1785,7 +1789,7 @@
                                 class="flex flex-col mt-2 menu-dropdown pl-9">
 
                                 <!-- Sub-Menu Permintaan -->
-                                @canany(['gudang.permintaan-barang.pemb-unit.read', 'gudang.permintaan-barang.pemb-kawasan.read', 'gudang.permintaan-barang.pemb-mangoon.read'])
+                                @canany(['gudang.permintaan-barang.pemb-unit.read', 'gudang.permintaan-barang.pemb-kawasan.read', 'gudang.permintaan-barang.pemb-mangoon.read', 'gudang.permintaan-barang.pemb-lain.read'])
                                 <li class="text-[10px] font-semibold text-gray-400 uppercase mt-4 mb-1">
                                     Permintaan (Order)
                                 </li>
@@ -1818,8 +1822,18 @@
                                 </li>
                                 @endcan
 
+                                @can('gudang.permintaan-barang.pemb-lain.read')
+                                <li>
+                                    <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_lain']) }}"
+                                        class="menu-dropdown-item group"
+                                        :class="page === 'PermintaanBarangLain' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Pemb. Lain-lain
+                                    </a>
+                                </li>
+                                @endcan
+
                                 <!-- Sub-Menu Retur -->
-                                @canany(['gudang.return-barang.return-unit.read', 'gudang.return-barang.return-kawasan.read', 'gudang.return-barang.return-mangoon.read'])
+                                @canany(['gudang.return-barang.return-unit.read', 'gudang.return-barang.return-kawasan.read', 'gudang.return-barang.return-mangoon.read', 'gudang.return-barang.return-lain.read'])
                                 <li class="text-[10px] font-semibold text-gray-400 uppercase mt-4 mb-1">
                                     Retur Barang
                                 </li>
@@ -1848,6 +1862,16 @@
                                         class="menu-dropdown-item group"
                                         :class="page === 'BarangReturnProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         Retur Proyek Mangoon
+                                    </a>
+                                </li>
+                                @endcan
+
+                                @can('gudang.return-barang.return-lain.read')
+                                <li>
+                                    <a href="{{ route('gudang.returnBarang.pembangunanLain.index') }}"
+                                        class="menu-dropdown-item group"
+                                        :class="page === 'BarangReturnLain' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Retur Pemb. Lain-lain
                                     </a>
                                 </li>
                                 @endcan
@@ -1997,6 +2021,7 @@
                 'produksi.kontraktor.proyek-baru.read',
                 'produksi.kontraktor.pembangunan-proyek.read',
                 'produksi.kontraktor.order-barang.read',
+                'produksi.lain.pembangunan-lain.read',
                 'produksi.manajemen-upah.penamaan-upah.read',
                 'produksi.manajemen-upah.upah-borongan.read'
             ])
@@ -2169,6 +2194,35 @@
                     </li>
                     @endcanany
 
+                    <!-- Pembangunan Lain-lain -->
+                    @can('produksi.lain.pembangunan-lain.read')
+                    <li>
+                        <a href="#" @click.prevent="selected = (selected === 'PembangunanLain' ? '':'PembangunanLain')"
+                            class="menu-item group"
+                            :class="(selected === 'PembangunanLain') || (page === 'pembangunanLain' || page === 'orderBarangLain') ? 'menu-item-active' : 'menu-item-inactive'">
+                            <svg :class="(selected === 'PembangunanLain') || (page === 'pembangunanLain' || page === 'orderBarangLain') ? 'text-brand-500 dark:text-brand-400' : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'"
+                                class="w-6 h-6 size-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">Pemb. Lain-lain</span>
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'PembangunanLain') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '']"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                        <div class="overflow-hidden transform translate" :class="(selected === 'PembangunanLain') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                <li>
+                                    <a href="{{ route('produksi.pembangunanLain.index') }}" class="menu-dropdown-item group"
+                                        :class="page === 'pembangunanLain' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        Pemb. Lain-lain
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    @endcan
 
                     <!-- Manajemen Upah -->
                     @canany(['produksi.manajemen-upah.penamaan-upah.read', 'produksi.manajemen-upah.upah-borongan.read'])
