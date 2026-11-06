@@ -169,12 +169,17 @@ class PembangunanUnitController extends Controller
     {
         $data = PembangunanUnit::with(['unit', 'tahap', 'perumahaan', 'pengawas', 'spv', 'pembangunanUnitQc.pembangunanUnitQcTask', 'pembangunanUnitQc.pembangunanUnitRapBahan', 'pembangunanUnitQc.pembangunanUnitRapUpah', 'pembangunanUnitQc.pembangunanUnitRapBahan.barang', 'pembangunanUnitQc.orders'])->findOrFail($id);
 
-        // Filter status visibilitas QC Servis untuk non-Staff Mutu / Superadmin:
+        // Filter status visibilitas QC Servis:
+        // Role dengan hak akses servis (read-servis / create-servis / Superadmin / Staf Mutu) dapat melihat QC Servis langsung.
         // Role lain hanya melihat QC Servis jika QC Servis tersebut sudah memiliki order barang.
         $user = Auth::user();
-        $isMutuOrAdmin = $user && ($user->hasRole('Superadmin') || $user->hasRole('STAF MUTU & LAYANAN KONSUMEN (ADL)') || $user->hasRole('STAF MUTU & LAYANAN KONSUMEN (LHR)'));
+        $canSeeServisDirectly = $user && (
+            $user->can('produksi.properti.pembangunan-unit.read-servis') ||
+            $user->can('produksi.properti.pembangunan-unit.create-servis') ||
+            $user->hasRole(['Superadmin', 'STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)'])
+        );
 
-        if (!$isMutuOrAdmin) {
+        if (!$canSeeServisDirectly) {
             $filteredQc = $data->pembangunanUnitQc->filter(function ($qc) {
                 if ($qc->is_servis) {
                     return $qc->orders->count() > 0;
@@ -253,7 +258,7 @@ class PembangunanUnitController extends Controller
     public function createServis($id)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['Superadmin', 'STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)'])) {
+        if (!$user || (!$user->can('produksi.properti.pembangunan-unit.create-servis') && !$user->hasRole(['Superadmin', 'STAF MUTU & LAYANAN KONSUMEN (ADL)', 'STAF MUTU & LAYANAN KONSUMEN (LHR)']))) {
             return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk membuat servis unit.');
         }
 
