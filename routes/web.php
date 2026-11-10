@@ -236,6 +236,8 @@ Route::middleware('auth')->prefix('marketing')->group(function () {
         // 🔹 Rincian Tagihan
         Route::get('/rincian-tagihan/{id}', [ManagePemesananController::class, 'rincianTagihan'])
             ->name('marketing.rincianTagihan');
+        Route::patch('/rincian-tagihan/cicilan/{id}/update-status', [ManagePemesananController::class, 'updateCicilanStatus'])
+            ->name('marketing.rincianTagihan.updateStatus');
 
         Route::get('/', [ManagePemesananController::class, 'index'])
             ->name('marketing.managePemesanan.index');

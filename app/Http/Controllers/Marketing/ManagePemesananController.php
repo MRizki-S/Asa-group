@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Marketing;
 use App\Http\Controllers\Controller;
 use App\Models\MasterKprDokumen;
 use App\Models\PemesananUnit;
+use App\Models\PemesananUnitCicilan;
 use App\Models\Perumahaan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -233,6 +234,48 @@ class ManagePemesananController extends Controller
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Update status pembayaran cicilan (Checklist Lunas / Pending)
+     */
+    public function updateCicilanStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status_bayar' => 'required|in:pending,lunas,telat',
+            'tanggal_pembayaran' => 'nullable|date',
+        ]);
+
+        $cicilan = PemesananUnitCicilan::with('pemesananUnit')->findOrFail($id);
+        $pemesanan = $cicilan->pemesananUnit;
+
+        $newStatus = $request->status_bayar;
+        $tanggalBayar = $newStatus === 'lunas'
+            ? ($request->tanggal_pembayaran ?? now()->format('Y-m-d'))
+            : null;
+
+        $cicilan->update([
+            'status_bayar' => $newStatus,
+            'tanggal_pembayaran' => $tanggalBayar,
+        ]);
+
+        // Hitung ulang sisa_tagihan pada PemesananUnit
+        if ($pemesanan) {
+            $totalLunas = $pemesanan->cicilan()
+                ->where('is_active', true)
+                ->where('status_bayar', 'lunas')
+                ->sum('nominal');
+
+            $pemesanan->sisa_tagihan = max(0, (float) $pemesanan->total_tagihan - (float) $totalLunas);
+            $pemesanan->save();
+        }
+
+        $labelPembayaran = $cicilan->pembayaran_ke ? "ke-{$cicilan->pembayaran_ke}" : '';
+        $pesan = $newStatus === 'lunas'
+            ? "Cicilan {$labelPembayaran} berhasil ditandai LUNAS."
+            : "Status cicilan {$labelPembayaran} berhasil diubah menjadi " . strtoupper($newStatus) . ".";
+
+        return redirect()->back()->with('success', $pesan);
     }
 
     // Print PPJB KPR
