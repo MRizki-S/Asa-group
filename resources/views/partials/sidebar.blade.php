@@ -1290,22 +1290,19 @@
                 </h3>
 
                 <ul class="flex flex-col gap-2 mb-6">
-                    <!-- menu stock barang dan transfer stok -->
+                    <!-- Menu Group Item Stok Barang -->
                     @can('gudang.stock-barang.read')
                     <li>
-                        <a href="{{ route('gudang.stockBarang.index') }}"
-                            @click="selected = (selected === 'StokBarangGudang' ? '' : 'StokBarangGudang')"
+                        <a href="#"
+                            @click.prevent="selected = (selected === 'StokBarangGroup' ? '':'StokBarangGroup')"
                             class="menu-item group"
-                            :class="(selected === 'StokBarangGudang') && (page === 'StokBarangGudang') ?
-                            'menu-item-active' :
+                            :class="(selected === 'StokBarangGroup') || (page === 'StokBarangGudang' || page === 'RekapNotaMasuk') ? 'menu-item-active' :
                             'menu-item-inactive'">
 
-                            <svg :class="(selected === 'Packages') && (page === 'Packages') ? 'menu-item-icon-active' : ''"
+                            <svg :class="(selected === 'StokBarangGroup') || (page === 'StokBarangGudang' || page === 'RekapNotaMasuk') ? 'menu-item-icon-active' : ''"
                                 width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
-
                                 <title>packages</title>
-
                                 <g fill="none" stroke="currentColor" stroke-linecap="round"
                                     stroke-linejoin="round" stroke-width="2">
                                     <path d="m7 16.5l-5-3l5-3l5 3V19l-5 3z" />
@@ -1317,36 +1314,62 @@
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                 Stok Barang
                             </span>
+
+                            <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+                                :class="[(selected === 'StokBarangGroup') ? 'menu-item-arrow-active' :
+                                    'menu-item-arrow-inactive',
+                                    sidebarToggle ? 'lg:hidden' : ''
+                                ]"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
                         </a>
+
+                        <!-- Dropdown Menu Start -->
+                        <div class="overflow-hidden transform translate"
+                            :class="(selected === 'StokBarangGroup') || (page === 'StokBarangGudang' || page === 'RekapNotaMasuk') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                class="flex flex-col mt-2 menu-dropdown pl-9">
+
+                                <!-- Daftar Stok Realtime -->
+                                @can('gudang.stock-barang.read')
+                                <li>
+                                    <a href="{{ route('gudang.stockBarang.index') }}"
+                                        class="menu-dropdown-item group flex items-center"
+                                        :class="page === 'StokBarangGudang' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                        </svg>
+                                        Daftar Stok
+                                    </a>
+                                </li>
+                                @endcan
+
+                                <!-- Rekap Barang Masuk & Keluar -->
+                                @can('gudang.stock-barang.read')
+                                <li>
+                                    <a href="{{ route('gudang.rekapNotaMasuk.index') }}"
+                                        class="menu-dropdown-item group flex items-center"
+                                        :class="page === 'RekapNotaMasuk' ? 'menu-dropdown-item-active' :
+                                            'menu-dropdown-item-inactive'">
+                                        <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        Rekap Masuk & Keluar
+                                    </a>
+                                </li>
+                                @endcan
+
+                            </ul>
+                        </div>
+                        <!-- Dropdown Menu End -->
                     </li>
                     @endcan
-                    <!-- menu stock barang dan transfer stok -->
-
-                    <!-- Menu Audit Log Stok -->
-                    <!-- @canany(['gudang.audit-log.read', 'gudang.stock-barang.read'])
-                    <li>
-                        <a href="{{ route('gudang.auditLog.index') }}"
-                            @click="selected = (selected === 'AuditLogStock' ? '' : 'AuditLogStock')"
-                            class="menu-item group"
-                            :class="(selected === 'AuditLogStock') && (page === 'AuditLogStock') ?
-                            'menu-item-active' :
-                            'menu-item-inactive'">
-
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                :class="(selected === 'AuditLogStock') && (page === 'AuditLogStock') ? 'menu-item-icon-active' : ''"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
-                                <title>audit-log</title>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                            </svg>
-
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                Audit Log Stok
-                            </span>
-                        </a>
-                    </li>
-                    @endcanany -->
-                    <!-- Menu Audit Log Stok -->
 
                     <!-- Menu Barang Rusak -->
                     @can('gudang.barang-rusak.read')
@@ -1711,21 +1734,7 @@
                                 </li>
                                 @endcan
 
-                                <!-- Rekap Per Hari Nota Masuk -->
-                                <!-- @can('gudang.nota-masuk.daftar-nota-masuk.read')
-                                <li>
-                                    <a href="{{ route('gudang.rekapNotaMasuk.index') }}"
-                                        class="menu-dropdown-item group flex items-center"
-                                        :class="page === 'RekapNotaMasuk' ? 'menu-dropdown-item-active' :
-                                            'menu-dropdown-item-inactive'">
-                                        <svg class="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        Rekap Masuk & Keluar
-                                    </a>
-                                </li>
-                                @endcan -->
+
                             </ul>
                         </div>
                         <!-- Dropdown Menu End -->
