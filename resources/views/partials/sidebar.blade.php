@@ -1779,6 +1779,14 @@
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                 Material Proyek
                             </span>
+                            @if(($totalPendingMaterial ?? $totalPendingOrder ?? 0) > 0)
+                                <span :class="sidebarToggle ? 'lg:hidden' : ''"
+                                    class="ml-auto mr-6 inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[11px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                    {{ $totalPendingMaterial ?? $totalPendingOrder }}
+                                </span>
+                                <span :class="sidebarToggle ? 'lg:block' : 'hidden'"
+                                    class="hidden absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
+                            @endif
                             <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
                                 :class="[(selected === 'MaterialProyekGroup') ? 'menu-item-arrow-active' :
                                     'menu-item-arrow-inactive',
@@ -1806,27 +1814,42 @@
                                 @can('gudang.permintaan-barang.pemb-unit.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_unit']) }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'PermintaanBarangUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pemb. Unit
+                                        <span>Pemb. Unit</span>
+                                        @if(($pendingOrderUnit ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingOrderUnit }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
                                 @can('gudang.permintaan-barang.pemb-kawasan.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_kawasan']) }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'PermintaanBarangKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pemb. Kawasan
+                                        <span>Pemb. Kawasan</span>
+                                        @if(($pendingOrderKawasan ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingOrderKawasan }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
                                 @can('gudang.permintaan-barang.pemb-mangoon.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_proyek_mangoon']) }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'PermintaanBarangProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Proyek Mangoon
+                                        <span>Proyek Mangoon</span>
+                                        @if(($pendingOrderProyek ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingOrderProyek }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
@@ -1834,9 +1857,14 @@
                                 @can('gudang.permintaan-barang.pemb-lain.read')
                                 <li>
                                     <a href="{{ route('gudang.permintaanBarang.index', ['jenis_order' => 'pembangunan_lain']) }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'PermintaanBarangLain' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Pemb. Lain-lain
+                                        <span>Pemb. Lain-lain</span>
+                                        @if(($pendingOrderLain ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingOrderLain }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
@@ -1850,27 +1878,42 @@
                                 @can('gudang.return-barang.return-unit.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.unit.index') }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'BarangReturnUnit' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Retur Unit
+                                        <span>Retur Unit</span>
+                                        @if(($pendingReturnUnit ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingReturnUnit }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
                                 @can('gudang.return-barang.return-kawasan.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.kawasan.index') }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'BarangReturnKawasan' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Retur Kawasan
+                                        <span>Retur Kawasan</span>
+                                        @if(($pendingReturnKawasan ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingReturnKawasan }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
                                 @can('gudang.return-barang.return-mangoon.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.proyek.index') }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'BarangReturnProyek' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Retur Proyek Mangoon
+                                        <span>Retur Proyek Mangoon</span>
+                                        @if(($pendingReturnProyek ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingReturnProyek }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
@@ -1878,9 +1921,14 @@
                                 @can('gudang.return-barang.return-lain.read')
                                 <li>
                                     <a href="{{ route('gudang.returnBarang.pembangunanLain.index') }}"
-                                        class="menu-dropdown-item group"
+                                        class="menu-dropdown-item group flex items-center justify-between"
                                         :class="page === 'BarangReturnLain' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        Retur Pemb. Lain-lain
+                                        <span>Retur Pemb. Lain-lain</span>
+                                        @if(($pendingReturnLain ?? 0) > 0)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full shadow-xs">
+                                                {{ $pendingReturnLain }}
+                                            </span>
+                                        @endif
                                     </a>
                                 </li>
                                 @endcan
