@@ -59,39 +59,78 @@ class AppServiceProvider extends ServiceProvider
 
             if (Auth::check()) {
                 $user = Auth::user();
+                $isSuperadmin = $user->hasRole('Superadmin');
 
-                // Order pending counts
-                if ($user->can('gudang.permintaan-barang.pemb-unit.read')) {
-                    $pendingOrderUnit = PembangunanUnitBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])->count();
+                // Helper untuk mendapatkan jenis_order yang boleh di-ACC oleh user saat ini
+                $getAllowedOrderJenis = function (string $catPerm) use ($user, $isSuperadmin): array {
+                    if ($isSuperadmin) {
+                        return ['stock', 'direct', 'cash'];
+                    }
+
+                    $allowed = [];
+                    if ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-stock") || $user->can('gudang.permintaan-barang.aksi-stock')) {
+                        $allowed[] = 'stock';
+                    }
+                    if ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-direct") || $user->can('gudang.permintaan-barang.aksi-direct')) {
+                        $allowed[] = 'direct';
+                    }
+                    if ($user->can("gudang.permintaan-barang.{$catPerm}.aksi-cash") || $user->can('gudang.permintaan-barang.aksi-cash')) {
+                        $allowed[] = 'cash';
+                    }
+
+                    return $allowed;
+                };
+
+                // Order pending counts (difilter strictly berdasarkan jenis_order yang berhak di-ACC)
+                $allowedUnit = $getAllowedOrderJenis('pemb-unit');
+                if (!empty($allowedUnit) && ($isSuperadmin || $user->can('gudang.permintaan-barang.pemb-unit.read'))) {
+                    $pendingOrderUnit = PembangunanUnitBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])
+                        ->whereIn('jenis_order', $allowedUnit)
+                        ->count();
                 }
 
-                if ($user->can('gudang.permintaan-barang.pemb-kawasan.read')) {
-                    $pendingOrderKawasan = PembangunanKawasanBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])->count();
+                if ($isSuperadmin || $user->can('gudang.permintaan-barang.pemb-kawasan.read')) {
+                    $allowedKawasan = $getAllowedOrderJenis('pemb-kawasan');
+                    if (!empty($allowedKawasan)) {
+                        $pendingOrderKawasan = PembangunanKawasanBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])
+                            ->whereIn('jenis_order', $allowedKawasan)
+                            ->count();
+                    }
                 }
 
-                if ($user->can('gudang.permintaan-barang.pemb-mangoon.read')) {
-                    $pendingOrderProyek = PembangunanProyekBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])->count();
+                if ($isSuperadmin || $user->can('gudang.permintaan-barang.pemb-mangoon.read')) {
+                    $allowedProyek = $getAllowedOrderJenis('pemb-mangoon');
+                    if (!empty($allowedProyek)) {
+                        $pendingOrderProyek = PembangunanProyekBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])
+                            ->whereIn('jenis_order', $allowedProyek)
+                            ->count();
+                    }
                 }
 
-                if ($user->can('gudang.permintaan-barang.pemb-lain.read')) {
-                    $pendingOrderLain = PembangunanLainBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])->count();
+                if ($isSuperadmin || $user->can('gudang.permintaan-barang.pemb-lain.read')) {
+                    $allowedLain = $getAllowedOrderJenis('pemb-lain');
+                    if (!empty($allowedLain)) {
+                        $pendingOrderLain = PembangunanLainBarangOrder::whereIn('status_order', ['diproses', 'menunggu_spv'])
+                            ->whereIn('jenis_order', $allowedLain)
+                            ->count();
+                    }
                 }
 
-                // Return pending counts
-                if ($user->can('gudang.return-barang.return-unit.read')) {
-                    $pendingReturnUnit = PembangunanUnitBarangReturn::whereIn('status', ['diproses', 'menunggu', 'menunggu_spv'])->count();
+                // Return pending counts (hanya bagi yang memiliki hak ACC retur)
+                if ($isSuperadmin || $user->can('gudang.return-barang.return-unit.aksi')) {
+                    $pendingReturnUnit = PembangunanUnitBarangReturn::where('status', 'diproses')->count();
                 }
 
-                if ($user->can('gudang.return-barang.return-kawasan.read')) {
-                    $pendingReturnKawasan = PembangunanKawasanBarangReturn::whereIn('status', ['diproses', 'menunggu', 'menunggu_spv'])->count();
+                if ($isSuperadmin || $user->can('gudang.return-barang.return-kawasan.aksi')) {
+                    $pendingReturnKawasan = PembangunanKawasanBarangReturn::where('status', 'diproses')->count();
                 }
 
-                if ($user->can('gudang.return-barang.return-mangoon.read')) {
-                    $pendingReturnProyek = PembangunanProyekBarangReturn::whereIn('status', ['diproses', 'menunggu', 'menunggu_spv'])->count();
+                if ($isSuperadmin || $user->can('gudang.return-barang.return-mangoon.aksi')) {
+                    $pendingReturnProyek = PembangunanProyekBarangReturn::where('status', 'diproses')->count();
                 }
 
-                if ($user->can('gudang.return-barang.return-lain.read')) {
-                    $pendingReturnLain = PembangunanLainBarangReturn::whereIn('status', ['diproses', 'menunggu', 'menunggu_spv'])->count();
+                if ($isSuperadmin || $user->can('gudang.return-barang.return-lain.aksi')) {
+                    $pendingReturnLain = PembangunanLainBarangReturn::where('status', 'diproses')->count();
                 }
             }
 
